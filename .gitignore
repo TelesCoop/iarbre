@@ -1,0 +1,12 @@
+logs/
+tmp/
+Dockerfiles/python/.env
+! Dockerfiles/python/.env.example
+.env
+__pycache__
+file_data
+.idea
+migrations
+.ipynb_checkpoints/
+*.ipynb
+*.zip
