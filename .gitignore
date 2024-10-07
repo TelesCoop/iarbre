@@ -6,7 +6,7 @@ Dockerfiles/python/.env
 __pycache__
 file_data
 .idea
-migrations
 .ipynb_checkpoints/
 *.ipynb
 *.zip
+__pycache__
