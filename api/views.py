@@ -1,14 +1,23 @@
-from django.shortcuts import render
+import time
+from linecache import cache
+
+from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
+from api.constants import ModelType
 from api.map import territories_to_tile
+from iarbre_data.models import Tile
 
-
-# Create your views here.
-
+MODEL_BY_TYPE = {
+    ModelType.TILE.value: Tile,
+}
 
 @require_GET
-def tile_view(request, zoom, x, y):
-    params = {}
-    model = None
-    return territories_to_tile(model, x, y, zoom, params)
+# @cache_page(60 * 60 * 24)
+def tile_view(request, model_type, zoom, x, y):
+    start_time = time.time()
+    model = MODEL_BY_TYPE[model_type]
+    response = territories_to_tile(model, x, y, zoom)
+
+    print(f"Request duration: {time.time() - start_time} seconds")
+    return response

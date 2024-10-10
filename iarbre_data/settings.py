@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,8 +23,10 @@ DATA_DIR = BASE_DIR / "file_data"
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-@3rjfjbnt85l*c$)j)c55w-!%0ez(v9vu4e=%d@@)pvljpwg)n"
 
+IS_LOCAL_DEV = bool(os.environ.get("TELESCOOP_DEV"))
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = IS_LOCAL_DEV
 
 ALLOWED_HOSTS = []
 
@@ -52,6 +54,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if IS_LOCAL_DEV:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_METHODS = [
+        "DELETE",
+        "GET",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT",
+    ]
+    INSTALLED_APPS.append("corsheaders")
+    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
 
 ROOT_URLCONF = "iarbre_data.urls"
 

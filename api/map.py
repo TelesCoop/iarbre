@@ -1,6 +1,7 @@
 import math
+import time
 
-import mapbox_vector_tile
+import geobuf
 import mercantile
 
 from django.http import HttpResponse
@@ -14,14 +15,12 @@ def pixel_length(zoom):
 
 
 def filter_instances_by_bounds(Model, bbox, zoom):
-    pixel = pixel_length(zoom)
-    buffer = 4 * pixel
     bbox_with_buffer = Polygon.from_bbox(
         (
-            bbox["west"] - buffer,
-            bbox["south"] - buffer,
-            bbox["east"] + buffer,
-            bbox["north"] + buffer,
+            bbox["west"],
+            bbox["south"],
+            bbox["east"],
+            bbox["north"],
         )
     )
     # Need to have a geometry field in the model with srid=3857
@@ -41,28 +40,43 @@ def serialize_to_geojson_feature(instance, params):
             params["pixel"], preserve_topology=True
         ).wkt,
         # Need to have get_layer_properties method in the model
-        "properties": instance.get_layer_properties(params),
+        "properties": instance.get_layer_properties(),
     }
 
-def format_to_geojson_feature_collection(division, instances, params):
+def format_to_geojson_feature_collection(name, instances, params):
     return {
-        "name": division,
+        "name": name,
+        "type": "FeatureCollection",
         "features": [
             serialize_to_geojson_feature(instance, params) for instance in instances
         ],
     }
 
-def territories_to_tile(Model, x, y, zoom, params):
+def territories_to_tile(Model, x, y, zoom):
     bbox = get_bbox(x, y, zoom)
+    start_time = time.time()
     instances = filter_instances_by_bounds(Model, bbox, zoom)
+    end_time = time.time()
+    print(f"Time to get instances: {end_time - start_time}")
+    if len(instances):
+        print(len(instances))
 
-    params = {**params, "pixel": pixel_length(zoom)}
+
+    params = {"pixel": pixel_length(zoom)}
 
     feature_collection = format_to_geojson_feature_collection(
-        Model.division, instances, params
+        Model.type, instances, params
     )
-    vector_tile = mapbox_vector_tile.encode(
-        feature_collection,
-        quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]),
-    )
-    return HttpResponse(vector_tile, content_type="application/vnd.mapbox-vector-tile")
+    end_time_2 = time.time()
+    print(f"Time to format instances: {end_time_2 - end_time}")
+    # optimise encode
+    # vector_tile = mapbox_vector_tile.encode(
+    #     feature_collection,
+    #     quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]),
+    #     extents=256,
+    #     y_coord_down=True,
+    # )
+
+    tiles = geobuf.encode(feature_collection, quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]), extents=256, y_coord_down=True)
+    print(f"Time to encode vector tile: {time.time() - end_time_2}")
+    return HttpResponse(tiles, content_type="application/x-protobuf")

@@ -1,5 +1,6 @@
 import itertools
 import logging
+from functools import reduce
 
 import geopandas as gpd
 from django.contrib.gis.geos import Polygon
@@ -10,7 +11,7 @@ import numpy as np
 from tqdm import tqdm
 
 from iarbre_data.models import City, Tile
-
+import random
 
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
@@ -29,8 +30,11 @@ class Command(BaseCommand):
 
         # get bounding box of all cities
         cities = City.objects.all()
+
+        print(cities[0].geometry.srid)
+
         df = gpd.GeoDataFrame(
-            [{"name": city.name, "geometry": city.geometry} for city in cities]
+            [{"name": city.name, "geometry": city.geometry.transform(3857, clone=True)} for city in cities]
         )
         df.geometry = df["geometry"].apply(lambda el: shapely.wkt.loads(el.wkt))
         df = df.set_geometry("geometry")
@@ -46,7 +50,18 @@ class Command(BaseCommand):
             # Bounds
             x1 = x0 - grid_size
             y1 = y0 + grid_size
-            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1])))
+
+            # reduce precision of coordinates to optimize storage
+            number_of_decimals = 6
+            x0 = round(x0, number_of_decimals)
+            y0 = round(y0, number_of_decimals)
+            x1 = round(x1, number_of_decimals)
+            y1 = round(y1, number_of_decimals)
+
+
+
+            # Create tile with random indice from 0 to 1
+            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(0, 1)))
 
         logger.info(f"got {len(tiles)} tiles")
-        Tile.objects.bulk_create(tiles)
+        Tile.objects.bulk_create(tiles, batch_size=1000)
