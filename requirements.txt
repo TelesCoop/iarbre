@@ -1,11 +1,13 @@
 Django==5.1
 django-cors-headers==4.4.0
 django-extensions==3.2.3
+geobuf==1.1.1
 geopandas==1.0.1
 ipython==8.26.0
 jupyter==1.0.0
 mapbox_vector_tile==2.1.0
 mercantile==1.2.1
+protobuf==5.28.2
 psycopg2==2.9.9
 shapely==2.0.5
 tqdm==4.66.5
