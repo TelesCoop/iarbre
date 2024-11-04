@@ -1,4 +1,4 @@
-Django==5.1
+Django==5.1.1
 django-cors-headers==4.4.0
 django-extensions==3.2.3
 geobuf==1.1.1
