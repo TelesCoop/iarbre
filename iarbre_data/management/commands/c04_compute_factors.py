@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.models import Data, Tile, TileFactor
+from iarbre_data.models import Data, Tile, TileFactor, City
 
 
 TILE_BATCH_SIZE = 10_000
@@ -52,5 +52,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         tiles_df = load_geodataframe_from_db(Tile.objects.all(), ["id"])
+        cities_df = load_geodataframe_from_db(
+            City.objects.all(), ["name"]
+        )  # Retrieve the names and geom of all cities
+        # Match crs between Tiles and Cities
+        tiles_df.set_crs(epsg=3857, inplace=True)
+        tiles_crs = tiles_df.crs
+        cities_df.set_crs(epsg=2154, inplace=True)
+        cities_df.to_crs(tiles_crs, inplace=True)
+
+        selected_city = cities_df.iloc[3]  # pick a city
+        print(f"Selected city: {selected_city['name']}")
+        df = tiles_df.clip(
+            selected_city.geometry
+        )  # Retrieve the tiles that corresponds to the city
+
         for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
-            compute_for_factor(factor_name, tiles_df)
+            compute_for_factor(factor_name, df)
