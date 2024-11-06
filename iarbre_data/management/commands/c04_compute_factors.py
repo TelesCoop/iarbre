@@ -1,7 +1,8 @@
 import time
-
+import os
 from django.core.management import BaseCommand
 from tqdm import tqdm
+import multiprocessing
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
@@ -12,7 +13,15 @@ TILE_BATCH_SIZE = 10_000
 
 
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
-    # we intersect with data for this factor
+    """Compute and store the proportion of standard tile area occupied by a geographic factor.
+    Args:
+        factor_name (str): Name of the factor (e.g., 'Parking', 'Route') to process
+        factor_df (GeoDataFrame): GeoDataFrame containing factor geometries that will be
+            intersected with tiles.
+        tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
+        std_area (float): Standard tile area in square meters (m²).
+    """
+    factor_df.set_crs(epsg=3857, inplace=True)
     df = tiles_df.clip(factor_df)
     df["value"] = df.geometry.area / std_area
     tile_factors = [
@@ -22,29 +31,40 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     TileFactor.objects.bulk_create(tile_factors)
 
 
+def process_batch(args):
+    """Helper func for multiprocessing"""
+    factor_name, factor_df, batch, std_area = args
+    return _compute_for_factor_partial_tiles(factor_name, factor_df, batch, std_area)
+
+
 def compute_for_factor(factor_name, tiles_df):
-    std_area = Tile.objects.first().geometry.area
-    # remove former factors
-    TileFactor.objects.filter(factor=factor_name).delete()
+    """Compute and store factor coverage proportions for the provided tiles.
+    Args:
+        factor_name (str): Name of the geographic factor to process (e.g., 'Parking', 'Route')
+        tiles_df (GeoDataFrame): GeoDataFrame containing all tiles to process.
+    Notes:
+        - Standard area is calculated from the first Tile object in database (all tiles have the same area).
+    """
+    std_area = (
+        Tile.objects.first().geometry.area
+    )  # Standard area of a tile (always the same)
+
+    TileFactor.objects.filter(factor=factor_name).delete()  # remove former factors
 
     qs = Data.objects.filter(factor=factor_name)
     if not qs.exists():
         return
     factor_df = load_geodataframe_from_db(qs, [])
 
-    # compute by batch of 10k tiles
-    n_batches = len(tiles_df) // TILE_BATCH_SIZE + 1
-    for batch in tqdm(
-        range(0, len(tiles_df), TILE_BATCH_SIZE),
-        desc=f"factor {factor_name}",
-        total=n_batches,
-    ):
-        _compute_for_factor_partial_tiles(
-            factor_name,
-            factor_df,
-            tiles_df.iloc[batch : batch + TILE_BATCH_SIZE],
-            std_area,
-        )
+    # Prepare batches
+    batches = [
+        tiles_df.iloc[i : i + TILE_BATCH_SIZE]
+        for i in range(0, len(tiles_df), TILE_BATCH_SIZE)
+    ]
+    args_list = [(factor_name, factor_df, batch, std_area) for batch in batches]
+
+    with multiprocessing.Pool(os.cpu_count() - 2) as pool: # Let 2 CPUs available
+        pool.map(process_batch, args_list)
 
 
 class Command(BaseCommand):
