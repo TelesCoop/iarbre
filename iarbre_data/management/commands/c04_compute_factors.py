@@ -66,25 +66,37 @@ def compute_for_factor(factor_name, tiles_df, std_area):
 class Command(BaseCommand):
     help = "Compute and save factors data."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--insee_code_city',
+            type=str,
+            required=False,
+            default=None,
+            help="The INSEE code of the city to process"
+        )
+
     def handle(self, *args, **options):
+        insee_code_city = options['insee_code_city']
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
         tiles_df = load_geodataframe_from_db(Tile.objects.all(), ["id"])
-        cities_df = load_geodataframe_from_db(
-            City.objects.all(), ["name"]
-        )  # Retrieve the names and geom of all cities
-        # Match crs between Tiles and Cities
-        tiles_df.set_crs(epsg=3857, inplace=True)
-        tiles_crs = tiles_df.crs
-        cities_df.set_crs(epsg=2154, inplace=True)
-        cities_df.to_crs(tiles_crs, inplace=True)
+        if insee_code_city is not None: # Perform selection only for a city
+            cities_df = load_geodataframe_from_db(
+                City.objects.all(), ["name","insee_code"]
+            )  # Retrieve the insee_code and geom of all cities
 
-        selected_city = cities_df.iloc[3]  # pick a city
-        print(f"Selected city: {selected_city['name']}")
-        df = tiles_df.clip(
-            selected_city.geometry
-        )  # Retrieve the tiles that corresponds to the city
+
+            selected_city = cities_df.loc[cities_df["insee_code"] == insee_code_city] # pick a city
+            if selected_city.empty:
+                self.stdout.write(self.style.ERROR(f"City not found for given INSEE code: {insee_code_city}"))
+                return
+            print(f"Selected city: {selected_city.iloc[0]['name']}")
+            df = tiles_df.clip(
+                selected_city.geometry.iloc[0]
+            )  # Retrieve the tiles that corresponds to the city
+        else:
+            df = tiles_df
 
         for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
             compute_for_factor(factor_name, df, std_area)
