@@ -32,13 +32,13 @@ class Tile(models.Model):
 
 
 class Data(models.Model):
-    geometry = GeometryField(srid=2154)
+    geometry = GeometryField(srid=3857)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
 
 
 class City(models.Model):
-    geometry = PolygonField(srid=2154)
+    geometry = PolygonField(srid=3857)
     name = models.CharField(max_length=50)
     insee_code = models.CharField(max_length=10)
 
