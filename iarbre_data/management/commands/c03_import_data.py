@@ -83,8 +83,7 @@ def save_geometries(df: gpd.GeoDataFrame, data_config):
         datas += [
             {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
         ]
-    else:
-        # no actions were configured, save data as is
+    else: # no actions were configured, save data as is
         sub_df = df.copy().explode(index_parts=False)
         factor = data_config["factors"][0]
         datas += [
