@@ -1,10 +1,12 @@
 import itertools
+import gc
 import logging
 from functools import reduce
 
 import geopandas as gpd
 from django.contrib.gis.geos import Polygon
 from django.core.management import BaseCommand
+from django.db import transaction
 import shapely
 import shapely.wkt
 import numpy as np
@@ -12,6 +14,7 @@ from tqdm import tqdm
 
 from iarbre_data.models import City, Tile
 import random
+import math
 
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
@@ -25,8 +28,14 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
         grid_size = options["grid_size"]
 
-        n_deleted, _ = Tile.objects.all().delete()
-        logger.info(f"Deleted {n_deleted} tiles")
+        # Delete records if already exists
+        total_records = Tile.objects.count()
+        batch_size = int(1e5)  # Depends on your RAM
+        for start in tqdm(range(0, total_records, batch_size)):
+            batch_ids = Tile.objects.all()[start:start + batch_size].values_list('id', flat=True)
+            with transaction.atomic():
+                Tile.objects.filter(id__in=batch_ids).delete()
+        logger.info(f"Deleted {total_records} tiles")
 
         # get bounding box of all cities
         cities = City.objects.all()
@@ -39,29 +48,31 @@ class Command(BaseCommand):
         xmin, ymin, xmax, ymax = df.total_bounds
 
         tiles = []
-        batch_size = int(1e5)  # Depends on your RAM
-        for i, (x0, y0) in enumerate(tqdm(
-            itertools.product(
-                np.arange(xmin, xmax + grid_size, grid_size),
-                np.arange(ymin, ymax + grid_size, grid_size),
-            ))
-        ):
-            # Bounds
-            x1 = x0 - grid_size
-            y1 = y0 + grid_size
 
-            # reduce precision of coordinates to optimize storage
-            number_of_decimals = 2
-            x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
+        y0 = ymin  # Start y0 at ymin
+        i = 0
 
-            # Create tile with random indice from -5 to 5
-            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
+        while y0 < ymax:
+            breakpoint()
+            latitude = (y0 + y0) / 2  # Approximate latitude of the tile (in SRID 3857)
+            grid_size_y = grid_size / math.cos(math.radians(latitude)) # SRID 3857 is centered on equator
+            for x0 in tqdm(np.arange(xmin, xmax, grid_size)):
+                # Bounds
+                x1 = x0 - grid_size
+                y1 = y0 + grid_size_y
 
-            # Avoid OOM errors
-            if (i + 1) % batch_size == 0:
-                Tile.objects.bulk_create(tiles, batch_size=batch_size)
-                logger.info(f"got {len(tiles)} tiles")
-                tiles.clear()  # Free memory by clearing the list
+                number_of_decimals = 2 # centimeter-level precision
+                x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
 
+                # Create tile with random indice from -5 to 5
+                tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
+                # Avoid OOM errors
+                if (i + 1) % batch_size == 0:
+                    Tile.objects.bulk_create(tiles, batch_size=batch_size)
+                    logger.info(f"Got {len(tiles)} tiles")
+                    tiles.clear()
+                    gc.collect()
+                i += 1
+            y0 = y0 + grid_size_y
         if tiles: # Save last batch
             Tile.objects.bulk_create(tiles, batch_size=batch_size)
