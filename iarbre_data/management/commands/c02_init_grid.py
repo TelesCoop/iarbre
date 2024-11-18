@@ -28,9 +28,9 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
         grid_size = options["grid_size"]
 
-        # Delete records if already exists
+        # Delete records if already exist
         total_records = Tile.objects.count()
-        batch_size = int(1e5)  # Depends on your RAM
+        batch_size = int(1e6)  # Depends on your RAM
         for start in tqdm(range(0, total_records, batch_size)):
             batch_ids = Tile.objects.all()[start:start + batch_size].values_list('id', flat=True)
             with transaction.atomic():
@@ -52,11 +52,14 @@ class Command(BaseCommand):
         y0 = ymin  # Start y0 at ymin
         i = 0
 
-        while y0 < ymax:
-            breakpoint()
+        def generator():
+            while y0 < ymax:
+                yield
+
+        for _ in tqdm(generator()):
             latitude = (y0 + y0) / 2  # Approximate latitude of the tile (in SRID 3857)
             grid_size_y = grid_size / math.cos(math.radians(latitude)) # SRID 3857 is centered on equator
-            for x0 in tqdm(np.arange(xmin, xmax, grid_size)):
+            for x0 in np.arange(xmin, xmax, grid_size):
                 # Bounds
                 x1 = x0 - grid_size
                 y1 = y0 + grid_size_y
