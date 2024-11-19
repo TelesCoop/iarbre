@@ -1,19 +1,18 @@
-import time
-import os
 import gc
-from django.core.management import BaseCommand
-from django.contrib.gis.geos import GEOSGeometry
-from tqdm import tqdm
 import multiprocessing
+import os
+
+from django.contrib.gis.geos import GEOSGeometry
+from django.core.management import BaseCommand
+from tqdm import tqdm
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.models import Data, Tile, TileFactor, City
-
+from iarbre_data.models import City, Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10000
 num_cpus = min(4, os.cpu_count() - 2)  # Limit parallel processes
-TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
+TILE_BATCH_SIZE = TILE_BATCH_SIZE // 4
 
 
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):

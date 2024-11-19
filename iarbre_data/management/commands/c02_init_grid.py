@@ -1,21 +1,17 @@
-import itertools
 import gc
+import itertools
 import logging
-from functools import reduce
+import math
+import random
 
-import geopandas as gpd
+import numpy as np
 from django.contrib.gis.geos import Polygon
 from django.core.management import BaseCommand
 from django.db import transaction
-import shapely
-import shapely.wkt
-import numpy as np
 from tqdm import tqdm
 
-from iarbre_data.models import City, Tile
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
-import random
-import math
+from iarbre_data.models import City, Tile
 
 
 class Command(BaseCommand):
