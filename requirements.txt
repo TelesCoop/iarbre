@@ -12,3 +12,4 @@ psycopg2==2.9.9
 shapely==2.0.5
 tqdm==4.66.5
 numpy==2.0.1
+scikit-learn==1.5.2
