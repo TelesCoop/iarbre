@@ -1,3 +1,4 @@
+import gc
 import time
 from functools import reduce
 from io import BytesIO
@@ -17,7 +18,7 @@ from iarbre_data.settings import DATA_DIR, TARGET_PROJ
 
 
 def batched(iterable, n):
-    "Batch data into tuples of length n. The last batch may be shorter."
+    """Batch data into tuples of length n. The last batch may be shorter."""
     # batched('ABCDEFG', 3) --> ABC DEF G
     if n < 1:
         raise ValueError("n must be at least one")
@@ -109,7 +110,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--grid-size", type=int, default=30, help="Grid size in meters"
+            "--grid-size", type=int, default=5, help="Grid size in meters"
         )
 
     def handle(self, *args, **options):
@@ -126,4 +127,6 @@ class Command(BaseCommand):
                 print(f"Error reading data {data_config['name']}")
                 continue
             save_geometries(df, data_config)
+            del df
+            gc.collect()
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")

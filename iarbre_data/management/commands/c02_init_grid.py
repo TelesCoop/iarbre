@@ -13,6 +13,7 @@ import numpy as np
 from tqdm import tqdm
 
 from iarbre_data.models import City, Tile
+from iarbre_data.management.commands.utils import load_geodataframe_from_db
 import random
 import math
 
@@ -23,59 +24,65 @@ class Command(BaseCommand):
         parser.add_argument(
             "--grid-size", type=int, default=5, help="Grid size in meters"
         )
+        parser.add_argument(
+            '--insee_code_city',
+            type=str,
+            required=False,
+            default=None,
+            help="The INSEE code of the city to process"
+        )
 
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
+        insee_code_city = options['insee_code_city']
         grid_size = options["grid_size"]
 
         # Delete records if already exist
         total_records = Tile.objects.count()
         batch_size = int(1e6)  # Depends on your RAM
+        print('Deleting old tiles')
         for start in tqdm(range(0, total_records, batch_size)):
             batch_ids = Tile.objects.all()[start:start + batch_size].values_list('id', flat=True)
             with transaction.atomic():
                 Tile.objects.filter(id__in=batch_ids).delete()
         logger.info(f"Deleted {total_records} tiles")
 
-        # get bounding box of all cities
-        cities = City.objects.all()
-
-        df = gpd.GeoDataFrame(
-            [{"name": city.name, "geometry": city.geometry.transform(3857, clone=True)} for city in cities]
-        )
-        df.geometry = df["geometry"].apply(lambda el: shapely.wkt.loads(el.wkt))
-        df = df.set_geometry("geometry")
-        xmin, ymin, xmax, ymax = df.total_bounds
+        # get bounding box of all or a selected city
+        if insee_code_city is not None:
+            selected_city_qs = City.objects.filter(insee_code=insee_code_city)
+            if not selected_city_qs.exists():
+                raise ValueError(f"No city found with INSEE code {insee_code_city}")
+            selected_city = load_geodataframe_from_db(
+                selected_city_qs, ["name", "insee_code"])
+            print(f"Selected city: {selected_city.iloc[0]['name']}")
+        else:
+            selected_city = load_geodataframe_from_db(City.objects.all(), ["name", "insee_code"])
+        xmin, ymin, xmax, ymax = selected_city.total_bounds
 
         tiles = []
+        latitude = (ymax + ymin / 2) # Approximate latitude of the tiles
+        grid_size_y = grid_size / math.cos(math.radians(latitude))  # SRID 3857 is centered on equator
 
-        y0 = ymin  # Start y0 at ymin
-        i = 0
+        for i, (x0, y0) in enumerate(tqdm(
+                itertools.product(
+                    np.arange(xmin, xmax + grid_size, grid_size),
+                    np.arange(ymin, ymax + grid_size_y, grid_size_y),
+                ))
+        ):
+            # Bounds
+            x1 = x0 - grid_size
+            y1 = y0 + grid_size_y
 
-        def generator():
-            while y0 < ymax:
-                yield
+            number_of_decimals = 2 # centimeter-level precision
+            x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
 
-        for _ in tqdm(generator()):
-            latitude = (y0 + y0) / 2  # Approximate latitude of the tile (in SRID 3857)
-            grid_size_y = grid_size / math.cos(math.radians(latitude)) # SRID 3857 is centered on equator
-            for x0 in np.arange(xmin, xmax, grid_size):
-                # Bounds
-                x1 = x0 - grid_size
-                y1 = y0 + grid_size_y
-
-                number_of_decimals = 2 # centimeter-level precision
-                x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
-
-                # Create tile with random indice from -5 to 5
-                tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
-                # Avoid OOM errors
-                if (i + 1) % batch_size == 0:
-                    Tile.objects.bulk_create(tiles, batch_size=batch_size)
-                    logger.info(f"Got {len(tiles)} tiles")
-                    tiles.clear()
-                    gc.collect()
-                i += 1
-            y0 = y0 + grid_size_y
+            # Create tile with random indice from -5 to 5
+            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
+            # Avoid OOM errors
+            if (i + 1) % batch_size == 0:
+                Tile.objects.bulk_create(tiles, batch_size=batch_size)
+                logger.info(f"Got {len(tiles)} tiles")
+                tiles.clear()
+                gc.collect()
         if tiles: # Save last batch
             Tile.objects.bulk_create(tiles, batch_size=batch_size)
