@@ -32,10 +32,42 @@ class Command(BaseCommand):
             help="The INSEE code of the city to process"
         )
 
+    def create_tiles_for_city(self, city, grid_size_x, logger, batch_size=int(1e6)):
+        """Create the tiles in the DB for a specific city"""
+        xmin, ymin, xmax, ymax = city.total_bounds
+
+        tiles = []
+        latitude = (ymax + ymin / 2) # Approximate latitude of the tiles
+        grid_size_y = grid_size_x / math.cos(math.radians(latitude))  # SRID 3857 is centered on equator
+
+        for i, (x0, y0) in enumerate(tqdm(
+                itertools.product(
+                    np.arange(xmin, xmax + grid_size_x, grid_size_x),
+                    np.arange(ymin, ymax + grid_size_y, grid_size_y),
+                ))
+        ):
+            # Bounds
+            x1 = x0 - grid_size_x
+            y1 = y0 + grid_size_y
+
+            number_of_decimals = 2 # centimeter-level precision
+            x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
+
+            # Create tile with random indice from -5 to 5
+            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
+            # Avoid OOM errors
+            if (i + 1) % batch_size == 0:
+                Tile.objects.bulk_create(tiles, batch_size=batch_size)
+                logger.info(f"Got {len(tiles)} tiles")
+                tiles.clear()
+                gc.collect()
+        if tiles: # Save last batch
+            Tile.objects.bulk_create(tiles, batch_size=batch_size)
+
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
         insee_code_city = options['insee_code_city']
-        grid_size = options["grid_size"]
+        grid_size_x = options["grid_size"]
 
         # Delete records if already exist
         total_records = Tile.objects.count()
@@ -57,32 +89,9 @@ class Command(BaseCommand):
             print(f"Selected city: {selected_city.iloc[0]['name']}")
         else:
             selected_city = load_geodataframe_from_db(City.objects.all(), ["name", "insee_code"])
-        xmin, ymin, xmax, ymax = selected_city.total_bounds
+        nb_city = len(selected_city)
+        for city in selected_city.itertuples():
+            print(f"Selected city: {city.name} (on {nb_city} city).")
+            self.create_tiles_for_city(city, grid_size_x, logger, int(1e6))
+            gc.collect()
 
-        tiles = []
-        latitude = (ymax + ymin / 2) # Approximate latitude of the tiles
-        grid_size_y = grid_size / math.cos(math.radians(latitude))  # SRID 3857 is centered on equator
-
-        for i, (x0, y0) in enumerate(tqdm(
-                itertools.product(
-                    np.arange(xmin, xmax + grid_size, grid_size),
-                    np.arange(ymin, ymax + grid_size_y, grid_size_y),
-                ))
-        ):
-            # Bounds
-            x1 = x0 - grid_size
-            y1 = y0 + grid_size_y
-
-            number_of_decimals = 2 # centimeter-level precision
-            x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
-
-            # Create tile with random indice from -5 to 5
-            tiles.append(Tile(geometry=Polygon.from_bbox([x0, y0, x1, y1]), indice=random.uniform(-5, 5)))
-            # Avoid OOM errors
-            if (i + 1) % batch_size == 0:
-                Tile.objects.bulk_create(tiles, batch_size=batch_size)
-                logger.info(f"Got {len(tiles)} tiles")
-                tiles.clear()
-                gc.collect()
-        if tiles: # Save last batch
-            Tile.objects.bulk_create(tiles, batch_size=batch_size)
