@@ -72,7 +72,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
 
     """
     for i in range(0, len(tiles_df), TILE_BATCH_SIZE):
-        batch = tiles_df.iloc[i: i + TILE_BATCH_SIZE]
+        batch = tiles_df.iloc[i : i + TILE_BATCH_SIZE]
         args = (factor_name, factor_df, batch, std_area)
 
         with multiprocessing.Pool(num_cpus) as pool:
@@ -86,37 +86,44 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         del tile_factors
         gc.collect()
 
+
 class Command(BaseCommand):
     help = "Compute and save factors data."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--insee_code_city',
+            "--insee_code_city",
             type=str,
             required=False,
             default=None,
-            help="The INSEE code of the city to process"
+            help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
         )
 
     def handle(self, *args, **options):
-        insee_code_city = options['insee_code_city']
+        insee_code_city = options["insee_code_city"]
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
 
-        if insee_code_city is not None: # Perform selection only for a city
-            selected_city_qs = City.objects.filter(insee_code=insee_code_city)
+        if insee_code_city is not None:  # Perform selection only for a city
+            insee_code_city = insee_code_city.split(",")
+            selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
             if not selected_city_qs.exists():
                 raise ValueError(f"No city found with INSEE code {insee_code_city}")
             selected_city = load_geodataframe_from_db(
-                selected_city_qs, ["name", "insee_code"])
+                selected_city_qs, ["name", "insee_code"]
+            )
         else:
-            selected_city = load_geodataframe_from_db(City.objects.all(), ["name", "insee_code"])
+            selected_city = load_geodataframe_from_db(
+                City.objects.all(), ["name", "insee_code"]
+            )
         nb_city = len(selected_city)
         for city in selected_city.itertuples():
             print(f"Selected city: {city.name} (on {nb_city} city).")
             city_geometry = city.geometry
-            tiles_queryset = Tile.objects.filter(geometry__intersects=GEOSGeometry(city_geometry.wkt))
+            tiles_queryset = Tile.objects.filter(
+                geometry__intersects=GEOSGeometry(city_geometry.wkt)
+            )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
                 compute_for_factor(factor_name, tiles_df, std_area)
