@@ -3,6 +3,7 @@ import itertools
 import logging
 import math
 import random
+import geopandas as gpd
 
 import numpy as np
 from django.contrib.gis.geos import Polygon
@@ -34,7 +35,7 @@ class Command(BaseCommand):
         xmin, ymin, xmax, ymax = city.total_bounds
 
         tiles = []
-        latitude = ymax + ymin / 2  # Approximate latitude of the tiles
+        latitude = (ymax + ymin) / 2  # Approximate latitude of the tiles
         grid_size_y = grid_size_x / math.cos(
             math.radians(latitude)
         )  # SRID 3857 is centered on equator
@@ -97,13 +98,14 @@ class Command(BaseCommand):
             selected_city = load_geodataframe_from_db(
                 selected_city_qs, ["name", "insee_code"]
             )
-            print(f"Selected city: {selected_city.iloc[0]['name']}")
         else:
             selected_city = load_geodataframe_from_db(
                 City.objects.all(), ["name", "insee_code"]
             )
         nb_city = len(selected_city)
-        for city in selected_city.itertuples():
-            print(f"Selected city: {city.name} (on {nb_city} city).")
+
+        for index, row in selected_city.iterrows():
+            city = gpd.GeoDataFrame([row], columns=selected_city.columns, crs=selected_city.crs)
+            print(f"Selected city: {city.name[0]} (on {nb_city} city).")
             self.create_tiles_for_city(city, grid_size_x, logger, int(1e6))
             gc.collect()

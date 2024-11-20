@@ -15,7 +15,7 @@ from iarbre_data.models import City, Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10000
 num_cpus = min(4, os.cpu_count() - 2)  # Limit parallel processes
-#TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
+TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
 
 def iterclip(surface, mask):
     """"https://github.com/geopandas/geopandas/issues/1803#issue-795619822"""
@@ -82,7 +82,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
     if not qs.exists():
         return
     factor_df = load_geodataframe_from_db(qs, [])
-
+    """
     # compute and store by batch of 10k tiles
     n_batches = len(tiles_df) // TILE_BATCH_SIZE + 1
     for batch in tqdm(
@@ -113,7 +113,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         del flat_tile_factors
         del tile_factors
         gc.collect()
-    """
+
 
 
 class Command(BaseCommand):
