@@ -4,6 +4,8 @@ import gc
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from tqdm import tqdm
+import geopandas as gpd
+import pandas as pd
 import multiprocessing
 
 from iarbre_data.data_config import FACTORS
@@ -13,8 +15,27 @@ from iarbre_data.models import Data, Tile, TileFactor, City
 
 TILE_BATCH_SIZE = 10000
 num_cpus = min(4, os.cpu_count() - 2)  # Limit parallel processes
-TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
+#TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
 
+def iterclip(surface, mask):
+    """"https://github.com/geopandas/geopandas/issues/1803#issue-795619822"""
+    tree = mask.sindex
+    features = []
+    for i, row in surface.iterrows():
+        geom = row.geometry
+        if geom is None:
+            continue
+        query = tree.query(geom, predicate='intersects')
+        if len(query) == 0:  # No intersections
+            continue
+        submask = mask.iloc[query]
+        single = gpd.GeoDataFrame([row], crs=surface.crs)
+        features.append(gpd.clip(single, submask))
+    if not features:
+        frame = gpd.GeoDataFrame(columns=['id', 'geometry'], geometry='geometry', crs=surface.crs)
+    else:
+        frame = gpd.GeoDataFrame(pd.concat(features, ignore_index=True), crs=surface.crs)
+    return frame
 
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
     """Compute and store the proportion of standard tile area occupied by a geographic factor.
@@ -25,8 +46,14 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
         std_area (float): Standard tile area in square meters (m²).
     """
-    df = tiles_df.clip(factor_df)
-    df["value"] = df.geometry.area / std_area
+    #df = tiles_df.clip(factor_df)
+    df = iterclip(surface=tiles_df, mask=factor_df)
+
+    try:
+        df["value"] = df.geometry.area / std_area
+    except Exception as e:
+        print(e)
+        breakpoint()
     tile_factors = [
         TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
         for row in df.itertuples()
@@ -55,20 +82,21 @@ def compute_for_factor(factor_name, tiles_df, std_area):
     if not qs.exists():
         return
     factor_df = load_geodataframe_from_db(qs, [])
-    """
-    # compute by batch of 10k tiles
+
+    # compute and store by batch of 10k tiles
     n_batches = len(tiles_df) // TILE_BATCH_SIZE + 1
     for batch in tqdm(
         range(0, len(tiles_df), TILE_BATCH_SIZE),
         desc=f"factor {factor_name}",
         total=n_batches,
     ):
-        _compute_for_factor_partial_tiles(
+        tile_factors = _compute_for_factor_partial_tiles(
             factor_name,
             factor_df,
             tiles_df.iloc[batch : batch + TILE_BATCH_SIZE],
             std_area,
         )
+        TileFactor.objects.bulk_create(tile_factors)
 
     """
     for i in range(0, len(tiles_df), TILE_BATCH_SIZE):
@@ -85,6 +113,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         del flat_tile_factors
         del tile_factors
         gc.collect()
+    """
 
 
 class Command(BaseCommand):
