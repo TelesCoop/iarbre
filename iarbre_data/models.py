@@ -12,6 +12,8 @@ class Tile(models.Model):
 
     type = ModelType.TILE.value
 
+    image = models.ImageField(upload_to='tile_images/', null=True, blank=True)
+
     @property
     def color(self):
         if self.indice is None:

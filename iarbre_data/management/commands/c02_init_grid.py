@@ -3,11 +3,13 @@ import itertools
 import logging
 import random
 import geopandas as gpd
+import requests
 
 import numpy as np
 from django.contrib.gis.geos import Polygon
 from django.core.management import BaseCommand
 from django.db import transaction
+from django.core.files.base import ContentFile
 from tqdm import tqdm
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
@@ -53,12 +55,21 @@ class Command(BaseCommand):
             )
 
             # Create tile with random indice from -5 to 5
-            tiles.append(
-                Tile(
+            tile =  Tile(
                     geometry=Polygon.from_bbox([x0, y0, x1, y1]),
                     indice=random.uniform(-5, 5),
                 )
-            )
+
+            # Add orthophotographic image
+            image_url = f"https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&transparent=true&WIDTH=700&HEIGHT=610&layers=metropole-de-lyon:ima_gestion_images.imaortho2022ecw5km5cmcc46&CRS=EPSG:2154&BBOX={x0},{y0},{x1},{y1}&FORMAT=image/png"
+
+            response = requests.get(image_url)
+
+            if response.status_code == 200:
+                filename = f"tile_image_{x0}_{y0}.png"
+                tile.image.save(filename, ContentFile(response.content))
+
+            tiles.append(tile)
             # Avoid OOM errors
             if (i + 1) % batch_size == 0:
                 Tile.objects.bulk_create(tiles, batch_size=batch_size)
