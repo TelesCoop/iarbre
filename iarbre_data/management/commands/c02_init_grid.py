@@ -1,7 +1,6 @@
 import gc
 import itertools
 import logging
-import math
 import random
 import geopandas as gpd
 
@@ -30,27 +29,23 @@ class Command(BaseCommand):
             help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
         )
 
-    def create_tiles_for_city(self, city, grid_size_x, logger, batch_size=int(1e6)):
+    def create_tiles_for_city(self, city, grid_size, logger, batch_size=int(1e6)):
         """Create the tiles in the DB for a specific city"""
         xmin, ymin, xmax, ymax = city.total_bounds
 
         tiles = []
-        latitude = (ymax + ymin) / 2  # Approximate latitude of the tiles
-        grid_size_y = grid_size_x / math.cos(
-            math.radians(latitude)
-        )  # SRID 3857 is centered on equator
 
         for i, (x0, y0) in enumerate(
             tqdm(
                 itertools.product(
-                    np.arange(xmin, xmax + grid_size_x, grid_size_x),
-                    np.arange(ymin, ymax + grid_size_y, grid_size_y),
+                    np.arange(xmin, xmax + grid_size, grid_size),
+                    np.arange(ymin, ymax + grid_size, grid_size),
                 )
             )
         ):
             # Bounds
-            x1 = x0 - grid_size_x
-            y1 = y0 + grid_size_y
+            x1 = x0 - grid_size
+            y1 = y0 + grid_size
 
             number_of_decimals = 2  # centimeter-level precision
             x0, y0, x1, y1 = map(
@@ -76,7 +71,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]
-        grid_size_x = options["grid_size"]
+        grid_size = options["grid_size"]
         # Delete records if already exist
         total_records = Tile.objects.count()
         batch_size = int(1e6)  # Depends on your RAM
@@ -107,5 +102,5 @@ class Command(BaseCommand):
         for index, row in selected_city.iterrows():
             city = gpd.GeoDataFrame([row], columns=selected_city.columns, crs=selected_city.crs)
             print(f"Selected city: {city.name[0]} (on {nb_city} city).")
-            self.create_tiles_for_city(city, grid_size_x, logger, int(1e6))
+            self.create_tiles_for_city(city, grid_size, logger, int(1e4))
             gc.collect()
