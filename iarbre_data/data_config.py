@@ -298,6 +298,13 @@ URL_FILES = [
         "scripts": ["voie_ferree.py"],
         "factors": ["Voies ferrées"],
     },
+    {
+        "name": "QPV",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.qpv_2024&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "ter_territoire.qpv_2024",
+        "scripts": [],
+        "factors" : ["QPV"],
+    }
 ]
 
 FACTORS = {
@@ -333,4 +340,5 @@ FACTORS = {
     "Rsx gaz": -3,
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
+    "QPV": 0,
 }

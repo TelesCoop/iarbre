@@ -37,7 +37,7 @@ def download_from_url(url, layer_name):
         crs=TARGET_PROJ,
     )
     content = requests.get(url, params=params, timeout=600).content
-    # save content to bytes io and open with gp.GeoDataFrame.from_features
+    # save content to bytes io and open with gp.GeoDataFrame.read_file
     io = BytesIO(content)
     return gpd.read_file(io)
 
