@@ -1,7 +1,7 @@
 import math
 import time
 
-import geobuf
+import mapbox_vector_tile
 import mercantile
 
 from django.http import HttpResponse
@@ -68,15 +68,7 @@ def territories_to_tile(Model, x, y, zoom):
         Model.type, instances, params
     )
     end_time_2 = time.time()
-    print(f"Time to format instances: {end_time_2 - end_time}")
-    # optimise encode
-    # vector_tile = mapbox_vector_tile.encode(
-    #     feature_collection,
-    #     quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]),
-    #     extents=256,
-    #     y_coord_down=True,
-    # )
 
-    tiles = geobuf.encode(feature_collection, quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]), extents=256, y_coord_down=True)
+    tiles = mapbox_vector_tile.encode(feature_collection, quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]), extents=256, y_coord_down=True)
     print(f"Time to encode vector tile: {time.time() - end_time_2}")
     return HttpResponse(tiles, content_type="application/x-protobuf")
