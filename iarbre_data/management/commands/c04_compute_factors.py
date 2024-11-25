@@ -1,13 +1,15 @@
 import gc
 import multiprocessing
 import os
+from functools import partial
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
 import geopandas as gpd
 import pandas as pd
-import multiprocessing
+
+import time
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
@@ -37,6 +39,12 @@ def iterclip(surface, mask):
         frame = gpd.GeoDataFrame(pd.concat(features, ignore_index=True), crs=surface.crs)
     return frame
 
+def calculate_intersection_length(tile, factor_df):
+    """Intersection length between a Polygon and a LineString"""
+    intersecting_lines = factor_df.geometry.apply(lambda line: tile.intersection(line))
+    intersecting_lines = intersecting_lines[intersecting_lines.type == "LineString"]
+    return sum(line.length for line in intersecting_lines), intersecting_lines
+
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
     """Compute and store the proportion of standard tile area occupied by a geographic factor.
     Args:
@@ -46,14 +54,30 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
         std_area (float): Standard tile area in square meters (m²).
     """
-    #df = tiles_df.clip(factor_df)
-    df = iterclip(surface=tiles_df, mask=factor_df)
 
-    try:
+    polygon_gdf = factor_df[factor_df.geometry.type.isin(["Polygon", "MultiPolygon", "Point"])]
+    # linestring_gdf = factor_df[factor_df.geometry.type.isin(["LineString", "MultiLineString"])]
+    if not polygon_gdf.empty:
+        print(f"Starting Polygons with {len(polygon_gdf)}")
+        t = time.perf_counter()
+        df = iterclip(surface=tiles_df, mask=polygon_gdf)
+        # df = tiles_df.clip(polygon_gdf)
         df["value"] = df.geometry.area / std_area
-    except Exception as e:
-        print(e)
-        breakpoint()
+        print(f"Polygons done in {time.perf_counter() - t}s.")
+    """
+    elif not linestring_gdf.empty: # For Line geometry
+        intersect = tiles_df.geometry.apply(lambda tile: linestring_gdf.geometry.intersects(tile).any())
+        df_lines = tiles_df[intersect]
+        df_lines["value"] = df_lines.geometry.apply(partial(calculate_intersection_length, factor_df=linestring_gdf))
+    if not polygon_gdf.empty and not linestring_gdf.empty:
+        df = pd.concat([df_polygons, df_lines], ignore_index=True)
+    elif not polygon_gdf.empty:
+        df = df_polygons
+    elif not linestring_gdf.empty:
+        df = df_lines
+    else:
+       raise TypeError("No valid geometry to process in factor_df.")
+    """
     tile_factors = [
         TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
         for row in df.itertuples()
@@ -82,7 +106,6 @@ def compute_for_factor(factor_name, tiles_df, std_area):
     if not qs.exists():
         return
     factor_df = load_geodataframe_from_db(qs, [])
-    """
     # compute and store by batch of 10k tiles
     n_batches = len(tiles_df) // TILE_BATCH_SIZE + 1
     for batch in tqdm(
@@ -113,7 +136,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         del flat_tile_factors
         del tile_factors
         gc.collect()
-
+    """
 
 
 class Command(BaseCommand):
@@ -154,6 +177,7 @@ class Command(BaseCommand):
                 geometry__intersects=GEOSGeometry(city_geometry.wkt)
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
+
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
                 compute_for_factor(factor_name, tiles_df, std_area)
             gc.collect()

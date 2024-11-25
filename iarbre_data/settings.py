@@ -146,5 +146,5 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Script variables
-TARGET_PROJ = 3857  # Pseudo-Mercator
+TARGET_PROJ = 2154  # Lambert
 BUFFER_SIZE = 2  # meters
