@@ -36,22 +36,18 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         std_area (float): Standard tile area in square meters (m²).
     """
 
-    polygon_gdf = factor_df[factor_df.geometry.type.isin(["Polygon", "MultiPolygon", "Point"])]
-    # linestring_gdf = factor_df[factor_df.geometry.type.isin(["LineString", "MultiLineString"])]
-    if not polygon_gdf.empty:
-        t = time.perf_counter()
-        # Filter polygons in the bounding box of the tiles
-        tiles_index = STRtree(tiles_df.geometry)
-        def has_intersection(geom):
-            if geom is None or geom.is_empty:
-                return False
-            bounding_box = box(*geom.bounds)
-            return any(tiles_index.query(bounding_box))
+    # Filter polygons in the bounding box of the tiles
+    tiles_index = STRtree(tiles_df.geometry)
+    def has_intersection(geom):
+        if geom is None or geom.is_empty:
+            return False
+        bounding_box = box(*geom.bounds)
+        return any(tiles_index.query(bounding_box))
 
-        idx_intersect = polygon_gdf.geometry.apply(has_intersection)
-        possible_matches = polygon_gdf[idx_intersect].copy()
-        df = tiles_df.clip(possible_matches)
-        df["value"] = df.geometry.area / std_area
+    idx_intersect = factor_df.geometry.apply(has_intersection)
+    possible_matches = factor_df[idx_intersect].copy()
+    df = tiles_df.clip(possible_matches)
+    df["value"] = df.geometry.area / std_area
     """
     elif not linestring_gdf.empty: # For Line geometry
         intersect = tiles_df.geometry.apply(lambda tile: linestring_gdf.geometry.intersects(tile).any())

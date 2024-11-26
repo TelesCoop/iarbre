@@ -295,6 +295,7 @@ URL_FILES = [
         "name": "Voies ferrées",
         "url": "https://download.data.grandlyon.com/wfs/grandlyon",
         "layer_name": "fpc_fond_plan_communaut.fpcvoieferree",
+        "actions": [{"buffer_size": 1, "union": True}],
         "scripts": ["voie_ferree.py"],
         "factors": ["Voies ferrées"],
     },
@@ -340,5 +341,5 @@ FACTORS = {
     "Rsx gaz": -3,
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
-    "QPV": 0,
+    "QPV": 1,
 }

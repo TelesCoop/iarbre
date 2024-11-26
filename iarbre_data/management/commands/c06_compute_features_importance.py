@@ -3,6 +3,9 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Tile, TileFactor
@@ -90,11 +93,22 @@ class Command(BaseCommand):
             # Factor importance on PC1
             factor_importance = pd.DataFrame({
                 "factor": X.columns,
-                "importance": pca.components_[0]  # PC1
+                "importance": np.abs(pca.components_[0])  # PC1
             })
 
             factor_importance = factor_importance.sort_values(by="importance", ascending=False)
 
             # Output the results
             print(factor_importance)
-            breakpoint()
+
+            plt.figure(figsize=(10, 8))
+            sns.barplot(x="importance", y="factor", data=factor_importance, palette="viridis")
+
+            # Add labels and title
+            plt.title("Feature Importance Based on PCA Decomposition", fontsize=14)
+            plt.xlabel("Importance", fontsize=12)
+            plt.ylabel("Factors", fontsize=12)
+
+            # Adjust layout
+            plt.tight_layout()
+            plt.show()
