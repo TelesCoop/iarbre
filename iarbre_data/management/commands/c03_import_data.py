@@ -79,11 +79,15 @@ def apply_actions(df, actions):
 def save_geometries(df: gpd.GeoDataFrame, data_config):
     df = df.to_crs(TARGET_PROJ)
     datas = []
-    actions_factors = zip(data_config.get("actions", [None]), data_config["factors"]) # Default actions to None
+    actions_factors = zip(
+        data_config.get("actions", [None]), data_config["factors"]
+    )  # Default actions to None
     for actions, factor in actions_factors:
         sub_df = apply_actions(df.copy(), actions) if actions else df.copy()
         sub_df = sub_df.explode(index_parts=False)
-        datas += [{"geometry": geometry, "factor": factor} for geometry in sub_df.geometry]
+        datas += [
+            {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
+        ]
     for ix, batch in enumerate(tqdm(batched(datas, 1000))):
         Data.objects.bulk_create(
             [

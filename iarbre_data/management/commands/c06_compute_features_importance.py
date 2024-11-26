@@ -45,17 +45,17 @@ class Command(BaseCommand):
             tiles_queryset = Tile.objects.filter(
                 geometry__intersects=GEOSGeometry(city_geometry.wkt)
             )
-            tile_data = load_geodataframe_from_db(tiles_queryset, ["id", "indice"]) # Get Tiles and indice values
-            tile_data = pd.DataFrame(tile_data.drop(columns='geometry'))
+            tile_data = load_geodataframe_from_db(
+                tiles_queryset, ["id", "indice"]
+            )  # Get Tiles and indice values
+            tile_data = pd.DataFrame(tile_data.drop(columns="geometry"))
             factor_queryset = TileFactor.objects.filter(
                 tile_id__in=tile_data.id
-            ) # Get factor values for these tiles
+            )  # Get factor values for these tiles
             fields = ["tile_id", "factor", "value"]
             factor_scores = pd.DataFrame(
                 [
-                    dict(
-                        **{field: getattr(data, field) for field in fields}
-                    )
+                    dict(**{field: getattr(data, field) for field in fields})
                     for data in factor_queryset
                 ]
             )
@@ -71,14 +71,11 @@ class Command(BaseCommand):
 
             # Use PCA to compute features importance (some factors may be correlated)
             # Pivot table to have columns corresponding to each factor
-            restructured_df = (
-                factor_scores.pivot_table(
-                    index="tile_id",  # Rows: unique tile IDs
-                    columns="factor",  # Columns: unique factors
-                    values="value"  # Values for the factor columns
-                )
-                .reset_index()  # Convert the tile_id index back to a column
-            )
+            restructured_df = factor_scores.pivot_table(
+                index="tile_id",  # Rows: unique tile IDs
+                columns="factor",  # Columns: unique factors
+                values="value",  # Values for the factor columns
+            ).reset_index()  # Convert the tile_id index back to a column
 
             restructured_df.fillna(0, inplace=True)
 
@@ -91,18 +88,21 @@ class Command(BaseCommand):
             pca.fit(X_scaled)
 
             # Factor importance on PC1
-            factor_importance = pd.DataFrame({
-                "factor": X.columns,
-                "importance": np.abs(pca.components_[0])  # PC1
-            })
+            factor_importance = pd.DataFrame(
+                {"factor": X.columns, "importance": np.abs(pca.components_[0])}  # PC1
+            )
 
-            factor_importance = factor_importance.sort_values(by="importance", ascending=False)
+            factor_importance = factor_importance.sort_values(
+                by="importance", ascending=False
+            )
 
             # Output the results
             print(factor_importance)
 
             plt.figure(figsize=(10, 8))
-            sns.barplot(x="importance", y="factor", data=factor_importance, palette="viridis")
+            sns.barplot(
+                x="importance", y="factor", data=factor_importance, palette="viridis"
+            )
 
             # Add labels and title
             plt.title("Feature Importance Based on PCA Decomposition", fontsize=14)

@@ -56,10 +56,10 @@ class Command(BaseCommand):
             )
 
             # Create tile with random indice from -5 to 5
-            tile =  Tile(
-                    geometry=Polygon.from_bbox([x0, y0, x1, y1]),
-                    indice=random.uniform(-5, 5),
-                )
+            tile = Tile(
+                geometry=Polygon.from_bbox([x0, y0, x1, y1]),
+                indice=random.uniform(-5, 5),
+            )
             tiles.append(tile)
             # Avoid OOM errors
             if (i + 1) % batch_size == 0:
@@ -102,7 +102,9 @@ class Command(BaseCommand):
         nb_city = len(selected_city)
 
         for index, row in selected_city.iterrows():
-            city = gpd.GeoDataFrame([row], columns=selected_city.columns, crs=selected_city.crs)
+            city = gpd.GeoDataFrame(
+                [row], columns=selected_city.columns, crs=selected_city.crs
+            )
             print(f"Selected city: {city.name[0]} (on {nb_city} city).")
             self.create_tiles_for_city(city, grid_size, logger, int(1e4))
             gc.collect()

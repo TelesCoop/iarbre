@@ -17,14 +17,14 @@ from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10000
-num_cpus = min(4, os.cpu_count() - 2)  # Limit parallel processes
-#TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
+
 
 def calculate_intersection_length(tile, factor_df):
     """Intersection length between a Polygon and a LineString"""
     intersecting_lines = factor_df.geometry.apply(lambda line: tile.intersection(line))
     intersecting_lines = intersecting_lines[intersecting_lines.type == "LineString"]
     return sum(line.length for line in intersecting_lines), intersecting_lines
+
 
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
     """Compute and store the proportion of standard tile area occupied by a geographic factor.
@@ -38,6 +38,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
 
     # Filter polygons in the bounding box of the tiles
     tiles_index = STRtree(tiles_df.geometry)
+
     def has_intersection(geom):
         if geom is None or geom.is_empty:
             return False
@@ -48,20 +49,6 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     possible_matches = factor_df[idx_intersect].copy()
     df = tiles_df.clip(possible_matches)
     df["value"] = df.geometry.area / std_area
-    """
-    elif not linestring_gdf.empty: # For Line geometry
-        intersect = tiles_df.geometry.apply(lambda tile: linestring_gdf.geometry.intersects(tile).any())
-        df_lines = tiles_df[intersect]
-        df_lines["value"] = df_lines.geometry.apply(partial(calculate_intersection_length, factor_df=linestring_gdf))
-    if not polygon_gdf.empty and not linestring_gdf.empty:
-        df = pd.concat([df_polygons, df_lines], ignore_index=True)
-    elif not polygon_gdf.empty:
-        df = df_polygons
-    elif not linestring_gdf.empty:
-        df = df_lines
-    else:
-       raise TypeError("No valid geometry to process in factor_df.")
-    """
     tile_factors = [
         TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
         for row in df.itertuples()
