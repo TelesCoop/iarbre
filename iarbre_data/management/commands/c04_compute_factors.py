@@ -7,7 +7,8 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
 import geopandas as gpd
-import pandas as pd
+from shapely.strtree import STRtree
+from shapely.geometry import box
 
 import time
 
@@ -17,27 +18,7 @@ from iarbre_data.models import City, Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10000
 num_cpus = min(4, os.cpu_count() - 2)  # Limit parallel processes
-TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
-
-def iterclip(surface, mask):
-    """"https://github.com/geopandas/geopandas/issues/1803#issue-795619822"""
-    tree = mask.sindex
-    features = []
-    for i, row in surface.iterrows():
-        geom = row.geometry
-        if geom is None:
-            continue
-        query = tree.query(geom, predicate='intersects')
-        if len(query) == 0:  # No intersections
-            continue
-        submask = mask.iloc[query]
-        single = gpd.GeoDataFrame([row], crs=surface.crs)
-        features.append(gpd.clip(single, submask))
-    if not features:
-        frame = gpd.GeoDataFrame(columns=['id', 'geometry'], geometry='geometry', crs=surface.crs)
-    else:
-        frame = gpd.GeoDataFrame(pd.concat(features, ignore_index=True), crs=surface.crs)
-    return frame
+#TILE_BATCH_SIZE = TILE_BATCH_SIZE // num_cpus
 
 def calculate_intersection_length(tile, factor_df):
     """Intersection length between a Polygon and a LineString"""
@@ -58,12 +39,19 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     polygon_gdf = factor_df[factor_df.geometry.type.isin(["Polygon", "MultiPolygon", "Point"])]
     # linestring_gdf = factor_df[factor_df.geometry.type.isin(["LineString", "MultiLineString"])]
     if not polygon_gdf.empty:
-        print(f"Starting Polygons with {len(polygon_gdf)}")
         t = time.perf_counter()
-        df = iterclip(surface=tiles_df, mask=polygon_gdf)
-        # df = tiles_df.clip(polygon_gdf)
+        # Filter polygons in the bounding box of the tiles
+        tiles_index = STRtree(tiles_df.geometry)
+        def has_intersection(geom):
+            if geom is None or geom.is_empty:
+                return False
+            bounding_box = box(*geom.bounds)
+            return any(tiles_index.query(bounding_box))
+
+        idx_intersect = polygon_gdf.geometry.apply(has_intersection)
+        possible_matches = polygon_gdf[idx_intersect].copy()
+        df = tiles_df.clip(possible_matches)
         df["value"] = df.geometry.area / std_area
-        print(f"Polygons done in {time.perf_counter() - t}s.")
     """
     elif not linestring_gdf.empty: # For Line geometry
         intersect = tiles_df.geometry.apply(lambda tile: linestring_gdf.geometry.intersects(tile).any())
@@ -177,7 +165,6 @@ class Command(BaseCommand):
                 geometry__intersects=GEOSGeometry(city_geometry.wkt)
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
-
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
                 compute_for_factor(factor_name, tiles_df, std_area)
             gc.collect()
