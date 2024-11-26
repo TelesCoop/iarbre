@@ -3,9 +3,16 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.inspection import permutation_importance
+from sklearn.model_selection import train_test_split
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import spearmanr
+from scipy.cluster import hierarchy
+from scipy.spatial.distance import squareform
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Tile, TileFactor
@@ -60,7 +67,7 @@ class Command(BaseCommand):
                 ]
             )
             factor_scores["indice"] = tile_data.indice
-
+            factor_scores.fillna(0, inplace=True)
             # Compute correlation between factor values and indice (explainability)
             grouped_corr = (
                 factor_scores.groupby("factor")
@@ -69,17 +76,17 @@ class Command(BaseCommand):
             )
             print(grouped_corr)
 
-            # Use PCA to compute features importance (some factors may be correlated)
+            # Use PCA to study maximum variance in the data
             # Pivot table to have columns corresponding to each factor
             restructured_df = factor_scores.pivot_table(
                 index="tile_id",  # Rows: unique tile IDs
                 columns="factor",  # Columns: unique factors
                 values="value",  # Values for the factor columns
             ).reset_index()  # Convert the tile_id index back to a column
-
             restructured_df.fillna(0, inplace=True)
+            y = tile_data[np.isin(tile_data['id'], restructured_df['tile_id'].values)].indice
+            X = restructured_df.drop(columns=["tile_id"])
 
-            X = restructured_df.drop(columns=["tile_id"])  # Features (factors)
 
             scaler = StandardScaler()
             X_scaled = scaler.fit_transform(X)
@@ -101,14 +108,97 @@ class Command(BaseCommand):
 
             plt.figure(figsize=(10, 8))
             sns.barplot(
-                x="importance", y="factor", data=factor_importance, palette="viridis"
+                x="importance", y="factor", data=factor_importance, hue='factor', palette="viridis"
             )
 
             # Add labels and title
-            plt.title("Feature Importance Based on PCA Decomposition", fontsize=14)
+            plt.title("Features with maximum variance", fontsize=14)
             plt.xlabel("Importance", fontsize=12)
             plt.ylabel("Factors", fontsize=12)
 
             # Adjust layout
             plt.tight_layout()
             plt.show()
+
+            # Explore collinearity of features
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
+            corr = spearmanr(X_scaled).correlation
+
+            # Ensure the correlation matrix is symmetric
+            corr = (corr + corr.T) / 2
+            np.fill_diagonal(corr, 1)
+
+            # We convert the correlation matrix to a distance matrix before performing
+            # hierarchical clustering using Ward's linkage.
+            distance_matrix = 1 - np.abs(corr)
+            dist_linkage = hierarchy.ward(squareform(distance_matrix))
+            dendro = hierarchy.dendrogram(
+                dist_linkage, labels=X.columns.to_list(), ax=ax1, leaf_rotation=90
+            )
+            dendro_idx = np.arange(0, len(dendro["ivl"]))
+
+            ax2.imshow(corr[dendro["leaves"], :][:, dendro["leaves"]])
+            ax2.set_xticks(dendro_idx)
+            ax2.set_yticks(dendro_idx)
+            ax2.set_xticklabels(dendro["ivl"], rotation="vertical")
+            ax2.set_yticklabels(dendro["ivl"])
+            fig.suptitle(
+                "Colinear features"
+            )
+            _ = fig.tight_layout()
+            plt.show()
+
+            # Feature importance to predict indice
+            # Based on RandomForest modeling
+            forest = RandomForestRegressor(random_state=42)
+            forest.fit(X, y)
+            importances = forest.feature_importances_
+            std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+            forest_importances = pd.DataFrame(
+                data={'feature': np.array(X.columns), 'importance': importances, 'std': std}
+            )
+
+            forest_importances.sort_values(by='importance', ascending=False, inplace=True)
+
+            plt.figure(figsize=(10, 6))
+            sns.barplot(
+                x="importance",
+                y="feature",
+                data=forest_importances,
+                hue="feature",
+                palette="viridis"
+            )
+            plt.title("Feature Importances using MDI", fontsize=16)
+            plt.xlabel("Mean Decrease in Impurity", fontsize=14)
+            plt.ylabel("Features", fontsize=14)
+            plt.tight_layout()
+            plt.show()
+
+            X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+            forest = RandomForestRegressor(random_state=42)
+            forest.fit(X_train, y_train)
+            result = permutation_importance(
+                forest, X_test, y_test, n_repeats=10, random_state=42, n_jobs=-1
+            )
+            forest_importances = pd.DataFrame(
+                data={'feature': np.array(X.columns), 'importance': result.importances_mean}
+            )
+
+            forest_importances.sort_values(by='importance', ascending=False, inplace=True)
+
+            plt.figure(figsize=(10, 6))
+            sns.barplot(
+                x="importance",
+                y="feature",
+                data=forest_importances,
+                hue="feature",
+                palette="viridis"
+            )
+            plt.title("Feature importances using permutation on full model (RandomForest regressor)", fontsize=16)
+            plt.xlabel("Mean accuracy decrease", fontsize=14)
+            plt.ylabel("Features", fontsize=14)
+            plt.tight_layout()
+            plt.show()
+
+
+
