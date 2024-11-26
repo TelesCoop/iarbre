@@ -48,26 +48,27 @@ def read_data(data_config):
     return gpd.read_file(DATA_DIR / data_config["file"])
 
 
-def apply_action(df, action):
-    if action.get("filter"):
-        df = df[df[action["filter"]["name"]] == action["filter"]["value"]]
-    if action.get("filters"):
+def apply_actions(df, actions):
+    """Apply a sequence of actions"""
+    if actions.get("filter"):
+        df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
+    if actions.get("filters"):
         df = df[
             reduce(
                 lambda x, y: x | y,
                 [
                     df[filter_["name"]] == filter_["value"]
-                    for filter_ in action["filters"]
+                    for filter_ in actions["filters"]
                 ],
             )
         ]
-    if action.get("explode"):
+    if actions.get("explode"):
         df = df.explode(index_parts=False)
-    if action.get("buffer_size"):
-        df = df.buffer(action["buffer_size"])
-    if action.get("simplify"):
-        df = df.simplify(action["simplify"])
-    if action.get("union"):
+    if actions.get("buffer_size"):
+        df = df.buffer(actions["buffer_size"])
+    if actions.get("simplify"):
+        df = df.simplify(actions["simplify"])
+    if actions.get("union"):
         if isinstance(df, gpd.GeoDataFrame):
             df = df["geometry"]
         geometry = unary_union(df)
@@ -78,18 +79,11 @@ def apply_action(df, action):
 def save_geometries(df: gpd.GeoDataFrame, data_config):
     df = df.to_crs(TARGET_PROJ)
     datas = []
-    for action, factor in zip(data_config.get("actions", []), data_config["factors"]):
-        sub_df = apply_action(df.copy(), action)
+    actions_factors = zip(data_config.get("actions", [None]), data_config["factors"]) # Default actions to None
+    for actions, factor in actions_factors:
+        sub_df = apply_actions(df.copy(), actions) if actions else df.copy()
         sub_df = sub_df.explode(index_parts=False)
-        datas += [
-            {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
-        ]
-    else:  # no actions were configured, save data as is
-        sub_df = df.copy().explode(index_parts=False)
-        factor = data_config["factors"][0]
-        datas += [
-            {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
-        ]
+        datas += [{"geometry": geometry, "factor": factor} for geometry in sub_df.geometry]
     for ix, batch in enumerate(tqdm(batched(datas, 1000))):
         Data.objects.bulk_create(
             [
