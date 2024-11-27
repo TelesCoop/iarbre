@@ -52,6 +52,7 @@ def apply_actions(df, actions):
     """Apply a sequence of actions"""
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
+
     if actions.get("filters"):
         df = df[
             reduce(
@@ -62,6 +63,11 @@ def apply_actions(df, actions):
                 ],
             )
         ]
+    if actions.get("exclude"):
+        if type(actions["exclude"]["value"]) == list:
+            df = df[~df[actions["exclude"]["name"]].isin(actions["exclude"]["value"])]
+        else:
+            df = df[df[actions["exclude"]["name"]] != actions["exclude"]["value"]]
     if actions.get("explode"):
         df = df.explode(index_parts=False)
     if actions.get("buffer_size"):
@@ -115,7 +121,8 @@ class Command(BaseCommand):
         for data_config in DATA_FILES + URL_FILES:
             if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
                 print(
-                    f"Data with metadata {data_config['name']} already exists ({qs.count()} rows). All deleted"
+                    f"Data with metadata {data_config['name']}"
+                    f"already exists ({qs.count()} rows). All deleted"
                 )
                 qs.delete()
             start = time.time()
