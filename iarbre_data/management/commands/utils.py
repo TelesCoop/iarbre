@@ -16,5 +16,7 @@ def load_geodataframe_from_db(queryset, fields):
             for data in queryset
         ]
     )
-    df.geometry = df["geometry"].apply(lambda el: shapely.wkt.loads(el.wkt))
+    df.geometry = df["geometry"].apply(
+        lambda el: shapely.wkt.loads(el.wkt)
+    )  # Shapely used to transform string to geometry
     return df.set_geometry("geometry")

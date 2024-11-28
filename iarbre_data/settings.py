@@ -96,8 +96,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "iarbre2",
-        "USER": "maxime",
-        "PASSWORD": "maxime",
+        "USER": "ludo",
+        "PASSWORD": "ludo",
         "HOST": "localhost",
         "PORT": "5432",
     }

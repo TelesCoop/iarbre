@@ -7,7 +7,7 @@ from api.constants import ModelType
 class Tile(models.Model):
     """Square area of the map with the value of the indice."""
 
-    geometry = PolygonField(srid=3857)
+    geometry = PolygonField(srid=2154)
     indice = models.FloatField(null=True)
 
     type = ModelType.TILE.value

@@ -18,6 +18,7 @@ def compute_indice():
     Tile.objects.bulk_update(
         [Tile(id=row.tile_id, indice=row.value) for row in df.itertuples()],
         ["indice"],
+        batch_size=10000,
     )
 
 

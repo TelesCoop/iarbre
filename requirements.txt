@@ -7,8 +7,10 @@ ipython==8.26.0
 jupyter==1.0.0
 mapbox_vector_tile==2.1.0
 mercantile==1.2.1
+numpy==2.0.1
 protobuf==5.28.2
 psycopg2==2.9.9
+scikit-learn==1.5.2
+seaborn==0.13.2
 shapely==2.0.5
 tqdm==4.66.5
-numpy==2.0.1

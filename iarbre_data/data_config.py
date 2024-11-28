@@ -1,12 +1,5 @@
 DATA_FILES = [
     {
-        "name": "Parkings surfacique",
-        "file": "parkingsurfacique.geojson",
-        "scripts": None,
-        "factors": ["Parkings"],
-        "output_type": "POLYGON",
-    },
-    {
         "name": "SLT",
         "file": "sltmateriel.geojson",
         "scripts": ["slt.py"],
@@ -14,26 +7,6 @@ DATA_FILES = [
             {"buffer_size": 2, "union": True},
         ],
         "factors": ["Signalisation tricolore et lumineuse matériel"],
-        "output_type": "POINT",
-    },
-    {
-        "name": "Stations velov",
-        "file": "station_velov.geojson",
-        "scripts": ["velov.py"],
-        "actions": [
-            {"buffer_size": 6, "union": True},
-        ],
-        "factors": ["Station velov"],
-        "output_type": "POINT",
-    },
-    {
-        "name": "Arrêts transport en",
-        "file": "pt_arret_tcl.geojson",
-        "scripts": ["transport.py"],
-        "actions": [
-            {"buffer_size": 2.5, "union": True},
-        ],
-        "factors": ["Arrêts transport en commun"],
         "output_type": "POINT",
     },
     {
@@ -45,13 +18,6 @@ DATA_FILES = [
             {"buffer_size": 2, "union": True},
         ],
         "factors": ["Bâtiments", "Proximité façade"],
-        "output_type": "POLYGON",
-    },
-    {
-        "name": "Friches",
-        "file": "cartofriches.geojson",
-        "scripts": None,
-        "factors": ["Friches"],
         "output_type": "POLYGON",
     },
     {
@@ -115,14 +81,6 @@ DATA_FILES = [
         "output_type": "LINESTRING",
     },
     {
-        "name": "Pistes cyclables",
-        "file": "pistes_cyclables.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "scripts": ["piste_cyclable.py"],
-        "factors": ["Pistes cyclable"],
-        "output_type": "LINESTRING",
-    },
-    {
         "name": "Plan eau",
         "file": "plan_deau.geojson",
         "actions": [{"explode": True, "buffer_size": 0.1, "union": True}],
@@ -137,14 +95,6 @@ DATA_FILES = [
         "scripts": ["pont.py"],
         "factors": ["Ponts"],
         "output_type": "POLYGON",
-    },
-    {
-        "name": "Réseau chaleur urbain",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "file": "rsx_chaleur.geojson",
-        "scripts": ["rsx_chaleur.py"],
-        "factors": ["Réseau de chaleur urbain"],
-        "output_type": "LINESTRING",
     },
     {
         "name": "EVA 2015",
@@ -228,30 +178,6 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "Tracé de métro",
-        "file": "lignemetro_funiculaire.geojson",
-        "actions": [{"buffer_size": 25, "union": True}],
-        "scripts": ["metro_funiculaire.py"],
-        "factors": ["Tracé de métro"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Tracé de tramway",
-        "file": "lignetram.geojson",
-        "actions": [{"buffer_size": 3.5, "union": True}],
-        "scripts": ["tram.py"],
-        "factors": ["Tracé de tramway"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Tracé de bus",
-        "file": "lignebus.geojson",
-        "actions": [{"buffer_size": 1.5, "union": True}],
-        "scripts": ["bus.py"],
-        "factors": ["Tracé de bus"],
-        "output_type": "LINESTRING",
-    },
-    {
         "name": "Réseaux gaz",
         "file": "rsx_gaz.geojson",
         "actions": [{"buffer_size": 2, "union": True}],
@@ -279,10 +205,35 @@ DATA_FILES = [
 URL_FILES = [
     {
         "name": "Arbres alignements Métropole",
-        "url": "https://data.grandlyon.com/jeux-de-donnees/arbres-alignements-metropole/download/?format=geojson&timezone=Europe/Berlin&lang=fr",
-        "layer_name": "metropole-de-lyon:abr_arbres_alignement.abrarbre",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:"
+        "abr_arbres_alignement.abrarbre&outputFormat=GML3&"
+        "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "abr_arbres_alignement.abrarbre",
         "scripts": ["arbre_souche.py", "arbre.py"],
+        "actions": [
+            {
+                "filters": [
+                    {
+                        "name": "genre",
+                        "value": "Emplacement libre",
+                    },
+                    {
+                        "name": "genre",
+                        "value": "Souche",
+                    },
+                ],
+                "buffer": 1,
+            },
+            {
+                "exclude": {"name": "genre", "value": ["Emplacement libre", "Souche"]},
+                "union": True,
+                "simplify": 1,
+            },
+        ],
         "factors": ["Souches ou emplacements libres", "Arbres"],
+        "output_type": "POINT",
     },
     {
         "name": "Marchés forains",
@@ -295,8 +246,137 @@ URL_FILES = [
         "name": "Voies ferrées",
         "url": "https://download.data.grandlyon.com/wfs/grandlyon",
         "layer_name": "fpc_fond_plan_communaut.fpcvoieferree",
+        "actions": [{"buffer_size": 1, "union": True}],
         "scripts": ["voie_ferree.py"],
         "factors": ["Voies ferrées"],
+    },
+    {
+        "name": "QPV",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:ter_territoire.qpv_2024"
+        "&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "ter_territoire.qpv_2024",
+        "scripts": [],
+        "factors": ["QPV"],
+    },
+    {
+        "name": "Velov",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:"
+        "pvo_patrimoine_voirie.pvostationvelov&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154"
+        "&startIndex=0&sortBy=gid",
+        "layer_name": "pvo_patrimoine_voirie.pvostationvelov",
+        "scripts": ["velov.py"],
+        "actions": [
+            {"buffer_size": 6, "union": True},
+        ],
+        "factors": ["Station velov"],
+        "output_type": "POINT",
+    },
+    {
+        "name": "Arrêts transport en",
+        "url": "https://data.grandlyon.com/geoserver/sytral/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature"
+        "&typename=sytral:tcl_sytral.tclarret&outputFormat=GML3"
+        "&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "tcl_sytral.tclarret",
+        "scripts": ["transport.py"],
+        "actions": [
+            {"buffer_size": 2.5, "union": True},
+        ],
+        "factors": ["Arrêts transport en commun"],
+        "output_type": "POINT",
+    },
+    {
+        "name": "Pistes cyclables",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:"
+        "pvo_patrimoine_voirie.pvoamenagementcyclable&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&"
+        "startIndex=0&sortBy=gid",
+        "layer_name": "pvo_patrimoine_voirie.pvoamenagementcyclable",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["piste_cyclable.py"],
+        "factors": ["Pistes cyclable"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Tracé de métro",
+        "url": "https://data.grandlyon.com/geoserver/sytral/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=sytral:tcl_sytral.tcllignemf_2_0_0&"
+        "outputFormat=GML3&"
+        "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "tcl_sytral.tcllignemf_2_0_0",
+        "actions": [{"buffer_size": 25, "union": True}],
+        "scripts": ["metro_funiculaire.py"],
+        "factors": ["Tracé de métro"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Tracé de tramway",
+        "url": "https://data.grandlyon.com/geoserver/sytral/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=sytral:tcl_sytral.tcllignetram_2_0_0&"
+        "outputFormat=GML3&"
+        "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "tcl_sytral.tcllignetram_2_0_0",
+        "actions": [{"buffer_size": 3.5, "union": True}],
+        "scripts": ["tram.py"],
+        "factors": ["Tracé de tramway"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Tracé de bus",
+        "url": "https://data.grandlyon.com/geoserver/sytral/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=sytral:tcl_sytral.tcllignebus_2_0_0&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&"
+        "startIndex=0&sortBy=gid",
+        "layer_name": "tcl_sytral.tcllignebus_2_0_0",
+        "actions": [{"buffer_size": 1.5, "union": True}],
+        "scripts": ["bus.py"],
+        "factors": ["Tracé de bus"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Friches",
+        "url": "https://apidf-preprod.cerema.fr/cartofriches/geofriches/"
+        "?coddep=%22%22&code_insee=%22%22&"
+        "in_bbox=4.665%2C%2045.566%2C%205.165%2C%2045.946",
+        "layer_name": "",
+        "type": "geojson",
+        "scripts": None,
+        "factors": ["Friches"],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "Réseau chaleur urbain",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:nrj_energie.rcu_canalisation&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "nrj_energie.rcu_canalisation",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["rsx_chaleur.py"],
+        "factors": ["Réseau de chaleur urbain"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Parkings surfacique",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoparking&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "pvo_patrimoine_voirie.pvoparking",
+        "actions": [{"filter": {"name": "situation", "value": "En surface"}}],
+        "scripts": None,
+        "factors": ["Parkings"],
+        "output_type": "POLYGON",
     },
 ]
 
@@ -333,4 +413,5 @@ FACTORS = {
     "Rsx gaz": -3,
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
+    "QPV": 1,
 }
