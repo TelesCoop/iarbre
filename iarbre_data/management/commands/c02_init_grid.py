@@ -1,4 +1,3 @@
-import gc
 import itertools
 import logging
 import random
@@ -101,6 +100,5 @@ class Command(BaseCommand):
             city = gpd.GeoDataFrame(
                 [row], columns=selected_city.columns, crs=selected_city.crs
             )
-            print(f"Selected city: {city.name[0]} (on {nb_city} city).")
+            print(f"Selected city: {city.name.iloc[0]} (on {nb_city} city).")
             self.create_tiles_for_city(city, grid_size, logger, int(1e4))
-            gc.collect()

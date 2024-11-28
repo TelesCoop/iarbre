@@ -48,7 +48,7 @@ def download_from_url(url, layer_name):
         gdf = gdf.to_crs(TARGET_PROJ)
     return gdf
 
-  
+
 def read_data(data_config):
     if data_config.get("url"):
         return download_from_url(data_config["url"], data_config["layer_name"])

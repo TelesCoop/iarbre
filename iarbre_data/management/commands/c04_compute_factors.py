@@ -1,5 +1,3 @@
-import gc
-
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
@@ -121,4 +119,3 @@ class Command(BaseCommand):
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
                 compute_for_factor(factor_name, tiles_df, std_area)
-            gc.collect()

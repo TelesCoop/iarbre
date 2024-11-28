@@ -71,7 +71,11 @@ def territories_to_tile(Model, x, y, zoom):
     )
     end_time_2 = time.time()
 
-
-    tiles = mapbox_vector_tile.encode(feature_collection, quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]), extents=256, y_coord_down=True)
+    tiles = mapbox_vector_tile.encode(
+        feature_collection,
+        quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]),
+        extents=256,
+        y_coord_down=True,
+    )
     print(f"Time to encode vector tile: {time.time() - end_time_2}")
     return HttpResponse(tiles, content_type="application/x-protobuf")
