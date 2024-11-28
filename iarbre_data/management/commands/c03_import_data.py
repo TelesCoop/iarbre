@@ -1,3 +1,4 @@
+import gc
 import time
 from functools import reduce
 from io import BytesIO
@@ -47,7 +48,7 @@ def download_from_url(url, layer_name):
         gdf = gdf.to_crs(TARGET_PROJ)
     return gdf
 
-
+  
 def read_data(data_config):
     if data_config.get("url"):
         return download_from_url(data_config["url"], data_config["layer_name"])
@@ -58,7 +59,6 @@ def apply_actions(df, actions):
     """Apply a sequence of actions"""
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
-
     if actions.get("filters"):
         df = df[
             reduce(
@@ -138,4 +138,6 @@ class Command(BaseCommand):
                 print(f"Error reading data {data_config['name']}")
                 continue
             save_geometries(df, data_config)
+            del df
+            gc.collect()
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")

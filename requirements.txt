@@ -1,7 +1,7 @@
 Django==5.1
 django-cors-headers==4.4.0
 django-extensions==3.2.3
-geobuf==1.1.1
+mapbox_vector_tile==2.1.0
 geopandas==1.0.1
 ipython==8.26.0
 jupyter==1.0.0
