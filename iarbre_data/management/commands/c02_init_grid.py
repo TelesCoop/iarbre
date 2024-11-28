@@ -61,7 +61,6 @@ class Command(BaseCommand):
                 Tile.objects.bulk_create(tiles, batch_size=batch_size)
                 logger.info(f"Got {len(tiles)} tiles")
                 tiles.clear()
-                gc.collect()
         if tiles:  # Save last batch
             Tile.objects.bulk_create(tiles, batch_size=batch_size)
 

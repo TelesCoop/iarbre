@@ -11,13 +11,6 @@ from iarbre_data.models import City, Data, Tile, TileFactor
 TILE_BATCH_SIZE = 10_000
 
 
-def calculate_intersection_length(tile, factor_df):
-    """Intersection length between a Polygon and a LineString"""
-    intersecting_lines = factor_df.geometry.apply(lambda line: tile.intersection(line))
-    intersecting_lines = intersecting_lines[intersecting_lines.type == "LineString"]
-    return sum(line.length for line in intersecting_lines), intersecting_lines
-
-
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
     """Compute and store the proportion of standard tile area occupied by a geographic factor.
     Args:
