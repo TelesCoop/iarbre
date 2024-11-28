@@ -10,3 +10,5 @@ file_data
 *.ipynb
 *.zip
 __pycache__
+data/
+static/

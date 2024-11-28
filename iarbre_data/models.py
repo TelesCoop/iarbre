@@ -7,7 +7,7 @@ from api.constants import ModelType
 class Tile(models.Model):
     """Square area of the map with the value of the indice."""
 
-    geometry = PolygonField(srid=3857)
+    geometry = PolygonField(srid=2154)
     indice = models.FloatField(null=True)
 
     type = ModelType.TILE.value
@@ -29,6 +29,13 @@ class Tile(models.Model):
             "indice": self.indice,
             "color": self.color,
         }
+
+
+@models.signals.pre_save.connect
+def before_save_tile(sender, instance, **kwargs):
+    # check if instance has attribute geometry for migration
+    if hasattr(instance, "geometry"):
+        instance.geom = instance.geometry.transform(4326, clone=True)
 
 
 class Data(models.Model):

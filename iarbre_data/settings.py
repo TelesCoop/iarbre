@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "iarbre_data",
     "django_extensions",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +57,9 @@ MIDDLEWARE = [
 ]
 
 if IS_LOCAL_DEV:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        ]
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOW_METHODS = [
         "DELETE",
@@ -138,7 +142,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "data/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -148,3 +152,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93
 BUFFER_SIZE = 2  # meters
+
+# https://docs.djangoproject.com/en/5.0/ref/settings/#staticfiles-dirs
+STATICFILES_DIRS = [BASE_DIR / "data"]
