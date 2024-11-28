@@ -96,8 +96,8 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "iarbre2",
-        "USER": "maxime",
-        "PASSWORD": "maxime",
+        "USER": "ludo",
+        "PASSWORD": "ludo",
         "HOST": "localhost",
         "PORT": "5432",
     }
@@ -146,5 +146,5 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Script variables
-TARGET_PROJ = 2154  # Lambert
+TARGET_PROJ = 2154  # Lambert 93
 BUFFER_SIZE = 2  # meters

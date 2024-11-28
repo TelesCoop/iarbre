@@ -1,22 +1,16 @@
 import gc
-import multiprocessing
-import os
-from functools import partial
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
-import geopandas as gpd
 from shapely.strtree import STRtree
 from shapely.geometry import box
-
-import time
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Data, Tile, TileFactor
 
-TILE_BATCH_SIZE = 10000
+TILE_BATCH_SIZE = 10_000
 
 
 def calculate_intersection_length(tile, factor_df):
@@ -56,12 +50,6 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     return tile_factors
 
 
-def process_batch(args):
-    """Helper func for multiprocessing"""
-    factor_name, factor_df, batch, std_area = args
-    return _compute_for_factor_partial_tiles(factor_name, factor_df, batch, std_area)
-
-
 def compute_for_factor(factor_name, tiles_df, std_area):
     """Compute and store factor coverage proportions for the provided tiles.
     Args:
@@ -91,23 +79,6 @@ def compute_for_factor(factor_name, tiles_df, std_area):
             std_area,
         )
         TileFactor.objects.bulk_create(tile_factors)
-
-    """
-    for i in range(0, len(tiles_df), TILE_BATCH_SIZE):
-        batch = tiles_df.iloc[i : i + TILE_BATCH_SIZE]
-        args = (factor_name, factor_df, batch, std_area)
-
-        with multiprocessing.Pool(num_cpus) as pool:
-            tile_factors = pool.map(process_batch, [args])
-
-        # Flatten the result if process_batch returns a list of lists
-        flat_tile_factors = [item for sublist in tile_factors for item in sublist]
-
-        TileFactor.objects.bulk_create(flat_tile_factors, batch_size=1000)
-        del flat_tile_factors
-        del tile_factors
-        gc.collect()
-    """
 
 
 class Command(BaseCommand):

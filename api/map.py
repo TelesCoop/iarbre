@@ -7,6 +7,7 @@ import mercantile
 from django.http import HttpResponse
 from django.contrib.gis.geos import Polygon
 
+
 def pixel_length(zoom):
     RADIUS = 6378137
     CIRCUM = 2 * math.pi * RADIUS
@@ -43,6 +44,7 @@ def serialize_to_geojson_feature(instance, params):
         "properties": instance.get_layer_properties(),
     }
 
+
 def format_to_geojson_feature_collection(name, instances, params):
     return {
         "name": name,
@@ -52,6 +54,7 @@ def format_to_geojson_feature_collection(name, instances, params):
         ],
     }
 
+
 def territories_to_tile(Model, x, y, zoom):
     bbox = get_bbox(x, y, zoom)
     start_time = time.time()
@@ -60,7 +63,6 @@ def territories_to_tile(Model, x, y, zoom):
     print(f"Time to get instances: {end_time - start_time}")
     if len(instances):
         print(len(instances))
-
 
     params = {"pixel": pixel_length(zoom)}
 
@@ -77,6 +79,11 @@ def territories_to_tile(Model, x, y, zoom):
     #     y_coord_down=True,
     # )
 
-    tiles = geobuf.encode(feature_collection, quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]), extents=256, y_coord_down=True)
+    tiles = geobuf.encode(
+        feature_collection,
+        quantize_bounds=(bbox["west"], bbox["south"], bbox["east"], bbox["north"]),
+        extents=256,
+        y_coord_down=True,
+    )
     print(f"Time to encode vector tile: {time.time() - end_time_2}")
     return HttpResponse(tiles, content_type="application/x-protobuf")

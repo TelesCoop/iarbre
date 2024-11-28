@@ -3,16 +3,12 @@ import itertools
 import logging
 import random
 import geopandas as gpd
-import requests
 
 import numpy as np
 from django.contrib.gis.geos import Polygon
 from django.core.management import BaseCommand
 from django.db import transaction
-from django.core.files.base import ContentFile
 from tqdm import tqdm
-from PIL import Image
-from io import BytesIO
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Tile

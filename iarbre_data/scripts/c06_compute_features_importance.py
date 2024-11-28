@@ -84,9 +84,10 @@ class Command(BaseCommand):
                 values="value",  # Values for the factor columns
             ).reset_index()  # Convert the tile_id index back to a column
             restructured_df.fillna(0, inplace=True)
-            y = tile_data[np.isin(tile_data['id'], restructured_df['tile_id'].values)].indice
+            y = tile_data[
+                np.isin(tile_data["id"], restructured_df["tile_id"].values)
+            ].indice
             X = restructured_df.drop(columns=["tile_id"])
-
 
             scaler = StandardScaler()
             X_scaled = scaler.fit_transform(X)
@@ -108,7 +109,11 @@ class Command(BaseCommand):
 
             plt.figure(figsize=(10, 8))
             sns.barplot(
-                x="importance", y="factor", data=factor_importance, hue='factor', palette="viridis"
+                x="importance",
+                y="factor",
+                data=factor_importance,
+                hue="factor",
+                palette="viridis",
             )
 
             # Add labels and title
@@ -142,9 +147,7 @@ class Command(BaseCommand):
             ax2.set_yticks(dendro_idx)
             ax2.set_xticklabels(dendro["ivl"], rotation="vertical")
             ax2.set_yticklabels(dendro["ivl"])
-            fig.suptitle(
-                "Colinear features"
-            )
+            fig.suptitle("Colinear features")
             _ = fig.tight_layout()
             plt.show()
 
@@ -153,12 +156,20 @@ class Command(BaseCommand):
             forest = RandomForestRegressor(random_state=42)
             forest.fit(X, y)
             importances = forest.feature_importances_
-            std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+            std = np.std(
+                [tree.feature_importances_ for tree in forest.estimators_], axis=0
+            )
             forest_importances = pd.DataFrame(
-                data={'feature': np.array(X.columns), 'importance': importances, 'std': std}
+                data={
+                    "feature": np.array(X.columns),
+                    "importance": importances,
+                    "std": std,
+                }
             )
 
-            forest_importances.sort_values(by='importance', ascending=False, inplace=True)
+            forest_importances.sort_values(
+                by="importance", ascending=False, inplace=True
+            )
 
             plt.figure(figsize=(10, 6))
             sns.barplot(
@@ -166,7 +177,7 @@ class Command(BaseCommand):
                 y="feature",
                 data=forest_importances,
                 hue="feature",
-                palette="viridis"
+                palette="viridis",
             )
             plt.title("Feature Importances using MDI", fontsize=16)
             plt.xlabel("Mean Decrease in Impurity", fontsize=14)
@@ -181,10 +192,15 @@ class Command(BaseCommand):
                 forest, X_test, y_test, n_repeats=10, random_state=42, n_jobs=-1
             )
             forest_importances = pd.DataFrame(
-                data={'feature': np.array(X.columns), 'importance': result.importances_mean}
+                data={
+                    "feature": np.array(X.columns),
+                    "importance": result.importances_mean,
+                }
             )
 
-            forest_importances.sort_values(by='importance', ascending=False, inplace=True)
+            forest_importances.sort_values(
+                by="importance", ascending=False, inplace=True
+            )
 
             plt.figure(figsize=(10, 6))
             sns.barplot(
@@ -192,13 +208,13 @@ class Command(BaseCommand):
                 y="feature",
                 data=forest_importances,
                 hue="feature",
-                palette="viridis"
+                palette="viridis",
             )
-            plt.title("Feature importances using permutation on full model (RandomForest regressor)", fontsize=16)
+            plt.title(
+                "Feature importances using permutation on full model (RandomForest regressor)",
+                fontsize=16,
+            )
             plt.xlabel("Mean accuracy decrease", fontsize=14)
             plt.ylabel("Features", fontsize=14)
             plt.tight_layout()
             plt.show()
-
-
-

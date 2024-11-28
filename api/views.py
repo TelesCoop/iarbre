@@ -1,7 +1,5 @@
 import time
-from linecache import cache
 
-from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from api.constants import ModelType
@@ -11,6 +9,7 @@ from iarbre_data.models import Tile
 MODEL_BY_TYPE = {
     ModelType.TILE.value: Tile,
 }
+
 
 @require_GET
 # @cache_page(60 * 60 * 24)

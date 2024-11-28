@@ -1,4 +1,3 @@
-import gc
 import time
 from functools import reduce
 from io import BytesIO
@@ -28,18 +27,25 @@ def batched(iterable, n):
 
 
 def download_from_url(url, layer_name):
-    params = dict(
-        service="WFS",
-        version="2.0.0",
-        request="GetFeature",
-        typeName=layer_name,
-        outputFormat="GML3",
-        crs=TARGET_PROJ,
-    )
-    content = requests.get(url, params=params, timeout=600).content
-    # save content to bytes io and open with gp.GeoDataFrame.read_file
-    io = BytesIO(content)
-    return gpd.read_file(io)
+    if "wfs" in url.lower():
+        params = dict(
+            service="WFS",
+            version="2.0.0",
+            request="GetFeature",
+            typeName=layer_name,
+            outputFormat="GML3",
+            crs=TARGET_PROJ,
+        )
+        content = requests.get(url, params=params, timeout=600).content
+        # save content to bytes io and open with gp.GeoDataFrame.read_file
+        io = BytesIO(content)
+        gdf = gpd.read_file(io)
+    else:  # GeoJSON
+        content = requests.get(url, timeout=600).content
+        io = BytesIO(content)
+        gdf = gpd.read_file(io)
+        gdf = gdf.to_crs(TARGET_PROJ)
+    return gdf
 
 
 def read_data(data_config):
@@ -132,6 +138,4 @@ class Command(BaseCommand):
                 print(f"Error reading data {data_config['name']}")
                 continue
             save_geometries(df, data_config)
-            del df
-            gc.collect()
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")
