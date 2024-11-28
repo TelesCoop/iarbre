@@ -1,0 +1,111 @@
+exclude: ^(.*\/migrations|.*package.json|.*package-lock.json|Pipfile*)
+repos:
+- hooks:
+  - id: check-added-large-files
+  - id: check-merge-conflict
+  - id: forbid-new-submodules
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - id: check-byte-order-marker
+  - id: check-case-conflict
+  - id: check-executables-have-shebangs
+  - id: check-symlinks
+  - id: check-vcs-permalinks
+  - id: detect-private-key
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - id: forbid-crlf
+  - id: remove-crlf
+  - id: forbid-tabs
+  - id: remove-tabs
+  repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.1.9
+- hooks:
+  - id: check-json
+  - args:
+    - --autofix
+    id: pretty-format-json
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - id: check-ast
+    language_version: python3.10
+  - id: check-builtin-literals
+    language_version: python3.10
+  - id: check-docstring-first
+    language_version: python3.10
+  - id: debug-statements
+    language_version: python3.10
+  - args:
+    - --remove
+    id: fix-encoding-pragma
+  - id: requirements-txt-fixer
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - id: pyupgrade
+  repo: https://github.com/asottile/pyupgrade
+  rev: v2.7.2
+- hooks:
+  - id: black
+    language_version: python3.10
+  repo: https://github.com/psf/black
+  rev: 23.12.1
+- hooks:
+  - args:
+    - --config=.flake8
+    id: flake8
+    language_version: python3.10
+  repo: https://github.com/pycqa/flake8
+  rev: 3.8.3
+- hooks:
+  - id: python-safety-dependencies-check
+  repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+  rev: v1.3.0
+- hooks:
+  - id: beautysh
+  repo: https://github.com/bemeurer/beautysh.git
+  rev: 6.0.1
+- hooks:
+  - id: script-must-have-extension
+  repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: 2.1.4
+- hooks:
+  - id: check-xml
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - args:
+    - '-d {rules: {line-length: {max: 999}}}'
+    id: yamllint
+  repo: https://github.com/adrienverge/yamllint.git
+  rev: v1.24.2
+- hooks:
+  - id: check-yaml
+  - id: sort-simple-yaml
+  repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v3.2.0
+- hooks:
+  - id: gitlab-ci-linter
+  repo: https://gitlab.com/devopshq/gitlab-ci-linter
+  rev: v1.0.1
+- repo: local
+  hooks:
+  - id: django-test
+    name: django-test
+    entry: python manage.py test --no-input'
+    always_run: true
+    pass_filenames: false
+    language: system
+- repo: local
+  hooks:
+    - id: check-django-migrations
+      name: Check django migrations
+      entry: python3 manage.py makemigrations --dry-run --check'
+      language: system
+      types: [python] # hook only runs if a python file is staged
+      pass_filenames: false
