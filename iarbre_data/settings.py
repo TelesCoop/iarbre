@@ -120,9 +120,9 @@ WSGI_APPLICATION = "iarbre_data.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "iarbre2",
-        "USER": "ludo",
-        "PASSWORD": "ludo",
+        "NAME": config.getstr("database.name"),
+        "USER": config.getstr("database.user"),
+        "PASSWORD": config.getstr("database.password"),
         "HOST": "localhost",
         "PORT": "5432",
     }
