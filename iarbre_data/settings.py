@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "iarbre_data",
     "django_extensions",
+    "telescoop_backup",
 ]
 
 MIDDLEWARE = [
