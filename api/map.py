@@ -3,6 +3,7 @@ import time
 
 import mapbox_vector_tile
 import mercantile
+from django.contrib.gis.gdal import SpatialReference, Point, CoordTransform
 
 from django.http import HttpResponse
 from django.contrib.gis.geos import Polygon
@@ -24,15 +25,39 @@ def filter_instances_by_bounds(Model, bbox, zoom):
             bbox["north"],
         )
     )
-    # Need to have a geometry field in the model with srid=3857
     return Model.objects.filter(geometry__intersects=bbox_with_buffer)
+
+def convert_bounding_box_to_wanted_srid(
+        bbox, current_srid, wanted_srid
+):
+    source_srs = SpatialReference(current_srid)  # WGS 84
+    target_srs = SpatialReference(wanted_srid)  # NAD83 / Conus Albers
+
+    coord_transform = CoordTransform(source_srs, target_srs)
+
+    sw_point = Point(bbox["west"], bbox["south"], srid=current_srid)
+    ne_point = Point(bbox["east"], bbox["north"], srid=current_srid)
+
+    sw_point.transform(coord_transform)
+    ne_point.transform(coord_transform)
+
+    return {
+        "west": sw_point.x,
+        "south": sw_point.y,
+        "east": ne_point.x,
+        "north": ne_point.y,
+    }
 
 
 def get_bbox(x, y, zoom):
     bounds = mercantile.bounds(int(x), int(y), int(zoom))
     west, south = mercantile.xy(bounds.west, bounds.south)
     east, north = mercantile.xy(bounds.east, bounds.north)
-    return {"west": west, "south": south, "east": east, "north": north}
+
+    bbox = {"west": west, "south": south, "east": east, "north": north}
+    return convert_bounding_box_to_wanted_srid(
+        bbox, 3857, 2154
+    )
 
 
 def serialize_to_geojson_feature(instance, params):
