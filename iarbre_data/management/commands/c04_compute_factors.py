@@ -50,7 +50,8 @@ def compute_for_factor(factor_name, tiles_df, std_area):
     Notes:
         - Standard area is calculated from the first Tile object in database (all tiles have the same area).
     """
-    TileFactor.objects.filter(factor=factor_name).delete()  # remove former factors
+    # In case they already exist, remove factors only for the tiles within the current batch
+    TileFactor.objects.filter(factor=factor_name, tile_id__in=tiles_df["id"]).delete()
 
     qs = Data.objects.filter(factor=factor_name)
     if not qs.exists():

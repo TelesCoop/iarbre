@@ -15,7 +15,7 @@ DATA_FILES = [
         "scripts": ["batiment.py", "facade.py"],
         "actions": [
             {},
-            {"buffer_size": 2, "union": True},
+            {"buffer_size": 2, "union": True, "simplify": 1},
         ],
         "factors": ["Bâtiments", "Proximité façade"],
         "output_type": "POLYGON",
