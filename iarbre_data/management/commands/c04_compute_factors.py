@@ -1,4 +1,4 @@
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.core.management import BaseCommand
 from tqdm import tqdm
 from shapely.strtree import STRtree
@@ -106,9 +106,12 @@ class Command(BaseCommand):
         nb_city = len(selected_city)
         for city in selected_city.itertuples():
             print(f"Selected city: {city.name} (on {nb_city} city).")
-            city_geometry = city.geometry
+            city_bounds = city.geometry.bounds
+            # Build polygon of the city that follow the grid
+            xmin, ymin, xmax, ymax = (5 * ((city_bounds[i] + (5 if i > 1 else 0)) // 5) for i in range(4))
+            expanded_bbox = Polygon.from_bbox((xmin, ymin, xmax, ymax))
             tiles_queryset = Tile.objects.filter(
-                geometry__intersects=GEOSGeometry(city_geometry.wkt)
+                geometry__intersects=GEOSGeometry(expanded_bbox.wkt)
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
