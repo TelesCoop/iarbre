@@ -10,3 +10,8 @@ file_data
 *.ipynb
 *.zip
 __pycache__
+
+local_settings.ini
+local_settings.conf
+.telescoop_backup_last_backup
+dump.sql

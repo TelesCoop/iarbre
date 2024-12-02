@@ -10,18 +10,34 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
+import getconf
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "file_data"
 
+IS_LOCAL_DEV = bool(os.environ.get("TELESCOOP_DEV"))
+DEBUG = IS_LOCAL_DEV
+IS_TESTING = "test" in sys.argv
+
+if IS_LOCAL_DEV:
+    config_paths = ["local_settings.conf", "local_settings.ini"]
+else:
+    config_paths = [os.environ["CONFIG_PATH"]]
+config = getconf.ConfigGetter("myproj", config_paths)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-@3rjfjbnt85l*c$)j)c55w-!%0ez(v9vu4e=%d@@)pvljpwg)n"
+if IS_LOCAL_DEV:
+    SECRET_KEY = "django-insecure-@3rjfjbnt85l*c$)j)c55w-!%0ez(v9vu4e=%d@@)pvljpwg)n"
+    ALLOWED_HOSTS = ["*"]
+else:
+    SECRET_KEY = config.getstr("security.secret_key")
+    ALLOWED_HOSTS = config.getlist("security.allowed_hosts")
 
 IS_LOCAL_DEV = bool(os.environ.get("TELESCOOP_DEV"))
 
@@ -43,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "iarbre_data",
     "django_extensions",
+    "telescoop_backup",
 ]
 
 MIDDLEWARE = [
@@ -68,6 +85,15 @@ if IS_LOCAL_DEV:
     INSTALLED_APPS.append("corsheaders")
     MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
 
+else:
+    ROLLBAR = {
+        "access_token": config.getstr("bugs.rollbar_access_token"),
+        "environment": "development"
+        if DEBUG
+        else config.getstr("environment.environment", "production"),
+        "root": BASE_DIR,
+    }
+    MIDDLEWARE.append("rollbar.contrib.django.middleware.RollbarNotifierMiddleware")
 ROOT_URLCONF = "iarbre_data.urls"
 
 TEMPLATES = [
@@ -95,9 +121,9 @@ WSGI_APPLICATION = "iarbre_data.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "iarbre2",
-        "USER": "ludo",
-        "PASSWORD": "ludo",
+        "NAME": config.getstr("database.name"),
+        "USER": config.getstr("database.user"),
+        "PASSWORD": config.getstr("database.password"),
         "HOST": "localhost",
         "PORT": "5432",
     }
@@ -148,3 +174,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93
 BUFFER_SIZE = 2  # meters
+
+# telescoop-backup
+BACKUP_ACCESS = config.getstr("backup.backup_access", None)  # S3 ACCESS
+BACKUP_SECRET = config.getstr("backup.backup_secret", None)  # S3 SECRET KEY
+BACKUP_BUCKET = config.getstr("backup.backup_bucket", None)  # S3 Bucket
+BACKUP_HOST = config.getstr("backup.backup_host", None)
