@@ -31,6 +31,11 @@ class Command(BaseCommand):
     def create_tiles_for_city(self, city, grid_size, logger, batch_size=int(1e6)):
         """Create the tiles in the DB for a specific city"""
         xmin, ymin, xmax, ymax = city.total_bounds
+        # Snap bounds to the nearest grid alignment so that all grids are aligned
+        xmin = np.floor(xmin / grid_size) * grid_size
+        ymin = np.floor(ymin / grid_size) * grid_size
+        xmax = np.ceil(xmax / grid_size) * grid_size
+        ymax = np.ceil(ymax / grid_size) * grid_size
 
         tiles = []
         for i, (x0, y0) in enumerate(

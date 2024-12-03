@@ -11,7 +11,7 @@ DATA_FILES = [
     },
     {
         "name": "Batiments",
-        "file": "batiments_geom.shp",
+        "file": "batiments_2024.shp",
         "scripts": ["batiment.py", "facade.py"],
         "actions": [
             {},
