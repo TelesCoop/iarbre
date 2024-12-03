@@ -1,10 +1,10 @@
-import gc
 import time
 from functools import reduce
 from io import BytesIO
 from itertools import islice
 
 import geopandas as gpd
+import numpy as np
 import pyogrio
 import requests
 from django.contrib.gis.geos import GEOSGeometry
@@ -78,6 +78,9 @@ def apply_actions(df, actions):
         df = df.explode(index_parts=False)
     if actions.get("buffer_size"):
         df = df.buffer(actions["buffer_size"])
+    if actions.get("buffer"):
+        buffer_distances = df[actions["buffer"]["distance_column"]]
+        df = df.buffer(buffer_distances)
     if actions.get("simplify"):
         df = df.simplify(actions["simplify"])
     if actions.get("union"):
@@ -94,9 +97,14 @@ def save_geometries(df: gpd.GeoDataFrame, data_config):
     actions_factors = zip(
         data_config.get("actions", [None]), data_config["factors"]
     )  # Default actions to None
+
     for actions, factor in actions_factors:
         sub_df = apply_actions(df.copy(), actions) if actions else df.copy()
         sub_df = sub_df.explode(index_parts=False)
+        sub_df = sub_df[sub_df.geometry.type != "Point"]
+        if len(sub_df) == 0:
+            print(f"Factor: {factor} only contained Points")
+            continue
         datas += [
             {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
         ]
@@ -128,7 +136,7 @@ class Command(BaseCommand):
             if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
                 print(
                     f"Data with metadata {data_config['name']}"
-                    f"already exists ({qs.count()} rows). All deleted"
+                    f" already exists ({qs.count()} rows). All deleted"
                 )
                 qs.delete()
             start = time.time()
@@ -138,6 +146,4 @@ class Command(BaseCommand):
                 print(f"Error reading data {data_config['name']}")
                 continue
             save_geometries(df, data_config)
-            del df
-            gc.collect()
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")

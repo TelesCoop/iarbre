@@ -1,3 +1,5 @@
+from ipykernel.pickleutil import buffer
+
 DATA_FILES = [
     {
         "name": "SLT",
@@ -14,8 +16,8 @@ DATA_FILES = [
         "file": "batiments_2024.shp",
         "scripts": ["batiment.py", "facade.py"],
         "actions": [
-            {},
-            {"buffer_size": 2, "union": True, "simplify": 1},
+            {"buffer_size": 0},
+            {"buffer_size": 2, "union": True},
         ],
         "factors": ["Bâtiments", "Proximité façade"],
         "output_type": "POLYGON",
@@ -373,7 +375,12 @@ URL_FILES = [
         "typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoparking&"
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "layer_name": "pvo_patrimoine_voirie.pvoparking",
-        "actions": [{"filter": {"name": "situation", "value": "En surface"}}],
+        "actions": [
+            {
+                "filter": {"name": "situation", "value": "En surface"},
+                "buffer": {"distance_column": "capacite"},
+            }
+        ],
         "scripts": None,
         "factors": ["Parkings"],
         "output_type": "POLYGON",
