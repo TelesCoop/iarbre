@@ -180,3 +180,6 @@ BACKUP_ACCESS = config.getstr("backup.backup_access", None)  # S3 ACCESS
 BACKUP_SECRET = config.getstr("backup.backup_secret", None)  # S3 SECRET KEY
 BACKUP_BUCKET = config.getstr("backup.backup_bucket", None)  # S3 Bucket
 BACKUP_HOST = config.getstr("backup.backup_host", None)
+
+BACKUP_COMPRESS = config.getstr("backup.backup_compress", None) == "True"
+BACKUP_RECOVER_N_WORKERS = config.getstr("backup.backup_recovery_n_workers", 1)
