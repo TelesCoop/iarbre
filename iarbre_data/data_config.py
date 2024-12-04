@@ -16,7 +16,7 @@ DATA_FILES = [
         "file": "batiments_2024.shp",
         "scripts": ["batiment.py", "facade.py"],
         "actions": [
-            {"buffer_size": 0},
+            {},
             {"buffer_size": 2, "union": True},
         ],
         "factors": ["Bâtiments", "Proximité façade"],

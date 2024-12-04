@@ -182,4 +182,4 @@ BACKUP_BUCKET = config.getstr("backup.backup_bucket", None)  # S3 Bucket
 BACKUP_HOST = config.getstr("backup.backup_host", None)
 
 BACKUP_COMPRESS = config.getstr("backup.backup_compress", None) == "True"
-BACKUP_RECOVER_N_WORKERS = config.getstr("backup.backup_recovery_n_workers", 1)
+BACKUP_RECOVER_N_WORKERS = config.getint("backup.backup_recovery_n_workers", 1)
