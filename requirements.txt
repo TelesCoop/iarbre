@@ -14,5 +14,5 @@ rollbar==1.1.0
 scikit-learn==1.5.2
 seaborn==0.13.2
 shapely==2.0.5
-telescoop_backup==0.3.0
+telescoop_backup==0.3.2
 tqdm==4.66.5
