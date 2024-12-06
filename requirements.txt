@@ -3,6 +3,7 @@ django-cors-headers==4.4.0
 django-extensions==3.2.3
 geopandas==1.0.1
 getconf==1.11.1
+gunicorn==23.0.0
 ipython==8.26.0
 jupyter==1.0.0
 mapbox_vector_tile==2.1.0
