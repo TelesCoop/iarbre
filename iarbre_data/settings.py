@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import os
 import sys
 from pathlib import Path
@@ -88,9 +89,11 @@ if IS_LOCAL_DEV:
 else:
     ROLLBAR = {
         "access_token": config.getstr("bugs.rollbar_access_token"),
-        "environment": "development"
-        if DEBUG
-        else config.getstr("environment.environment", "production"),
+        "environment": (
+            "development"
+            if DEBUG
+            else config.getstr("environment.environment", "production")
+        ),
         "root": BASE_DIR,
     }
     MIDDLEWARE.append("rollbar.contrib.django.middleware.RollbarNotifierMiddleware")
@@ -165,6 +168,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+if IS_LOCAL_DEV:
+    STATIC_ROOT = BASE_DIR / "collected_static"
+else:
+    STATIC_ROOT = config.getstr("staticfiles.static_root")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
