@@ -4,9 +4,7 @@ import django.contrib.gis.db.models.fields
 from django.db import migrations
 from tqdm import tqdm
 
-from iarbre_data.management.commands.utils import (
-    transform_geometry_to_srid_and_simplify,
-)
+from api.map import transform_geometry_to_srid_and_simplify
 
 
 def add_map_geometry(apps, _):

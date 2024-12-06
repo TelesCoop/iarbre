@@ -4,9 +4,7 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 from api.constants import ModelType
-from iarbre_data.management.commands.utils import (
-    transform_geometry_to_srid_and_simplify,
-)
+from api.map import transform_geometry_to_srid_and_simplify
 
 
 class Tile(models.Model):
