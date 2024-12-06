@@ -1,3 +1,4 @@
+import json
 import math
 import time
 
@@ -6,6 +7,7 @@ import mercantile
 
 from django.http import HttpResponse
 from django.contrib.gis.geos import Polygon
+from tqdm import tqdm
 
 
 def pixel_length(zoom):
@@ -25,7 +27,7 @@ def filter_instances_by_bounds(Model, bbox, zoom):
         )
     )
     # Need to have a geometry field in the model with srid=3857
-    return Model.objects.filter(geometry__intersects=bbox_with_buffer)
+    return Model.objects.filter(map_geometry__intersects=bbox_with_buffer)
 
 
 def get_bbox(x, y, zoom):
@@ -37,9 +39,7 @@ def get_bbox(x, y, zoom):
 
 def serialize_to_geojson_feature(instance, params):
     return {
-        "geometry": instance.geometry.simplify(
-            params["pixel"], preserve_topology=True
-        ).wkt,
+        "geometry": instance.map_geometry.wkt,
         # Need to have get_layer_properties method in the model
         "properties": instance.get_layer_properties(),
     }
@@ -49,8 +49,12 @@ def format_to_geojson_feature_collection(name, instances, params):
     return {
         "name": name,
         "type": "FeatureCollection",
+        "crs": {"type": "name", "properties": {"name": "EPSG:3857"}},
         "features": [
-            serialize_to_geojson_feature(instance, params) for instance in instances
+            serialize_to_geojson_feature(instance, params)
+            for instance in tqdm(
+                instances, desc="Serializing instances", total=len(instances)
+            )
         ],
     }
 
@@ -70,6 +74,7 @@ def territories_to_tile(Model, x, y, zoom):
         Model.type, instances, params
     )
     end_time_2 = time.time()
+    print(f"Time to format feature collection: {end_time_2 - end_time}")
 
     tiles = mapbox_vector_tile.encode(
         feature_collection,
@@ -79,3 +84,17 @@ def territories_to_tile(Model, x, y, zoom):
     )
     print(f"Time to encode vector tile: {time.time() - end_time_2}")
     return HttpResponse(tiles, content_type="application/x-protobuf")
+
+
+def generate_geojson_file(instances, Model, geojson_file_path="output.geojson"):
+    params = {}
+
+    # Format the instances into a GeoJSON feature collection
+    feature_collection = format_to_geojson_feature_collection(
+        Model.type, instances, params
+    )
+
+    # Write the feature collection to a .geojson file
+    with open(geojson_file_path, "w") as geojson_file:
+        # generate compress geojson
+        json.dump(feature_collection, geojson_file)

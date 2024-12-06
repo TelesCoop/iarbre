@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "iarbre_data",
+    "api",
     "django_extensions",
     "telescoop_backup",
 ]
