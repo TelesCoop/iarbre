@@ -22,15 +22,15 @@ class Tile(models.Model):
     def color(self):
         if self.indice is None:
             return "purple"
-        elif self.indice > -1.25:
+        elif self.indice < -1.25:
             return "#676767"
-        elif self.indice > -0.75:
+        elif self.indice < -0.75:
             return "#A63F28"
-        elif self.indice > -0.15:
+        elif self.indice < -0.15:
             return "#D98B2B"
-        elif self.indice > 0.15:
+        elif self.indice < 0.15:
             return "#F3EFE9"
-        elif self.indice > 0.85:
+        elif self.indice < 0.85:
             return "#BEE2A4"
         else:
             return "#5AA055"

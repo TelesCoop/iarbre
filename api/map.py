@@ -61,20 +61,12 @@ def format_to_geojson_feature_collection(name, instances, params):
 
 def territories_to_tile(Model, x, y, zoom):
     bbox = get_bbox(x, y, zoom)
-    start_time = time.time()
     instances = filter_instances_by_bounds(Model, bbox, zoom)
-    end_time = time.time()
-    print(f"Time to get instances: {end_time - start_time}")
-    if len(instances):
-        print(len(instances))
-
     params = {"pixel": pixel_length(zoom)}
 
     feature_collection = format_to_geojson_feature_collection(
         Model.type, instances, params
     )
-    end_time_2 = time.time()
-    print(f"Time to format feature collection: {end_time_2 - end_time}")
 
     tiles = mapbox_vector_tile.encode(
         feature_collection,
@@ -82,7 +74,6 @@ def territories_to_tile(Model, x, y, zoom):
         extents=256,
         y_coord_down=True,
     )
-    print(f"Time to encode vector tile: {time.time() - end_time_2}")
     return HttpResponse(tiles, content_type="application/x-protobuf")
 
 
