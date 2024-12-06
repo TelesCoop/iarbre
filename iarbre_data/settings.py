@@ -45,8 +45,6 @@ IS_LOCAL_DEV = bool(os.environ.get("TELESCOOP_DEV"))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = IS_LOCAL_DEV
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
