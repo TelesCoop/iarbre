@@ -1,14 +1,14 @@
+import gc
 import itertools
 import logging
 import random
-import geopandas as gpd
 
 import numpy as np
-from django.contrib.gis.geos import Polygon
-from django.core.management import BaseCommand
 from django.contrib.gis.db.models.aggregates import Collect
-from django.db.models import Count
+from django.contrib.gis.geos import Polygon, GEOSGeometry
+from django.core.management import BaseCommand
 from django.db import transaction
+from django.db.models import Count
 from tqdm import tqdm
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
@@ -20,14 +20,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--grid-size", type=int, default=5, help="Grid size in meters"
-        )
-        parser.add_argument(
             "--insee_code_city",
             type=str,
             required=False,
             default=None,
             help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
+        )
+        parser.add_argument(
+            "--grid-size", type=int, default=4, help="Grid size in meters"
         )
 
     @staticmethod
@@ -47,65 +47,51 @@ class Command(BaseCommand):
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
-    def create_tiles_for_city(self, city, grid_size, logger, batch_size=int(1e6)):
+    def create_tiles_for_city(self, city_geom, unit, a, logger, batch_size=int(1e6)):
         """Create the tiles in the DB for a specific city"""
-        xmin, ymin, xmax, ymax = city.total_bounds
-        # Snap bounds to the nearest grid alignment so that all grids are aligned
-        xmin = np.floor(xmin / grid_size) * grid_size
-        ymin = np.floor(ymin / grid_size) * grid_size
-        xmax = np.ceil(xmax / grid_size) * grid_size
-        ymax = np.ceil(ymax / grid_size) * grid_size
-
+        xmin, ymin, xmax, ymax = city_geom.bounds
+        cols = np.arange(np.floor(xmin), np.ceil(xmax), 3 * unit)
+        rows = np.arange(np.floor(ymin) / a, np.ceil(ymax) / a, unit)
         tiles = []
-        for i, (x0, y0) in enumerate(
-            tqdm(
-                itertools.product(
-                    np.arange(xmin, xmax + grid_size, grid_size),
-                    np.arange(ymin, ymax + grid_size, grid_size),
-                )
-            )
-        ):
-            # Bounds
-            x1 = x0 - grid_size
-            y1 = y0 + grid_size
-
-            number_of_decimals = 2  # centimeter-level precision
-            x0, y0, x1, y1 = map(
-                lambda v: round(v, number_of_decimals), (x0, y0, x1, y1)
-            )
-
-            # Create tile with random indice from -5 to 5
+        for x, (i, y) in tqdm(itertools.product(cols, enumerate(rows))):
+            # Rows are not aligned
+            offset = 1.5 * unit if i % 2 != 0 else 0
+            x0 = x + offset
+            dim = [
+                (x0, y * a),
+                (x0 + unit, y * a),
+                (x0 + (1.5 * unit), (y + unit) * a),
+                (x0 + unit, (y + (2 * unit)) * a),
+                (x0, (y + (2 * unit)) * a),
+                (x0 - (0.5 * unit), (y + unit) * a),
+                (x0, y * a),
+            ]
+            # Optimize storage
+            rounded_dim = [(round(x, 2), round(y, 2)) for (x, y) in dim]
+            hexagon = Polygon(rounded_dim)
             tile = Tile(
-                geometry=Polygon.from_bbox([x0, y0, x1, y1]),
-                indice=random.uniform(-5, 5),
+                geometry=hexagon,
+                indice=random.uniform(
+                    -5, 5
+                ),  # Create tile with random indice from -5 to 5
             )
             tiles.append(tile)
             # Avoid OOM errors
             if (i + 1) % batch_size == 0:
-                Tile.objects.bulk_create(tiles, batch_size=batch_size)
+                with transaction.atomic():
+                    Tile.objects.bulk_create(tiles, batch_size=batch_size // 4)
                 logger.info(f"Got {len(tiles)} tiles")
-                tiles.clear()
+                del tiles[:]
+                gc.collect()
         if tiles:  # Save last batch
             Tile.objects.bulk_create(tiles, batch_size=batch_size)
 
     def handle(self, *args, **options):
+        batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]
         grid_size = options["grid_size"]
-        # Delete records if already exist
-        total_records = Tile.objects.count()
-        batch_size = int(1e6)  # Depends on your RAM
-        print("Deleting old tiles")
-        for start in tqdm(range(0, total_records, batch_size)):
-            batch_ids = Tile.objects.all()[start : start + batch_size].values_list(
-                "id", flat=True
-            )
-            with transaction.atomic():
-                Tile.objects.filter(id__in=batch_ids).delete()
-        logger.info(f"Deleted {total_records} tiles")
-
-        # get bounding box of all or a selected city
-        if insee_code_city is not None:
+        if insee_code_city is not None:  # Perform selection only for a city
             insee_code_city = insee_code_city.split(",")
             selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
             if not selected_city_qs.exists():
@@ -118,29 +104,43 @@ class Command(BaseCommand):
                 City.objects.all(), ["name", "insee_code"]
             )
         nb_city = len(selected_city)
-
-        for index, row in selected_city.iterrows():
-            city = gpd.GeoDataFrame(
-                [row], columns=selected_city.columns, crs=selected_city.crs
+        desired_area = grid_size * grid_size
+        unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
+        a = np.sin(np.pi / 3)
+        for city in selected_city.itertuples():
+            print(f"Selected city: {city.name} (on {nb_city} city).")
+            tiles_queryset = Tile.objects.filter(
+                geometry__intersects=GEOSGeometry(city.geometry.wkt)
             )
-            print(f"Selected city: {city.name.iloc[0]} (on {nb_city} city).")
-            self.create_tiles_for_city(city, grid_size, logger, int(1e4))
-
-            # Clean useless tiles
-            city_union_geom = City.objects.aggregate(union_geom=Collect("geometry"))[
-                "union_geom"
-            ]
-
-            print("Removing duplicates...")
-            self._remove_duplicates()
-
-            print("Deleting tiles out of the cities")
-            for start in tqdm(range(0, total_records, batch_size * 10)):
-                batch_ids = Tile.objects.all()[
-                    start : start + batch_size * 10
-                ].values_list("id", flat=True)
+            total_records = tiles_queryset.count()
+            print(
+                f"Number tiles already in the DB: {total_records}. \n"
+                f"These tiles will be deleted."
+            )
+            for start in tqdm(range(0, total_records, batch_size)):
+                batch_ids = tiles_queryset[start : start + batch_size].values_list(
+                    "id", flat=True
+                )
                 with transaction.atomic():
-                    Tile.objects.filter(id__in=batch_ids).exclude(
-                        geometry__intersects=city_union_geom
-                    ).delete()
-            logger.info(f"Deleted {total_records} tiles")
+                    Tile.objects.filter(id__in=batch_ids).delete()
+            print(f"Deleted {total_records} tiles.")
+            print("Creating new tiles.")
+            self.create_tiles_for_city(city.geometry, unit, a, logger, int(1e4))
+
+        print("Removing duplicates...")
+        self._remove_duplicates()
+
+        # Clean useless tiles
+        city_union_geom = City.objects.aggregate(union_geom=Collect("geometry"))[
+            "union_geom"
+        ]
+        print("Deleting tiles out of the cities")
+        for start in tqdm(range(0, total_records, batch_size * 10)):
+            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
+                "id", flat=True
+            )
+            with transaction.atomic():
+                Tile.objects.filter(id__in=batch_ids).exclude(
+                    geometry__intersects=city_union_geom
+                ).delete()
+        logger.info(f"Deleted {total_records} tiles")
