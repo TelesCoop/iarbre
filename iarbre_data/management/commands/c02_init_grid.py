@@ -6,6 +6,8 @@ import geopandas as gpd
 import numpy as np
 from django.contrib.gis.geos import Polygon
 from django.core.management import BaseCommand
+from django.contrib.gis.db.models.aggregates import Collect
+from django.db.models import Count
 from django.db import transaction
 from tqdm import tqdm
 
@@ -27,6 +29,23 @@ class Command(BaseCommand):
             default=None,
             help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
         )
+
+    @staticmethod
+    def _remove_duplicates():
+        """Deletes duplicates in the Tiles model based on geometry."""
+        duplicates = (
+            Tile.objects.values("geometry")
+            .annotate(count=Count("id"))
+            .filter(count__gt=1)
+        )
+
+        for duplicate in duplicates:
+            geometry = duplicate["geometry"]
+            duplicate_cities = Tile.objects.filter(geometry=geometry)
+            # Keep the first and delete the rest
+            ids_to_delete = duplicate_cities.values_list("id", flat=True)[1:]
+            Tile.objects.filter(id__in=ids_to_delete).delete()
+        print(f"Removed duplicates for {duplicates.count()} entries.")
 
     def create_tiles_for_city(self, city, grid_size, logger, batch_size=int(1e6)):
         """Create the tiles in the DB for a specific city"""
@@ -106,3 +125,22 @@ class Command(BaseCommand):
             )
             print(f"Selected city: {city.name.iloc[0]} (on {nb_city} city).")
             self.create_tiles_for_city(city, grid_size, logger, int(1e4))
+
+            # Clean useless tiles
+            city_union_geom = City.objects.aggregate(union_geom=Collect("geometry"))[
+                "union_geom"
+            ]
+
+            print("Removing duplicates...")
+            self._remove_duplicates()
+
+            print("Deleting tiles out of the cities")
+            for start in tqdm(range(0, total_records, batch_size * 10)):
+                batch_ids = Tile.objects.all()[
+                    start : start + batch_size * 10
+                ].values_list("id", flat=True)
+                with transaction.atomic():
+                    Tile.objects.filter(id__in=batch_ids).exclude(
+                        geometry__intersects=city_union_geom
+                    ).delete()
+            logger.info(f"Deleted {total_records} tiles")

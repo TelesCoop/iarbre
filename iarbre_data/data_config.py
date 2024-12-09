@@ -226,12 +226,12 @@ URL_FILES = [
                         "value": "Souche",
                     },
                 ],
-                "buffer": 1,
+                "buffer_size": 1,
             },
             {
                 "exclude": {"name": "genre", "value": ["Emplacement libre", "Souche"]},
+                "buffer": {"distance_column": "rayoncouronne_m"},
                 "union": True,
-                "simplify": 1,
             },
         ],
         "factors": ["Souches ou emplacements libres", "Arbres"],
@@ -347,11 +347,7 @@ URL_FILES = [
     },
     {
         "name": "Friches",
-        "url": "https://apidf-preprod.cerema.fr/cartofriches/geofriches/"
-        "?coddep=%22%22&code_insee=%22%22&"
-        "in_bbox=4.665%2C%2045.566%2C%205.165%2C%2045.946",
-        "layer_name": "",
-        "type": "geojson",
+        "file": "cartofriches.geojson",
         "scripts": None,
         "factors": ["Friches"],
         "output_type": "POLYGON",
