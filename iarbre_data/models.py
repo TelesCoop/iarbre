@@ -4,7 +4,6 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 from api.constants import ModelType
-from api.map import transform_geometry_to_srid_and_simplify
 
 
 class Tile(models.Model):
@@ -44,9 +43,7 @@ class Tile(models.Model):
 @receiver(pre_save, sender=Tile)
 def before_save_tile(sender, instance, **kwargs):
     if instance.map_geometry is None:
-        instance.map_geometry = transform_geometry_to_srid_and_simplify(
-            instance.geometry
-        )
+        instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
 class Data(models.Model):

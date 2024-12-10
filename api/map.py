@@ -1,6 +1,5 @@
 import json
 import math
-import time
 
 import mapbox_vector_tile
 import mercantile
@@ -89,13 +88,3 @@ def generate_geojson_file(instances, Model, geojson_file_path="output.geojson"):
     with open(geojson_file_path, "w") as geojson_file:
         # generate compress geojson
         json.dump(feature_collection, geojson_file)
-
-
-def transform_geometry_to_srid_and_simplify(geometry, tolerance=0.1, srid=3857):
-    """
-    Transform a geometry to a new SRID and simplify it.
-    """
-    geometry = geometry.transform(srid, clone=True)
-
-    # reduce the number of decimals to avoid too much precision and return a simplified geometry
-    return geometry.simplify(tolerance=tolerance)

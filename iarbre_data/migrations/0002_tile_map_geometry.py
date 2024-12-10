@@ -4,8 +4,6 @@ import django.contrib.gis.db.models.fields
 from django.db import migrations
 from tqdm import tqdm
 
-from api.map import transform_geometry_to_srid_and_simplify
-
 
 def add_map_geometry(apps, _):
     Tile = apps.get_model("iarbre_data", "Tile")
@@ -13,7 +11,7 @@ def add_map_geometry(apps, _):
 
     tiles = Tile.objects.all()
     for tile in tqdm(tiles, desc="Adding map geometry", total=len(tiles)):
-        tile.map_geometry = transform_geometry_to_srid_and_simplify(tile.geometry)
+        tile.map_geometry = tile.geometry.transform(3857, clone=True)
         tiles_to_add.append(tile)
 
     Tile.objects.bulk_update(tiles_to_add, ["map_geometry"], batch_size=1000)
