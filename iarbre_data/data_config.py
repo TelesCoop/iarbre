@@ -230,7 +230,7 @@ URL_FILES = [
             },
             {
                 "exclude": {"name": "genre", "value": ["Emplacement libre", "Souche"]},
-                "buffer": {"distance_column": "rayoncouronne_m"},
+                "buffer": {"distance_column": "circonference_cm"},
                 "union": True,
             },
         ],

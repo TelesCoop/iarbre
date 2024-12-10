@@ -80,6 +80,8 @@ def apply_actions(df, actions):
         df = df.buffer(actions["buffer_size"])
     if actions.get("buffer"):
         buffer_distances = df[actions["buffer"]["distance_column"]]
+        if "_cm" in actions["buffer"]["distance_column"]:
+            buffer_distances /= 100
         df = df.buffer(buffer_distances)
     if actions.get("simplify"):
         df = df.simplify(actions["simplify"])
