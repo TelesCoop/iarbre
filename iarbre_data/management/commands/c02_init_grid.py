@@ -19,6 +19,11 @@ from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
     """Create square tiles in the DB for a specific city"""
     xmin, ymin, xmax, ymax = city_geom.bounds
+    # Snap bounds to the nearest grid alignment so that all grids are aligned
+    xmin = np.floor(xmin / grid_size) * grid_size
+    ymin = np.floor(ymin / grid_size) * grid_size
+    xmax = np.ceil(xmax / grid_size) * grid_size
+    ymax = np.ceil(ymax / grid_size) * grid_size
 
     tiles = []
     for i, (x0, y0) in enumerate(
@@ -63,6 +68,13 @@ def create_hexs_for_city(
 ):
     """Create hexagonal tiles in the DB for a specific city"""
     xmin, ymin, xmax, ymax = city_geom.bounds
+    hex_width = 3 * unit
+    hex_height = 2 * unit * a
+    xmin = np.floor(xmin / hex_width) * hex_width
+    ymin = np.floor(ymin / hex_height) * hex_height
+    xmax = np.ceil(xmax / hex_width) * hex_width
+    ymax = np.ceil(ymax / hex_height) * hex_height
+
     cols = np.arange(np.floor(xmin), np.ceil(xmax), 3 * unit)
     rows = np.arange(np.floor(ymin) / a, np.ceil(ymax) / a, unit)
     tiles = []
