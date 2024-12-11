@@ -179,6 +179,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93
+TARGET_MAP_PROJ = 4326  # Mercator
 BUFFER_SIZE = 2  # meters
 
 # telescoop-backup

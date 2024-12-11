@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Tile
+from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
 def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
@@ -34,10 +35,12 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
 
         number_of_decimals = 2  # centimeter-level precision
         x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
-
+        polygon = Polygon.from_bbox([x0, y0, x1, y1])
+        polygon.srid = TARGET_PROJ
         # Create tile with random indice from -5 to 5
         tile = Tile(
-            geometry=Polygon.from_bbox([x0, y0, x1, y1]),
+            geometry=polygon,
+            map_geometry=polygon.transform(TARGET_MAP_PROJ),
             indice=random.uniform(-5, 5),
         )
         tiles.append(tile)
@@ -78,9 +81,10 @@ def create_hexs_for_city(
         ]
         # Optimize storage
         rounded_dim = [(round(x, 2), round(y, 2)) for (x, y) in dim]
-        hexagon = Polygon(rounded_dim)
+        hexagon = Polygon(rounded_dim, srid=TARGET_PROJ)
         tile = Tile(
             geometry=hexagon,
+            map_geometry=hexagon.transform(TARGET_MAP_PROJ),
             indice=random.uniform(-5, 5),  # Create tile with random indice from -5 to 5
         )
         tiles.append(tile)
