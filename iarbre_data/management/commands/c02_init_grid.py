@@ -134,9 +134,9 @@ class Command(BaseCommand):
         batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]
-        grid_size = options["grid-size"]
-        grid_type = options["grid-type"]
-        if grid_size not in [1, 2]:
+        grid_size = options["grid_size"]
+        grid_type = options["grid_type"]
+        if grid_type not in [1, 2]:
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
         if insee_code_city is not None:  # Perform selection only for a city
             insee_code_city = insee_code_city.split(",")
