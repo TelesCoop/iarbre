@@ -1,10 +1,14 @@
-from django.contrib.gis.geos import GEOSGeometry, Polygon
+import time
+
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
-from shapely.strtree import STRtree
 from shapely.geometry import box
+from shapely.ops import unary_union
+import geopandas as gpd
 
 from iarbre_data.data_config import FACTORS
+
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 from iarbre_data.models import City, Data, Tile, TileFactor
 
@@ -20,19 +24,36 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
         std_area (float): Standard tile area in square meters (m²).
     """
+    factor_crs = factor_df.crs
 
-    # Filter polygons in the bounding box of the tiles
-    tiles_index = STRtree(tiles_df.geometry)
-
-    def has_intersection(geom):
+    # Split large factor geometries into smaller ones
+    def split_large_polygon(geom, grid_size=10):
+        """Split a large polygon into smaller chunks based on a grid."""
         if geom is None or geom.is_empty:
-            return False
-        bounding_box = box(*geom.bounds)
-        return any(tiles_index.query(bounding_box))
+            return None
+        # Create a grid covering the bounding box of the geometry
+        minx, miny, maxx, maxy = tiles_df.geometry.total_bounds
+        grid_cells = [
+            box(x, y, x + grid_size, y + grid_size)
+            for x in range(int(minx), int(maxx), grid_size)
+            for y in range(int(miny), int(maxy), grid_size)
+        ]
+        clipped_parts = [
+            geom.intersection(cell) for cell in grid_cells if geom.intersects(cell)
+        ]
+        return unary_union(clipped_parts) if clipped_parts else None
 
-    idx_intersect = factor_df.geometry.apply(has_intersection)
-    possible_matches = factor_df[idx_intersect].copy()
-    df = tiles_df.clip(possible_matches)
+    factor_df["geometry"] = factor_df.geometry.apply(
+        lambda g: split_large_polygon(g, grid_size=1000)
+    )
+    flattened_geometries = []
+    for idx, row in factor_df.iterrows():
+        flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
+    factor_df = gpd.GeoDataFrame(
+        flattened_geometries, geometry="geometry", crs=factor_crs
+    )
+    factor_df = factor_df[factor_df.geometry.notnull() & factor_df.geometry.is_valid]
+    df = tiles_df.clip(factor_df)
     df["value"] = df.geometry.area / std_area
     tile_factors = [
         TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
@@ -64,6 +85,8 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         desc=f"factor {factor_name}",
         total=n_batches,
     ):
+        # Spatial index
+        tiles_df = tiles_df[tiles_df.geometry.notnull() & tiles_df.geometry.is_valid]
         tile_factors = _compute_for_factor_partial_tiles(
             factor_name,
             factor_df,
@@ -106,9 +129,11 @@ class Command(BaseCommand):
         nb_city = len(selected_city)
         for city in selected_city.itertuples():
             print(f"Selected city: {city.name} (on {nb_city} city).")
+            t = time.perf_counter()
             tiles_queryset = Tile.objects.filter(
                 geometry__intersects=GEOSGeometry(city.geometry.wkt)
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             for factor_name in tqdm(FACTORS.keys(), total=len(FACTORS), desc="factors"):
                 compute_for_factor(factor_name, tiles_df, std_area)
+            print(f"Elapsed time: {time.perf_counter() -t}")

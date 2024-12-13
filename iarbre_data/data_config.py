@@ -2,6 +2,13 @@ from ipykernel.pickleutil import buffer
 
 DATA_FILES = [
     {
+        "name": "Parkings surfacique",
+        "file": "parkingsurfacique.geojson",
+        "scripts": None,
+        "factors": ["Parkings"],
+        "output_type": "POLYGON",
+    },
+    {
         "name": "SLT",
         "file": "sltmateriel.geojson",
         "scripts": ["slt.py"],
@@ -13,7 +20,7 @@ DATA_FILES = [
     },
     {
         "name": "Batiments",
-        "file": "batiments_2024.shp",
+        "file": "batiments_geom.shp",
         "scripts": ["batiment.py", "facade.py"],
         "actions": [
             {},
@@ -363,23 +370,6 @@ URL_FILES = [
         "scripts": ["rsx_chaleur.py"],
         "factors": ["Réseau de chaleur urbain"],
         "output_type": "LINESTRING",
-    },
-    {
-        "name": "Parkings surfacique",
-        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
-        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-        "typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoparking&"
-        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
-        "layer_name": "pvo_patrimoine_voirie.pvoparking",
-        "actions": [
-            {
-                "filter": {"name": "situation", "value": "En surface"},
-                "buffer": {"distance_column": "capacite"},
-            }
-        ],
-        "scripts": None,
-        "factors": ["Parkings"],
-        "output_type": "POLYGON",
     },
 ]
 
