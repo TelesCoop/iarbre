@@ -4,6 +4,7 @@ from os import truncate
 from django.conf import settings
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon
+from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
 from typing import List, Dict, Any
@@ -90,9 +91,10 @@ class MVTGenerator:
         tile_polygon = Polygon.from_bbox((west, south, east, north))
         tile_polygon.srid = 3857
 
-        # Filter queryset to tile extent
-        clipped_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
-        print(len(clipped_queryset))
+        # Filter queryset to tile extent and then clip it
+        clipped_queryset = self.queryset.filter(
+            map_geometry__intersects=tile_polygon
+        ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
         if clipped_queryset.exists():
             # Prepare MVT features
@@ -112,7 +114,8 @@ class MVTGenerator:
                 with open(os.path.join(tile_path, f"{tile.y}.mvt"), "wb") as f:
                     f.write(mvt_data)
 
-    def _prepare_mvt_features(self, queryset, tile_polygon) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _prepare_mvt_features(queryset, tile_polygon) -> List[Dict[str, Any]]:
         """
         Prepare features for MVT encoding
 
@@ -120,14 +123,24 @@ class MVTGenerator:
         :param tile_polygon: Tile extent polygon
         :return: List of MVT feature dictionaries
         """
+        MVT_EXTENT = 4096
         features = []
+        (x0, y0, x_max, y_max) = tile_polygon.extent
+        x_span = x_max - x0
+        y_span = y_max - y0
         for obj in tqdm(queryset, desc="Preparing MVT features", total=len(queryset)):
-            # Clip geometry to tile extent
-            clipped_geom = obj.map_geometry.intersection(tile_polygon)
-
+            # Transform geometry in tile relative coordinate
+            clipped_geom = obj.clipped_geometry
             if not clipped_geom.empty:
+                tile_based_coords = []
+                for x_merc, y_merc in clipped_geom.coords[0]:
+                    tile_based_coord = (
+                        int((x_merc - x0) * MVT_EXTENT / x_span),
+                        int((y_merc - y0) * MVT_EXTENT / y_span),
+                    )
+                    tile_based_coords.append(tile_based_coord)
                 feature = {
-                    "geometry": clipped_geom.wkt,
+                    "geometry": Polygon(tile_based_coords).wkt,
                     "properties": obj.get_layer_properties(),
                 }
                 features.append(feature)

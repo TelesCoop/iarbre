@@ -13,7 +13,7 @@ MODEL_BY_TYPE = {
 
 
 @require_GET
-@cache_page(60 * 60 * 24)
+# @cache_page(60 * 60 * 24)
 def tile_view(request, model_type, zoom, x, y):
     start_time = time.time()
     model = MODEL_BY_TYPE[model_type]
