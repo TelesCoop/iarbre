@@ -1,5 +1,7 @@
 import json
 import math
+import os
+from functools import lru_cache
 
 import mapbox_vector_tile
 import mercantile
@@ -7,6 +9,8 @@ import mercantile
 from django.http import HttpResponse
 from django.contrib.gis.geos import Polygon
 from tqdm import tqdm
+
+from iarbre_data import settings
 
 
 def pixel_length(zoom):
@@ -73,6 +77,15 @@ def territories_to_tile(Model, x, y, zoom):
         extents=256,
         y_coord_down=True,
     )
+    return HttpResponse(tiles, content_type="application/x-protobuf")
+
+
+@lru_cache(maxsize=1024)
+def load_tiles(Model, x, y, zoom):
+    output_dir = os.path.join(settings.BASE_DIR, "mvt_files")
+    with open(os.path.join(output_dir, str(zoom), str(x), f"{y}.mvt"), "rb") as f:
+        tiles = f.read()
+
     return HttpResponse(tiles, content_type="application/x-protobuf")
 
 

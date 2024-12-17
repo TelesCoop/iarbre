@@ -10,8 +10,9 @@ class Tile(models.Model):
     """Square area of the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=3857, null=True)
+    map_geometry = PolygonField(srid=3857, null=True, blank=True)
     indice = models.FloatField(null=True)
+    normalized_indice = models.FloatField(null=True, blank=True)
 
     type = ModelType.TILE.value
 
@@ -19,15 +20,15 @@ class Tile(models.Model):
     def color(self):
         if self.indice is None:
             return "purple"
-        elif self.indice < -1.25:
+        elif self.indice < -3.56:
             return "#676767"
-        elif self.indice < -0.75:
+        elif self.indice < -2.69:
             return "#A63F28"
-        elif self.indice < -0.15:
+        elif self.indice < -2.19:
             return "#D98B2B"
-        elif self.indice < 0.15:
+        elif self.indice < 1.82:
             return "#F3EFE9"
-        elif self.indice < 0.85:
+        elif self.indice < 1.32:
             return "#BEE2A4"
         else:
             return "#5AA055"

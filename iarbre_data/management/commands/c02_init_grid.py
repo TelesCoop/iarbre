@@ -197,16 +197,15 @@ class Command(BaseCommand):
         self._remove_duplicates()
 
         # Clean useless tiles
-        city_union_geom = City.objects.aggregate(union_geom=Collect("geometry"))[
-            "union_geom"
-        ]
+        city_union_geom = selected_city.geometry.unary_union
         print("Deleting tiles out of the cities")
+        total_records = Tile.objects.all().count()
         for start in tqdm(range(0, total_records, batch_size * 10)):
             batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
                 "id", flat=True
             )
             with transaction.atomic():
                 Tile.objects.filter(id__in=batch_ids).exclude(
-                    geometry__intersects=city_union_geom
+                    geometry__intersects=city_union_geom.wkt
                 ).delete()
         logger.info(f"Deleted {total_records} tiles")

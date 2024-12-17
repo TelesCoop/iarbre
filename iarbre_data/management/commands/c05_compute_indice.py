@@ -1,6 +1,8 @@
 import pandas as pd
 from django.core.management import BaseCommand
-from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.contrib.gis.geos import GEOSGeometry
+from django.db import transaction
+from django.db.models import Avg, F, Func, Value
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Tile, TileFactor
@@ -14,7 +16,6 @@ def compute_indice(tiles_id):
         ),
         columns=["tile_id", "factor", "value"],
     )
-    print(len(df))
     factors = pd.Series(FACTORS)
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
@@ -62,3 +63,21 @@ class Command(BaseCommand):
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             compute_indice(tiles_df["id"])
+
+        # Normalize indices
+        mean_indice = Tile.objects.filter(indice__isnull=False).aggregate(
+            mean_indice=Avg("indice")
+        )["mean_indice"]
+        k = 0.1
+        with transaction.atomic():  # Do it directly in the DB to avoid RAM issues
+            Tile.objects.update(
+                normalized_indice=Func(
+                    1
+                    / (
+                        1
+                        + Func(-k * (F("indice") - Value(mean_indice)), function="EXP")
+                    ),
+                    function=None,
+                )
+            )
+        print("Normalized indices have been successfully updated.")
