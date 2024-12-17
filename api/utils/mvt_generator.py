@@ -50,6 +50,7 @@ class MVTGenerator:
                     bounds["east"],
                     bounds["north"],
                     zoom,
+                    truncate=True,
                 )
             )
 

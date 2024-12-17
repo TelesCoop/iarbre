@@ -71,13 +71,7 @@ class Command(BaseCommand):
         k = 0.1
         with transaction.atomic():  # Do it directly in the DB to avoid RAM issues
             Tile.objects.update(
-                normalized_indice=Func(
-                    1
-                    / (
-                        1
-                        + Func(-k * (F("indice") - Value(mean_indice)), function="EXP")
-                    ),
-                    function=None,
-                )
+                normalized_indice=1
+                / (1 + Func(-k * (F("indice") - Value(mean_indice)), function="EXP"))
             )
         print("Normalized indices have been successfully updated.")
