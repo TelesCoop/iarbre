@@ -44,7 +44,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         return unary_union(clipped_parts) if clipped_parts else None
 
     factor_df["geometry"] = factor_df.geometry.apply(
-        lambda g: split_large_polygon(g, grid_size=1000)
+        lambda g: split_large_polygon(g, grid_size=3000)
     )
     flattened_geometries = []
     for idx, row in factor_df.iterrows():
@@ -53,7 +53,20 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         flattened_geometries, geometry="geometry", crs=factor_crs
     )
     factor_df = factor_df[factor_df.geometry.notnull() & factor_df.geometry.is_valid]
-    df = tiles_df.clip(factor_df)
+
+    # Filter polygons in the bounding box of the tiles
+    tiles_index = tiles_df.sindex
+
+    def has_intersection(geom):
+        if geom is None or geom.is_empty:
+            return False
+        bounding_box = box(*geom.bounds)
+        return any(tiles_index.query(bounding_box))
+
+    idx_intersect = factor_df.geometry.apply(has_intersection)
+    possible_matches = factor_df[idx_intersect].copy()
+
+    df = tiles_df.clip(possible_matches)
     df["value"] = df.geometry.area / std_area
     tile_factors = [
         TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
