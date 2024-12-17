@@ -68,7 +68,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     if len(possible_matches) > 0:
         df = tiles_df.clip(possible_matches)
         df["value"] = df.geometry.area / std_area
-        # Do no add a TileFactor if it already exists in the DB
+        # Do not add a TileFactor if it already exists in the DB
         existing_pairs = set(TileFactor.objects.values_list("id", "factor"))
         tile_factors = [
             TileFactor(tile_id=row.id, factor=factor_name, value=row.value)

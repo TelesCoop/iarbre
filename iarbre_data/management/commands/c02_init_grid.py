@@ -152,6 +152,27 @@ class Command(BaseCommand):
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
+    @staticmethod
+    def _clean_outside(selected_city, batch_size, logger):
+        """Remove all tiles outside of the selected cities"""
+        # Clean useless tiles
+        city_union_geom = selected_city.geometry.unary_union
+        print("Deleting tiles out of the cities")
+        total_records = Tile.objects.all().count()
+        total_deleted = 0
+        for start in tqdm(range(0, total_records, batch_size * 10)):
+            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
+                "id", flat=True
+            )
+            with transaction.atomic():
+                deleted_count, _ = (
+                    Tile.objects.filter(id__in=batch_ids)
+                    .exclude(geometry__intersects=city_union_geom.wkt)
+                    .delete()
+                )
+                total_deleted += deleted_count
+        logger.info(f"Deleted {total_deleted} tiles")
+
     def handle(self, *args, **options):
         batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
@@ -203,16 +224,4 @@ class Command(BaseCommand):
         print("Removing duplicates...")
         self._remove_duplicates()
         if clean_outside:
-            # Clean useless tiles
-            city_union_geom = selected_city.geometry.unary_union
-            print("Deleting tiles out of the cities")
-            total_records = Tile.objects.all().count()
-            for start in tqdm(range(0, total_records, batch_size * 10)):
-                batch_ids = Tile.objects.all()[
-                    start : start + batch_size * 10
-                ].values_list("id", flat=True)
-                with transaction.atomic():
-                    Tile.objects.filter(id__in=batch_ids).exclude(
-                        geometry__intersects=city_union_geom.wkt
-                    ).delete()
-            logger.info(f"Deleted {total_records} tiles")
+            self._clean_outside(selected_city, batch_size, logger)
