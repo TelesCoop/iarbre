@@ -75,8 +75,8 @@ def create_hexs_for_city(
     xmax = np.ceil(xmax / hex_width) * hex_width
     ymax = np.ceil(ymax / hex_height) * hex_height
 
-    cols = np.arange(np.floor(xmin), np.ceil(xmax), 3 * unit)
-    rows = np.arange(np.floor(ymin) / a, np.ceil(ymax) / a, unit)
+    cols = np.arange(xmin, xmax, 3 * unit)
+    rows = np.arange(ymin / a, ymax / a, unit)
     tiles = []
     for x, (i, y) in tqdm(itertools.product(cols, enumerate(rows))):
         # Rows are not aligned
@@ -128,6 +128,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--grid-type", type=int, default=1, help="Hexagonal (1) or square (2) grid."
         )
+        parser.add_argument(
+            "--clean_outside",
+            type=bool,
+            default=True,
+            help="Detele tiles outside of the city boundaries of the selection or not.",
+        )
 
     @staticmethod
     def _remove_duplicates():
@@ -146,12 +152,34 @@ class Command(BaseCommand):
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
+    @staticmethod
+    def _clean_outside(selected_city, batch_size, logger):
+        """Remove all tiles outside of the selected cities"""
+        # Clean useless tiles
+        city_union_geom = selected_city.geometry.unary_union
+        print("Deleting tiles out of the cities")
+        total_records = Tile.objects.all().count()
+        total_deleted = 0
+        for start in tqdm(range(0, total_records, batch_size * 10)):
+            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
+                "id", flat=True
+            )
+            with transaction.atomic():
+                deleted_count, _ = (
+                    Tile.objects.filter(id__in=batch_ids)
+                    .exclude(geometry__intersects=city_union_geom.wkt)
+                    .delete()
+                )
+                total_deleted += deleted_count
+        logger.info(f"Deleted {total_deleted} tiles")
+
     def handle(self, *args, **options):
         batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]
         grid_size = options["grid_size"]
         grid_type = options["grid_type"]
+        clean_outside = options["clean_outside"]
         if grid_type not in [1, 2]:
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
         if insee_code_city is not None:  # Perform selection only for a city
@@ -195,18 +223,5 @@ class Command(BaseCommand):
 
         print("Removing duplicates...")
         self._remove_duplicates()
-
-        # Clean useless tiles
-        city_union_geom = City.objects.aggregate(union_geom=Collect("geometry"))[
-            "union_geom"
-        ]
-        print("Deleting tiles out of the cities")
-        for start in tqdm(range(0, total_records, batch_size * 10)):
-            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
-                "id", flat=True
-            )
-            with transaction.atomic():
-                Tile.objects.filter(id__in=batch_ids).exclude(
-                    geometry__intersects=city_union_geom
-                ).delete()
-        logger.info(f"Deleted {total_records} tiles")
+        if clean_outside:
+            self._clean_outside(selected_city, batch_size, logger)

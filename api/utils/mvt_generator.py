@@ -4,6 +4,7 @@ from os import truncate
 from django.conf import settings
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon
+from shapely import Polygon as Polygon_shapely
 from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
@@ -49,6 +50,7 @@ class MVTGenerator:
                     bounds["east"],
                     bounds["north"],
                     zoom,
+                    truncate=True,
                 )
             )
 
@@ -129,10 +131,9 @@ class MVTGenerator:
         x_span = x_max - x0
         y_span = y_max - y0
         for obj in tqdm(queryset, desc="Preparing MVT features", total=len(queryset)):
-            # Transform geometry in tile relative coordinate
             clipped_geom = obj.clipped_geometry
             if not clipped_geom.empty:
-                tile_based_coords = []
+                tile_based_coords = []  # Transform geometry in tile relative coordinate
                 for x_merc, y_merc in clipped_geom.coords[0]:
                     tile_based_coord = (
                         int((x_merc - x0) * MVT_EXTENT / x_span),
@@ -140,7 +141,7 @@ class MVTGenerator:
                     )
                     tile_based_coords.append(tile_based_coord)
                 feature = {
-                    "geometry": Polygon(tile_based_coords).wkt,
+                    "geometry": Polygon_shapely(tile_based_coords),
                     "properties": obj.get_layer_properties(),
                 }
                 features.append(feature)

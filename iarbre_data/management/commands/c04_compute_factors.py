@@ -53,13 +53,31 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         flattened_geometries, geometry="geometry", crs=factor_crs
     )
     factor_df = factor_df[factor_df.geometry.notnull() & factor_df.geometry.is_valid]
-    df = tiles_df.clip(factor_df)
-    df["value"] = df.geometry.area / std_area
-    tile_factors = [
-        TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
-        for row in df.itertuples()
-    ]
-    return tile_factors
+
+    # Filter polygons in the bounding box of the tiles
+    tiles_index = tiles_df.sindex
+
+    def has_intersection(geom):
+        if geom is None or geom.is_empty:
+            return False
+        bounding_box = box(*geom.bounds)
+        return any(tiles_index.query(bounding_box))
+
+    idx_intersect = factor_df.geometry.apply(has_intersection)
+    possible_matches = factor_df[idx_intersect].copy()
+    if len(possible_matches) > 0:
+        df = tiles_df.clip(possible_matches)
+        df["value"] = df.geometry.area / std_area
+        # Do not add a TileFactor if it already exists in the DB
+        existing_pairs = set(TileFactor.objects.values_list("id", "factor"))
+        tile_factors = [
+            TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
+            for row in df.itertuples(index=False)
+            if (row.id, factor_name) not in existing_pairs
+        ]
+        return tile_factors
+    else:
+        return []
 
 
 def compute_for_factor(factor_name, tiles_df, std_area):
@@ -85,7 +103,6 @@ def compute_for_factor(factor_name, tiles_df, std_area):
         desc=f"factor {factor_name}",
         total=n_batches,
     ):
-        # Spatial index
         tiles_df = tiles_df[tiles_df.geometry.notnull() & tiles_df.geometry.is_valid]
         tile_factors = _compute_for_factor_partial_tiles(
             factor_name,
