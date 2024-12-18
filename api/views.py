@@ -9,7 +9,7 @@ from api.map import load_tiles
 from iarbre_data.models import Tile
 
 MODEL_BY_TYPE = {
-    ModelType.TILE.value: Tile,
+    ModelType.TILE.value: "tile",
 }
 
 

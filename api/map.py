@@ -81,8 +81,8 @@ def territories_to_tile(Model, x, y, zoom):
 
 
 @lru_cache(maxsize=1024)
-def load_tiles(Model, x, y, zoom):
-    output_dir = os.path.join(settings.BASE_DIR, "mvt_files")
+def load_tiles(model, x, y, zoom):
+    output_dir = os.path.join(settings.BASE_DIR, "mvt_files", model)
     with open(os.path.join(output_dir, str(zoom), str(x), f"{y}.mvt"), "rb") as f:
         tiles = f.read()
 

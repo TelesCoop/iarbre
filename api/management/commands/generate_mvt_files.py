@@ -26,6 +26,6 @@ class Command(BaseCommand):
         # Generate MVT tiles for Tile model
         self.generate_tiles_for_model(
             Tile,
-            os.path.join(settings.BASE_DIR, "mvt_files"),
+            os.path.join(settings.BASE_DIR, "mvt_files", "tile"),
             (8, 16),
         )
