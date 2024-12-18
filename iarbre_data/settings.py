@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 import getconf
+from django.http import Http404
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,6 +94,9 @@ else:
             if DEBUG
             else config.getstr("environment.environment", "production")
         ),
+        "exception_level_filters": [
+            (Http404, "ignored"),
+        ],
         "root": BASE_DIR,
     }
     MIDDLEWARE.append("rollbar.contrib.django.middleware.RollbarNotifierMiddleware")
