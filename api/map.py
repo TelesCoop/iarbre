@@ -6,7 +6,7 @@ from functools import lru_cache
 import mapbox_vector_tile
 import mercantile
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.gis.geos import Polygon
 from tqdm import tqdm
 
@@ -83,8 +83,11 @@ def territories_to_tile(Model, x, y, zoom):
 @lru_cache(maxsize=1024)
 def load_tiles(model, x, y, zoom):
     output_dir = os.path.join(settings.BASE_DIR, "mvt_files", model)
-    with open(os.path.join(output_dir, str(zoom), str(x), f"{y}.mvt"), "rb") as f:
-        tiles = f.read()
+    try:
+        with open(os.path.join(output_dir, str(zoom), str(x), f"{y}.mvt"), "rb") as f:
+            tiles = f.read()
+    except FileNotFoundError:
+        raise Http404("Tile not found")
 
     return HttpResponse(tiles, content_type="application/x-protobuf")
 
