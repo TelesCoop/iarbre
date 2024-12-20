@@ -16,5 +16,6 @@ local_settings.conf
 .telescoop_backup_last_backup
 dump.sql
 *.dump
-mvt_files/
-
+mvt_files/*
+*.mvt
+*.log
