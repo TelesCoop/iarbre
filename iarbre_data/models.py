@@ -75,7 +75,6 @@ class MVTTile(models.Model):
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
     model_type = models.CharField(max_length=50)
-    geometry = PolygonField(srid=3857)
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
