@@ -1,5 +1,5 @@
 import os
-from os import truncate
+from concurrent.futures import ThreadPoolExecutor
 
 from django.conf import settings
 from django.contrib.gis.db.models import Extent
@@ -9,14 +9,18 @@ from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
 from typing import List, Dict, Any
-from iarbre_data.models import MVTTile, Tile
-
+from iarbre_data.models import MVTTile
 from tqdm import tqdm
 
 
 class MVTGenerator:
     def __init__(
-        self, queryset, layer_name="geometries", zoom_levels=(0, 14), output_dir=None
+        self,
+        queryset,
+        layer_name="geometries",
+        zoom_levels=(0, 14),
+        output_dir=None,
+        number_of_thread=1,
     ):
         """
         Initialize MVT Generator for Django GeoDjango QuerySet
@@ -28,6 +32,7 @@ class MVTGenerator:
         self.queryset = queryset
         self.layer_name = layer_name
         self.min_zoom, self.max_zoom = zoom_levels
+        self.number_of_thread = number_of_thread
 
         # Ensure output directory exists
         self.output_dir = output_dir or os.path.join(settings.BASE_DIR, "mvt_tiles")
@@ -55,11 +60,13 @@ class MVTGenerator:
                 )
             )
 
-            for index, tile in enumerate(tiles):
-                print(
-                    f"Generating tile {index + 1} of {len(tiles)} for zoom level {zoom}"
-                )
-                self._generate_tile_for_zoom(tile, zoom)
+            with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
+                futures = [
+                    executor.submit(self._generate_tile_for_zoom, tile, zoom)
+                    for tile in tiles
+                ]
+                for future in futures:
+                    future.result()
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
         """

@@ -39,6 +39,10 @@ class Tile(models.Model):
             "id": self.id,
             "indice": self.normalized_indice,
             "color": self.color,
+            **{
+                tile_factor.factor: tile_factor.value
+                for tile_factor in self.factors.all()
+            },
         }
 
 
@@ -61,7 +65,7 @@ class City(models.Model):
 
 
 class TileFactor(models.Model):
-    tile = models.ForeignKey(Tile, on_delete=models.CASCADE)
+    tile = models.ForeignKey(Tile, on_delete=models.CASCADE, related_name="factors")
     factor = models.CharField(max_length=50)
     value = models.FloatField()
 
