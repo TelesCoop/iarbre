@@ -9,6 +9,7 @@ from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
 from typing import List, Dict, Any
+from iarbre_data.models import MVTTile, Tile
 
 from tqdm import tqdm
 
@@ -107,14 +108,14 @@ class MVTGenerator:
                 mvt_data = mapbox_vector_tile.encode(
                     [{"name": self.layer_name, "features": features}]
                 )
-
-                # Create tile directory structure
-                tile_path = os.path.join(self.output_dir, str(zoom), str(tile.x))
-                os.makedirs(tile_path, exist_ok=True)
-
-                # Save MVT tile
-                with open(os.path.join(tile_path, f"{tile.y}.mvt"), "wb") as f:
-                    f.write(mvt_data)
+                filename = f"{self.layer_name}/{zoom}/{tile.x}/{tile.y}.mvt"
+                mvt_tile = MVTTile(
+                    zoom_level=zoom,
+                    tile_x=tile.x,
+                    tile_y=tile.y,
+                    geometry=tile_polygon,
+                )
+                mvt_tile.save_mvt(mvt_data, filename)
 
     @staticmethod
     def _prepare_mvt_features(queryset, tile_polygon) -> List[Dict[str, Any]]:

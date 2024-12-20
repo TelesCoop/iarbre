@@ -6,11 +6,12 @@ from functools import lru_cache
 import mapbox_vector_tile
 import mercantile
 
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, FileResponse
 from django.contrib.gis.geos import Polygon
 from tqdm import tqdm
 
 from iarbre_data import settings
+from iarbre_data.models import MVTTile
 
 
 def pixel_length(zoom):
@@ -82,14 +83,11 @@ def territories_to_tile(Model, x, y, zoom):
 
 @lru_cache(maxsize=1024)
 def load_tiles(model, x, y, zoom):
-    output_dir = os.path.join(settings.BASE_DIR, "mvt_files", model)
     try:
-        with open(os.path.join(output_dir, str(zoom), str(x), f"{y}.mvt"), "rb") as f:
-            tiles = f.read()
-    except FileNotFoundError:
+        tile = MVTTile.objects.get(zoom_level=zoom, tile_x=x, tile_y=y)
+        return HttpResponse(tile.mvt_file, content_type="application/x-protobuf")
+    except MVTTile.DoesNotExist:
         raise Http404("Tile not found")
-
-    return HttpResponse(tiles, content_type="application/x-protobuf")
 
 
 def generate_geojson_file(instances, Model, geojson_file_path="output.geojson"):
