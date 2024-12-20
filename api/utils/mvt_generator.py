@@ -120,7 +120,6 @@ class MVTGenerator:
                     zoom_level=zoom,
                     tile_x=tile.x,
                     tile_y=tile.y,
-                    geometry=tile_polygon,
                 )
                 mvt_tile.save_mvt(mvt_data, filename)
 

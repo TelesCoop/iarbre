@@ -4,7 +4,7 @@ from django.core.management import BaseCommand
 
 from api.utils.mvt_generator import MVTGenerator
 from iarbre_data import settings
-from iarbre_data.models import Tile
+from iarbre_data.models import Tile, MVTTile
 
 
 class Command(BaseCommand):
@@ -16,6 +16,13 @@ class Command(BaseCommand):
             type=int,
             default=1,
             help="Number of threads to use for generating tiles",
+        )
+
+        parser.add_argument(
+            "--clean",
+            type=bool,
+            default=False,
+            help="Delete all existing tiles before generating new ones",
         )
 
     def generate_tiles_for_model(
@@ -36,6 +43,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         number_of_thread = options["number_of_thread"]
         # Generate MVT tiles for Tile model
+        if options["clean"]:
+            print("Deleting existing MVTTile")
+            MVTTile.objects.all().delete()
         self.generate_tiles_for_model(
             Tile,
             Tile.objects.all().prefetch_related("factors"),

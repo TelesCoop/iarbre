@@ -19,3 +19,4 @@ dump.sql
 mvt_files/*
 *.mvt
 *.log
+media/*
