@@ -2,7 +2,7 @@ import pandas as pd
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
-from django.db.models import Avg, F, Func, Value
+from django.db.models import F, Value, Min, Max
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Tile, TileFactor
@@ -64,14 +64,18 @@ class Command(BaseCommand):
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             compute_indice(tiles_df["id"])
 
-        # Normalize indices
-        mean_indice = Tile.objects.filter(indice__isnull=False).aggregate(
-            mean_indice=Avg("indice")
-        )["mean_indice"]
-        k = 0.1
+        # Normalize indices between 0-1
+        # Compute min and max of 'indice'
+        agg_values = Tile.objects.filter(indice__isnull=False).aggregate(
+            min_indice=Min("indice"), max_indice=Max("indice")
+        )
+        min_indice = agg_values["min_indice"]
+        max_indice = agg_values["max_indice"]
+
+        # Normalize indices using Min-Max scaling
         with transaction.atomic():  # Do it directly in the DB to avoid RAM issues
             Tile.objects.update(
-                normalized_indice=1
-                / (1 + Func(-k * (F("indice") - Value(mean_indice)), function="EXP"))
+                normalized_indice=(F("indice") - Value(min_indice))
+                / (Value(max_indice) - Value(min_indice))
             )
         print("Normalized indices have been successfully updated.")
