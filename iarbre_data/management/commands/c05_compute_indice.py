@@ -3,6 +3,7 @@ from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from django.db.models import F, Value, Min, Max
+from numba.np.arrayobj import normalize_indices
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Tile, TileFactor
@@ -16,15 +17,28 @@ def compute_indice(tiles_id):
         ),
         columns=["tile_id", "factor", "value"],
     )
-    factors = pd.Series(FACTORS)
+    factors = pd.Series(FACTORS) + 5  # make all factors positive
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
-    df = df.groupby("tile_id")["value"].sum().reset_index()
+    grouped = (
+        df.groupby("tile_id")
+        .agg(weighted_sum=("value", "sum"), total_weight=("factor_coeff", "sum"))
+        .reset_index()
+    )
+    # Compute normalized indice
+    grouped["normalized_indice"] = grouped["weighted_sum"] / grouped["total_weight"]
     Tile.objects.bulk_update(
-        [Tile(id=row.tile_id, indice=row.value) for row in df.itertuples()],
-        ["indice"],
-        batch_size=10000,
+        [
+            Tile(
+                id=row.tile_id,
+                indice=row.weighted_sum,
+                normalized_indice=row.normalized_indice,
+            )
+            for row in grouped.itertuples()
+        ],
+        ["indice", "normalized_indice"],
+        batch_size=5000,
     )
 
 
@@ -37,7 +51,7 @@ class Command(BaseCommand):
             type=str,
             required=False,
             default=None,
-            help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
+            help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code 69266,69382)",
         )
 
     def handle(self, *args, **options):
@@ -63,19 +77,3 @@ class Command(BaseCommand):
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             compute_indice(tiles_df["id"])
-
-        # Normalize indices between 0-1
-        # Compute min and max of 'indice'
-        agg_values = Tile.objects.filter(indice__isnull=False).aggregate(
-            min_indice=Min("indice"), max_indice=Max("indice")
-        )
-        min_indice = agg_values["min_indice"]
-        max_indice = agg_values["max_indice"]
-
-        # Normalize indices using Min-Max scaling
-        with transaction.atomic():  # Do it directly in the DB to avoid RAM issues
-            Tile.objects.update(
-                normalized_indice=(F("indice") - Value(min_indice))
-                / (Value(max_indice) - Value(min_indice))
-            )
-        print("Normalized indices have been successfully updated.")
