@@ -1,5 +1,3 @@
-from ipykernel.pickleutil import buffer
-
 DATA_FILES = [
     {
         "name": "Parkings surfacique",

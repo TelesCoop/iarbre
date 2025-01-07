@@ -1,16 +1,14 @@
 import json
 import math
-import os
 from functools import lru_cache
 
 import mapbox_vector_tile
 import mercantile
 
-from django.http import HttpResponse, Http404, FileResponse
+from django.http import HttpResponse, Http404
 from django.contrib.gis.geos import Polygon
 from tqdm import tqdm
 
-from iarbre_data import settings
 from iarbre_data.models import MVTTile
 
 

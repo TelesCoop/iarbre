@@ -1,12 +1,9 @@
 import time
 
-from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from api.constants import ModelType
-from api.map import territories_to_tile
 from api.map import load_tiles
-from iarbre_data.models import Tile
 
 MODEL_BY_TYPE = {
     ModelType.TILE.value: "tile",
