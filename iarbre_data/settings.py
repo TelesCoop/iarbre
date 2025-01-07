@@ -192,7 +192,7 @@ else:
     AWS_S3_HOST = config.getstr("external_file_storage.host")
     AWS_S3_ENDPOINT_URL = "https://{}".format(AWS_S3_HOST)
     MEDIA_LOCATION = "private-media"
-    MEDIA_URL = f"https://{AWS_S3_ENDPOINT_URL}/{MEDIA_LOCATION}/"
+    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{MEDIA_LOCATION}/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
