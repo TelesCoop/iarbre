@@ -182,16 +182,16 @@ else:
     STATIC_ROOT = config.getstr("staticfiles.static_root")
 
     # MEDIA
-    DEFAULT_FILE_STORAGE = "iarbre_data.storage_backends.PrivateMediaStorage"
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_DEFAULT_ACL = "private"
+    # AWS_DEFAULT_ACL = "private"
     AWS_S3_REGION_NAME = config.getstr("external_file_storage.region")
     AWS_S3_HOST = config.getstr("external_file_storage.host")
     AWS_S3_ENDPOINT_URL = "https://{}".format(AWS_S3_HOST)
-    MEDIA_LOCATION = "private-media"
+    MEDIA_LOCATION = "public-media"
     MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{MEDIA_LOCATION}/"
 
 # Default primary key field type
