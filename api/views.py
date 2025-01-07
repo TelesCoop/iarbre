@@ -1,12 +1,11 @@
 import time
 
-from django.views.decorators.cache import cache_page
+from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 
 from api.constants import ModelType
-from api.map import territories_to_tile
 from api.map import load_tiles
-from iarbre_data.models import Tile
+from iarbre_data.data_config import FACTORS
 
 MODEL_BY_TYPE = {
     ModelType.TILE.value: "tile",
@@ -23,3 +22,8 @@ def tile_view(request, model_type, zoom, x, y):
 
     print(f"Request duration: {time.time() - start_time} seconds")
     return response
+
+
+@require_GET
+def get_factor_weightings(request):
+    return JsonResponse(FACTORS)

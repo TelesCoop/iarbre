@@ -1,10 +1,12 @@
+import json
 import os
 
+from django.conf import settings
 from django.core.management import BaseCommand
+from django.db.models import Avg
 
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data import settings
-from iarbre_data.models import Tile, MVTTile
+from iarbre_data.models import MVTTile, TileFactor, Tile
 
 
 class Command(BaseCommand):
@@ -40,6 +42,20 @@ class Command(BaseCommand):
         mvt_generator.generate_tiles()
         self.stdout.write(self.style.SUCCESS("MVT tiles generated successfully!"))
 
+    def generate_mean_of_each_factor(self):
+        mean_values = (
+            TileFactor.objects.all().values("factor").annotate(mean_value=Avg("value"))
+        )
+        mean_values_by_factor = {
+            mean_value["factor"]: mean_value["mean_value"] for mean_value in mean_values
+        }
+
+        file_path = os.path.join(settings.STATIC_ROOT, "mean_values_by_factor.json")
+        # create directory if not exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w") as outfile:
+            json.dump(mean_values_by_factor, outfile)
+
     def handle(self, *args, **options):
         number_of_thread = options["number_of_thread"]
         # Generate MVT tiles for Tile model
@@ -53,3 +69,4 @@ class Command(BaseCommand):
             (8, 16),
             number_of_thread,
         )
+        self.generate_mean_of_each_factor()
