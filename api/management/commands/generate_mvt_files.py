@@ -48,7 +48,7 @@ class Command(BaseCommand):
             MVTTile.objects.all().delete()
         self.generate_tiles_for_model(
             Tile,
-            Tile.objects.all().prefetch_related("factors"),
+            Tile.objects.all(),
             os.path.join(settings.BASE_DIR, "mvt_files", "tile"),
             (8, 16),
             number_of_thread,
