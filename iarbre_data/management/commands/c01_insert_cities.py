@@ -6,7 +6,7 @@ from django.db.models import Count
 
 from iarbre_data.models import City
 
-mapping = {"geometry": "POLYGON", "name": "nom", "insee_code": "insee"}
+mapping = {"geometry": "POLYGON", "name": "nom", "code": "insee"}
 
 
 class Command(BaseCommand):

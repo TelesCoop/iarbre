@@ -1,4 +1,5 @@
 import shapely
+from iarbre_data.models import City
 
 
 def load_geodataframe_from_db(queryset, fields):
@@ -11,7 +12,7 @@ def load_geodataframe_from_db(queryset, fields):
         [
             dict(
                 geometry=data.geometry,
-                **{field: getattr(data, field) for field in fields}
+                **{field: getattr(data, field) for field in fields},
             )
             for data in queryset
         ]
@@ -20,3 +21,16 @@ def load_geodataframe_from_db(queryset, fields):
         lambda el: shapely.wkt.loads(el.wkt)
     )  # Shapely used to transform string to geometry
     return df.set_geometry("geometry")
+
+
+def select_city(insee_code_city):
+    """Select a list of city based on INSEE_CODE"""
+    if insee_code_city is not None:  # Perform selection only for a city
+        insee_code_city = insee_code_city.split(",")
+        selected_city_qs = City.objects.filter(code__in=insee_code_city)
+        if not selected_city_qs.exists():
+            raise ValueError(f"No city found with INSEE code {insee_code_city}")
+        selected_city = load_geodataframe_from_db(selected_city_qs, ["name", "code"])
+    else:
+        selected_city = load_geodataframe_from_db(City.objects.all(), ["name", "code"])
+    return selected_city

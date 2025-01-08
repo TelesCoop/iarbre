@@ -3,12 +3,43 @@ from django.db import models
 from django.core.files.base import ContentFile
 from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
+from django.db.models import Avg
 
 from api.constants import ModelType
 
 
+class TileAggregateBase(models.Model):
+    """Abstract base class for aggregating Tiles."""
+
+    geometry = PolygonField(srid=2154)
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def average_normalized_indice(self):
+        """As for now the aggregate is the average but it may change later."""
+        return self.tiles.aggregate(avg=Avg("normalized_indice"))["avg"]
+
+    @property
+    def average_indice(self):
+        return self.tiles.aggregate(avg=Avg("indice"))["avg"]
+
+
+class Iris(TileAggregateBase):
+    def __str__(self):
+        return f"IRIS code: {self.code}"
+
+
+class City(TileAggregateBase):
+    def __str__(self):
+        return f"CITY name: {self.name}"
+
+
 class Tile(models.Model):
-    """Square area of the map with the value of the indice."""
+    """Elementary element on the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=3857, null=True, blank=True)
@@ -16,6 +47,13 @@ class Tile(models.Model):
     normalized_indice = models.FloatField(null=True, blank=True)
 
     type = ModelType.TILE.value
+
+    iris = models.ForeignKey(
+        Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
+    )
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
+    )
 
     @property
     def color(self):
@@ -52,12 +90,6 @@ class Data(models.Model):
     geometry = GeometryField(srid=2154)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
-
-
-class City(models.Model):
-    geometry = PolygonField(srid=2154)
-    name = models.CharField(max_length=50)
-    insee_code = models.CharField(max_length=10)
 
 
 class TileFactor(models.Model):
