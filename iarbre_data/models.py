@@ -12,8 +12,8 @@ class TileAggregateBase(models.Model):
     """Abstract base class for aggregating Tiles."""
 
     geometry = PolygonField(srid=2154)
-    code = models.CharField(max_length=50)
-    name = models.CharField(max_length=50)
+    code = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -28,14 +28,18 @@ class TileAggregateBase(models.Model):
         return self.tiles.aggregate(avg=Avg("indice"))["avg"]
 
 
-class Iris(TileAggregateBase):
-    def __str__(self):
-        return f"IRIS code: {self.code}"
-
-
 class City(TileAggregateBase):
     def __str__(self):
         return f"CITY name: {self.name}"
+
+
+class Iris(TileAggregateBase):
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, related_name="irises", null=True, blank=True
+    )
+
+    def __str__(self):
+        return f"IRIS code: {self.code}"
 
 
 class Tile(models.Model):
