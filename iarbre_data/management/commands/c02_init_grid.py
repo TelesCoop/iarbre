@@ -96,7 +96,11 @@ def create_hexs_for_city(
         # Optimize storage
         rounded_dim = [(round(x, 2), round(y, 2)) for (x, y) in dim]
         hexagon = Polygon(rounded_dim, srid=TARGET_PROJ)
-        iris_id = Iris.objects.filter(geometry__intersects=hexagon)[0].id
+        iris_id = Iris.objects.filter(geometry__intersects=hexagon)
+        if len(iris_id) > 0:
+            iris_id = iris_id[0].id
+        else:
+            continue
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
