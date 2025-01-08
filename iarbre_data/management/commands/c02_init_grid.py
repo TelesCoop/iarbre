@@ -4,7 +4,6 @@ import logging
 import random
 
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
 from django.db import transaction, close_old_connections
@@ -12,7 +11,7 @@ from django.db.models import Count
 from tqdm import tqdm
 
 from iarbre_data.management.commands.utils import select_city
-from iarbre_data.models import Tile
+from iarbre_data.models import Iris, Tile
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
@@ -97,12 +96,14 @@ def create_hexs_for_city(
         # Optimize storage
         rounded_dim = [(round(x, 2), round(y, 2)) for (x, y) in dim]
         hexagon = Polygon(rounded_dim, srid=TARGET_PROJ)
+        iris_id = Iris.objects.filter(geometry__intersects=hexagon)[0].id
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
             indice=random.uniform(-5, 5),
             # Create tile with random indice from -5 to 5
             city_id=city_id,
+            iris_id=iris_id,
         )
         tiles.append(tile)
         # Avoid OOM errors
@@ -216,24 +217,16 @@ class Command(BaseCommand):
         desired_area = grid_size * grid_size
         unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
         a = np.sin(np.pi / 3)
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [
-                executor.submit(
-                    self._create_grid_city,
-                    city,
-                    batch_size,
-                    logger,
-                    grid_type,
-                    unit,
-                    a,
-                    grid_size,
-                )
-                for city in selected_city.itertuples()
-            ]
-            for future in futures:
-                future.result()
-
+        for city in selected_city.itertuples():
+            self._create_grid_city(
+                city,
+                batch_size,
+                logger,
+                grid_type,
+                unit,
+                a,
+                grid_size,
+            )
         print("Removing duplicates...")
         self._remove_duplicates()
         if clean_outside:

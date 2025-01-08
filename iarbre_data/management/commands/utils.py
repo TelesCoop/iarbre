@@ -30,7 +30,11 @@ def select_city(insee_code_city):
         selected_city_qs = City.objects.filter(code__in=insee_code_city)
         if not selected_city_qs.exists():
             raise ValueError(f"No city found with INSEE code {insee_code_city}")
-        selected_city = load_geodataframe_from_db(selected_city_qs, ["name", "code"])
+        selected_city = load_geodataframe_from_db(
+            selected_city_qs, ["id", "name", "code"]
+        )
     else:
-        selected_city = load_geodataframe_from_db(City.objects.all(), ["name", "code"])
+        selected_city = load_geodataframe_from_db(
+            City.objects.all(), ["id", "name", "code"]
+        )
     return selected_city
