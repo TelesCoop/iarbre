@@ -1,7 +1,7 @@
 from django.contrib.gis.db.models import GeometryField, PolygonField
 from django.db import models
 from django.core.files.base import ContentFile
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 
 from api.constants import ModelType
@@ -80,8 +80,13 @@ class MVTTile(models.Model):
     def save_mvt(self, mvt_data, filename):
         """Save the MVT data into the FileField."""
         content = ContentFile(mvt_data)
-        self.mvt_file.save(filename, content)
+        self.mvt_file.save(filename, content, save=False)
         self.save()
 
     def __str__(self):
         return f"Tile {self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
+
+
+@receiver(pre_delete, sender=MVTTile)
+def before_delete_mvt_tile(sender, instance, **kwargs):
+    instance.mvt_file.delete(save=False)

@@ -179,10 +179,13 @@ if IS_LOCAL_DEV:
 else:
     STORAGES = {
         "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
+        "external_file_storage": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         },
     }
     STATIC_ROOT = config.getstr("staticfiles.static_root")
@@ -194,7 +197,6 @@ else:
     AWS_S3_HOST = config.getstr("external_file_storage.host")
     AWS_S3_ENDPOINT_URL = "https://{}".format(AWS_S3_HOST)
     MEDIA_LOCATION = "public-media"
-    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{MEDIA_LOCATION}/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
