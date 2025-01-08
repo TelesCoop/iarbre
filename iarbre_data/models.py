@@ -39,10 +39,6 @@ class Tile(models.Model):
             "id": self.id,
             "indice": self.normalized_indice,
             "color": self.color,
-            **{
-                tile_factor.factor: tile_factor.value
-                for tile_factor in self.factors.all()
-            },
         }
 
 
