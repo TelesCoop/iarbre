@@ -1,0 +1,193 @@
+- name: Install misc packages
+  apt:
+    name:
+      - python3-venv
+      - nginx
+      - supervisor
+
+- name: Install sqlite
+  apt:
+    name:
+      - sqlite3
+  when: database_provider == "sqlite"
+
+- name: Install postgresql
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+      - python3-pip
+      - postgresql-14-postgis-3
+  when: database_provider == "postgresql"
+
+- name: Find postgresql auth config file to configure authentication
+  find: paths="/etc/postgresql/" recurse=yes patterns="pg_hba.conf"
+  register: hba_files
+  when: database_provider == "postgresql"
+
+- name: Configure postgres authentication for using passwords
+  ansible.builtin.lineinfile:
+    path: "{{ item.path }}"
+    regexp: '^(local\s+all\s+all\s+)peer$'
+    line: '\1md5'
+    backrefs: true
+  with_items: "{{ hba_files.files }}"
+  when: database_provider == "postgresql"
+
+- name: Install psycopg2 on system
+  pip:
+    name: psycopg2
+  when: database_provider == "postgresql"
+
+- name: Create database user {{ project_slug }}
+  community.postgresql.postgresql_user:
+    name: "{{ project_slug }}"
+    password: "{{ database_password }}"
+  become: true
+  become_user: postgres
+  when: database_provider == "postgresql"
+
+- name: Create database {{ project_slug }}
+  community.postgresql.postgresql_db:
+    name: "{{ project_slug }}"
+    owner: "{{ project_slug }}"
+  become: true
+  become_user: postgres
+  when: database_provider == "postgresql"
+
+- name: Create main user {{ main_user }}
+  user:
+    name: "{{ main_user }}"
+    uid: "{{ main_user_uid }}"
+    shell: /bin/bash
+
+- name: Create directories and set permissions
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: "/{{ organization_slug }}"
+      mode: '2775'
+      owner: "root"
+    - path: "/{{ organization_slug }}/{{ project_slug }}"
+      mode: '2775'
+      owner: "{{ main_user }}"
+    - path: "/etc/{{ organization_slug }}"
+      mode: '2775'
+      owner: "root"
+    - path: "/etc/{{ organization_slug }}/{{ project_slug }}"
+      mode: '2775'
+      owner: "{{ main_user }}"
+    - path: "{{ var_log_path }}"
+      mode: '2770'
+      owner: "{{ main_user }}"
+    - path: "{{ venv.path }}"
+      mode: '0755'
+      owner: "{{ main_user }}"
+
+- name: Create backend venv {{ venv.path }}
+  command:
+    cmd: python3 -m venv --system-site-packages {{ venv.path }}
+    creates: "{{ venv.path }}/bin/python"
+  become: true
+  become_user: "{{ main_user }}"
+
+- name: Install {{ project_slug }}-ctl
+  template:
+    src: backend-ctl.j2
+    dest: "/usr/local/bin/{{ project_slug }}-ctl"
+    mode: "0755"
+
+- name: Copy django settings to {{ backend_settings_path }}
+  template:
+    src: settings.ini.j2
+    dest: "{{ backend_settings_path }}"
+    owner: "{{ main_user }}"
+    group: devops
+    mode: 0660
+
+- name: Copy supervisord config to {{ supervisor_conf }}/{{ project_slug }}_backend.conf
+  template:
+    src: backend-supervisor.conf.j2
+    dest: "{{ supervisor_conf }}/{{ project_slug }}_backend.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install {{ project_slug }}-backend supervisor
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: present
+
+- name: Generate backend /etc/ssh/ RSA host key
+  command: "ssh-keygen -q -t ed25519 -a 100 -f {{ backend_identity_file_path }} -C \"\" -N \"\""
+  become_user: "{{ main_user }}"
+  args:
+    creates: "{{ backend_identity_file_path }}"
+  register: backend_new_ssh_key
+
+- name: WARNING ABOUT new ssh key
+  debug:
+    msg: |
+      IMPORTANT REMINDER
+
+      A new ssh key has been generated at {{ backend_identity_file_path }}
+      - it should be added to the project deploy keys in Gitlab/Github
+      so that we can clone it.
+  when: backend_new_ssh_key.changed
+
+- name: Get new ssh key contents
+  command: "cat {{ backend_identity_file_path }}.pub"
+  register: backend_command_output
+  when: backend_new_ssh_key.changed
+
+- name: Print ssh key to console
+  debug:
+    msg: "{{ backend_command_output.stdout }}"
+  when: backend_new_ssh_key.changed
+
+- name: get latest code
+  git:
+    repo: '{{ backend_repo }}'
+    dest: "{{ backend_path }}/.."
+    key_file: "{{ backend_identity_file_path }}"
+    force: true
+    version: "{{ backend_branch }}"
+    accept_hostkey: true
+  become_user: "{{ main_user }}"
+  register: clonecode
+
+- name: Install python dependencies
+  command:
+    cmd: "{{ venv.path }}/bin/pip install -r requirements.txt"
+    chdir: "{{ backend_path }}"
+  when: clonecode.changed or force_update is defined
+
+- name: Run migrations
+  command:
+    cmd: "{{ project_slug }}-ctl migrate"
+  become: true
+  become_user: "{{ main_user }}"
+  when: clonecode.changed or force_update is defined
+
+- name: Collect backend static files
+  command:
+    cmd: "{{ project_slug }}-ctl collectstatic --no-input"
+  when: clonecode.changed or force_update is defined
+
+- name: Restart {{ project_slug }} supervisor
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: restarted
+  when: clonecode.changed or force_update is defined
+
+- name: "daily database backup"
+  cron:
+    user: "{{ main_user }}"
+    name: "daily {{ project_slug }} database backup"
+    hour: '{{ database_backup.hour }}'
+    minute: '{{ database_backup.minute }}'
+    job: "{{ project_slug }}-ctl backup_db backup"

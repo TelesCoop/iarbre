@@ -1,0 +1,48 @@
+repos:
+  - repo: https://github.com/jphppd/pre-commit-hooks.git
+    rev: 0.0.12
+    hooks:
+      - id: git-check-mailmap
+      - id: git-forbid-binary
+      - id: git-check
+      - id: git-dirty
+      - id: git-check-added-large-files
+      - id: git-check-merge-conflict
+      - id: generic-check-byte-order-marker
+      - id: generic-check-case-conflict
+      - id: generic-check-executables-have-shebangs
+      - id: generic-check-symlinks
+      - id: generic-check-vcs-permalinks
+      - id: generic-detect-private-key
+      - id: generic-end-of-file-fixer
+      - id: generic-trailing-whitespace
+      - id: generic-crlf-forbid
+      - id: generic-crlf-remove
+      - id: generic-tabs-forbid
+      - id: generic-tabs-remove
+      - id: generic-nbsp-forbid
+      - id: generic-nbsp-remove
+      - id: generic-en-dashes-forbid
+      - id: generic-en-dashes-remove
+      - id: ansible-lint
+      # - id: jinja-lint
+      # commented until issue is fixed https://github.com/motet-a/jinjalint/issues/32
+      - id: json-check-syntax
+      - id: json-pretty-format
+      - id: markdown-lint
+      - id: perl-critic
+      - id: perl-tidy
+      - id: rst-linter
+      - id: shell-check-syntax
+      - id: shell-check
+      - id: shell-script-must-have-extension
+      - id: shell-script-must-not-have-extension
+      - id: shell-bashate
+      - id: shell-beautysh
+      - id: toml-check-syntax
+      - id: xml-check-syntax
+      - id: yaml-check-syntax
+      - id: yaml-yamllint
+        args:
+          - --config-data
+          - "{extends: default, rules: {document-start: disable, line-length: {max: 100}}}"
