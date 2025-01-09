@@ -16,8 +16,6 @@ MODEL_BY_TYPE = {
 def tile_view(request, model_type, zoom, x, y):
     start_time = time.time()
     model = MODEL_BY_TYPE[model_type]
-    # response = territories_to_tile(model, x, y, zoom)
     response = load_tiles(model, x, y, zoom)
-
     print(f"Request duration: {time.time() - start_time} seconds")
     return response

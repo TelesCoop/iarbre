@@ -100,7 +100,7 @@ def create_hexs_for_city(
         if len(iris_id) > 0:
             iris_id = iris_id[0].id
         else:
-            continue
+            iris_id = None
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
