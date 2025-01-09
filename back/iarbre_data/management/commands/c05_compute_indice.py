@@ -1,9 +1,6 @@
 import pandas as pd
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import transaction
-from django.db.models import F, Value, Min, Max
-from numba.np.arrayobj import normalize_indices
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Tile, TileFactor

@@ -1,7 +1,7 @@
 organization_slug: telescoop
 base_project_slug: iarbre
 main_user: iarbre
-main_user_uid: 10045  # TODO must be unique for each project on the server
+main_user_uid: 10045 # TODO must be unique for each project on the server
 django_project_name: iarbre_data
 backend_repo: git@github.com:telescoop/iarbre-back.git
 frontend_repo: git@github.com:telescoop/iarbre-front.git
@@ -14,7 +14,7 @@ requests_timeout: 30
 # if using postgresql database, you will need to
 # - define the var `database_password`
 # - install an additional Ansible module `ansible-galaxy collection install community.postgresql`
-database_provider: postgresql  # sqlite or postgresql
+database_provider: postgresql # sqlite or postgresql
 
 # can be SSR or static
 frontend_mode: static

@@ -1,3 +1,3 @@
 export enum ModelType {
-  TILE = 'tile'
+  TILE = "tile"
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from 'vue-router'
-import { type Component, computed } from 'vue'
-import { Layout } from '@/utils/constants'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import { RouterView, useRoute } from "vue-router"
+import { type Component, computed } from "vue"
+import { Layout } from "@/utils/constants"
+import DefaultLayout from "@/layouts/DefaultLayout.vue"
 
 const route = useRoute()
 

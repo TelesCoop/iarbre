@@ -54,8 +54,8 @@ export const useMapStore = defineStore("map", () => {
       // center to France
       center: [2.213749, 46.227638],
       // zoom to a level where France is visible
-      zoom: 5,
-      workerCount: 5 // set the number of workers
+      zoom: 5
+      // workerCount: 5 TODO: remove this?
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]

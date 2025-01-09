@@ -4,7 +4,6 @@ from io import BytesIO
 from itertools import islice
 
 import geopandas as gpd
-import numpy as np
 import pyogrio
 import requests
 from django.contrib.gis.geos import GEOSGeometry

@@ -10,7 +10,7 @@
 
 - name: get latest frontend code
   git:
-    repo: '{{ frontend_repo }}'
+    repo: "{{ frontend_repo }}"
     dest: "{{ frontend_path }}/.."
     key_file: "{{ backend_identity_file_path }}"
     accept_hostkey: true
@@ -78,7 +78,7 @@
         path: "{{ frontend_static_path }}"
         state: "{{ item }}"
         owner: www-data
-        mode: '2755'
+        mode: "2755"
       with_items:
         - absent
         - directory
@@ -95,7 +95,6 @@
       when: clonecode.changed or force_update is defined
 
   when: frontend_mode == 'static'
-
 
 ###############################
 # SSR CONFIG

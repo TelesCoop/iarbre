@@ -57,7 +57,7 @@ repos:
     rev: 23.12.1
   - hooks:
       - args:
-          - --config=.flake8
+          - --config=back/.flake8
         id: flake8
         language_version: python3.10
     repo: https://github.com/pycqa/flake8
@@ -94,27 +94,15 @@ repos:
     repo: https://gitlab.com/devopshq/gitlab-ci-linter
     rev: v1.0.1
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v9.17.0
+  - repo: local
     hooks:
-      - id: eslint
-        name: eslint
-        additional_dependencies:
-          - eslint@^9.17.0
-          - vue-eslint-parser@latest
-          - eslint-plugin-vue@latest
-          - eslint-plugin-jquery@latest
-          - eslint-plugin-eslint-plugin@latest
-          - prettier@latest
-          - eslint-config-prettier@latest
-          - eslint-plugin-prettier@latest
-          - babel-eslint
-          - eslint-plugin-typescript@latest
-        args:
-          - -c=front/eslint.config.js
-          - --fix
-        files: \.([jt]sx?|vue|cts|ts|mjs)$ # *.js, *.jsx, *.ts, *.tsx and *.vue
+      - id: js-lint
+        name: js-lint
+        entry: npm run --prefix front lint
         types: [file]
+        types_or: [javascript, jsx, ts, tsx, vue]
+        pass_filenames: false
+        language: system
   - repo: local
     hooks:
       - id: js-type-check

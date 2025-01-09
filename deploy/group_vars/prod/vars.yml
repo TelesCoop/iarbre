@@ -1,5 +1,5 @@
-backend_application_port: 8031  # must be unique for each project on the same server
-frontend_application_port: 3000  # must be unique for each project on the same server
+backend_application_port: 8031 # must be unique for each project on the same server
+frontend_application_port: 3000 # must be unique for each project on the same server
 environment_suffix: ""
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 

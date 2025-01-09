@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { useMapStore } from '@/stores/map'
-import { onMounted } from 'vue'
+import { useMapStore } from "@/stores/map"
+import { onMounted } from "vue"
 
 const props = defineProps({
   mapId: {
@@ -14,7 +14,7 @@ const mapInstance = mapStore.getMapInstance(props.mapId)
 
 onMounted(() => {
   mapStore.initMap(props.mapId)
-  console.log('initMap', props.mapId)
+  console.log("initMap", props.mapId)
   // setTimeout(() => {
   //   mapInstance.value.resize()
   // }, 100)

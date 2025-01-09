@@ -1,12 +1,12 @@
 /* Importer les polices */
 @font-face {
-  font-family: 'Bricolage Grotesque';
-  src: url('BricolageGrotesque-Regular.otf') format('opentype');
+  font-family: "Bricolage Grotesque";
+  src: url("BricolageGrotesque-Regular.otf") format("opentype");
 }
 
 @font-face {
-  font-family: 'Sligoil';
-  src: url('Sligoil-Micro.otf') format('opentype');
+  font-family: "Sligoil";
+  src: url("Sligoil-Micro.otf") format("opentype");
 }
 
 * {
@@ -16,96 +16,88 @@
 }
 
 a {
-    color: #32412D; /* Vert foncé */
-    text-decoration: underline; /* Soulignement par défaut */
-    font-weight: bold; /* Optionnel : met en valeur le lien */
+  color: #32412d; /* Vert foncé */
+  text-decoration: underline; /* Soulignement par défaut */
+  font-weight: bold; /* Optionnel : met en valeur le lien */
 }
 
 a:hover {
-    text-decoration: none; /* Supprime le soulignement au survol */
-    color: #32412D; /* Maintient la couleur verte au survol */
+  text-decoration: none; /* Supprime le soulignement au survol */
+  color: #32412d; /* Maintient la couleur verte au survol */
 }
 body {
-  font-family: 'Bricolage Grotesque', Arial, sans-serif;
-  color: #32312D;
-  background-color: #EFEFED;
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  color: #32312d;
+  background-color: #efefed;
   overflow-x: hidden;
 }
 
 hr.full-width {
-    border: none; /* Supprime les styles par défaut */
-    border-top: 1px solid #32412D; /* Vert foncé et fin */
-    width: 100%; /* S'étend sur toute la largeur */
+  border: none; /* Supprime les styles par défaut */
+  border-top: 1px solid #32412d; /* Vert foncé et fin */
+  width: 100%; /* S'étend sur toute la largeur */
 }
 
 .image-fullwidth {
-    width: 100%; /* Section pleine largeur */
-    margin: 0;
-    padding: 0;
+  width: 100%; /* Section pleine largeur */
+  margin: 0;
+  padding: 0;
 }
 
 .image-fullwidth img {
-    width: 100%; /* Image en pleine largeur */
-    height: auto; /* Conserve les proportions */
-    display: block; /* Évite les espaces blancs sous l'image */
+  width: 100%; /* Image en pleine largeur */
+  height: auto; /* Conserve les proportions */
+  display: block; /* Évite les espaces blancs sous l'image */
 }
 
 .reversed-section {
-
-
-    display: flex;
-    flex-direction: row-reverse; /* Inverse l'ordre des colonnes */
-    width: 80%;
-    max-width: 1200px;
-    background-color: #FFFFFF; /* Fond blanc */
-    margin: 40px auto; /* Centrer la section */
-    padding: 20px;
+  display: flex;
+  flex-direction: row-reverse; /* Inverse l'ordre des colonnes */
+  width: 80%;
+  max-width: 1200px;
+  background-color: #ffffff; /* Fond blanc */
+  margin: 40px auto; /* Centrer la section */
+  padding: 20px;
 }
 
 .reversed-section .left {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-
-
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-
 .reversed-section .left img.logo-partners {
-    max-width: 250px; /* Taille maximale de 250px */
-    height: auto; /* Maintient les proportions */
+  max-width: 250px; /* Taille maximale de 250px */
+  height: auto; /* Maintient les proportions */
 }
 
 .reversed-section .left img {
-    max-width: 200px;
-    height: auto;
+  max-width: 200px;
+  height: auto;
 }
 
 .reversed-section .right {
-    flex: 2;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding-right: 20px; /* Espacement ajusté à gauche */
-
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-right: 20px; /* Espacement ajusté à gauche */
 }
 
 .reversed-section .text {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: #32312D;
-    text-align: left;
-    font-family: 'Bricolage Grotesque', Arial, sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #32312d;
+  text-align: left;
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
 }
-
 
 /* Bandeau 2030 */
 .bandeau-2030 {
-  background-color: #92A48D; /* Vert clair */
+  background-color: #92a48d; /* Vert clair */
   padding: 40px 20px; /* Espacement interne */
-  color: #FFFFFF; /* Texte blanc */
+  color: #ffffff; /* Texte blanc */
 }
 
 .bandeau-content {
@@ -119,7 +111,7 @@ hr.full-width {
 
 .bandeau-text {
   flex: 2; /* 2/3 pour le texte */
-  font-family: 'Bricolage Grotesque', Arial, sans-serif;
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
   font-size: 1.2rem;
   line-height: 1.6;
 }
@@ -139,181 +131,178 @@ hr.full-width {
 }
 
 /* Bandeau de navigation */
-    .navbar {
-      position: relative;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      background-color: #EFEFED; /* Même couleur que le background */
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-    }
+.navbar {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background-color: #efefed; /* Même couleur que le background */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
 
-    .navbar-left {
-      display: flex;
-      align-items: center;
-    }
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
 
-    .navbar-logo {
-      height: 30px;
-      width: auto;
-    }
+.navbar-logo {
+  height: 30px;
+  width: auto;
+}
 
-    .navbar-right {
-      display: flex;
-      gap: 20px;
-    }
+.navbar-right {
+  display: flex;
+  gap: 20px;
+}
 
-    .navbar-link {
-      font-family: 'Sligoil', Arial, sans-serif;
-      color: #32312D;
-      text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.3s ease;
-    }
+.navbar-link {
+  font-family: "Sligoil", Arial, sans-serif;
+  color: #32312d;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
 
-    .navbar-link:hover {
-      color: #92A48D;
-    }
+.navbar-link:hover {
+  color: #92a48d;
+}
 
-    .fullscreen {
-        position: relative;
-        height: 65vh;
-        width: 100%;
-        background-image: url('map2.png');
-        background-size: cover;
-        background-position: center;
-        image-rendering: pixelated;
-        box-shadow: 0 -9px 30px rgba(0, 0, 0, 0.4);
-        overflow: hidden; /* Pour contenir la superposition */
-    }
+.fullscreen {
+  position: relative;
+  height: 65vh;
+  width: 100%;
+  background-image: url("map2.png");
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+  box-shadow: 0 -9px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden; /* Pour contenir la superposition */
+}
 
-    .fullscreen::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); /* Superposition noire à 50% */
-        z-index: 1; /* Place la superposition derrière le texte */
-    }
+.fullscreen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* Superposition noire à 50% */
+  z-index: 1; /* Place la superposition derrière le texte */
+}
 
-    .fullscreen-tagline {
-        font-family: 'Sligoil', Arial, sans-serif; /* Utilise la police Sligoil */
-        font-size: 2rem; /* Taille de la phrase */
-        color: #FFFFFF; /* Couleur blanche */
-        text-align: center; /* Texte centré horizontalement */
-        position: absolute; /* Permet de centrer l’élément */
-        top: 50%; /* Position verticale */
-        left: 50%; /* Position horizontale */
-        transform: translate(-50%, -50%); /* Ajuste le centrage exact */
-        text-shadow: 0px 0px 11px rgba(0, 0, 0, 0.99); /* Ajoute une ombre pour la lisibilité */
-        z-index: 2; /* Place le texte au-dessus de la superposition */
-    }
+.fullscreen-tagline {
+  font-family: "Sligoil", Arial, sans-serif; /* Utilise la police Sligoil */
+  font-size: 2rem; /* Taille de la phrase */
+  color: #ffffff; /* Couleur blanche */
+  text-align: center; /* Texte centré horizontalement */
+  position: absolute; /* Permet de centrer l’élément */
+  top: 50%; /* Position verticale */
+  left: 50%; /* Position horizontale */
+  transform: translate(-50%, -50%); /* Ajuste le centrage exact */
+  text-shadow: 0px 0px 11px rgba(0, 0, 0, 0.99); /* Ajoute une ombre pour la lisibilité */
+  z-index: 2; /* Place le texte au-dessus de la superposition */
+}
 
+.team {
+  padding: 100px 20px;
+  background-color: #efefed; /* Couleur de fond */
+  text-align: center;
+}
 
-    .team {
-      padding: 100px 20px;
-      background-color: #EFEFED; /* Couleur de fond */
-      text-align: center;
-    }
+.team h2 {
+  font-family: "Sligoil", Arial, sans-serif;
+  font-size: 2rem;
+  color: #32312d;
+  margin-bottom: 40px;
+}
 
-    .team h2 {
-      font-family: 'Sligoil', Arial, sans-serif;
-      font-size: 2rem;
-      color: #32312D;
-      margin-bottom: 40px;
-    }
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 colonnes */
+  gap: 40px; /* Augmente l'espacement entre les blocs */
+  justify-content: center;
+}
 
-    .team-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 colonnes */
-        gap: 40px; /* Augmente l'espacement entre les blocs */
-        justify-content: center;
-    }
+.team-member {
+  background-color: #ffffff; /* Fond blanc pour chaque membre */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Légère ombre */
+  padding: 20px;
+  text-align: center;
+}
 
-    .team-member {
-      background-color: #FFFFFF; /* Fond blanc pour chaque membre */
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Légère ombre */
-      padding: 20px;
-      text-align: center;
-    }
+.team-member img {
+  width: 100px; /* Taille de la photo */
+  height: 100px;
+  border-radius: 50%; /* Photo en rond */
+  margin-bottom: 15px;
+}
 
-    .team-member img {
-      width: 100px; /* Taille de la photo */
-      height: 100px;
-      border-radius: 50%; /* Photo en rond */
-      margin-bottom: 15px;
-    }
+.team-member h3 {
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-size: 1.2rem;
+  color: #32312d;
+  margin-bottom: 5px;
+}
 
-    .team-member h3 {
-      font-family: 'Bricolage Grotesque', Arial, sans-serif;
-      font-size: 1.2rem;
-      color: #32312D;
-      margin-bottom: 5px;
-    }
+.team-member .title {
+  font-family: "Sligoil", Arial, sans-serif;
+  font-size: 1rem;
+  color: #92a48d; /* Vert */
+  margin-bottom: 10px;
+}
 
-    .team-member .title {
-      font-family: 'Sligoil', Arial, sans-serif;
-      font-size: 1rem;
-      color: #92A48D; /* Vert */
-      margin-bottom: 10px;
-    }
+.team-member .function {
+  font-size: 0.9rem;
+  color: #32312d;
+}
 
-    .team-member .function {
-      font-size: 0.9rem;
-      color: #32312D;
-    }
+.discord-section {
+  width: 100%; /* Section pleine largeur */
+  background-color: #ffffff; /* Fond blanc */
+  padding: 40px 20px; /* Espacement interne */
+  text-align: center; /* Centre le contenu */
+}
 
+.discord-container {
+  max-width: 800px; /* Limite la largeur du contenu */
+  margin: 0 auto; /* Centre le conteneur */
+}
 
-    .discord-section {
-        width: 100%; /* Section pleine largeur */
-        background-color: #FFFFFF; /* Fond blanc */
-        padding: 40px 20px; /* Espacement interne */
-        text-align: center; /* Centre le contenu */
-    }
+.discord-section p {
+  font-family: "Bricolage Grotesque", Arial, sans-serif; /* Police du texte */
+  font-size: 1.2rem; /* Taille du texte */
+  color: #32312d; /* Couleur du texte */
+  margin-bottom: 20px; /* Espacement en bas */
+  line-height: 1.6;
+}
 
-    .discord-container {
-        max-width: 800px; /* Limite la largeur du contenu */
-        margin: 0 auto; /* Centre le conteneur */
-    }
+.discord-button {
+  font-family: "Sligoil", Arial, sans-serif; /* Police pour le bouton */
+  background-color: #92a48d; /* Couleur de fond du bouton */
+  color: #ffffff; /* Couleur du texte */
+  padding: 15px 30px; /* Espacement interne */
+  text-decoration: none; /* Pas de soulignement */
+  border-radius: 9999px; /* Coins arrondis */
+  font-size: 1rem; /* Taille du texte */
 
-    .discord-section p {
-        font-family: 'Bricolage Grotesque', Arial, sans-serif; /* Police du texte */
-        font-size: 1.2rem; /* Taille du texte */
-        color: #32312D; /* Couleur du texte */
-        margin-bottom: 20px; /* Espacement en bas */
-        line-height: 1.6;
-    }
+  transition: background-color 0.3s ease; /* Animation sur hover */
+  display: inline-block; /* Maintient la taille */
+  font-weight: normal; /* Texte non gras */
+  box-shadow: none; /* Supprime l'ombre */
+}
 
-    .discord-button {
-      font-family: 'Sligoil', Arial, sans-serif; /* Police pour le bouton */
-      background-color: #92A48D; /* Couleur de fond du bouton */
-      color: #FFFFFF; /* Couleur du texte */
-      padding: 15px 30px; /* Espacement interne */
-      text-decoration: none; /* Pas de soulignement */
-      border-radius: 9999px; /* Coins arrondis */
-      font-size: 1rem; /* Taille du texte */
-
-      transition: background-color 0.3s ease; /* Animation sur hover */
-      display: inline-block; /* Maintient la taille */
-      font-weight: normal; /* Texte non gras */
-      box-shadow: none; /* Supprime l'ombre */
-  }
-
-  .discord-button:hover {
-      background-color: #32412D; /* Changement de couleur au survol */
-      color: #FFFFFF; /* Maintient le texte blanc */
-      text-decoration: none; /* Pas de soulignement au survol */
-  }
-
+.discord-button:hover {
+  background-color: #32412d; /* Changement de couleur au survol */
+  color: #ffffff; /* Maintient le texte blanc */
+  text-decoration: none; /* Pas de soulignement au survol */
+}
 
 #particleCanvas {
   position: absolute;
@@ -323,8 +312,6 @@ hr.full-width {
   height: 100%;
   pointer-events: none; /* Pour que le canvas ne bloque pas les interactions de la souris */
 }
-
-
 
 /* Lower content section */
 .content {
@@ -339,7 +326,7 @@ hr.full-width {
   display: flex;
   width: 80%;
   max-width: 1200px;
-  background-color: #EFEFED;
+  background-color: #efefed;
   padding: 20px;
 }
 
@@ -370,7 +357,7 @@ hr.full-width {
   font-size: 1.1rem;
   line-height: 1.8;
   text-align: left;
-  color: #32312D;
+  color: #32312d;
   position: relative;
 }
 
@@ -380,9 +367,9 @@ hr.full-width {
 
 /* CTA Button */
 .cta-button {
-  font-family: 'Sligoil', Arial, sans-serif;
-  background-color: #92A48D;
-  color: #FFFFFF;
+  font-family: "Sligoil", Arial, sans-serif;
+  background-color: #92a48d;
+  color: #ffffff;
   padding: 15px 30px;
   margin-top: 20px;
   border: none;
@@ -396,13 +383,13 @@ hr.full-width {
 }
 
 .cta-button:hover {
-  background-color: #32312D;
+  background-color: #32312d;
 }
 
 /* Section Partenaires */
 .partenaires {
   padding: 40px 0 120px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   text-align: center;
   height: auto;
   box-shadow: 0 -9px 20px rgba(0, 0, 0, 0.01); /* Ombre portée au-dessus de la section */
@@ -411,9 +398,9 @@ hr.full-width {
 .partenaires h2 {
   font-size: 1.5rem; /* Réduit la taille du titre */
   margin-bottom: 40px;
-  font-family: 'Sligoil', Arial, sans-serif;
+  font-family: "Sligoil", Arial, sans-serif;
   text-transform: uppercase;
-  color: #32312D;
+  color: #32312d;
 }
 
 .logos {
@@ -425,28 +412,26 @@ hr.full-width {
   margin: 0 auto; /* Centre l'ensemble de la section logos */
 }
 
-
-
 .logo-placeholder {
   width: 60px; /* Taille des logos */
   height: 60px;
-  background-color: #92A48D; /* Couleur par défaut des logos */
+  background-color: #92a48d; /* Couleur par défaut des logos */
   border-radius: 50%;
   transition: background-color 0.3s ease; /* Transition pour un effet lisse */
 }
 
 .logo-placeholder:hover {
-  background-color: #32312D; /* Change la couleur au survol */
+  background-color: #32312d; /* Change la couleur au survol */
 }
 
 /* Footer */
 footer {
-  background-color: #32312D;
-  color: #FFFFFF;
+  background-color: #32312d;
+  color: #ffffff;
   text-align: center;
   padding: 80px 0;
   font-size: 0.9rem;
-  font-family: 'Sligoil', Arial, sans-serif;
+  font-family: "Sligoil", Arial, sans-serif;
   text-transform: uppercase;
 }
 
@@ -458,14 +443,14 @@ footer p {
 }
 
 footer a {
-    color: #FFFFFF; /* Couleur blanche par défaut */
-    text-decoration: none; /* Pas de soulignement par défaut */
-    font-weight: bold; /* Optionnel : met en valeur les liens */
+  color: #ffffff; /* Couleur blanche par défaut */
+  text-decoration: none; /* Pas de soulignement par défaut */
+  font-weight: bold; /* Optionnel : met en valeur les liens */
 }
 
 footer a:hover {
-    color: #FFFFFF; /* Reste blanc au survol */
-    text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+  color: #ffffff; /* Reste blanc au survol */
+  text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
 }
 
 /* Responsive adjustments */
@@ -490,32 +475,31 @@ footer a:hover {
     max-width: 120px; /* Réduit la taille du logo sur mobile */
   }
 
-
   .fullscreen-tagline {
-          position: absolute;
-          top: 50%; /* Position verticale */
-          left: 50%; /* Position horizontale */
-          transform: translate(-50%, -50%); /* Centre exactement */
-          font-size: 1.5rem; /* Taille adaptée pour mobile */
-          text-align: center; /* Centre le texte */
-          width: 90%; /* Pour s'assurer que le texte ne dépasse pas */
-      }
+    position: absolute;
+    top: 50%; /* Position verticale */
+    left: 50%; /* Position horizontale */
+    transform: translate(-50%, -50%); /* Centre exactement */
+    font-size: 1.5rem; /* Taille adaptée pour mobile */
+    text-align: center; /* Centre le texte */
+    width: 90%; /* Pour s'assurer que le texte ne dépasse pas */
+  }
 
-    /* 2. Retirer "À propos" et "Nous contacter" dans le header */
-    .navbar-right a {
-        display: none; /* Cache les liens sur mobile */
-    }
+  /* 2. Retirer "À propos" et "Nous contacter" dans le header */
+  .navbar-right a {
+    display: none; /* Cache les liens sur mobile */
+  }
 
-    /* 3. Section équipe en 2 colonnes */
-    .team-grid {
-        grid-template-columns: repeat(2, 1fr); /* Passe à 2 colonnes */
-        gap: 20px; /* Réduit l'espacement */
-    }
+  /* 3. Section équipe en 2 colonnes */
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr); /* Passe à 2 colonnes */
+    gap: 20px; /* Réduit l'espacement */
+  }
 
-    /* 4. Typo plus petite pour le footer */
-    footer {
-        font-size: 0.8rem; /* Taille de police réduite */
-    }
+  /* 4. Typo plus petite pour le footer */
+  footer {
+    font-size: 0.8rem; /* Taille de police réduite */
+  }
 
   .left {
     justify-content: center;
@@ -534,10 +518,10 @@ footer a:hover {
   }
 
   .logos {
-     grid-template-columns: repeat(3, 1fr); /* 3 logos par ligne */
-     padding: 3em;
-     gap: 20px; /* Espacement uniforme en largeur et en hauteur */
-   }
+    grid-template-columns: repeat(3, 1fr); /* 3 logos par ligne */
+    padding: 3em;
+    gap: 20px; /* Espacement uniforme en largeur et en hauteur */
+  }
 
   .partenaires h2 {
     font-size: 1.5rem;

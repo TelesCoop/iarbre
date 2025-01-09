@@ -70,22 +70,22 @@
     mode: "{{ item.mode }}"
   loop:
     - path: "/{{ organization_slug }}"
-      mode: '2775'
+      mode: "2775"
       owner: "root"
     - path: "/{{ organization_slug }}/{{ project_slug }}"
-      mode: '2775'
+      mode: "2775"
       owner: "{{ main_user }}"
     - path: "/etc/{{ organization_slug }}"
-      mode: '2775'
+      mode: "2775"
       owner: "root"
     - path: "/etc/{{ organization_slug }}/{{ project_slug }}"
-      mode: '2775'
+      mode: "2775"
       owner: "{{ main_user }}"
     - path: "{{ var_log_path }}"
-      mode: '2770'
+      mode: "2770"
       owner: "{{ main_user }}"
     - path: "{{ venv.path }}"
-      mode: '0755'
+      mode: "0755"
       owner: "{{ main_user }}"
 
 - name: Create backend venv {{ venv.path }}
@@ -123,7 +123,7 @@
     state: present
 
 - name: Generate backend /etc/ssh/ RSA host key
-  command: "ssh-keygen -q -t ed25519 -a 100 -f {{ backend_identity_file_path }} -C \"\" -N \"\""
+  command: 'ssh-keygen -q -t ed25519 -a 100 -f {{ backend_identity_file_path }} -C "" -N ""'
   become_user: "{{ main_user }}"
   args:
     creates: "{{ backend_identity_file_path }}"
@@ -151,7 +151,7 @@
 
 - name: get latest code
   git:
-    repo: '{{ backend_repo }}'
+    repo: "{{ backend_repo }}"
     dest: "{{ backend_path }}/.."
     key_file: "{{ backend_identity_file_path }}"
     force: true
@@ -188,6 +188,6 @@
   cron:
     user: "{{ main_user }}"
     name: "daily {{ project_slug }} database backup"
-    hour: '{{ database_backup.hour }}'
-    minute: '{{ database_backup.minute }}'
+    hour: "{{ database_backup.hour }}"
+    minute: "{{ database_backup.minute }}"
     job: "{{ project_slug }}-ctl backup_db backup"

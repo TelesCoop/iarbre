@@ -4,7 +4,6 @@ import logging
 import random
 
 import numpy as np
-from django.contrib.gis.db.models.aggregates import Collect
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
 from django.db import transaction

@@ -1,4 +1,3 @@
-
 # Mise en production et maintenance avec Ansible d'un site avec Stack Django Vue
 
 ## Stack technique
@@ -99,7 +98,7 @@ chaque commit.
 
   - Choisir un nouveau nom, par exemple `preprod`.
   - créer un nouveau dossier `preprod` dans group_vars, en partant de `prod` comme
-  modèle
+    modèle
   - ajouter une section `preprod` dans `hosts`
 
 ## TODO

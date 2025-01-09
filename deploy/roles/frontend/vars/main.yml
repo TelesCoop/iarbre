@@ -1,5 +1,4 @@
 ---
-
 frontend_static_path: "{{ project_dir }}/frontend_static"
 frontend_path: "{{ project_dir }}/frontend/front"
 server_uris_passed_to_backend:
