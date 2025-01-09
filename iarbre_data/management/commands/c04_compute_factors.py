@@ -1,12 +1,9 @@
 import time
-import multiprocessing as mp
-from concurrent.futures import ThreadPoolExecutor
 import os
 import tempfile
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
-from django.db import close_old_connections
 from tqdm import tqdm
 from shapely.geometry import box
 from shapely.ops import unary_union
@@ -14,8 +11,8 @@ import geopandas as gpd
 
 from iarbre_data.data_config import FACTORS
 
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.models import City, Data, Tile, TileFactor
+from iarbre_data.management.commands.utils import load_geodataframe_from_db, select_city
+from iarbre_data.models import Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10_000
 
@@ -95,7 +92,6 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
         - Standard area is calculated from the first Tile object in database (all tiles have the same area).
     """
     tiles_df = gpd.read_parquet(tiles_df_path)
-    close_old_connections()
     # In case they already exist, remove factors only for the tiles within the current batch
     TileFactor.objects.filter(factor=factor_name, tile_id__in=tiles_df["id"]).delete()
 
@@ -120,7 +116,7 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
         TileFactor.objects.bulk_create(tile_factors)
 
 
-def process_city(city, FACTORS, std_area, n_process):
+def process_city(city, FACTORS, std_area):
     city_name = city.name
     city_geometry = city.geometry.wkt
     print(f"Processing city: {city_name}")
@@ -131,19 +127,13 @@ def process_city(city, FACTORS, std_area, n_process):
         geometry__intersects=GEOSGeometry(city_geometry)
     )
     tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
-
     # Save GeoDataFrame to a temporary file
     with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as temp_file:
         tiles_df_path = temp_file.name
         tiles_df.to_parquet(tiles_df_path)
 
-    # Create a pool of workers for factors
-    with mp.Pool(processes=n_process // 2) as pool:
-        _ = pool.starmap(
-            compute_for_factor,
-            [(factor_name, tiles_df_path, std_area) for factor_name in FACTORS.keys()],
-        )
-
+    for factor_name in FACTORS.keys():
+        compute_for_factor(factor_name, tiles_df_path, std_area)
     # Clean up the temporary file
     os.remove(tiles_df_path)
 
@@ -161,39 +151,16 @@ class Command(BaseCommand):
             default=None,
             help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
         ),
-        parser.add_argument(
-            "--n_threads",
-            type=int,
-            required=False,
-            default=1,
-            help="Number of thread to use to parallelize factor computation for a city. Default to 1.",
-        ),
 
     def handle(self, *args, **options):
         insee_code_city = options["insee_code_city"]
-        number_of_thread = options["n_threads"]
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
 
-        if insee_code_city is not None:  # Perform selection only for a city
-            insee_code_city = insee_code_city.split(",")
-            selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
-            if not selected_city_qs.exists():
-                raise ValueError(f"No city found with INSEE code {insee_code_city}")
-            selected_city = load_geodataframe_from_db(
-                selected_city_qs, ["name", "insee_code"]
-            )
-        else:
-            selected_city = load_geodataframe_from_db(
-                City.objects.all(), ["name", "insee_code"]
-            )
+        selected_city = select_city(insee_code_city)
         t = time.perf_counter()
-        with ThreadPoolExecutor(max_workers=number_of_thread // 2) as executor:
-            futures = [
-                executor.submit(process_city, city, FACTORS, std_area, number_of_thread)
-                for city in selected_city.itertuples()
-            ]
-            for future in futures:
-                future.result()
-            print(f"Elapsed time: {time.perf_counter() -t}")
+        for city in selected_city.itertuples():
+            process_city(city, FACTORS, std_area)
+            print("One batch of city is finished.")
+        print(f"Elapsed time: {time.perf_counter() -t}")

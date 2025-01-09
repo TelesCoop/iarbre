@@ -3,12 +3,47 @@ from django.db import models
 from django.core.files.base import ContentFile
 from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
+from django.db.models import Avg
 
 from api.constants import ModelType
 
 
+class TileAggregateBase(models.Model):
+    """Abstract base class for aggregating Tiles."""
+
+    geometry = PolygonField(srid=2154)
+    code = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def average_normalized_indice(self):
+        """As for now the aggregate is the average but it may change later."""
+        return self.tiles.aggregate(avg=Avg("normalized_indice"))["avg"]
+
+    @property
+    def average_indice(self):
+        return self.tiles.aggregate(avg=Avg("indice"))["avg"]
+
+
+class City(TileAggregateBase):
+    def __str__(self):
+        return f"CITY name: {self.name}"
+
+
+class Iris(TileAggregateBase):
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, related_name="irises", null=True, blank=True
+    )
+
+    def __str__(self):
+        return f"IRIS code: {self.code}"
+
+
 class Tile(models.Model):
-    """Square area of the map with the value of the indice."""
+    """Elementary element on the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=3857, null=True, blank=True)
@@ -17,19 +52,26 @@ class Tile(models.Model):
 
     type = ModelType.TILE.value
 
+    iris = models.ForeignKey(
+        Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
+    )
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
+    )
+
     @property
     def color(self):
         if self.normalized_indice is None:
             return "purple"
-        elif self.normalized_indice < 0.455:
+        elif self.normalized_indice < 0.12:
             return "#676767"
-        elif self.normalized_indice < 0.482:
+        elif self.normalized_indice < 0.19:
             return "#A63F28"
-        elif self.normalized_indice < 0.511:
+        elif self.normalized_indice < 0.266:
             return "#D98B2B"
-        elif self.normalized_indice < 0.546:
+        elif self.normalized_indice < 0.385:
             return "#F3EFE9"
-        elif self.normalized_indice < 0.67:
+        elif self.normalized_indice < 0.766:
             return "#BEE2A4"
         else:
             return "#5AA055"
@@ -52,12 +94,6 @@ class Data(models.Model):
     geometry = GeometryField(srid=2154)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
-
-
-class City(models.Model):
-    geometry = PolygonField(srid=2154)
-    name = models.CharField(max_length=50)
-    insee_code = models.CharField(max_length=10)
 
 
 class TileFactor(models.Model):

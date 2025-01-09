@@ -21,7 +21,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--clean",
             type=bool,
-            default=False,
+            default=True,
             help="Delete all existing tiles before generating new ones",
         )
 
