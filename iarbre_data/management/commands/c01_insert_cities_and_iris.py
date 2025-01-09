@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _remove_duplicates(Model):
-        """Deletes duplicates in the City model based on geometry."""
+        """Deletes duplicates in the instance model based on geometry."""
         duplicates = (
             Model.objects.values("geometry")
             .annotate(count=Count("id"))
@@ -31,9 +31,9 @@ class Command(BaseCommand):
 
         for duplicate in duplicates:
             geometry = duplicate["geometry"]
-            duplicate_cities = Model.objects.filter(geometry=geometry)
+            duplicate_instances = Model.objects.filter(geometry=geometry)
             # Keep the first and delete the rest
-            ids_to_delete = duplicate_cities.values_list("id", flat=True)[1:]
+            ids_to_delete = duplicate_instances.values_list("id", flat=True)[1:]
             Model.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
 

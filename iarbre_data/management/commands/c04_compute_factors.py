@@ -4,7 +4,6 @@ import tempfile
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
-from django.db import close_old_connections
 from tqdm import tqdm
 from shapely.geometry import box
 from shapely.ops import unary_union
@@ -93,7 +92,6 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
         - Standard area is calculated from the first Tile object in database (all tiles have the same area).
     """
     tiles_df = gpd.read_parquet(tiles_df_path)
-    close_old_connections()
     # In case they already exist, remove factors only for the tiles within the current batch
     TileFactor.objects.filter(factor=factor_name, tile_id__in=tiles_df["id"]).delete()
 
@@ -138,7 +136,6 @@ def process_city(city, FACTORS, std_area):
         compute_for_factor(factor_name, tiles_df_path, std_area)
     # Clean up the temporary file
     os.remove(tiles_df_path)
-    close_old_connections()
 
     print(f"Finished city {city_name}. Time taken: {time.perf_counter() - t}")
 

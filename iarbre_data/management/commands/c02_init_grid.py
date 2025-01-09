@@ -6,7 +6,7 @@ import random
 import numpy as np
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
-from django.db import transaction, close_old_connections
+from django.db import transaction
 from django.db.models import Count
 from tqdm import tqdm
 
@@ -56,7 +56,6 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
             gc.collect()
     if tiles:  # Save last batch
         Tile.objects.bulk_create(tiles, batch_size=batch_size)
-        close_old_connections()
 
 
 def create_hexs_for_city(
@@ -119,7 +118,6 @@ def create_hexs_for_city(
             gc.collect()
     if tiles:  # Save last batch
         Tile.objects.bulk_create(tiles, batch_size=batch_size)
-        close_old_connections()
 
 
 class Command(BaseCommand):
