@@ -172,10 +172,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
+
 if IS_LOCAL_DEV:
     STATIC_ROOT = BASE_DIR / "collected_static"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-    MEDIA_URL = "media/"
 else:
     STORAGES = {
         "default": {
@@ -189,6 +190,7 @@ else:
         },
     }
     STATIC_ROOT = config.getstr("staticfiles.static_root")
+    MEDIA_ROOT = config.getstr("mediafiles.media_root")
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
