@@ -1,3 +1,4 @@
+"""Save all land occupancy data to the database."""
 import time
 from functools import reduce
 from io import BytesIO
@@ -27,6 +28,15 @@ def batched(iterable, n):
 
 
 def download_from_url(url, layer_name):
+    """Download data from a URL and return a GeoDataFrame
+
+    Params:
+        url (str): URL to download data from
+        layer_name (str): Name of the layer to download
+
+    Returns:
+        GeoDataFrame: GeoDataFrame with data from URL
+    """
     if "wfs" in url.lower():
         params = dict(
             service="WFS",
@@ -49,13 +59,19 @@ def download_from_url(url, layer_name):
 
 
 def read_data(data_config):
+    """Read data from a file or URL and return a GeoDataFrame"""
     if data_config.get("url"):
         return download_from_url(data_config["url"], data_config["layer_name"])
     return gpd.read_file(DATA_DIR / data_config["file"])
 
 
 def apply_actions(df, actions):
-    """Apply a sequence of actions"""
+    """Apply a sequence of actions to a Geometry.
+    Params:
+        df (GeoDataFrame): GeoDataFrame to apply actions to.
+        actions (dict): Actions to apply to the GeoDataFrame.
+    Returns:
+        GeoDataFrame: GeoDataFrame with actions applied."""
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
     if actions.get("filters"):
@@ -93,6 +109,12 @@ def apply_actions(df, actions):
 
 
 def save_geometries(df: gpd.GeoDataFrame, data_config):
+    """Save geometries to the database.
+    Params:
+        df (GeoDataFrame): GeoDataFrame to save to the database.
+        data_config (dict): Configuration of the data.
+    Returns:
+        None"""
     df = df.to_crs(TARGET_PROJ)
     datas = []
     actions_factors = zip(
@@ -133,6 +155,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """Save all land occupancy data to the database."""
         for data_config in DATA_FILES + URL_FILES:
             if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
                 print(

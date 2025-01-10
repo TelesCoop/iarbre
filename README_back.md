@@ -24,6 +24,7 @@ Please send email to [contact@telescoop.fr](mailto:contact@telescoop.fr) to get 
 
 
 ## Installation
+> These steps are for Linux. It has not been tested on Windows or macOS.
 
 Requires [GDAL](https://gdal.org/en/stable/) and [PostGIS](https://postgis.net/).
 
@@ -59,14 +60,29 @@ password=my_passwd
 ```
 
 ### Install required packages
+We recommend you to set up a Python virtual environment with [`pew`](https://github.com/pew-org/pew).
 ```bash
+$ pip install pew
+$ cd  <path>
+$ pew mkproject <project_name>
+```
+This would create a new virtual environment and an associated project directory in `<path>`.
+Then clone the repo in the created directory and install required packages in the virtual
+environment.
+```bash
+$ git clone https://github.com/TelesCoop/iarbre-back.git
 $ pip install -r requirements.txt
 ```
-
+Next time you want to work on this project, use:
+```bash
+$ pew workon <project_name>
+```
+It will activate you environment and the shell is automatically moved to the directory.
 ## Populate the database
 
 ### Import DATA to the PostGIS database
-When you have the required data, run the following management commands:
+Now we will use the land occupancy data in `file_data` to compute the plantability scores.
+Run the following management commands:
 
 ```bash
 $ python manage.py migrate
@@ -77,11 +93,11 @@ $ python manage.py c04_compute_factors
 $ python manage.py c05_compute_indice
 $ python manage.py generate_mvt_files
 ```
-You can find details on the data used and their processing in [data_config.py](./iarbre_data/data_config.py).
+You can find details on the land occupancy data used and their processing in [data_config.py](./iarbre_data/data_config.py).
 
-Last [command](./api/management/commands/generate_mvt_files.py) `python manage.py generate_mvt_files` generates in advance Mapbox Vector Tiles
+Last [command](./api/management/commands/generate_mvt_files.py) `python manage.py generate_mvt_files` generates Mapbox Vector Tiles
 ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) for different zoom levels.
-These tiles are then retrieved using the [api](./api/views.py) by the frontend and displayed using [MapLibre](https://maplibre.org/).
+These tiles could then be retrieved using the [api](./api/views.py) by the frontend and displayed using [MapLibre](https://maplibre.org/).
 ## Run server
 ```bash
 $ python manage.py runserver --nostatic

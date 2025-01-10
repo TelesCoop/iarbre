@@ -19,18 +19,26 @@ TILE_BATCH_SIZE = 10_000
 
 def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
     """Compute and store the proportion of standard tile area occupied by a geographic factor.
-    Args:
+    Params:
         factor_name (str): Name of the factor (e.g., 'Parking', 'Route') to process
         factor_df (GeoDataFrame): GeoDataFrame containing factor geometries that will be
             intersected with tiles.
         tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
         std_area (float): Standard tile area in square meters (m²).
+    Returns:
+        list[TileFactor]: List of TileFactor objects to be created in the database
     """
     factor_crs = factor_df.crs
 
     # Split large factor geometries into smaller ones
     def split_large_polygon(geom, grid_size=10):
-        """Split a large polygon into smaller chunks based on a grid."""
+        """Split a large polygon into smaller chunks based on a grid.
+        Params:
+            geom (shapely.geometry.Polygon): Polygon to split.
+            grid_size (int): Size of the grid in meters.
+        Returns:
+            shapely.geometry.MultiPolygon: MultiPolygon with the split parts.
+        """
         if geom is None or geom.is_empty:
             return None
         # Create a grid covering the bounding box of the geometry
@@ -60,6 +68,11 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     tiles_index = tiles_df.sindex
 
     def has_intersection(geom):
+        """Check if a geometry intersects with any tile.
+        Params:
+            geom (shapely.geometry.base.BaseGeometry): Geometry to check.
+        Returns:
+            bool: True if the geometry intersects with any tile, False otherwise."""
         if geom is None or geom.is_empty:
             return False
         bounding_box = box(*geom.bounds)
@@ -84,10 +97,12 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
 
 def compute_for_factor(factor_name, tiles_df_path, std_area):
     """Compute and store factor coverage proportions for the provided tiles.
-    Args:
+    Params:
         factor_name (str): Name of the geographic factor to process (e.g., 'Parking', 'Route')
         tiles_df_path (str): Path to the temporary file containing the geodataframe with tiles to process.
         std_area (float): Standard tile area in square meters (m²).
+    Returns:
+        None
     Notes:
         - Standard area is calculated from the first Tile object in database (all tiles have the same area).
     """
@@ -117,6 +132,14 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
 
 
 def process_city(city, FACTORS, std_area):
+    """Process a city to compute and store factor coverage proportions.
+    Params:
+        city (Pandas DataFrame): DataFrame containing city information.
+        FACTORS (dict): Dictionary containing the factors to process.
+        std_area (float): Standard tile area in square meters (m²).
+    Returns:
+        None
+    """
     city_name = city.name
     city_geometry = city.geometry.wkt
     print(f"Processing city: {city_name}")
@@ -153,6 +176,7 @@ class Command(BaseCommand):
         ),
 
     def handle(self, *args, **options):
+        """Compute and save factor data for the selected city."""
         insee_code_city = options["insee_code_city"]
         std_area = (
             Tile.objects.first().geometry.area

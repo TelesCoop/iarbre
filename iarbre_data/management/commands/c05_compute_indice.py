@@ -1,3 +1,4 @@
+"""Compute and save indice data for the selected cities."""
 import pandas as pd
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
@@ -8,6 +9,13 @@ from iarbre_data.management.commands.utils import load_geodataframe_from_db, sel
 
 
 def compute_indice(tiles_id):
+    """Compute the indice for a list of tiles.
+    The indice is computed as the weighted sum of the factors (land occupancy proportion) for each tile.
+    Params:
+        tiles_id (list[int]): List of tile ids to compute the indice for.
+    Returns:
+        None
+    """
     df = pd.DataFrame(
         TileFactor.objects.filter(tile_id__in=tiles_id).values_list(
             "tile_id", "factor", "value"
@@ -52,6 +60,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """Compute and save indice data for the selected cities."""
         insee_code_city = options["insee_code_city"]
 
         selected_city = select_city(insee_code_city)
