@@ -12,7 +12,7 @@ import geopandas as gpd
 from iarbre_data.data_config import FACTORS
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db, select_city
-from iarbre_data.models import Data, Tile, TileFactor
+from iarbre_data.models import City, Data, Tile, TileFactor
 
 TILE_BATCH_SIZE = 10_000
 
@@ -82,16 +82,16 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         return []
 
 
-def compute_for_factor(factor_name, tiles_df_path, std_area):
+def compute_for_factor(factor_name, tiles_df, std_area):
     """Compute and store factor coverage proportions for the provided tiles.
     Args:
         factor_name (str): Name of the geographic factor to process (e.g., 'Parking', 'Route')
-        tiles_df_path (str): Path to the temporary file containing the geodataframe with tiles to process.
+        tiles_df (geodataframe): Geodataframe with tiles to process.
         std_area (float): Standard tile area in square meters (m²).
     Notes:
         - Standard area is calculated from the first Tile object in database (all tiles have the same area).
     """
-    tiles_df = gpd.read_parquet(tiles_df_path)
+
     # In case they already exist, remove factors only for the tiles within the current batch
     TileFactor.objects.filter(factor=factor_name, tile_id__in=tiles_df["id"]).delete()
 
@@ -116,8 +116,12 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
         TileFactor.objects.bulk_create(tile_factors)
 
 
-def process_city(city, FACTORS, std_area):
+def process_city(city, FACTORS, std_area, delete):
     city_name = city.name
+    if city.tiles_computed and delete == False:
+        print(f"TileFactor already computed for city {city_name}.")
+        return
+
     city_geometry = city.geometry.wkt
     print(f"Processing city: {city_name}")
     t = time.perf_counter()
@@ -127,16 +131,9 @@ def process_city(city, FACTORS, std_area):
         geometry__intersects=GEOSGeometry(city_geometry)
     )
     tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
-    # Save GeoDataFrame to a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as temp_file:
-        tiles_df_path = temp_file.name
-        tiles_df.to_parquet(tiles_df_path)
-
     for factor_name in FACTORS.keys():
-        compute_for_factor(factor_name, tiles_df_path, std_area)
-    # Clean up the temporary file
-    os.remove(tiles_df_path)
-
+        compute_for_factor(factor_name, tiles_df, std_area)
+    City.objects.filter(id=city.id).update(tiles_computed=True)
     print(f"Finished city {city_name}. Time taken: {time.perf_counter() - t}")
 
 
@@ -151,9 +148,15 @@ class Command(BaseCommand):
             default=None,
             help="The INSEE code of the city or cities to process. If multiple cities, please separate with comma (e.g. --insee_code='69266,69382')",
         ),
+        parser.add_argument(
+            "--delete",
+            action="store_true",
+            help="Delete already existing TileFactor.",
+        )
 
     def handle(self, *args, **options):
         insee_code_city = options["insee_code_city"]
+        delete = options["delete"]
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
@@ -161,6 +164,5 @@ class Command(BaseCommand):
         selected_city = select_city(insee_code_city)
         t = time.perf_counter()
         for city in selected_city.itertuples():
-            process_city(city, FACTORS, std_area)
-            print("One batch of city is finished.")
+            process_city(city, FACTORS, std_area, delete)
         print(f"Elapsed time: {time.perf_counter() -t}")

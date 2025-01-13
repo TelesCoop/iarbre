@@ -9,7 +9,7 @@ from api.constants import ModelType
 
 
 class TileAggregateBase(models.Model):
-    """Abstract base class for aggregating Tiles."""
+    """Abstract base class for aggregating Tiles at IRIS and city level."""
 
     geometry = PolygonField(srid=2154)
     code = models.CharField(max_length=50, null=True, blank=True)
@@ -29,11 +29,18 @@ class TileAggregateBase(models.Model):
 
 
 class City(TileAggregateBase):
+    """City model."""
+
+    tiles_generated = models.BooleanField(default=False)
+    tiles_computed = models.BooleanField(default=False)
+
     def __str__(self):
         return f"CITY name: {self.name}"
 
 
 class Iris(TileAggregateBase):
+    """IRIS is a statistical unit in France."""
+
     city = models.ForeignKey(
         City, on_delete=models.CASCADE, related_name="irises", null=True, blank=True
     )
@@ -61,6 +68,7 @@ class Tile(models.Model):
 
     @property
     def color(self):
+        """Return the color of the tile based on the normalized indice."""
         if self.normalized_indice is None:
             return "purple"
         elif self.normalized_indice < 0.12:
@@ -77,6 +85,7 @@ class Tile(models.Model):
             return "#5AA055"
 
     def get_layer_properties(self):
+        """Return the properties of the tile for the MVT layer."""
         return {
             "id": self.id,
             "indice": self.normalized_indice,
@@ -86,23 +95,31 @@ class Tile(models.Model):
 
 @receiver(pre_save, sender=Tile)
 def before_save_tile(sender, instance, **kwargs):
+    """Transform the geometry to the map geometry."""
     if instance.map_geometry is None:
         instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
 class Data(models.Model):
+    """Land occupancy data"""
+
     geometry = GeometryField(srid=2154)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
 
 
 class TileFactor(models.Model):
+    """Factor of a tile.
+    A factor value represent the propostion of land occupancy on the tile."""
+
     tile = models.ForeignKey(Tile, on_delete=models.CASCADE, related_name="factors")
     factor = models.CharField(max_length=50)
     value = models.FloatField()
 
 
 class MVTTile(models.Model):
+    """Model to store MVT tiles as danjo-media."""
+
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
@@ -121,4 +138,5 @@ class MVTTile(models.Model):
 
 @receiver(pre_delete, sender=MVTTile)
 def before_delete_mvt_tile(sender, instance, **kwargs):
+    """Delete the file when the model is deleted."""
     instance.mvt_file.delete(save=False)

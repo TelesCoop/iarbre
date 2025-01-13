@@ -4,6 +4,7 @@ import logging
 import random
 
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
 from django.db import transaction
@@ -11,7 +12,7 @@ from django.db.models import Count
 from tqdm import tqdm
 
 from iarbre_data.management.commands.utils import select_city
-from iarbre_data.models import Iris, Tile
+from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
@@ -143,6 +144,11 @@ class Command(BaseCommand):
             default=True,
             help="Detele tiles outside of the city boundaries of the selection or not.",
         )
+        parser.add_argument(
+            "--delete",
+            action="store_true",
+            help="Delete already existing tiles.",
+        )
 
     @staticmethod
     def _remove_duplicates():
@@ -183,28 +189,34 @@ class Command(BaseCommand):
         logger.info(f"Deleted {total_deleted} tiles")
 
     @staticmethod
-    def _create_grid_city(city, batch_size, logger, grid_type, unit, a, grid_size):
+    def _create_grid_city(
+        city, batch_size, logger, grid_type, unit, a, grid_size, delete
+    ):
         print(f"Selected city: {city.name} with id {city.id}.")
         tiles_queryset = Tile.objects.filter(
-            geometry__intersects=GEOSGeometry(city.geometry.wkt)
+            geometry__within=GEOSGeometry(city.geometry.wkt)
         )
         total_records = tiles_queryset.count()
-        print(
-            f"Number tiles already in the DB: {total_records}. \n"
-            f"These tiles will be deleted."
-        )
-        for start in tqdm(range(0, total_records, batch_size)):
-            batch_ids = tiles_queryset[start : start + batch_size].values_list(
-                "id", flat=True
-            )
-            with transaction.atomic():
-                Tile.objects.filter(id__in=batch_ids).delete()
-        print(f"Deleted {total_records} tiles.")
+        print(f"Number tiles already in the DB: {total_records}. \n")
+        if (delete) or (city.tiles_generated == False):
+            # Clean if asked or if not all Tiles have been generated
+            print(f"These tiles will be deleted and new one recomputed.")
+            City.objects.filter(id=city.id).update(tiles_generated=False)
+            for start in tqdm(range(0, total_records, batch_size)):
+                batch_ids = tiles_queryset[start : start + batch_size].values_list(
+                    "id", flat=True
+                )
+                with transaction.atomic():
+                    Tile.objects.filter(id__in=batch_ids).delete()
+            print(f"Deleted {total_records} tiles.")
+        elif city.tiles_generated:
+            return
         print("Creating new tiles.")
         if grid_type == 1:  # Hexagonal grid
             create_hexs_for_city(city, unit, a, logger, int(1e4))
         elif grid_type == 2:  # square grid
             create_squares_for_city(city, grid_size, logger, int(1e4))
+        City.objects.filter(id=city.id).update(tiles_generated=True)
 
     def handle(self, *args, **options):
         batch_size = int(1e4)  # Depends on your RAM
@@ -213,22 +225,30 @@ class Command(BaseCommand):
         grid_size = options["grid_size"]
         grid_type = options["grid_type"]
         clean_outside = options["clean_outside"]
+        delete = options["delete"]
         if grid_type not in [1, 2]:
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
         selected_city = select_city(insee_code_city)
         desired_area = grid_size * grid_size
         unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
         a = np.sin(np.pi / 3)
-        for city in selected_city.itertuples():
-            self._create_grid_city(
-                city,
-                batch_size,
-                logger,
-                grid_type,
-                unit,
-                a,
-                grid_size,
-            )
+        with ThreadPoolExecutor(max_workers=12) as executor:
+            futures = [
+                executor.submit(
+                    self._create_grid_city,
+                    city,
+                    batch_size,
+                    logger,
+                    grid_type,
+                    unit,
+                    a,
+                    grid_size,
+                    delete,
+                )
+                for city in selected_city.itertuples()
+            ]
+            for future in futures:
+                future.result()
         print("Removing duplicates...")
         self._remove_duplicates()
         if clean_outside:
