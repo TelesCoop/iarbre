@@ -35,13 +35,13 @@ and install required packages from source.
 Alternatively, you can try installing packages using `apt`, but it might not be
 enough:
 
-- Gdal for geographic queries: `sudo apt install binutils libproj-dev gdal-bin psycopg2`
-- `sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg3`
+- `sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg`
 (x matching the PostgreSQL version you want to install).
+- GDAL for geographic queries: `sudo apt install binutils libproj-dev gdal-bin`
 
 ### Initiate the database
 After the installation you need to create a user and the new DB using PostGIS:
-As for now there is only a super-user called postgres and we need to create a new one: 
+As for now there is only a super-user called postgres and we need to create a new one:
 ```bash
 $ sudo -u postgres psql postgres
 $ CREATE USER <user_name> WITH PASSWORD 'your_secure_password';
@@ -53,15 +53,6 @@ Now we will connect with our new user and create a DB.
 ```bash
 $ psql -U <user_name> <db_name>
 > CREATE EXTENSION postgis;
-```
-
-You need then to create a file named `local_settings.ini` with:
-```commandline
-[database]
-engine=postgresql
-user=<user_name>
-name=<db name>
-password=your_secure_password
 ```
 
 ### Install required packages
@@ -77,6 +68,14 @@ environment.
 ```bash
 $ git clone https://github.com/TelesCoop/iarbre-back.git
 $ pip install -r requirements.txt
+```
+You need then to create a file named `local_settings.ini` with:
+```commandline
+[database]
+engine=postgresql
+user=<user_name>
+name=<db name>
+password=your_secure_password
 ```
 Next time you want to work on this project, use:
 ```bash
