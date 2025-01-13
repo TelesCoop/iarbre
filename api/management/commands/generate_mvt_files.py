@@ -1,3 +1,4 @@
+"""Generate MVT tiles for geographic model."""
 import os
 
 from django.core.management import BaseCommand
@@ -28,7 +29,16 @@ class Command(BaseCommand):
     def generate_tiles_for_model(
         self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
     ):
-        # Generate MVT tiles
+        """Generate MVT tiles for a geographic model.
+        Params:
+            model (Model): Model to generate MVT tiles for.
+            queryset (QuerySet): Queryset of the model.
+            output_dir (str): Output directory to save the MVT tiles.
+            zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
+            number_of_thread (int): Number of threads to use for generating tiles.
+        Returns:
+            None
+        """
         mvt_generator = MVTGenerator(
             queryset=queryset,
             zoom_levels=zoom_levels,
@@ -41,6 +51,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("MVT tiles generated successfully!"))
 
     def handle(self, *args, **options):
+        """Handle the command."""
         number_of_thread = options["number_of_thread"]
         # Generate MVT tiles for Tile model
         if options["clean"]:
