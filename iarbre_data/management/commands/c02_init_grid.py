@@ -64,7 +64,7 @@ def create_hexs_for_city(
     unit,
     a,
     logger,
-    batch_size=int(1e6),
+    batch_size=int(1e4),
 ):
     """Create hexagonal tiles in the DB for a specific city"""
     city_geom = city.geometry
@@ -113,7 +113,7 @@ def create_hexs_for_city(
         # Avoid OOM errors
         if (i + 1) % batch_size == 0:
             with transaction.atomic():
-                Tile.objects.bulk_create(tiles, batch_size=batch_size // 4)
+                Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
             logger.info(f"Got {len(tiles)} tiles")
             del tiles[:]
             gc.collect()

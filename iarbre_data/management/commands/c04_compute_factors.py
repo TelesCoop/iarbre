@@ -130,7 +130,7 @@ def process_city(city, FACTORS, std_area, delete):
     tiles_queryset = Tile.objects.filter(
         geometry__intersects=GEOSGeometry(city_geometry)
     )
-    tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
+    tiles_df = load_geodataframe_from_db(tiles_queryset, ["id", "geometry"])
     for factor_name in FACTORS.keys():
         compute_for_factor(factor_name, tiles_df, std_area)
     City.objects.filter(id=city.id).update(tiles_computed=True)
