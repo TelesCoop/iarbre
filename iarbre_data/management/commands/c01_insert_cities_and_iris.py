@@ -41,6 +41,10 @@ class Command(BaseCommand):
         logger = logging.getLogger(__name__)
         lm = LayerMapping(City, "file_data/communes_gl.geojson", mapping_city)
         lm.save()
+        for city in City.objects.all():
+            city.tiles_generated = False
+            city.tiles_computed = False
+            city.save()
         logger.info("Data insertion for city complete.")
         print("Removing duplicated cities...")
         self._remove_duplicates(City)
