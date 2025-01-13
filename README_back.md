@@ -40,23 +40,28 @@ enough:
 (x matching the PostgreSQL version you want to install).
 
 ### Initiate the database
-After the installation you need to create the DB using PostGIS:
+After the installation you need to create a user and the new DB using PostGIS:
+As for now there is only a super-user called postgres and we need to create a new one: 
 ```bash
-$ createdb  <db name>
-$ psql <db name>
+$ sudo -u postgres psql postgres
+$ CREATE USER <user_name> WITH PASSWORD 'your_secure_password';
+$ ALTER USER <user_name> WITH SUPERUSER CREATEDB;
+$ CREATE DATABASE <db name> OWNER <user_name>;
+$ \q
+```
+Now we will connect with our new user and create a DB.
+```bash
+$ psql -U <user_name> <db_name>
 > CREATE EXTENSION postgis;
 ```
-Then create a user:
-```bash
-postgres# CREATE USER geodjango PASSWORD 'my_passwd';
-```
+
 You need then to create a file named `local_settings.ini` with:
 ```commandline
 [database]
 engine=postgresql
-user=geodjango
+user=<user_name>
 name=<db name>
-password=my_passwd
+password=your_secure_password
 ```
 
 ### Install required packages
