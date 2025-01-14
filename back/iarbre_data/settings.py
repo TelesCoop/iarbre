@@ -172,27 +172,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
+
 if IS_LOCAL_DEV:
     STATIC_ROOT = BASE_DIR / "collected_static"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-    MEDIA_URL = "media/"
 else:
-    # STATIC
-    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+        },
+        "external_file_storage": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+    }
     STATIC_ROOT = config.getstr("staticfiles.static_root")
-
-    # MEDIA
-    DEFAULT_FILE_STORAGE = "iarbre_data.storage_backends.PrivateMediaStorage"
+    MEDIA_ROOT = config.getstr("mediafiles.media_root")
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_DEFAULT_ACL = "private"
     AWS_S3_REGION_NAME = config.getstr("external_file_storage.region")
     AWS_S3_HOST = config.getstr("external_file_storage.host")
     AWS_S3_ENDPOINT_URL = "https://{}".format(AWS_S3_HOST)
-    MEDIA_LOCATION = "private-media"
-    MEDIA_URL = f"https://{AWS_S3_ENDPOINT_URL}/{MEDIA_LOCATION}/"
+    MEDIA_LOCATION = "public-media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

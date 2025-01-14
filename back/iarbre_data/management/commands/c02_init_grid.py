@@ -4,14 +4,15 @@ import logging
 import random
 
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import Count
 from tqdm import tqdm
 
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.models import City, Tile
+from iarbre_data.management.commands.utils import select_city
+from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
@@ -59,13 +60,15 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
 
 
 def create_hexs_for_city(
-    city_geom,
+    city,
     unit,
     a,
     logger,
-    batch_size=int(1e6),
+    batch_size=int(1e4),
 ):
     """Create hexagonal tiles in the DB for a specific city"""
+    city_geom = city.geometry
+    city_id = city.id
     xmin, ymin, xmax, ymax = city_geom.bounds
     hex_width = 3 * unit
     hex_height = 2 * unit * a
@@ -93,16 +96,24 @@ def create_hexs_for_city(
         # Optimize storage
         rounded_dim = [(round(x, 2), round(y, 2)) for (x, y) in dim]
         hexagon = Polygon(rounded_dim, srid=TARGET_PROJ)
+        iris_id = Iris.objects.filter(geometry__intersects=hexagon)
+        if len(iris_id) > 0:
+            iris_id = iris_id[0].id
+        else:
+            iris_id = None
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=random.uniform(-5, 5),  # Create tile with random indice from -5 to 5
+            indice=random.uniform(-5, 5),
+            # Create tile with random indice from -5 to 5
+            city_id=city_id,
+            iris_id=iris_id,
         )
         tiles.append(tile)
         # Avoid OOM errors
         if (i + 1) % batch_size == 0:
             with transaction.atomic():
-                Tile.objects.bulk_create(tiles, batch_size=batch_size // 4)
+                Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
             logger.info(f"Got {len(tiles)} tiles")
             del tiles[:]
             gc.collect()
@@ -132,6 +143,11 @@ class Command(BaseCommand):
             type=bool,
             default=True,
             help="Detele tiles outside of the city boundaries of the selection or not.",
+        )
+        parser.add_argument(
+            "--delete",
+            action="store_true",
+            help="Delete already existing tiles.",
         )
 
     @staticmethod
@@ -172,41 +188,20 @@ class Command(BaseCommand):
                 total_deleted += deleted_count
         logger.info(f"Deleted {total_deleted} tiles")
 
-    def handle(self, *args, **options):
-        batch_size = int(1e4)  # Depends on your RAM
-        logger = logging.getLogger(__name__)
-        insee_code_city = options["insee_code_city"]
-        grid_size = options["grid_size"]
-        grid_type = options["grid_type"]
-        clean_outside = options["clean_outside"]
-        if grid_type not in [1, 2]:
-            raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
-        if insee_code_city is not None:  # Perform selection only for a city
-            insee_code_city = insee_code_city.split(",")
-            selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
-            if not selected_city_qs.exists():
-                raise ValueError(f"No city found with INSEE code {insee_code_city}")
-            selected_city = load_geodataframe_from_db(
-                selected_city_qs, ["name", "insee_code"]
-            )
-        else:
-            selected_city = load_geodataframe_from_db(
-                City.objects.all(), ["name", "insee_code"]
-            )
-        nb_city = len(selected_city)
-        desired_area = grid_size * grid_size
-        unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
-        a = np.sin(np.pi / 3)
-        for city in selected_city.itertuples():
-            print(f"Selected city: {city.name} (on {nb_city} city).")
-            tiles_queryset = Tile.objects.filter(
-                geometry__intersects=GEOSGeometry(city.geometry.wkt)
-            )
-            total_records = tiles_queryset.count()
-            print(
-                f"Number tiles already in the DB: {total_records}. \n"
-                f"These tiles will be deleted."
-            )
+    @staticmethod
+    def _create_grid_city(
+        city, batch_size, logger, grid_type, unit, a, grid_size, delete
+    ):
+        print(f"Selected city: {city.name} with id {city.id}.")
+        tiles_queryset = Tile.objects.filter(
+            geometry__within=GEOSGeometry(city.geometry.wkt)
+        )
+        total_records = tiles_queryset.count()
+        print(f"Number tiles already in the DB: {total_records}. \n")
+        if delete or (city.tiles_generated == False):
+            # Clean if asked or if not all Tiles have been generated
+            print(f"These tiles will be deleted and new one recomputed.")
+            City.objects.filter(id=city.id).update(tiles_generated=False)
             for start in tqdm(range(0, total_records, batch_size)):
                 batch_ids = tiles_queryset[start : start + batch_size].values_list(
                     "id", flat=True
@@ -214,12 +209,46 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     Tile.objects.filter(id__in=batch_ids).delete()
             print(f"Deleted {total_records} tiles.")
-            print("Creating new tiles.")
-            if grid_type == 1:  # Hexagonal grid
-                create_hexs_for_city(city.geometry, unit, a, logger, int(1e4))
-            elif grid_type == 2:  # square grid
-                create_squares_for_city(city.geometry, grid_size, logger, int(1e4))
+        elif city.tiles_generated:
+            return
+        print("Creating new tiles.")
+        if grid_type == 1:  # Hexagonal grid
+            create_hexs_for_city(city, unit, a, logger, int(1e4))
+        elif grid_type == 2:  # square grid
+            create_squares_for_city(city, grid_size, logger, int(1e4))
+        City.objects.filter(id=city.id).update(tiles_generated=True)
 
+    def handle(self, *args, **options):
+        batch_size = int(1e4)  # Depends on your RAM
+        logger = logging.getLogger(__name__)
+        insee_code_city = options["insee_code_city"]
+        grid_size = options["grid_size"]
+        grid_type = options["grid_type"]
+        clean_outside = options["clean_outside"]
+        delete = options["delete"]
+        if grid_type not in [1, 2]:
+            raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
+        selected_city = select_city(insee_code_city)
+        desired_area = grid_size * grid_size
+        unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
+        a = np.sin(np.pi / 3)
+        with ThreadPoolExecutor(max_workers=12) as executor:
+            futures = [
+                executor.submit(
+                    self._create_grid_city,
+                    city,
+                    batch_size,
+                    logger,
+                    grid_type,
+                    unit,
+                    a,
+                    grid_size,
+                    delete,
+                )
+                for city in selected_city.itertuples()
+            ]
+            for future in futures:
+                future.result()
         print("Removing duplicates...")
         self._remove_duplicates()
         if clean_outside:

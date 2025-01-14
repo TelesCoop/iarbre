@@ -3,8 +3,8 @@ from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 
 from iarbre_data.data_config import FACTORS
-from iarbre_data.models import City, Tile, TileFactor
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
+from iarbre_data.models import Tile, TileFactor
+from iarbre_data.management.commands.utils import load_geodataframe_from_db, select_city
 
 
 def compute_indice(tiles_id):
@@ -54,18 +54,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         insee_code_city = options["insee_code_city"]
 
-        if insee_code_city is not None:  # Perform selection only for a city
-            insee_code_city = insee_code_city.split(",")
-            selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
-            if not selected_city_qs.exists():
-                raise ValueError(f"No city found with INSEE code {insee_code_city}")
-            selected_city = load_geodataframe_from_db(
-                selected_city_qs, ["name", "insee_code"]
-            )
-        else:
-            selected_city = load_geodataframe_from_db(
-                City.objects.all(), ["name", "insee_code"]
-            )
+        selected_city = select_city(insee_code_city)
         nb_city = len(selected_city)
         for city in selected_city.itertuples():
             print(f"Selected city: {city.name} (on {nb_city} city).")
