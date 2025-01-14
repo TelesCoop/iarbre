@@ -1,6 +1,4 @@
 import time
-import os
-import tempfile
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
@@ -118,7 +116,7 @@ def compute_for_factor(factor_name, tiles_df, std_area):
 
 def process_city(city, FACTORS, std_area, delete):
     city_name = city.name
-    if city.tiles_computed and delete == False:
+    if city.tiles_computed and delete is False:
         print(f"TileFactor already computed for city {city_name}.")
         return
 
@@ -165,4 +163,4 @@ class Command(BaseCommand):
         t = time.perf_counter()
         for city in selected_city.itertuples():
             process_city(city, FACTORS, std_area, delete)
-        print(f"Elapsed time: {time.perf_counter() -t}")
+        print(f"Elapsed time: {time.perf_counter() - t}")
