@@ -15,7 +15,7 @@ certificate_hostname: "carte.iarbre.fr"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
-https_enabled: false
+https_enabled: true
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
