@@ -198,9 +198,9 @@ class Command(BaseCommand):
         )
         total_records = tiles_queryset.count()
         print(f"Number tiles already in the DB: {total_records}. \n")
-        if delete or (city.tiles_generated == False):
+        if delete or (city.tiles_generated is False):
             # Clean if asked or if not all Tiles have been generated
-            print(f"These tiles will be deleted and new one recomputed.")
+            print("These tiles will be deleted and new one recomputed.")
             City.objects.filter(id=city.id).update(tiles_generated=False)
             for start in tqdm(range(0, total_records, batch_size)):
                 batch_ids = tiles_queryset[start : start + batch_size].values_list(
