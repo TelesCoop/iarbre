@@ -22,8 +22,10 @@ class MVTGenerator:
         output_dir=None,
         number_of_thread=1,
     ):
-        """Initialize MVT Generator for Django GeoDjango QuerySet
-        Params:
+        """
+        Initialize MVT Generator for Django GeoDjango QuerySet.
+
+        Args:
             queryset (QuerySet): QuerySet of the model.
             layer_name (str): Name of the layer to generate MVT tiles for.
             zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
@@ -68,7 +70,9 @@ class MVTGenerator:
                     future.result()
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
-        """Calculate bounds of the entire queryset.
+        """
+        Compute bounds of the entire queryset.
+
         Returns:
             Dictionary containing the bounds of the queryset.
         """
@@ -85,10 +89,13 @@ class MVTGenerator:
         }
 
     def _generate_tile_for_zoom(self, tile, zoom):
-        """Generate an individual MVT tile
-        Params:
+        """
+        Generate an individual MVT tile
+
+        Args:
             tile (mercantile.Tile): Tile to generate MVT for.
             zoom (int): Zoom level of the tile.
+
         Returns:
             None
         """
@@ -124,10 +131,13 @@ class MVTGenerator:
 
     @staticmethod
     def _prepare_mvt_features(queryset, tile_polygon) -> List[Dict[str, Any]]:
-        """Prepare features for MVT encoding.
-        Params:
+        """
+        Prepare features for MVT encoding.
+
+        Args:
             queryset (QuerySet): Queryset of the model.
             tile_polygon (Polygon): Polygon of the tile extent.
+
         Returns:
             List of features to encode in MVT format.
         """

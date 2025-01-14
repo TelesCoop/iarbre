@@ -3,10 +3,13 @@ from iarbre_data.models import City
 
 
 def load_geodataframe_from_db(queryset, fields):
-    """Load a GeoDataFrame from a Django model queryset.
-    Params:
+    """
+    Load a GeoDataFrame from a Django model queryset.
+
+    Args:
         queryset (QuerySet): Django queryset to load data from.
         fields (list[str]): List of fields to include in the GeoDataFrame.
+
     Returns:
         GeoDataFrame: GeoDataFrame with data from the queryset.
     """
@@ -29,8 +32,10 @@ def load_geodataframe_from_db(queryset, fields):
 
 def select_city(insee_code_city):
     """Select a list of city based on INSEE_CODE.
-    Params:
+
+    Args:
         insee_code_city (str): INSEE code of the city or cities to select.
+
     Returns:
         GeoDataFrame: GeoDataFrame containing the selected city or cities.
     """

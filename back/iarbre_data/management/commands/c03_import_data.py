@@ -12,9 +12,9 @@ from django.core.management import BaseCommand
 from shapely import unary_union
 from tqdm import tqdm
 
-from iarbre_data.data_config import DATA_FILES, URL_FILES
-from iarbre_data.models import Data
-from iarbre_data.settings import DATA_DIR, TARGET_PROJ
+from back.iarbre_data.data_config import DATA_FILES, URL_FILES
+from back.iarbre_data.models import Data
+from back.iarbre_data.settings import DATA_DIR, TARGET_PROJ
 
 
 def batched(iterable, n):
@@ -28,9 +28,10 @@ def batched(iterable, n):
 
 
 def download_from_url(url, layer_name):
-    """Download data from a URL and return a GeoDataFrame
+    """
+    Download data from a URL and return a GeoDataFrame.
 
-    Params:
+    Args:
         url (str): URL to download data from
         layer_name (str): Name of the layer to download
 
@@ -66,12 +67,16 @@ def read_data(data_config):
 
 
 def apply_actions(df, actions):
-    """Apply a sequence of actions to a Geometry.
-    Params:
+    """
+    Apply a sequence of actions to a Geometry.
+
+    Args:
         df (GeoDataFrame): GeoDataFrame to apply actions to.
         actions (dict): Actions to apply to the GeoDataFrame.
+
     Returns:
-        GeoDataFrame: GeoDataFrame with actions applied."""
+        GeoDataFrame: GeoDataFrame with actions applied.
+    """
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
     if actions.get("filters"):
@@ -109,12 +114,16 @@ def apply_actions(df, actions):
 
 
 def save_geometries(df: gpd.GeoDataFrame, data_config):
-    """Save geometries to the database.
-    Params:
+    """
+    Save geometries to the database.
+
+    Args:
         df (GeoDataFrame): GeoDataFrame to save to the database.
         data_config (dict): Configuration of the data.
+
     Returns:
-        None"""
+        None
+    """
     df = df.to_crs(TARGET_PROJ)
     datas = []
     actions_factors = zip(

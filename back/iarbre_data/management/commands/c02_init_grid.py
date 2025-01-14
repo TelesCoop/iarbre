@@ -17,14 +17,17 @@ from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
 def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)) -> None:
-    """Create square tiles for a specific city and save it to DB
-    Params:
-    city_geom (Polygon): The geometry of the city
-    grid_size (int): The size of the grid in meters
-    logger (Logger): The logger object
-    batch_size (int): The size of the batch to save to the DB
+    """
+    Create square tiles for a specific city and save it to DB.
+
+    Args:
+        city_geom (Polygon): The geometry of the city.
+        grid_size (int): The size of the grid in meters.
+        logger (Logger): The logger object.
+        batch_size (int): The size of the batch to save to the DB.
+
     Returns:
-    None
+        None
     """
     xmin, ymin, xmax, ymax = city_geom.bounds
     # Snap bounds to the nearest grid alignment so that all grids are aligned
@@ -74,15 +77,18 @@ def create_hexs_for_city(
     logger,
     batch_size=int(1e6),
 ) -> None:
-    """Create hexagonal tiles for a specific city.
-    Params:
-    city (City): The city object with geometry, id and name.
-    unit (float): The size of the hexagon in meters
-    a (float): The ratio of the hexagon
-    logger (Logger): The logger object
-    batch_size (int): The size of the batch to save to the DB
+    """
+    Create hexagonal tiles for a specific city.
+
+    Args:
+        city (City): The city object with geometry, ID, and name.
+        unit (float): The size of the hexagon in meters.
+        a (float): The ratio of the hexagon.
+        logger (Logger): The logger object.
+        batch_size (int): The size of the batch to save to the database.
+
     Returns:
-    None
+        None
     """
     city_geom = city.geometry
     city_id = city.id
@@ -182,13 +188,16 @@ class Command(BaseCommand):
 
     @staticmethod
     def _clean_outside(selected_city, batch_size, logger) -> None:
-        """Remove all tiles outside of the selected cities.
-        Params:
-        selected_city (DataFrame): The DataFrame of the selected cities
-        batch_size (int): The size of the batch to delete
-        logger (Logger): The logger object
+        """
+        Remove all tiles outside of the selected cities.
+
+        Args:
+            selected_city (DataFrame): The DataFrame of the selected cities.
+            batch_size (int): The size of the batch to delete.
+            logger (Logger): The logger object.
+
         Returns:
-        None
+            None
         """
         # Clean useless tiles
         city_union_geom = selected_city.geometry.unary_union
@@ -210,15 +219,20 @@ class Command(BaseCommand):
 
     @staticmethod
     def _create_grid_city(city, batch_size, logger, grid_type, unit, a, grid_size):
-        """Create grid for a specific city.
-        Params:
-        city (City): The city object with geometry, id and name.
-        batch_size (int): The size of the batch to save to the DB.
-        logger (Logger): The logger object.
-        grid_type (int): The type of grid to create.
-        unit (float): The size of the hexagon in meters (for hexagonal grid only).
-        a (float): The ratio of the hexagon (for hexagonal grid only).
-        grid_size (int): The size of the grid in meters (for square grid).
+        """
+        Create grid for a specific city.
+
+        Args:
+            city (City): The city object with geometry, id and name.
+            batch_size (int): The size of the batch to save to the DB.
+            logger (Logger): The logger object.
+            grid_type (int): The type of grid to create.
+            unit (float): The size of the hexagon in meters (for hexagonal grid only).
+            a (float): The ratio of the hexagon (for hexagonal grid only).
+            grid_size (int): The size of the grid in meters (for square grid).
+
+        Returns:
+            None
         """
         print(f"Selected city: {city.name} with id {city.id}.")
         tiles_queryset = Tile.objects.filter(
@@ -243,7 +257,7 @@ class Command(BaseCommand):
             create_squares_for_city(city, grid_size, logger, int(1e4))
 
     def handle(self, *args, **options):
-        """Create grid and save it to DB"""
+        """Create grid and save it to DB."""
         batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]

@@ -29,13 +29,16 @@ class Command(BaseCommand):
     def generate_tiles_for_model(
         self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
     ):
-        """Generate MVT tiles for a geographic model.
-        Params:
+        """
+        Generate MVT tiles for a geographic model.
+
+        Args:
             model (Model): Model to generate MVT tiles for.
             queryset (QuerySet): Queryset of the model.
             output_dir (str): Output directory to save the MVT tiles.
             zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
             number_of_thread (int): Number of threads to use for generating tiles.
+
         Returns:
             None
         """

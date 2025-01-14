@@ -14,7 +14,7 @@ To find more details about the project IA.bre, please go to https://iarbre.fr.
 ## Contents
 - [Data required](#data-required)
 - [Installation](#installation)
-- [Populate the DB](#populate-the-db)
+- [Populate the DB](#populate-the-database)
 - [Help](#help)
 
 ## Data required
@@ -41,7 +41,7 @@ enough:
 
 ### Initiate the database
 After the installation you need to create a user and the new DB using PostGIS:
-As for now there is only a super-user called postgres and we need to create a new one:
+As for now there is only a super-user called postgres, and we need to create a new one:
 ```bash
 $ sudo -u postgres psql postgres
 $ CREATE USER <user_name> WITH PASSWORD 'your_secure_password';
@@ -70,7 +70,7 @@ $ git clone https://github.com/TelesCoop/iarbre-back.git
 $ pip install -r requirements.txt
 ```
 You need then to create a file named `local_settings.ini` with:
-```commandline
+```
 [database]
 engine=postgresql
 user=<user_name>
@@ -97,11 +97,11 @@ $ python manage.py c04_compute_factors
 $ python manage.py c05_compute_indice
 $ python manage.py generate_mvt_files
 ```
-You can find details on the land occupancy data used and their processing in [data_config.py](./iarbre_data/data_config.py).
+You can find details on the land occupancy data used and their processing in [data_config.py](../iarbre_data/data_config.py).
 
-Last [command](./api/management/commands/generate_mvt_files.py) `python manage.py generate_mvt_files` generates Mapbox Vector Tiles
+Last [command](../api/management/commands/generate_mvt_files.py) `python manage.py generate_mvt_files` generates Mapbox Vector Tiles
 ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) for different zoom levels.
-These tiles could then be retrieved using the [api](./api/views.py) by the frontend and displayed using [MapLibre](https://maplibre.org/).
+These tiles could then be retrieved using the [api](../api/views.py) by the frontend and displayed using [MapLibre](https://maplibre.org/).
 ## Run server
 ```bash
 $ python manage.py runserver --nostatic

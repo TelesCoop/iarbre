@@ -8,9 +8,9 @@ import requests
 from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 
-from iarbre_data.models import City, Iris
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.settings import TARGET_PROJ
+from back.iarbre_data.models import City, Iris
+from back.iarbre_data.management.commands.utils import load_geodataframe_from_db
+from back.iarbre_data.settings import TARGET_PROJ
 
 mapping_city = {"geometry": "POLYGON", "name": "nom", "code": "insee"}
 mapping_iris = {"geometry": "POLYGON", "name": "iris_name", "code": "iris_code"}
