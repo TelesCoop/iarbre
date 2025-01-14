@@ -63,7 +63,7 @@
   block:
     - name: Build frontend code for static rendering
       # yamllint disable-line rule:line-length
-      shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm build-only"
+      shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm run build-only"
       args:
         chdir: "{{ frontend_path }}"
         executable: /bin/bash

@@ -3,24 +3,24 @@ frontend_application_port: 3000 # must be unique for each project on the same se
 environment_suffix: ""
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "plantabilite.{{ organization_slug }}.fr"
+main_hostname: "carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
-  - iarbre.fr
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
-certificate_hostname: "{{ main_hostname }}"
+certificate_hostname: "carte.iarbre.fr"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
-https_enabled: true
+https_enabled: false
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
-frontend_branch: main
-backend_branch: main
+frontend_branch: monorepo
+backend_branch: monorepo
+showcase_branch: monorepo
 
 environment_name: production
