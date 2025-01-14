@@ -72,17 +72,17 @@ class Tile(models.Model):
         if self.normalized_indice is None:
             return "purple"
         elif self.normalized_indice < 0.12:
-            return "#676767"
+            return "#E0E0E0"
         elif self.normalized_indice < 0.19:
-            return "#A63F28"
+            return "#F0F1C0"
         elif self.normalized_indice < 0.266:
-            return "#D98B2B"
+            return "#E5E09A"
         elif self.normalized_indice < 0.385:
-            return "#F3EFE9"
+            return "#B7D990"
         elif self.normalized_indice < 0.766:
-            return "#BEE2A4"
+            return "#71BB72"
         else:
-            return "#5AA055"
+            return "#006837"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT layer."""
