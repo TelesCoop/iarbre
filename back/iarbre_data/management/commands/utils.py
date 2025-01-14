@@ -1,5 +1,5 @@
 import shapely
-from iarbre_data.models import City
+from back.iarbre_data.models import City
 
 
 def load_geodataframe_from_db(queryset, fields):
@@ -11,7 +11,7 @@ def load_geodataframe_from_db(queryset, fields):
         fields (list[str]): List of fields to include in the GeoDataFrame.
 
     Returns:
-        GeoDataFrame: GeoDataFrame with data from the queryset.
+        df (GeoDataFrame): GeoDataFrame with data from the queryset.
     """
     import geopandas as gpd
 
@@ -37,7 +37,7 @@ def select_city(insee_code_city):
         insee_code_city (str): INSEE code of the city or cities to select.
 
     Returns:
-        GeoDataFrame: GeoDataFrame containing the selected city or cities.
+        selected_city (GeoDataFrame): GeoDataFrame containing the selected city or cities.
     """
     if insee_code_city is not None:  # Perform selection only for a city
         insee_code_city = insee_code_city.split(",")

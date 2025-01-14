@@ -17,7 +17,7 @@ from back.iarbre_data.models import Data
 from back.iarbre_data.settings import DATA_DIR, TARGET_PROJ
 
 
-def batched(iterable, n):
+def batched(iterable, n) -> None:
     """Batch data into tuples of length n. The last batch may be shorter."""
     # batched('ABCDEFG', 3) --> ABC DEF G
     if n < 1:
@@ -36,7 +36,7 @@ def download_from_url(url, layer_name):
         layer_name (str): Name of the layer to download
 
     Returns:
-        GeoDataFrame: GeoDataFrame with data from URL
+        gdf (GeoDataFrame): GeoDataFrame with data from URL
     """
     if "wfs" in url.lower():
         params = dict(
@@ -75,7 +75,7 @@ def apply_actions(df, actions):
         actions (dict): Actions to apply to the GeoDataFrame.
 
     Returns:
-        GeoDataFrame: GeoDataFrame with actions applied.
+        df (GeoDataFrame): GeoDataFrame with actions applied.
     """
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
@@ -113,7 +113,7 @@ def apply_actions(df, actions):
     return df
 
 
-def save_geometries(df: gpd.GeoDataFrame, data_config):
+def save_geometries(df: gpd.GeoDataFrame, data_config) -> None:
     """
     Save geometries to the database.
 

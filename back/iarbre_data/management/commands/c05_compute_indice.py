@@ -11,7 +11,7 @@ from back.iarbre_data.management.commands.utils import (
 )
 
 
-def compute_indice(tiles_id):
+def compute_indice(tiles_id) -> None:
     """
     Compute the indice for a list of tiles. The indice is computed as the weighted sum of the factors (land occupancy proportion) for each tile.
 

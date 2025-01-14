@@ -46,7 +46,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
             grid_size (int): Size of the grid in meters.
 
         Returns:
-            shapely.geometry.MultiPolygon: MultiPolygon with the split parts.
+            list[shapely.geometry.MultiPolygon]: MultiPolygon with the split parts.
         """
         if geom is None or geom.is_empty:
             return None
@@ -108,7 +108,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         return []
 
 
-def compute_for_factor(factor_name, tiles_df_path, std_area):
+def compute_for_factor(factor_name, tiles_df_path, std_area) -> None:
     """
     Compute and store factor coverage proportions for the provided tiles.
 
@@ -148,7 +148,7 @@ def compute_for_factor(factor_name, tiles_df_path, std_area):
         TileFactor.objects.bulk_create(tile_factors)
 
 
-def process_city(city, FACTORS, std_area):
+def process_city(city, FACTORS, std_area) -> None:
     """
     Process a city to compute and store factor coverage proportions.
 

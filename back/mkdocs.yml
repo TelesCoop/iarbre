@@ -1,12 +1,13 @@
 site_name: IA.rbre
 nav:
   - Home: index.md
-  - Back-end database generatation:
+  - Back-end database generation:
       - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
       - Initialize Grid: api/c02_init_grid.md
       - Import Data: api/c03_import_data.md
       - Compute Factors: api/c04_compute_factors.md
       - Compute Indices: api/c05_compute_indice.md
+      - Utils: api/utils.md
 
 plugins:
   - search
@@ -15,6 +16,7 @@ plugins:
         python:
           options:
             show_source: true
-
 theme:
-  name: readthedocs
+  name: 'material'
+  logo: 'assets/images/logo.png'
+  favicon: 'assets/images/logo.png'

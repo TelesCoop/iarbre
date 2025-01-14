@@ -1,11 +1,13 @@
-"""Generate MVT tiles for geographic model."""
+"""
+Generate MVT tiles for geographic model.
+"""
 import os
 
 from django.core.management import BaseCommand
 
-from api.utils.mvt_generator import MVTGenerator
-from iarbre_data import settings
-from iarbre_data.models import Tile, MVTTile
+from back.api.utils.mvt_generator import MVTGenerator
+from back.iarbre_data import settings
+from back.iarbre_data.models import Tile, MVTTile
 
 
 class Command(BaseCommand):

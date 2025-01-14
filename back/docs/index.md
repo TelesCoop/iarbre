@@ -9,7 +9,7 @@ and a [PostGIS](https://postgis.net/) database.
 Developed by [Telescoop](https://telescoop.fr), after the [V1](https://forge.grandlyon.com/erasme/script-recalcul-calque)
 from [Exo-dev](https://exo-dev.fr/).
 
-To find more details about the project IA.bre, please go to https://iarbre.fr.
+To find more details about the project IA.bre, please go to [iarbre.fr](https://iarbre.fr).
 
 ## Contents
 - [Data required](#data-required)
@@ -24,7 +24,7 @@ Please send email to [contact@telescoop.fr](mailto:contact@telescoop.fr) to get 
 
 
 ## Installation
-> These steps are for Linux. It has not been tested on Windows or macOS.
+> **Note**: These steps are for Linux. It has not been tested on Windows or macOS.
 
 Requires [GDAL](https://gdal.org/en/stable/) and [PostGIS](https://postgis.net/).
 
