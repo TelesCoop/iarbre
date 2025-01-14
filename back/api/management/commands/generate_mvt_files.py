@@ -20,13 +20,12 @@ class Command(BaseCommand):
 
         parser.add_argument(
             "--clean",
-            type=bool,
-            default=True,
-            help="Delete all existing tiles before generating new ones",
+            action="store_true",
+            help="Delete already existing tiles.",
         )
 
     def generate_tiles_for_model(
-        self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
+            self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
     ):
         # Generate MVT tiles
         mvt_generator = MVTGenerator(
