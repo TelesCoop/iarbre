@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
+import MapPlantabiliteLegend from "@/components/map/MapPlantabiliteLegend.vue"
 
 const props = defineProps({
   mapId: {
@@ -25,5 +26,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" height="100%"></div>
+  <div :id="mapId" class="map-container"></div>
+  <MapPlantabiliteLegend />
 </template>
+
+<style lang="sass" scoped>
+.map-container
+  height: 100%
+  width: 100%
+</style>

@@ -1,5 +1,5 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>Hello</div>
+  <button @click="$router.push('/map')">Go to Map</button>
 </template>

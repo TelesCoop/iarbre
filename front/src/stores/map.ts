@@ -51,11 +51,11 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "map/map-style.json",
-      // center to France
-      center: [2.213749, 46.227638],
+      // center to France,
+      center: [4.8537684279176645, 45.75773479280862],
       // zoom to a level where France is visible
-      zoom: 5
-      // workerCount: 5 TODO: remove this?
+      zoom: 16,
+      workerCount: 5 // set the number of workers
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
