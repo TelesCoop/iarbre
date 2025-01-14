@@ -19,13 +19,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--clean",
+            "--keep",
             action="store_true",
-            help="Delete already existing tiles.",
+            help="Keep already existing tiles, do not delete them.",
         )
 
     def generate_tiles_for_model(
-            self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
+        self, model, queryset, output_dir, zoom_levels=(10, 20), number_of_thread=1
     ):
         # Generate MVT tiles
         mvt_generator = MVTGenerator(
@@ -42,7 +42,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         number_of_thread = options["number_of_thread"]
         # Generate MVT tiles for Tile model
-        if options["clean"]:
+        if options["keep"] is False:
             print("Deleting existing MVTTile")
             MVTTile.objects.all().delete()
         self.generate_tiles_for_model(
