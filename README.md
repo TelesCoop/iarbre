@@ -10,6 +10,7 @@ Here's how the repository is organized:
 IArbre/
 ├── back/      # Backend code (Python Django)
 ├── front/     # Frontend code (Vue.js)
+├── static/     # Static webpage (HTML,CSS)
 ├── deploy/    # Deployment configurations (Ansible)
 └── .pre-commit-config.yaml  # Pre-commit hooks configuration
 ```
@@ -21,6 +22,10 @@ This directory contains the backend of IArbre, built using **Django** 🐍. It p
 ### **front/**
 
 The frontend is built with **Vue.js** 🌟. This mostly handles the map.
+
+### **static/**
+
+Static webpage using **HTML/CSS** 🌐. To give general information about the project.
 
 ### **deploy/**
 
