@@ -4,7 +4,7 @@ import logging
 import random
 
 import numpy as np
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.core.management import BaseCommand
 from django.db import transaction
@@ -42,11 +42,11 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
         x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
         polygon = Polygon.from_bbox([x0, y0, x1, y1])
         polygon.srid = TARGET_PROJ
-        # Create tile with random indice from -5 to 5
+        # Init with -1 value
         tile = Tile(
             geometry=polygon,
             map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=random.uniform(-5, 5),
+            indice=-1,
         )
         tiles.append(tile)
         # Avoid OOM errors
@@ -104,8 +104,7 @@ def create_hexs_for_city(
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=random.uniform(-5, 5),
-            # Create tile with random indice from -5 to 5
+            indice=-1,  # Negative values
             city_id=city_id,
             iris_id=iris_id,
         )
@@ -232,8 +231,10 @@ class Command(BaseCommand):
         desired_area = grid_size * grid_size
         unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
         a = np.sin(np.pi / 3)
+        total_city = len(selected_city)
+        processed_city = 0
         with ThreadPoolExecutor(max_workers=12) as executor:
-            futures = [
+            future_to_city = {
                 executor.submit(
                     self._create_grid_city,
                     city,
@@ -244,11 +245,17 @@ class Command(BaseCommand):
                     a,
                     grid_size,
                     delete,
-                )
+                ): city
                 for city in selected_city.itertuples()
-            ]
-            for future in futures:
+            }
+            for future in as_completed(future_to_city):
                 future.result()
+                city = future_to_city.pop(future)
+                processed_city += 1
+                print(
+                    f"Processed city: {processed_city} / {total_city} (city: {city.name})."
+                )
+                gc.collect()  # just to be sure gc is called...
         print("Removing duplicates...")
         self._remove_duplicates()
         if clean_outside:
