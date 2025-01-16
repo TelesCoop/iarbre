@@ -93,7 +93,6 @@ def apply_actions(df, actions):
 
 
 def save_geometries(df: gpd.GeoDataFrame, data_config):
-    df = df.to_crs(TARGET_PROJ)
     datas = []
     actions_factors = zip(
         data_config.get("actions", [None]), data_config["factors"]
@@ -143,6 +142,10 @@ class Command(BaseCommand):
             start = time.time()
             try:
                 df = read_data(data_config)
+                df = df.to_crs(TARGET_PROJ)  # Re_proj if needed
+                df = df[
+                    df.geometry.notnull() & df.geometry.is_valid
+                ]  # Drop null or invalid geom
             except pyogrio.errors.DataSourceError:
                 print(f"Error reading data {data_config['name']}")
                 continue
