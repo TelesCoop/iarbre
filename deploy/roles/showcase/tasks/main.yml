@@ -1,0 +1,53 @@
+- name: Copy nginx config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ project_slug }}-showcase
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: get latest showcase code
+  git:
+    repo: "{{ frontend_repo }}"
+    dest: "{{ showcase_path }}/.."
+    key_file: "{{ backend_identity_file_path }}"
+    accept_hostkey: true
+    force: true
+    version: "{{ showcase_branch }}"
+  become_user: "{{ main_user }}"
+  register: clonecode
+
+# - name: Build showcase code for static rendering
+#   # yamllint disable-line rule:line-length
+#   shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm build-only"
+#   args:
+#     chdir: "{{ showcase_path }}"
+#     executable: /bin/bash
+#   when: clonecode.changed or force_update is defined
+#   register: build_code
+
+# - debug: msg="{{ build_code.stdout }}"
+#   when: clonecode.changed  or force_update is defined
+
+- name: Update showcase static folder
+  file:
+    path: "{{ showcase_static_path }}"
+    state: "{{ item }}"
+    owner: www-data
+    mode: "2755"
+  with_items:
+    - absent
+    - directory
+  when: clonecode.changed or force_update is defined
+
+- name: update showcase static folder content
+  synchronize:
+    src: "{{ showcase_path }}/"
+    dest: "{{ showcase_static_path }}/"
+    rsync_opts:
+      - "-og"
+      - "--chown=www-data"
+  delegate_to: "{{ inventory_hostname }}"
+  when: clonecode.changed or force_update is defined

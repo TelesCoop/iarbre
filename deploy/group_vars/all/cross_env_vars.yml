@@ -1,0 +1,5 @@
+---
+support_mail_addr: contact@{{ organization_slug }}.fr
+
+sshd:
+  port: 42722

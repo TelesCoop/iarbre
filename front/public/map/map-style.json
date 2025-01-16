@@ -1,0 +1,21 @@
+{
+  "layers": [
+    {
+      "id": "osm",
+      "source": "osm",
+      "type": "raster"
+    }
+  ],
+  "sources": {
+    "osm": {
+      "attribution": "&copy; OpenStreetMap Contributors",
+      "maxzoom": 19,
+      "tileSize": 256,
+      "tiles": [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ],
+      "type": "raster"
+    }
+  },
+  "version": 8
+}

@@ -1,0 +1,529 @@
+/* Importer les polices */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("BricolageGrotesque-Regular.otf") format("opentype");
+}
+
+@font-face {
+  font-family: "Sligoil";
+  src: url("Sligoil-Micro.otf") format("opentype");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+  color: #32412d; /* Vert foncé */
+  text-decoration: underline; /* Soulignement par défaut */
+  font-weight: bold; /* Optionnel : met en valeur le lien */
+}
+
+a:hover {
+  text-decoration: none; /* Supprime le soulignement au survol */
+  color: #32412d; /* Maintient la couleur verte au survol */
+}
+body {
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  color: #32312d;
+  background-color: #efefed;
+  overflow-x: hidden;
+}
+
+hr.full-width {
+  border: none; /* Supprime les styles par défaut */
+  border-top: 1px solid #32412d; /* Vert foncé et fin */
+  width: 100%; /* S'étend sur toute la largeur */
+}
+
+.image-fullwidth {
+  width: 100%; /* Section pleine largeur */
+  margin: 0;
+  padding: 0;
+}
+
+.image-fullwidth img {
+  width: 100%; /* Image en pleine largeur */
+  height: auto; /* Conserve les proportions */
+  display: block; /* Évite les espaces blancs sous l'image */
+}
+
+.reversed-section {
+  display: flex;
+  flex-direction: row-reverse; /* Inverse l'ordre des colonnes */
+  width: 80%;
+  max-width: 1200px;
+  background-color: #ffffff; /* Fond blanc */
+  margin: 40px auto; /* Centrer la section */
+  padding: 20px;
+}
+
+.reversed-section .left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reversed-section .left img.logo-partners {
+  max-width: 250px; /* Taille maximale de 250px */
+  height: auto; /* Maintient les proportions */
+}
+
+.reversed-section .left img {
+  max-width: 200px;
+  height: auto;
+}
+
+.reversed-section .right {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-right: 20px; /* Espacement ajusté à gauche */
+}
+
+.reversed-section .text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #32312d;
+  text-align: left;
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+}
+
+/* Bandeau 2030 */
+.bandeau-2030 {
+  background-color: #92a48d; /* Vert clair */
+  padding: 40px 20px; /* Espacement interne */
+  color: #ffffff; /* Texte blanc */
+}
+
+.bandeau-content {
+  display: flex;
+  flex-wrap: wrap; /* Gère la disposition sur mobile */
+  justify-content: space-between; /* Équilibre les éléments horizontalement */
+  align-items: center; /* Aligne verticalement */
+  max-width: 1200px; /* Limite la largeur maximale */
+  margin: 0 auto; /* Centre le contenu */
+}
+
+.bandeau-text {
+  flex: 2; /* 2/3 pour le texte */
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.bandeau-text p {
+  margin: 0; /* Supprime les marges par défaut */
+}
+
+.bandeau-logo {
+  flex: 1; /* 1/3 pour le logo */
+  text-align: right; /* Aligne le logo à droite */
+}
+
+.bandeau-logo img {
+  max-width: 150px; /* Taille maximale pour le logo */
+  height: auto; /* Conserve les proportions */
+}
+
+/* Bandeau de navigation */
+.navbar {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background-color: #efefed; /* Même couleur que le background */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  height: 30px;
+  width: auto;
+}
+
+.navbar-right {
+  display: flex;
+  gap: 20px;
+}
+
+.navbar-link {
+  font-family: "Sligoil", Arial, sans-serif;
+  color: #32312d;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-link:hover {
+  color: #92a48d;
+}
+
+.fullscreen {
+  position: relative;
+  height: 65vh;
+  width: 100%;
+  background-image: url("map2.png");
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+  box-shadow: 0 -9px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden; /* Pour contenir la superposition */
+}
+
+.fullscreen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* Superposition noire à 50% */
+  z-index: 1; /* Place la superposition derrière le texte */
+}
+
+.fullscreen-tagline {
+  font-family: "Sligoil", Arial, sans-serif; /* Utilise la police Sligoil */
+  font-size: 2rem; /* Taille de la phrase */
+  color: #ffffff; /* Couleur blanche */
+  text-align: center; /* Texte centré horizontalement */
+  position: absolute; /* Permet de centrer l’élément */
+  top: 50%; /* Position verticale */
+  left: 50%; /* Position horizontale */
+  transform: translate(-50%, -50%); /* Ajuste le centrage exact */
+  text-shadow: 0px 0px 11px rgba(0, 0, 0, 0.99); /* Ajoute une ombre pour la lisibilité */
+  z-index: 2; /* Place le texte au-dessus de la superposition */
+}
+
+.team {
+  padding: 100px 20px;
+  background-color: #efefed; /* Couleur de fond */
+  text-align: center;
+}
+
+.team h2 {
+  font-family: "Sligoil", Arial, sans-serif;
+  font-size: 2rem;
+  color: #32312d;
+  margin-bottom: 40px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 colonnes */
+  gap: 40px; /* Augmente l'espacement entre les blocs */
+  justify-content: center;
+}
+
+.team-member {
+  background-color: #ffffff; /* Fond blanc pour chaque membre */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Légère ombre */
+  padding: 20px;
+  text-align: center;
+}
+
+.team-member img {
+  width: 100px; /* Taille de la photo */
+  height: 100px;
+  border-radius: 50%; /* Photo en rond */
+  margin-bottom: 15px;
+}
+
+.team-member h3 {
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-size: 1.2rem;
+  color: #32312d;
+  margin-bottom: 5px;
+}
+
+.team-member .title {
+  font-family: "Sligoil", Arial, sans-serif;
+  font-size: 1rem;
+  color: #92a48d; /* Vert */
+  margin-bottom: 10px;
+}
+
+.team-member .function {
+  font-size: 0.9rem;
+  color: #32312d;
+}
+
+.discord-section {
+  width: 100%; /* Section pleine largeur */
+  background-color: #ffffff; /* Fond blanc */
+  padding: 40px 20px; /* Espacement interne */
+  text-align: center; /* Centre le contenu */
+}
+
+.discord-container {
+  max-width: 800px; /* Limite la largeur du contenu */
+  margin: 0 auto; /* Centre le conteneur */
+}
+
+.discord-section p {
+  font-family: "Bricolage Grotesque", Arial, sans-serif; /* Police du texte */
+  font-size: 1.2rem; /* Taille du texte */
+  color: #32312d; /* Couleur du texte */
+  margin-bottom: 20px; /* Espacement en bas */
+  line-height: 1.6;
+}
+
+.discord-button {
+  font-family: "Sligoil", Arial, sans-serif; /* Police pour le bouton */
+  background-color: #92a48d; /* Couleur de fond du bouton */
+  color: #ffffff; /* Couleur du texte */
+  padding: 15px 30px; /* Espacement interne */
+  text-decoration: none; /* Pas de soulignement */
+  border-radius: 9999px; /* Coins arrondis */
+  font-size: 1rem; /* Taille du texte */
+
+  transition: background-color 0.3s ease; /* Animation sur hover */
+  display: inline-block; /* Maintient la taille */
+  font-weight: normal; /* Texte non gras */
+  box-shadow: none; /* Supprime l'ombre */
+}
+
+.discord-button:hover {
+  background-color: #32412d; /* Changement de couleur au survol */
+  color: #ffffff; /* Maintient le texte blanc */
+  text-decoration: none; /* Pas de soulignement au survol */
+}
+
+#particleCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Pour que le canvas ne bloque pas les interactions de la souris */
+}
+
+/* Lower content section */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  padding-bottom: 10px;
+}
+
+.split-section {
+  display: flex;
+  width: 80%;
+  max-width: 1200px;
+  background-color: #efefed;
+  padding: 20px;
+}
+
+/* Left column */
+.left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 40px;
+}
+
+.left img {
+  width: 250px;
+  height: auto;
+}
+
+/* Right column */
+.right {
+  flex: 2;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  padding-left: 20px;
+}
+
+.text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  text-align: left;
+  color: #32312d;
+  position: relative;
+}
+
+.text p {
+  margin-bottom: 20px;
+}
+
+/* CTA Button */
+.cta-button {
+  font-family: "Sligoil", Arial, sans-serif;
+  background-color: #92a48d;
+  color: #ffffff;
+  padding: 15px 30px;
+  margin-top: 20px;
+  border: none;
+  cursor: pointer;
+
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+  border-radius: 9999px;
+  position: relative;
+  right: 0;
+}
+
+.cta-button:hover {
+  background-color: #32312d;
+}
+
+/* Section Partenaires */
+.partenaires {
+  padding: 40px 0 120px;
+  background-color: #ffffff;
+  text-align: center;
+  height: auto;
+  box-shadow: 0 -9px 20px rgba(0, 0, 0, 0.01); /* Ombre portée au-dessus de la section */
+}
+
+.partenaires h2 {
+  font-size: 1.5rem; /* Réduit la taille du titre */
+  margin-bottom: 40px;
+  font-family: "Sligoil", Arial, sans-serif;
+  text-transform: uppercase;
+  color: #32312d;
+}
+
+.logos {
+  display: flex;
+  flex-wrap: wrap; /* Permet aux logos de passer à la ligne */
+  justify-content: center; /* Centre les logos sur chaque ligne */
+  gap: 20px 20px; /* Espacement vertical et horizontal */
+  max-width: 800px; /* Limite la largeur pour condenser les logos */
+  margin: 0 auto; /* Centre l'ensemble de la section logos */
+}
+
+.logo-placeholder {
+  width: 60px; /* Taille des logos */
+  height: 60px;
+  background-color: #92a48d; /* Couleur par défaut des logos */
+  border-radius: 50%;
+  transition: background-color 0.3s ease; /* Transition pour un effet lisse */
+}
+
+.logo-placeholder:hover {
+  background-color: #32312d; /* Change la couleur au survol */
+}
+
+/* Footer */
+footer {
+  background-color: #32312d;
+  color: #ffffff;
+  text-align: center;
+  padding: 80px 0;
+  font-size: 0.9rem;
+  font-family: "Sligoil", Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+footer p {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+footer a {
+  color: #ffffff; /* Couleur blanche par défaut */
+  text-decoration: none; /* Pas de soulignement par défaut */
+  font-weight: bold; /* Optionnel : met en valeur les liens */
+}
+
+footer a:hover {
+  color: #ffffff; /* Reste blanc au survol */
+  text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .split-section {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .bandeau-content {
+    flex-direction: column; /* Place le texte et le logo en colonne */
+    text-align: center; /* Centre le texte et le logo */
+  }
+
+  .bandeau-logo {
+    text-align: center; /* Centre le logo sur mobile */
+    margin-top: 20px; /* Ajoute un espacement entre le texte et le logo */
+  }
+
+  .bandeau-logo img {
+    max-width: 120px; /* Réduit la taille du logo sur mobile */
+  }
+
+  .fullscreen-tagline {
+    position: absolute;
+    top: 50%; /* Position verticale */
+    left: 50%; /* Position horizontale */
+    transform: translate(-50%, -50%); /* Centre exactement */
+    font-size: 1.5rem; /* Taille adaptée pour mobile */
+    text-align: center; /* Centre le texte */
+    width: 90%; /* Pour s'assurer que le texte ne dépasse pas */
+  }
+
+  /* 2. Retirer "À propos" et "Nous contacter" dans le header */
+  .navbar-right a {
+    display: none; /* Cache les liens sur mobile */
+  }
+
+  /* 3. Section équipe en 2 colonnes */
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr); /* Passe à 2 colonnes */
+    gap: 20px; /* Réduit l'espacement */
+  }
+
+  /* 4. Typo plus petite pour le footer */
+  footer {
+    font-size: 0.8rem; /* Taille de police réduite */
+  }
+
+  .left {
+    justify-content: center;
+    margin-right: 0;
+    padding-bottom: 20px;
+  }
+
+  .right {
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+
+  .cta-button {
+    align-self: flex-end;
+    position: static;
+  }
+
+  .logos {
+    grid-template-columns: repeat(3, 1fr); /* 3 logos par ligne */
+    padding: 3em;
+    gap: 20px; /* Espacement uniforme en largeur et en hauteur */
+  }
+
+  .partenaires h2 {
+    font-size: 1.5rem;
+  }
+}

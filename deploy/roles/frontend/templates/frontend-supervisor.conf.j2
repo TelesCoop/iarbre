@@ -1,0 +1,7 @@
+[program:{{ project_slug }}-frontend]
+directory = {{ frontend_path }} ;
+command = node .output/server/index.mjs ;
+user = {{ main_user }} ; User to run as
+stdout_logfile = {{ var_log_path }}/frontend_supervisor.log        ; Where to write log messages
+redirect_stderr = true                                                ; Save stderr in the same log
+environment=PORT="{{ frontend_application_port }}",API_PORT="{{ backend_application_port }}";
