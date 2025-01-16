@@ -3,8 +3,8 @@ base_project_slug: iarbre
 main_user: iarbre
 main_user_uid: 10045 # TODO must be unique for each project on the server
 django_project_name: iarbre_data
-backend_repo: git@github.com:telescoop/iarbre-back.git
-frontend_repo: git@github.com:telescoop/iarbre-back.git
+backend_repo: git@github.com:TelesCoop/iarbre.git
+frontend_repo: git@github.com:TelesCoop/iarbre.git
 backend_identity_file_path: /home/{{ main_user }}/.ssh/id_ed25519_backend
 var_log_path: /var/log/{{ organization_slug }}/{{ project_slug }}
 project_base_dir: /{{ organization_slug }}/{{ base_project_slug }}
