@@ -1,7 +1,6 @@
 import gc
 import itertools
 import logging
-import random
 
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
