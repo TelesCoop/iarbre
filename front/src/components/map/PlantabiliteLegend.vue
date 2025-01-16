@@ -9,8 +9,8 @@
         :style="{ 'background-color': color }"
       >
         <span v-if="index === 0">0</span>
-        <span v-else-if="Math.floor(COLORS.length / 2) === index" class="has-text-black">0.5</span>
-        <span v-else-if="index === COLORS.length - 1">1</span>
+        <span v-else-if="Math.floor(COLORS.length / 2) === index" class="has-text-black">5</span>
+        <span v-else-if="index === COLORS.length - 1">10</span>
       </div>
     </div>
     <span class="plantabilite-legend-text">Plantable</span>
