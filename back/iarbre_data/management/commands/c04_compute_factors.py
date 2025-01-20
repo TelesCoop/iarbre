@@ -160,7 +160,6 @@ class Command(BaseCommand):
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
-
         selected_city = select_city(insee_code_city)
         t = time.perf_counter()
         for city in selected_city.itertuples():

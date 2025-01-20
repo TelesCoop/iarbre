@@ -15,8 +15,10 @@ from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
-def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
+def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)):
     """Create square tiles in the DB for a specific city"""
+    city_id = city.id
+    city_geom = city.geometry
     xmin, ymin, xmax, ymax = city_geom.bounds
     # Snap bounds to the nearest grid alignment so that all grids are aligned
     xmin = np.floor(xmin / grid_size) * grid_size
@@ -41,21 +43,29 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
         x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
         polygon = Polygon.from_bbox([x0, y0, x1, y1])
         polygon.srid = TARGET_PROJ
+        iris_id = Iris.objects.filter(geometry__intersects=polygon)
+        if len(iris_id) > 0:
+            iris_id = iris_id[0].id
+        else:
+            iris_id = None
         # Init with -1 value
         tile = Tile(
             geometry=polygon,
             map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=-1,
+            indice=1,
+            normalized_indice=1,
+            city_id=city_id,
+            iris_id=iris_id,
         )
         tiles.append(tile)
         # Avoid OOM errors
         if (i + 1) % batch_size == 0:
-            Tile.objects.bulk_create(tiles, batch_size=batch_size)
+            Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()
             gc.collect()
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
 
 def create_hexs_for_city(
@@ -103,7 +113,8 @@ def create_hexs_for_city(
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=-1,  # Negative values
+            indice=1,
+            normalized_indice=1,
             city_id=city_id,
             iris_id=iris_id,
         )
@@ -116,7 +127,7 @@ def create_hexs_for_city(
             del tiles[:]
             gc.collect()
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
 
 class Command(BaseCommand):
