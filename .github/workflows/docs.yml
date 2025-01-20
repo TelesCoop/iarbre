@@ -32,12 +32,12 @@ jobs:
         run: |
           mkdocs build --strict
 
-  name: Deploy doc
-  uses: dawidd6/action-ansible-playbook@v2
-  with:
-    playbook: docs.yml
-    directory: deploy
-    vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
-    options: |
-      -l prod
-    key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy doc
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: docs.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l prod
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
