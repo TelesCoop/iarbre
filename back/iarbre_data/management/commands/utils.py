@@ -1,5 +1,11 @@
 import shapely
 from iarbre_data.models import City
+import geopandas as gpd
+import pandas as pd
+from tqdm import tqdm
+import requests
+from datetime import datetime
+import time
 
 
 def load_geodataframe_from_db(queryset, fields):
@@ -40,3 +46,40 @@ def select_city(insee_code_city):
             ["id", "name", "code", "tiles_generated", "tiles_computed"],
         )
     return selected_city
+
+
+def download_cartofriches_data() -> None:
+    """Download all the friches Geometry for the cities in Metropole de Lyon"""
+    base_url = "https://apidf-preprod.cerema.fr/cartofriches/geofriches/"
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    output_file = f"file_data/cartofriches_{current_date}.geojson"
+    coddep = "69"
+    cities = select_city(None)
+
+    cities.crs = 2154
+    cities_4326 = cities.to_crs(4326)
+    combined_gdf = gpd.GeoDataFrame()
+
+    for city in tqdm(cities_4326.itertuples()):
+        bbox = ",".join(map(str, city.geometry.bounds))
+        params = {
+            "coddep": coddep,
+            "code_insee": int(city.code),
+            "in_bbox": bbox,
+            "page_size": 1000,
+        }
+        try:
+            response = requests.get(base_url, params=params)
+        except Exception as e:
+            print(e)
+            print(f"Failed to fetch data for batch {params}")
+        if response.status_code == 200:
+            data = response.json()
+            gdf = gpd.GeoDataFrame.from_features(data["features"])
+            combined_gdf = pd.concat([combined_gdf, gdf], ignore_index=True)
+        else:
+            print(f"Failed to fetch data for batch {city.name}: {response.status_code}")
+        time.sleep(1)  # Avoid hitting API rate limits
+    combined_gdf.crs = 4326
+    combined_gdf.to_crs(2154, inplace=True)
+    combined_gdf.to_file(output_file, driver="GeoJSON")

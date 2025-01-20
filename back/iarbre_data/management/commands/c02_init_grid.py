@@ -137,15 +137,14 @@ class Command(BaseCommand):
             "--grid-type", type=int, default=1, help="Hexagonal (1) or square (2) grid."
         )
         parser.add_argument(
-            "--clean_outside",
-            type=bool,
-            default=True,
-            help="Detele tiles outside of the city boundaries of the selection or not.",
-        )
-        parser.add_argument(
             "--delete",
             action="store_true",
             help="Delete already existing tiles.",
+        )
+        parser.add_argument(
+            "--keep_outside",
+            action="store_true",
+            help="Keep tiles outside of the city selection (by default, they are deleted).",
         )
 
     @staticmethod
@@ -166,10 +165,10 @@ class Command(BaseCommand):
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
     @staticmethod
-    def _clean_outside(selected_city, batch_size, logger):
+    def _clean_outside(selected_city, batch_size):
         """Remove all tiles outside of the selected cities"""
         # Clean useless tiles
-        city_union_geom = selected_city.geometry.unary_union
+        city_union_geom = selected_city.geometry.union_all()
         print("Deleting tiles out of the cities")
         total_records = Tile.objects.all().count()
         total_deleted = 0
@@ -184,7 +183,7 @@ class Command(BaseCommand):
                     .delete()
                 )
                 total_deleted += deleted_count
-        logger.info(f"Deleted {total_deleted} tiles")
+        print(f"Deleted {total_deleted} tiles")
 
     @staticmethod
     def _create_grid_city(
@@ -222,7 +221,7 @@ class Command(BaseCommand):
         insee_code_city = options["insee_code_city"]
         grid_size = options["grid_size"]
         grid_type = options["grid_type"]
-        clean_outside = options["clean_outside"]
+        keep_outside = options["keep_outside"]
         delete = options["delete"]
         if grid_type not in [1, 2]:
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
@@ -257,5 +256,5 @@ class Command(BaseCommand):
                 gc.collect()  # just to be sure gc is called...
         print("Removing duplicates...")
         self._remove_duplicates()
-        if clean_outside:
-            self._clean_outside(selected_city, batch_size, logger)
+        if keep_outside is False:
+            self._clean_outside(selected_city, batch_size)

@@ -352,7 +352,7 @@ URL_FILES = [
     },
     {
         "name": "Friches",
-        "file": "cartofriches.geojson",
+        "file": "cartofriches_2025-01-20.geojson",
         "scripts": None,
         "factors": ["Friches"],
         "output_type": "POLYGON",
