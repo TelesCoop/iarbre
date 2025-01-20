@@ -130,6 +130,27 @@ def create_hexs_for_city(
         Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
 
+def clean_outside(selected_city, batch_size):
+    """Remove all tiles outside of the selected cities"""
+    # Clean useless tiles
+    city_union_geom = selected_city.geometry.union_all()
+    print("Deleting tiles out of the cities")
+    total_records = Tile.objects.all().count()
+    total_deleted = 0
+    for start in tqdm(range(0, total_records, batch_size * 10)):
+        batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
+            "id", flat=True
+        )
+        with transaction.atomic():
+            deleted_count, _ = (
+                Tile.objects.filter(id__in=batch_ids)
+                .exclude(geometry__intersects=city_union_geom.wkt)
+                .delete()
+            )
+            total_deleted += deleted_count
+    print(f"Deleted {total_deleted} tiles")
+
+
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
 
@@ -174,27 +195,6 @@ class Command(BaseCommand):
             ids_to_delete = duplicate_cities.values_list("id", flat=True)[1:]
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
-
-    @staticmethod
-    def _clean_outside(selected_city, batch_size):
-        """Remove all tiles outside of the selected cities"""
-        # Clean useless tiles
-        city_union_geom = selected_city.geometry.union_all()
-        print("Deleting tiles out of the cities")
-        total_records = Tile.objects.all().count()
-        total_deleted = 0
-        for start in tqdm(range(0, total_records, batch_size * 10)):
-            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
-                "id", flat=True
-            )
-            with transaction.atomic():
-                deleted_count, _ = (
-                    Tile.objects.filter(id__in=batch_ids)
-                    .exclude(geometry__intersects=city_union_geom.wkt)
-                    .delete()
-                )
-                total_deleted += deleted_count
-        print(f"Deleted {total_deleted} tiles")
 
     @staticmethod
     def _create_grid_city(
@@ -268,4 +268,4 @@ class Command(BaseCommand):
         print("Removing duplicates...")
         self._remove_duplicates()
         if keep_outside is False:
-            self._clean_outside(selected_city, batch_size)
+            clean_outside(selected_city, batch_size)
