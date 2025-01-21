@@ -40,7 +40,7 @@ def compute_indice(tiles_id) -> None:
             )
             for row in df.itertuples()
         ],
-        ["indice"],
+        ["plantability_indice"],
         batch_size=10000,
     )
 
