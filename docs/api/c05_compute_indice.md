@@ -1,3 +1,3 @@
 # C05 Compute Indice
 
-::: iarbre_data.back.management.commands.c05_compute_indice
+::: back.plantability.management.commands.c01_compute_plantability_indice

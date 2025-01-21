@@ -21,3 +21,4 @@ mvt_files/*
 *.log
 media/*
 back/site/*
+site/*

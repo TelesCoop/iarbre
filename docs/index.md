@@ -1,6 +1,6 @@
 # 🌳 IArbre
 
-Please find a detailled description of the project (in French) on our [webpage](https://iarbre.fr)
+Please find a detailled description of the project (in French) on our [webpage](https://iarbre.fr).
 
 ## 📁 Project Structure
 
@@ -48,20 +48,21 @@ Follow these steps to set it up:
 
 1. **Install pre-commit**:
 
-   ```bash
-   pip install pre-commit
-   ```
+```bash
+pip install pre-commit
+```
 
 2. **Install the hooks**:
 
-   ```bash
-   pre-commit install
-   ```
+```bash
+pre-commit install
+```
 
 3. **Run the hooks manually (optional)**:
-   ```bash
-   pre-commit run --all-files
-   ```
+
+```bash
+pre-commit run --all-files
+```
 
 That's it! Now every time you commit, pre-commit will automatically check your code. 🧹✨
 

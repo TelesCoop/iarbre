@@ -1,3 +1,3 @@
 # C03 Import Data
 
-::: iarbre_data.back.management.commands.c03_import_data
+::: back.iarbre_data.management.commands.c03_import_data

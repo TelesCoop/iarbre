@@ -1,6 +1,6 @@
 # 🌳 IArbre
 
-Please find a detailled description of the project (in French) on our [webpage](https://iarbre.fr)
+Please find a detailled description of the project (in French) on our [webpage](https://iarbre.fr).
 
 ## 📁 Project Structure
 

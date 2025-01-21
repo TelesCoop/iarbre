@@ -1,3 +1,3 @@
 # Utils
 
-::: iarbre_data.back.management.commands.utils
+::: back.iarbre_data.management.commands.utils
