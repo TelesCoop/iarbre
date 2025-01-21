@@ -12,12 +12,15 @@ IArbre/
 ├── front/     # Frontend code (Vue.js)
 ├── static/     # Static webpage (HTML,CSS)
 ├── deploy/    # Deployment configurations (Ansible)
+├── docs/    # Documentation (Markdown)
 └── .pre-commit-config.yaml  # Pre-commit hooks configuration
 ```
 
 ### **back/**
 
-This directory contains the backend of IArbre, built using **Django** 🐍. It processes GIS data to compute the indices and run APIs.
+This directory contains the backend of IArbre, built using **Django** 🐍.
+It processes GIS data to compute land occupancy. Then, they are various Django Apps to compute the indices
+(plantability, etc) and run the APIs.
 
 ### **front/**
 
@@ -30,6 +33,10 @@ Static webpage using **HTML/CSS** 🌐. To give general information about the pr
 ### **deploy/**
 
 Deployment is handled using **Ansible** 🛠️, making it simple to deploy and manage IArbre on your servers.
+
+### **docs/**
+
+Documentation is using Markdown files and can be build using **Mkdocs** 📚.
 
 ### **.pre-commit-config.yaml**
 

@@ -18,7 +18,9 @@ IArbre/
 
 ### **back/**
 
-This directory contains the backend of IArbre, built using **Django** 🐍. It processes GIS data to compute the indices and run APIs.
+This directory contains the backend of IArbre, built using **Django** 🐍.
+It processes GIS data to compute land occupancy. Then, they are various Django Apps to compute the indices
+(plantability, etc) and run the APIs.
 
 ### **front/**
 

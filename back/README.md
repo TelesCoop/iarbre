@@ -2,7 +2,11 @@
 
 ## Overview
 
-The backend of IArbre calculates the plantability index for Métropole de Lyon. Built with [Django](https://www.djangoproject.com/) and powered by a [PostGIS](https://postgis.net/) database, it forms the core of the project.
+The backend of IArbre calculates the various indices for Métropole de Lyon (plantability, etc).
+Built with [Django](https://www.djangoproject.com/) and powered by a [PostGIS](https://postgis.net/) database, it forms the core of the project.
+
+It is organized in Django Apps, `iarbre_data` corresponds to land occupancy computation. Then you can run the various
+modules such as `plantability` to compute indices.
 
 This backend was developed by [Telescoop](https://telescoop.fr), following the [V1 implementation](https://forge.grandlyon.com/erasme/script-recalcul-calque) by [Exo-dev](https://exo-dev.fr/).
 
@@ -105,7 +109,7 @@ This activates the environment and navigates to the project directory.
 
 ### Importing Data to the PostGIS Database
 
-Use the land occupancy data in `file_data` to calculate plantability scores by running these management commands:
+Use the land occupancy data in `file_data` to compute plantability scores by running these management commands:
 
 ```bash
 python manage.py migrate
@@ -113,7 +117,7 @@ python manage.py c01_insert_cities
 python manage.py c02_init_grid
 python manage.py c03_import_data
 python manage.py c04_compute_factors
-python manage.py c05_compute_indice
+python manage.py c01_compute_plantability_indice
 python manage.py generate_mvt_files
 ```
 

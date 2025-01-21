@@ -21,11 +21,11 @@ class TileAggregateBase(models.Model):
     @property
     def average_normalized_indice(self):
         """As for now the aggregate is the average but it may change later."""
-        return self.tiles.aggregate(avg=Avg("normalized_indice"))["avg"]
+        return self.tiles.aggregate(avg=Avg("plantability_normalized_indice"))["avg"]
 
     @property
     def average_indice(self):
-        return self.tiles.aggregate(avg=Avg("indice"))["avg"]
+        return self.tiles.aggregate(avg=Avg("plantability_indice"))["avg"]
 
 
 class City(TileAggregateBase):
@@ -54,8 +54,8 @@ class Tile(models.Model):
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=3857, null=True, blank=True)
-    indice = models.FloatField(null=True)
-    normalized_indice = models.FloatField(null=True, blank=True)
+    plantability_indice = models.FloatField(null=True)
+    plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
     type = ModelType.TILE.value
 
@@ -69,17 +69,17 @@ class Tile(models.Model):
     @property
     def color(self):
         """Return the color of the tile based on the normalized indice."""
-        if self.normalized_indice is None:
+        if self.plantability_normalized_indice is None:
             return "purple"
-        elif self.normalized_indice < 0.205:
+        elif self.plantability_normalized_indice < 0.205:
             return "#E0E0E0"
-        elif self.normalized_indice < 0.486:
+        elif self.plantability_normalized_indice < 0.486:
             return "#F0F1C0"
-        elif self.normalized_indice < 0.589:
+        elif self.plantability_normalized_indice < 0.589:
             return "#E5E09A"
-        elif self.normalized_indice < 0.682:
+        elif self.plantability_normalized_indice < 0.682:
             return "#B7D990"
-        elif self.normalized_indice < 0.826:
+        elif self.plantability_normalized_indice < 0.826:
             return "#71BB72"
         else:
             return "#006837"
@@ -88,7 +88,7 @@ class Tile(models.Model):
         """Return the properties of the tile for the MVT layer."""
         return {
             "id": self.id,
-            "indice": self.normalized_indice,
+            "indice": self.plantability_normalized_indice,
             "color": self.color,
         }
 
@@ -110,7 +110,7 @@ class Data(models.Model):
 
 class TileFactor(models.Model):
     """Factor of a tile.
-    A factor value represent the propostion of land occupancy on the tile."""
+    A factor value represent the proportion of land occupancy on the tile."""
 
     tile = models.ForeignKey(Tile, on_delete=models.CASCADE, related_name="factors")
     factor = models.CharField(max_length=50)

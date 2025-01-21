@@ -36,7 +36,7 @@ def compute_indice(tiles_id) -> None:
         [
             Tile(
                 id=row.tile_id,
-                indice=row.value,
+                plantability_indice=row.value,
             )
             for row in df.itertuples()
         ],
@@ -47,24 +47,24 @@ def compute_indice(tiles_id) -> None:
 
 def compute_normalized_indice() -> None:
     """Normalized indice is a score between 0 and 1."""
-    tiles = load_geodataframe_from_db(Tile.objects.all(), ["id", "indice"])
-    min_indice = tiles.indice.min()
-    max_indice = tiles.indice.max()
+    tiles = load_geodataframe_from_db(Tile.objects.all(), ["id", "plantability_indice"])
+    min_indice = tiles.plantability_indice.min()
+    max_indice = tiles.plantability_indice.max()
     if min_indice is None or max_indice is None or min_indice == max_indice:
         print("Normalization not possible (no data or all values are the same).")
         return
-    tiles["normalized_indice"] = (tiles["indice"] - min_indice) / (
-        max_indice - min_indice
-    )
+    tiles["plantability_normalized_indice"] = (
+        tiles["plantability_indice"] - min_indice
+    ) / (max_indice - min_indice)
     Tile.objects.bulk_update(
         [
             Tile(
                 id=row.id,
-                normalized_indice=row.normalized_indice,
+                plantability_normalized_indice=row.plantability_normalized_indice,
             )
             for row in tiles.itertuples()
         ],
-        ["normalized_indice"],
+        ["plantability_normalized_indice"],
         batch_size=5000,
     )
 
