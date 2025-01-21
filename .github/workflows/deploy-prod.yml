@@ -1,0 +1,38 @@
+name: Run deploy prod
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy frontend in prod
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: frontend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l prod
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy backend in prod
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: backend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l prod
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy static in prod
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: showcase.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l prod
+          key: ${{ secrets.SSH_PRIVATE_KEY }}

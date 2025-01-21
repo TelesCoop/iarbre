@@ -1,0 +1,157 @@
+name: Run basic checks
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+env:
+  TELESCOOP_DEV: true
+  IS_TESTING: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: Install python dependencies
+        run: pip install -r back/requirements.txt
+      - name: Install front js dependencies
+        run: npm install
+        working-directory: ./front
+      - name: Create back/local_settings.conf
+        run: echo "${{ secrets.LOCAL_SETTINGS_CONF }}" > local_settings.conf
+        working-directory: ./back
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./front/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: Restore Python cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
+      - name: Install python dependencies if not cached
+        if: steps.cache-python.outputs.cache-hit != 'true'
+        run: pip install -r back/requirements.txt
+      - name: Restore Node.js cache
+        uses: actions/cache@v3
+        with:
+          path: ./front/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+      - name: Install js dependencies if not cached
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ./front
+      - name: Enforce pre-commit hook server side
+        uses: pre-commit/action@v3.0.1
+
+  node-setup:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ./front/.nvmrc
+          cache: "npm"
+      - name: Restore Node.js cache
+        uses: actions/cache@v3
+        with:
+          path: ./front/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+      - name: Install js dependencies if not cached
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ./front
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    needs: [setup, node-setup]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ./front/.nvmrc
+          cache: "npm"
+      - name: Restore Node.js cache
+        uses: actions/cache@v3
+        with:
+          path: ./front/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+      - name: Install front js dependencies if not cached
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ./front
+      - name: Run vitest
+        run: npm run test
+        working-directory: ./front
+      - name: Run cypress component tests
+        uses: cypress-io/github-action@v6
+        with:
+          component: true
+          working-directory: ./front
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - name: Restore Python cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
+      - name: Install python dependencies if not cached
+        if: steps.cache-python.outputs.cache-hit != 'true'
+        run: pip install -r back/requirements.txt
+      - name: Migrate database
+        run: python back/manage.py migrate
+      - name: Load test database
+        run: python back/manage.py backup_db restore_db test_db
+      - name: Run back-end server in background
+        run: python manage.py runserver localhost:8000 &
+        working-directory: ./back
+      - name: Run e2e tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run dev
+          browser: chrome
+          config-file: cypress.config.js
+          working-directory: ./front
+      - name: Upload cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshot
+          path: |
+            front/cypress/screenshots
+          retention-days: 10

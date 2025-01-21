@@ -1,3 +1,4 @@
+"""Create a grid over the metropole or a selection of city and save it to DB"""
 import gc
 import itertools
 import logging
@@ -15,8 +16,19 @@ from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
-def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)):
-    """Create square tiles in the DB for a specific city"""
+def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)) -> None:
+    """
+    Create square tiles for a specific city and save it to DB.
+
+    Args:
+        city (GeoPandas DataFrame): City GeoDataFrame.
+        grid_size (int): The size of the grid in meters.
+        logger (Logger): The logger object.
+        batch_size (int): The size of the batch to save to the DB.
+
+    Returns:
+        None
+    """
     city_id = city.id
     city_geom = city.geometry
     xmin, ymin, xmax, ymax = city_geom.bounds
@@ -73,9 +85,21 @@ def create_hexs_for_city(
     unit,
     a,
     logger,
-    batch_size=int(1e4),
-):
-    """Create hexagonal tiles in the DB for a specific city"""
+    batch_size=int(1e6),
+) -> None:
+    """
+    Create hexagonal tiles for a specific city.
+
+    Args:
+        city (City): The city object with geometry, ID, and name.
+        unit (float): The size of the hexagon in meters.
+        a (float): The ratio of the hexagon.
+        logger (Logger): The logger object.
+        batch_size (int): The size of the batch to save to the database.
+
+    Returns:
+        None
+    """
     city_geom = city.geometry
     city_id = city.id
     xmin, ymin, xmax, ymax = city_geom.bounds
@@ -131,7 +155,17 @@ def create_hexs_for_city(
 
 
 def clean_outside(selected_city, batch_size):
-    """Remove all tiles outside of the selected cities"""
+    """
+    Remove all tiles outside of the selected cities.
+
+    Args:
+        selected_city (DataFrame): The DataFrame of the selected cities.
+        batch_size (int): The size of the batch to delete.
+        logger (Logger): The logger object.
+
+    Returns:
+        None
+    """
     # Clean useless tiles
     city_union_geom = selected_city.geometry.union_all()
     print("Deleting tiles out of the cities")
@@ -155,6 +189,7 @@ class Command(BaseCommand):
     help = "Create grid and save it to DB"
 
     def add_arguments(self, parser):
+        """Add arguments to the command."""
         parser.add_argument(
             "--insee_code_city",
             type=str,
@@ -180,7 +215,7 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def _remove_duplicates():
+    def _remove_duplicates() -> None:
         """Deletes duplicates in the Tiles model based on geometry."""
         duplicates = (
             Tile.objects.values("geometry")
@@ -200,6 +235,21 @@ class Command(BaseCommand):
     def _create_grid_city(
         city, batch_size, logger, grid_type, unit, a, grid_size, delete
     ):
+        """
+        Create grid for a specific city.
+
+        Args:
+            city (City): The city object with geometry, id and name.
+            batch_size (int): The size of the batch to save to the DB.
+            logger (Logger): The logger object.
+            grid_type (int): The type of grid to create.
+            unit (float): The size of the hexagon in meters (for hexagonal grid only).
+            a (float): The ratio of the hexagon (for hexagonal grid only).
+            grid_size (int): The size of the grid in meters (for square grid).
+
+        Returns:
+            None
+        """
         print(f"Selected city: {city.name} with id {city.id}.")
         tiles_queryset = Tile.objects.filter(
             geometry__within=GEOSGeometry(city.geometry.wkt)
@@ -227,6 +277,7 @@ class Command(BaseCommand):
         City.objects.filter(id=city.id).update(tiles_generated=True)
 
     def handle(self, *args, **options):
+        """Create grid and save it to DB."""
         batch_size = int(1e4)  # Depends on your RAM
         logger = logging.getLogger(__name__)
         insee_code_city = options["insee_code_city"]

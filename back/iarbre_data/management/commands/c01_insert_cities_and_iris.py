@@ -1,3 +1,4 @@
+"""Insert cities and IRIS from geojson file and BPCE API."""
 import logging
 
 from django.contrib.gis.utils import LayerMapping
@@ -38,6 +39,7 @@ class Command(BaseCommand):
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
     def handle(self, *args, **options):
+        """Insert cities from geojson file and IRIS from BPCE API."""
         logger = logging.getLogger(__name__)
         lm = LayerMapping(City, "file_data/communes_gl_2025.geojson", mapping_city)
         lm.save()

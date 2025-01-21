@@ -1,4 +1,6 @@
-import gc
+"""
+MVT Generator as django-media.
+"""
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -10,8 +12,9 @@ from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
 from typing import List, Dict, Any
-from iarbre_data.models import MVTTile
+from back.iarbre_data.models import MVTTile
 from tqdm import tqdm
+import gc
 
 
 class MVTGenerator:
@@ -24,11 +27,14 @@ class MVTGenerator:
         number_of_thread=1,
     ):
         """
-        Initialize MVT Generator for Django GeoDjango QuerySet
+        Initialize MVT Generator for Django GeoDjango QuerySet.
 
-        :param queryset: Django GeoDjango QuerySet
-        :param layer_name: Name of the MVT layer
-        :param zoom_levels: Tuple of min and max zoom levels to generate
+        Args:
+            queryset (QuerySet): QuerySet of the model.
+            layer_name (str): Name of the layer to generate MVT tiles for.
+            zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
+            output_dir (str): Output directory to save the MVT tiles.
+            number_of_thread (int): Number of threads to use for generating tiles.
         """
         self.queryset = queryset
         self.layer_name = layer_name
@@ -40,9 +46,7 @@ class MVTGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def generate_tiles(self):
-        """
-        Generate MVT tiles for the entire geometry queryset
-        """
+        """Generate MVT tiles for the entire geometry queryset."""
         # Get total bounds of the queryset
         bounds = self._get_queryset_bounds()
 
@@ -73,9 +77,10 @@ class MVTGenerator:
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
         """
-        Calculate bounds of the entire queryset
+        Compute bounds of the entire queryset.
 
-        :return: Dictionary with west, south, east, north coordinates
+        Returns:
+            Dictionary containing the bounds of the queryset.
         """
         # Assumes the queryset has a geographic field
         bbox = self.queryset.aggregate(bbox=Extent("map_geometry"))["bbox"]
@@ -93,8 +98,12 @@ class MVTGenerator:
         """
         Generate an individual MVT tile
 
-        :param tile: Mercantile tile object
-        :param zoom: Current zoom level
+        Args:
+            tile (mercantile.Tile): Tile to generate MVT for.
+            zoom (int): Zoom level of the tile.
+
+        Returns:
+            None
         """
         # Calculate tile bounds
         tile_bounds = mercantile.xy_bounds(tile)
@@ -129,11 +138,14 @@ class MVTGenerator:
     @staticmethod
     def _prepare_mvt_features(queryset, tile_polygon) -> List[Dict[str, Any]]:
         """
-        Prepare features for MVT encoding
+        Prepare features for MVT encoding.
 
-        :param queryset: Clipped Django QuerySet
-        :param tile_polygon: Tile extent polygon
-        :return: List of MVT feature dictionaries
+        Args:
+            queryset (QuerySet): Queryset of the model.
+            tile_polygon (Polygon): Polygon of the tile extent.
+
+        Returns:
+            List of features to encode in MVT format.
         """
         MVT_EXTENT = 4096
         features = []
