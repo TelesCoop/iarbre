@@ -16,7 +16,7 @@ def compute_indice(tiles_id):
         ),
         columns=["tile_id", "factor", "value"],
     )
-    factors = pd.Series(FACTORS) + 5  # make all factors positive
+    factors = pd.Series(FACTORS)  # make all factors positive
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
@@ -29,7 +29,7 @@ def compute_indice(tiles_id):
             for row in df.itertuples()
         ],
         ["indice"],
-        batch_size=5000,
+        batch_size=10000,
     )
 
 

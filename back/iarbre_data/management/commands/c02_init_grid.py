@@ -52,8 +52,8 @@ def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)):
         tile = Tile(
             geometry=polygon,
             map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=1,
-            normalized_indice=1,
+            indice=0,
+            normalized_indice=0.5,
             city_id=city_id,
             iris_id=iris_id,
         )
@@ -113,8 +113,8 @@ def create_hexs_for_city(
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=1,
-            normalized_indice=1,
+            indice=0,
+            normalized_indice=0.5,
             city_id=city_id,
             iris_id=iris_id,
         )
