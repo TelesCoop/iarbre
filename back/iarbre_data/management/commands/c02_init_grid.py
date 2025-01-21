@@ -81,10 +81,10 @@ def create_hexs_for_city(
     xmin, ymin, xmax, ymax = city_geom.bounds
     hex_width = 3 * unit
     hex_height = 2 * unit * a
-    xmin = np.floor(xmin / hex_width) * hex_width
-    ymin = np.floor(ymin / hex_height) * hex_height
-    xmax = np.ceil(xmax / hex_width) * hex_width
-    ymax = np.ceil(ymax / hex_height) * hex_height
+    xmin = hex_width * (np.floor(xmin / hex_width) - 1)
+    ymin = hex_height * (np.floor(ymin / hex_height) - 1)
+    xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
+    ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
 
     cols = np.arange(xmin, xmax, 3 * unit)
     rows = np.arange(ymin / a, ymax / a, unit)
@@ -144,7 +144,7 @@ def clean_outside(selected_city, batch_size):
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)
-                .exclude(geometry__intersects=city_union_geom.wkt)
+                .exclude(geometry__within=city_union_geom.wkt)
                 .delete()
             )
             total_deleted += deleted_count

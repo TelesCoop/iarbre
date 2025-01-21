@@ -71,15 +71,15 @@ class Tile(models.Model):
         """Return the color of the tile based on the normalized indice."""
         if self.normalized_indice is None:
             return "purple"
-        elif self.normalized_indice < 0.12:
+        elif self.normalized_indice < 0.205:
             return "#E0E0E0"
-        elif self.normalized_indice < 0.19:
+        elif self.normalized_indice < 0.486:
             return "#F0F1C0"
-        elif self.normalized_indice < 0.266:
+        elif self.normalized_indice < 0.589:
             return "#E5E09A"
-        elif self.normalized_indice < 0.385:
+        elif self.normalized_indice < 0.682:
             return "#B7D990"
-        elif self.normalized_indice < 0.766:
+        elif self.normalized_indice < 0.826:
             return "#71BB72"
         else:
             return "#006837"

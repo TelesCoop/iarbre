@@ -76,7 +76,7 @@ class Command(BaseCommand):
         clean_outside(selected_city, int(1e4))
         nb_city = len(selected_city)
         for idx, city in enumerate(selected_city.itertuples()):
-            print(f"{city.name} ({idx} on {nb_city} city).")
+            print(f"{city.name} ({idx+1} on {nb_city} city).")
             tiles_queryset = Tile.objects.filter(
                 geometry__intersects=GEOSGeometry(city.geometry.wkt)
             )
