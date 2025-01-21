@@ -1,6 +1,7 @@
 # IArbre Backend
 
 ## Overview
+
 The backend of IArbre calculates the plantability index for Métropole de Lyon. Built with [Django](https://www.djangoproject.com/) and powered by a [PostGIS](https://postgis.net/) database, it forms the core of the project.
 
 This backend was developed by [Telescoop](https://telescoop.fr), following the [V1 implementation](https://forge.grandlyon.com/erasme/script-recalcul-calque) by [Exo-dev](https://exo-dev.fr/).
@@ -8,6 +9,7 @@ This backend was developed by [Telescoop](https://telescoop.fr), following the [
 For more details about the IA.bre project, visit [iarbre.fr](https://iarbre.fr).
 
 ## Contents
+
 - [Required Data](#required-data)
 - [Installation](#installation)
 - [Populating the Database](#populating-the-database)
@@ -20,6 +22,7 @@ A folder named `file_data` containing necessary data must be present at the root
 To obtain this data, please email [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
 ## Installation
+
 > **Note**: These steps are designed for Linux. They have not been tested on Windows or macOS.
 
 The backend requires [GDAL](https://gdal.org/en/stable/) and [PostGIS](https://postgis.net/).
@@ -32,18 +35,21 @@ Alternatively, you can try installing the required packages using `apt`, though 
 sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg
 sudo apt install binutils libproj-dev gdal-bin  # For geographic queries
 ```
-*(Replace `x` with your desired PostgreSQL version.)*
+
+_(Replace `x` with your desired PostgreSQL version.)_
 
 ### Initializing the Database
 
 After installation, create a user and a new PostGIS-enabled database:
 
 1. Log in as the `postgres` superuser:
+
    ```bash
    sudo -u postgres psql postgres
    ```
 
 2. Create a new user and database:
+
    ```sql
    CREATE USER <user_name> WITH PASSWORD 'your_secure_password';
    ALTER USER <user_name> WITH SUPERUSER CREATEDB;
@@ -67,6 +73,7 @@ pip install pew
 cd <path>
 pew mkproject <project_name>
 ```
+
 This creates a new virtual environment and an associated project directory in `<path>`.
 
 Next, clone the repository and install the required packages:
@@ -87,9 +94,11 @@ password=your_secure_password
 ```
 
 To work on the project in the future, activate the environment:
+
 ```bash
 pew workon <project_name>
 ```
+
 This activates the environment and navigates to the project directory.
 
 ## Populating the Database
@@ -115,9 +124,11 @@ The final command, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/bl
 ## Running the Server
 
 Start the backend server:
+
 ```bash
 python manage.py runserver --nostatic
 ```
+
 The backend is now running, and the API is ready for the frontend.
 
 ## Help

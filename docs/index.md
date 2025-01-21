@@ -12,7 +12,6 @@ IArbre/
 ├── front/     # Frontend code (Vue.js)
 ├── static/     # Static webpage (HTML,CSS)
 ├── deploy/    # Deployment configurations (Ansible)
-├── docs/    # Documentation (Markdown)
 └── .pre-commit-config.yaml  # Pre-commit hooks configuration
 ```
 
@@ -31,10 +30,6 @@ Static webpage using **HTML/CSS** 🌐. To give general information about the pr
 ### **deploy/**
 
 Deployment is handled using **Ansible** 🛠️, making it simple to deploy and manage IArbre on your servers.
-
-### **docs/**
-
-Documentation is using Markdown files and can be build using **Mkdocs** 📚.
 
 ### **.pre-commit-config.yaml**
 

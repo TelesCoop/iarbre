@@ -1,10 +1,10 @@
 import os
 
 # Path to the directory containing the Python scripts
-scripts_dir = "api/utils"
+scripts_dir = "iarbre_data/management/commands"
 
 # Path to the output directory for the .md files
-output_dir = "docs/api"
+output_dir = "../docs/api"
 
 # Ensure the output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -19,6 +19,6 @@ for filename in os.listdir(scripts_dir):
         # Write the content to the .md file
         with open(md_filepath, "w") as md_file:
             md_file.write(f"# {module_name.replace('_', ' ').title()}\n\n")
-            md_file.write(f"::: api.utils.{module_name}\n")
+            md_file.write(f"::: back.iarbre_data.management.commands.{module_name}\n")
 
         print(f"Generated {md_filepath}")
