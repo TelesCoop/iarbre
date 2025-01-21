@@ -88,6 +88,13 @@ DATA_FILES = [
         "output_type": "LINESTRING",
     },
     {
+        "name": "Friches",
+        "file": "cartofriches_2025-01-20.geojson",
+        "scripts": None,
+        "factors": ["Friches"],
+        "output_type": "POLYGON",
+    },
+    {
         "name": "Plan eau",
         "file": "plan_deau.geojson",
         "actions": [{"explode": True, "buffer_size": 0.1, "union": True}],
@@ -257,16 +264,16 @@ URL_FILES = [
         "scripts": ["voie_ferree.py"],
         "factors": ["Voies ferrées"],
     },
-    {
-        "name": "QPV",
-        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
-        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-        "typename=metropole-de-lyon:ter_territoire.qpv_2024"
-        "&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
-        "layer_name": "ter_territoire.qpv_2024",
-        "scripts": [],
-        "factors": ["QPV"],
-    },
+    # {
+    #     "name": "QPV",
+    #     "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+    #     "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+    #     "typename=metropole-de-lyon:ter_territoire.qpv_2024"
+    #     "&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+    #     "layer_name": "ter_territoire.qpv_2024",
+    #     "scripts": [],
+    #     "factors": ["QPV"],
+    # },
     {
         "name": "Velov",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
@@ -351,13 +358,6 @@ URL_FILES = [
         "output_type": "LINESTRING",
     },
     {
-        "name": "Friches",
-        "file": "cartofriches.geojson",
-        "scripts": None,
-        "factors": ["Friches"],
-        "output_type": "POLYGON",
-    },
-    {
         "name": "Réseau chaleur urbain",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
@@ -389,10 +389,10 @@ FACTORS = {
     "Réseau Fibre": 2,
     "Marchés forains": 1,
     "Pistes cyclable": -1,
-    "Plan eau": -3,
+    "Plan eau": -5,  # -3
     "Ponts": -3,
     "Réseau de chaleur urbain": -3,
-    "Voies ferrées": -2,
+    "Voies ferrées": -5,  # -2
     "Strate arborée": 1,
     "Strate basse et pelouse": 3,
     "Espaces agricoles": 1,
@@ -404,5 +404,5 @@ FACTORS = {
     "Rsx gaz": -3,
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
-    "QPV": 1,
+    # "QPV": 1,
 }

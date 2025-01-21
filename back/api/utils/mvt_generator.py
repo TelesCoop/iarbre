@@ -1,5 +1,6 @@
+import gc
 import os
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.conf import settings
 from django.contrib.gis.db.models import Extent
@@ -61,12 +62,14 @@ class MVTGenerator:
             )
 
             with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
-                futures = [
-                    executor.submit(self._generate_tile_for_zoom, tile, zoom)
+                future_to_tiles = {
+                    executor.submit(self._generate_tile_for_zoom, tile, zoom): tile
                     for tile in tiles
-                ]
-                for future in futures:
+                }
+                for future in as_completed(future_to_tiles):
                     future.result()
+                    future_to_tiles.pop(future)
+                    gc.collect()  # just to be sure gc is called...
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
         """

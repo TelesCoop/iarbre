@@ -41,18 +41,19 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         clipped_parts = [
             geom.intersection(cell) for cell in grid_cells if geom.intersects(cell)
         ]
-        return unary_union(clipped_parts) if clipped_parts else None
+        return unary_union([part for part in clipped_parts if not part.is_empty])
 
-    factor_df["geometry"] = factor_df.geometry.apply(
-        lambda g: split_large_polygon(g, grid_size=1000)
+    factor_df["geometry"] = factor_df["geometry"].apply(
+        lambda g: split_large_polygon(g, grid_size=4000) if g and not g.is_empty else g
     )
+
     flattened_geometries = []
     for idx, row in factor_df.iterrows():
         flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
+
     factor_df = gpd.GeoDataFrame(
         flattened_geometries, geometry="geometry", crs=factor_crs
     )
-    factor_df = factor_df[factor_df.geometry.notnull() & factor_df.geometry.is_valid]
 
     # Filter polygons in the bounding box of the tiles
     tiles_index = tiles_df.sindex
@@ -77,6 +78,7 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         ]
         return tile_factors
     else:
+        print("No match")
         return []
 
 
@@ -158,7 +160,6 @@ class Command(BaseCommand):
         std_area = (
             Tile.objects.first().geometry.area
         )  # Standard area of a tile (always the same)
-
         selected_city = select_city(insee_code_city)
         t = time.perf_counter()
         for city in selected_city.itertuples():

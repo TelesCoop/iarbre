@@ -15,8 +15,10 @@ from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
-def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
+def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)):
     """Create square tiles in the DB for a specific city"""
+    city_id = city.id
+    city_geom = city.geometry
     xmin, ymin, xmax, ymax = city_geom.bounds
     # Snap bounds to the nearest grid alignment so that all grids are aligned
     xmin = np.floor(xmin / grid_size) * grid_size
@@ -41,21 +43,29 @@ def create_squares_for_city(city_geom, grid_size, logger, batch_size=int(1e6)):
         x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
         polygon = Polygon.from_bbox([x0, y0, x1, y1])
         polygon.srid = TARGET_PROJ
+        iris_id = Iris.objects.filter(geometry__intersects=polygon)
+        if len(iris_id) > 0:
+            iris_id = iris_id[0].id
+        else:
+            iris_id = None
         # Init with -1 value
         tile = Tile(
             geometry=polygon,
             map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=-1,
+            indice=0,
+            normalized_indice=0.5,
+            city_id=city_id,
+            iris_id=iris_id,
         )
         tiles.append(tile)
         # Avoid OOM errors
         if (i + 1) % batch_size == 0:
-            Tile.objects.bulk_create(tiles, batch_size=batch_size)
+            Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()
             gc.collect()
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
 
 def create_hexs_for_city(
@@ -71,10 +81,10 @@ def create_hexs_for_city(
     xmin, ymin, xmax, ymax = city_geom.bounds
     hex_width = 3 * unit
     hex_height = 2 * unit * a
-    xmin = np.floor(xmin / hex_width) * hex_width
-    ymin = np.floor(ymin / hex_height) * hex_height
-    xmax = np.ceil(xmax / hex_width) * hex_width
-    ymax = np.ceil(ymax / hex_height) * hex_height
+    xmin = hex_width * (np.floor(xmin / hex_width) - 1)
+    ymin = hex_height * (np.floor(ymin / hex_height) - 1)
+    xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
+    ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
 
     cols = np.arange(xmin, xmax, 3 * unit)
     rows = np.arange(ymin / a, ymax / a, unit)
@@ -103,7 +113,8 @@ def create_hexs_for_city(
         tile = Tile(
             geometry=hexagon,
             map_geometry=hexagon.transform(TARGET_MAP_PROJ, clone=True),
-            indice=-1,  # Negative values
+            indice=0,
+            normalized_indice=0.5,
             city_id=city_id,
             iris_id=iris_id,
         )
@@ -116,7 +127,28 @@ def create_hexs_for_city(
             del tiles[:]
             gc.collect()
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
+
+
+def clean_outside(selected_city, batch_size):
+    """Remove all tiles outside of the selected cities"""
+    # Clean useless tiles
+    city_union_geom = selected_city.geometry.union_all()
+    print("Deleting tiles out of the cities")
+    total_records = Tile.objects.all().count()
+    total_deleted = 0
+    for start in tqdm(range(0, total_records, batch_size * 10)):
+        batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
+            "id", flat=True
+        )
+        with transaction.atomic():
+            deleted_count, _ = (
+                Tile.objects.filter(id__in=batch_ids)
+                .exclude(geometry__within=city_union_geom.wkt)
+                .delete()
+            )
+            total_deleted += deleted_count
+    print(f"Deleted {total_deleted} tiles")
 
 
 class Command(BaseCommand):
@@ -137,15 +169,14 @@ class Command(BaseCommand):
             "--grid-type", type=int, default=1, help="Hexagonal (1) or square (2) grid."
         )
         parser.add_argument(
-            "--clean_outside",
-            type=bool,
-            default=True,
-            help="Detele tiles outside of the city boundaries of the selection or not.",
-        )
-        parser.add_argument(
             "--delete",
             action="store_true",
             help="Delete already existing tiles.",
+        )
+        parser.add_argument(
+            "--keep_outside",
+            action="store_true",
+            help="Keep tiles outside of the city selection (by default, they are deleted).",
         )
 
     @staticmethod
@@ -164,27 +195,6 @@ class Command(BaseCommand):
             ids_to_delete = duplicate_cities.values_list("id", flat=True)[1:]
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
-
-    @staticmethod
-    def _clean_outside(selected_city, batch_size, logger):
-        """Remove all tiles outside of the selected cities"""
-        # Clean useless tiles
-        city_union_geom = selected_city.geometry.unary_union
-        print("Deleting tiles out of the cities")
-        total_records = Tile.objects.all().count()
-        total_deleted = 0
-        for start in tqdm(range(0, total_records, batch_size * 10)):
-            batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
-                "id", flat=True
-            )
-            with transaction.atomic():
-                deleted_count, _ = (
-                    Tile.objects.filter(id__in=batch_ids)
-                    .exclude(geometry__intersects=city_union_geom.wkt)
-                    .delete()
-                )
-                total_deleted += deleted_count
-        logger.info(f"Deleted {total_deleted} tiles")
 
     @staticmethod
     def _create_grid_city(
@@ -222,7 +232,7 @@ class Command(BaseCommand):
         insee_code_city = options["insee_code_city"]
         grid_size = options["grid_size"]
         grid_type = options["grid_type"]
-        clean_outside = options["clean_outside"]
+        keep_outside = options["keep_outside"]
         delete = options["delete"]
         if grid_type not in [1, 2]:
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
@@ -257,5 +267,5 @@ class Command(BaseCommand):
                 gc.collect()  # just to be sure gc is called...
         print("Removing duplicates...")
         self._remove_duplicates()
-        if clean_outside:
-            self._clean_outside(selected_city, batch_size, logger)
+        if keep_outside is False:
+            clean_outside(selected_city, batch_size)

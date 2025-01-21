@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         logger = logging.getLogger(__name__)
-        lm = LayerMapping(City, "file_data/communes_gl.geojson", mapping_city)
+        lm = LayerMapping(City, "file_data/communes_gl_2025.geojson", mapping_city)
         lm.save()
         for city in City.objects.all():
             city.tiles_generated = False
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             city_GEOS = GEOSGeometry(city.geometry.wkt)
             city_GEOS.srid = TARGET_PROJ
             print(f"Dowloading IRIS for city: {city.name}.")
-            if city.name[:4] == "LYON":
+            if city.name[:4].upper() == "LYON":
                 com_code = 69123
             else:
                 com_code = city.code
