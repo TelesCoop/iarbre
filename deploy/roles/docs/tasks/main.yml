@@ -27,8 +27,8 @@
     executable: pip3
   become: true
 
-- name: Build documentation using MkDocs
-  command: mkdocs build --clean --strict
+- name: Build documentation
+  command: make build
   args:
     chdir: "{{ docs_path }}"
   become_user: "{{ main_user }}"

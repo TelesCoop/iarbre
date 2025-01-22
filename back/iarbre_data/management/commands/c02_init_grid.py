@@ -154,14 +154,13 @@ def create_hexs_for_city(
         Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
 
-def clean_outside(selected_city, batch_size):
+def clean_outside(selected_city, batch_size) -> None:
     """
     Remove all tiles outside of the selected cities.
 
     Args:
         selected_city (DataFrame): The DataFrame of the selected cities.
         batch_size (int): The size of the batch to delete.
-        logger (Logger): The logger object.
 
     Returns:
         None

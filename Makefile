@@ -5,7 +5,7 @@ MKDOCS = mkdocs
 DOCS_DIR = docs
 BUILD_DIR = site
 
-.PHONY: all build serve clean deploy
+.PHONY: all build serve clean
 
 # Default target
 all: build

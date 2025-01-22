@@ -15,7 +15,8 @@ For more details about the IA.bre project, visit [iarbre.fr](https://iarbre.fr).
 ## Contents
 
 - [Required Data](#required-data)
-- [Installation](#installation)
+- [Deploy with Ansible](#deploy-with-ansible)
+- [Manual installation](#manual-installation)
 - [Populating the Database](#populating-the-database)
 - [Running the Server](#running-the-server)
 - [Help](#help)
@@ -25,7 +26,11 @@ For more details about the IA.bre project, visit [iarbre.fr](https://iarbre.fr).
 A folder named `file_data` containing necessary data must be present at the root of the project.
 To obtain this data, please email [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
-## Installation
+## Deploy with Ansible
+
+See the deploy doc for more details.
+
+## Manual installation
 
 > **Note**: These steps are designed for Linux. They have not been tested on Windows or macOS.
 

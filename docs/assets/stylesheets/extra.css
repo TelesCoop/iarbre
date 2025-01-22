@@ -1,0 +1,19 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("BricolageGrotesque-Regular.otf") format("opentype");
+}
+body {
+  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  color: #32312d;
+  background-color: #efefed;
+  overflow-x: hidden;
+}
+.md-header {
+  background-color: #92a48d;
+}
+.md-tabs {
+  background-color: #92a48d;
+}
+.md-sidebar {
+  background-color: #efefed;
+}

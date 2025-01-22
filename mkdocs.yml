@@ -1,14 +1,16 @@
 site_name: IA.rbre
 nav:
   - Home: index.md
-  - Backend: backend.md
-  - Back-end database generation:
-      - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
-      - Initialize Grid: api/c02_init_grid.md
-      - Import Data: api/c03_import_data.md
-      - Compute Factors: api/c04_compute_factors.md
-      - Compute Indices: api/c05_compute_indice.md
-      - Utils: api/utils.md
+  - Backend:
+      - Backend overview: backend.md
+      - Back-end code documentation:
+          - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
+          - Initialize Grid: api/c02_init_grid.md
+          - Import Data: api/c03_import_data.md
+          - Compute Factors: api/c04_compute_factors.md
+          - Compute Indices: api/c05_compute_indice.md
+          - Utils: api/utils.md
+  - Deploy: deploy.md
 
 plugins:
   - search
@@ -19,5 +21,10 @@ plugins:
             show_source: true
 theme:
   name: "material"
+  features:
+    - navigation.tabs
+    - navigation.sections
   logo: "assets/images/logo.png"
   favicon: "assets/images/logo.png"
+
+extra_css: [assets/stylesheets/extra.css]

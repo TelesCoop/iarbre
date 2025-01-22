@@ -158,3 +158,10 @@ jobs:
           path: |
             front/cypress/screenshots
           retention-days: 10
+
+  doc-tests:
+    runs-on: ubuntu-latest
+    needs: [setup]
+    steps:
+      - name: Run documentation validation
+        run: make validate
