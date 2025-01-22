@@ -19,16 +19,31 @@
   become_user: "{{ main_user }}"
   register: clonecode
 
+- name: Create doc venv {{ venv.path }}
+  command:
+    cmd: python3 -m venv --system-site-packages {{ venv.path }}
+    creates: "{{ venv.path }}/bin/python"
+  become: true
+  become_user: "{{ main_user }}"
+
 - name: Install MkDocs and dependencies
   pip:
     name:
       - mkdocs
       - mkdocs-material
-    executable: pip3
-  become: true
+    virtualenv: "{{ venv.path }}"
+
+- name: Init documentation
+  shell:
+    cmd: "{{ venv.path }}/bin/mkdocs new . && touch doc_initialized"
+    creates: "{{ docs_path }}/doc_initialized"
+  args:
+    chdir: "{{ docs_path }}"
+  become_user: "{{ main_user }}"
+  when: clonecode.changed or force_update is defined
 
 - name: Build documentation
-  command: make build
+  command: "{{ venv.path }}/bin/mkdocs build --clean"
   args:
     chdir: "{{ docs_path }}"
   become_user: "{{ main_user }}"
@@ -44,15 +59,3 @@
       - "--chown=www-data:www-data"
   delegate_to: "{{ inventory_hostname }}"
   when: clonecode.changed or force_update is defined
-
-- name: Check if MkDocs site is available
-  uri:
-    url: "http://{{ main_hostname }}"
-    status_code: 200
-  register: site_status
-  ignore_errors: true
-
-- name: Fail if site is not accessible
-  fail:
-    msg: "Documentation site is not accessible!"
-  when: site_status.status != 200

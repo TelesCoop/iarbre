@@ -1,6 +1,8 @@
 ---
-showcase_static_path: "{{ project_dir }}/showcase_static"
-showcase_path: "{{ project_dir }}/docs/static"
+venv:
+  path: /usr/local/{{ organization_slug }}/{{ project_slug }}/docs/venv
+docs_static_path: "{{ project_dir }}/docs_static"
+docs_path: "{{ project_dir }}/docs/static"
 
 main_hostname: "docs.iarbre.fr"
 public_hostnames:
@@ -15,4 +17,4 @@ certificate_hostname: "iarbre.fr"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
-https_enabled: true
+https_enabled: false
