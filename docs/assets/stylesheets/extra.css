@@ -17,3 +17,20 @@ body {
 .md-sidebar {
   background-color: #efefed;
 }
+
+.md-grid {
+  max-width: 100%;
+}
+@media (min-width: 1220px) {
+  .md-main__inner {
+    margin-top: 0;
+  }
+  .md-nav {
+    font-size: 16px;
+    color: #efefed;
+    background-color: #92a48d;
+  }
+  .md-nav .md-nav__title {
+    display: none;
+  }
+}

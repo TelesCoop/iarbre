@@ -2,19 +2,18 @@
 venv:
   path: /usr/local/{{ organization_slug }}/{{ project_slug }}/docs/venv
 docs_static_path: "{{ project_dir }}/docs_static"
-docs_path: "{{ project_dir }}/docs/static"
+docs_path: "{{ project_dir }}/docs"
 
 main_hostname: "docs.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
-redirect_hostnames:
-  - www.iarbre.fr
+redirect_hostnames: []
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
-certificate_hostname: "iarbre.fr"
+certificate_hostname: "docs.iarbre.fr"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
-https_enabled: false
+https_enabled: true
