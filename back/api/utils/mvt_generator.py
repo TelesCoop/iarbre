@@ -12,7 +12,7 @@ from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
 from typing import List, Dict, Any
-from back.iarbre_data.models import MVTTile
+from iarbre_data.models import MVTTile
 from tqdm import tqdm
 import gc
 
