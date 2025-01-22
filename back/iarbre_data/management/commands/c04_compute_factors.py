@@ -101,7 +101,6 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
         ]
         return tile_factors
     else:
-        print("No match")
         return []
 
 
