@@ -278,12 +278,12 @@ class Command(BaseCommand):
                 print(f"Deleted {total_records} tiles.")
             elif city.tiles_generated:
                 return
-            print("Creating new tiles.")
-            if grid_type == 1:  # Hexagonal grid
-                create_hexs_for_city(city, unit, a, logger, int(1e4))
-            elif grid_type == 2:  # square grid
-                create_squares_for_city(city, grid_size, logger, int(1e4))
-            City.objects.filter(id=city.id).update(tiles_generated=True)
+        print("Creating new tiles.")
+        if grid_type == 1:  # Hexagonal grid
+            create_hexs_for_city(city, unit, a, logger, int(1e4))
+        elif grid_type == 2:  # square grid
+            create_squares_for_city(city, grid_size, logger, int(1e4))
+        City.objects.filter(id=city.id).update(tiles_generated=True)
 
     def handle(self, *args, **options):
         """Create grid and save it to DB."""
