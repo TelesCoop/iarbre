@@ -10,10 +10,13 @@ from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import Count
 from tqdm import tqdm
+from shapely.geometry import Point
 
 from iarbre_data.management.commands.utils import select_city
 from iarbre_data.models import Iris, Tile, City
 from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
+
+from iarbre_data.management.commands.utils import load_geodataframe_from_db
 
 
 def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)) -> None:
@@ -39,14 +42,17 @@ def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)) -> Non
     ymax = np.ceil(ymax / grid_size) * grid_size
 
     tiles = []
-    for i, (x0, y0) in enumerate(
-        tqdm(
-            itertools.product(
-                np.arange(xmin, xmax + grid_size, grid_size),
-                np.arange(ymin, ymax + grid_size, grid_size),
-            )
+    i = 0
+    for x0, y0 in tqdm(
+        itertools.product(
+            np.arange(xmin, xmax + grid_size, grid_size),
+            np.arange(ymin, ymax + grid_size, grid_size),
         )
     ):
+        point = Point([x0, y0])
+        if not city_geom.covers(point):
+            continue
+        i += 1
         # Bounds
         x1 = x0 - grid_size
         y1 = y0 + grid_size
@@ -113,10 +119,15 @@ def create_hexs_for_city(
     cols = np.arange(xmin, xmax, 3 * unit)
     rows = np.arange(ymin / a, ymax / a, unit)
     tiles = []
+    tiles_count = 0
     for x, (i, y) in tqdm(itertools.product(cols, enumerate(rows))):
+        point = Point([x, y * a])
         # Rows are not aligned
         offset = 1.5 * unit if i % 2 != 0 else 0
         x0 = x + offset
+        if not city_geom.covers(point):
+            continue
+        tiles_count += 1
         dim = [
             (x0, y * a),
             (x0 + unit, y * a),
@@ -144,7 +155,7 @@ def create_hexs_for_city(
         )
         tiles.append(tile)
         # Avoid OOM errors
-        if (i + 1) % batch_size == 0:
+        if (tiles_count + 1) % batch_size == 0:
             with transaction.atomic():
                 Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
             logger.info(f"Got {len(tiles)} tiles")
@@ -170,10 +181,9 @@ def clean_outside(selected_city, batch_size) -> None:
     print("Deleting tiles out of the cities")
     total_records = Tile.objects.all().count()
     total_deleted = 0
+    qs = Tile.objects.all().values_list("id", flat=True)
     for start in tqdm(range(0, total_records, batch_size * 10)):
-        batch_ids = Tile.objects.all()[start : start + batch_size * 10].values_list(
-            "id", flat=True
-        )
+        batch_ids = qs[start : start + batch_size * 10]
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)
@@ -224,9 +234,9 @@ class Command(BaseCommand):
 
         for duplicate in duplicates:
             geometry = duplicate["geometry"]
-            duplicate_cities = Tile.objects.filter(geometry=geometry)
+            duplicate_tiles = Tile.objects.filter(geometry=geometry)
             # Keep the first and delete the rest
-            ids_to_delete = duplicate_cities.values_list("id", flat=True)[1:]
+            ids_to_delete = duplicate_tiles.values_list("id", flat=True)[1:]
             Tile.objects.filter(id__in=ids_to_delete).delete()
         print(f"Removed duplicates for {duplicates.count()} entries.")
 
@@ -251,8 +261,9 @@ class Command(BaseCommand):
         """
         print(f"Selected city: {city.name} with id {city.id}.")
         tiles_queryset = Tile.objects.filter(
-            geometry__within=GEOSGeometry(city.geometry.wkt)
+            geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
+        all_ids = load_geodataframe_from_db(tiles_queryset, ["id"]).id
         total_records = tiles_queryset.count()
         print(f"Number tiles already in the DB: {total_records}. \n")
         if delete or (city.tiles_generated is False):
@@ -260,9 +271,7 @@ class Command(BaseCommand):
             print("These tiles will be deleted and new one recomputed.")
             City.objects.filter(id=city.id).update(tiles_generated=False)
             for start in tqdm(range(0, total_records, batch_size)):
-                batch_ids = tiles_queryset[start : start + batch_size].values_list(
-                    "id", flat=True
-                )
+                batch_ids = all_ids[start : start + batch_size]
                 with transaction.atomic():
                     Tile.objects.filter(id__in=batch_ids).delete()
             print(f"Deleted {total_records} tiles.")
