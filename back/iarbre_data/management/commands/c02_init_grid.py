@@ -263,26 +263,27 @@ class Command(BaseCommand):
         tiles_queryset = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
-        all_ids = load_geodataframe_from_db(tiles_queryset, ["id"]).id
-        total_records = tiles_queryset.count()
-        print(f"Number tiles already in the DB: {total_records}. \n")
-        if delete or (city.tiles_generated is False):
-            # Clean if asked or if not all Tiles have been generated
-            print("These tiles will be deleted and new one recomputed.")
-            City.objects.filter(id=city.id).update(tiles_generated=False)
-            for start in tqdm(range(0, total_records, batch_size)):
-                batch_ids = all_ids[start : start + batch_size]
-                with transaction.atomic():
-                    Tile.objects.filter(id__in=batch_ids).delete()
-            print(f"Deleted {total_records} tiles.")
-        elif city.tiles_generated:
-            return
-        print("Creating new tiles.")
-        if grid_type == 1:  # Hexagonal grid
-            create_hexs_for_city(city, unit, a, logger, int(1e4))
-        elif grid_type == 2:  # square grid
-            create_squares_for_city(city, grid_size, logger, int(1e4))
-        City.objects.filter(id=city.id).update(tiles_generated=True)
+        if len(tiles_queryset > 0): # When database is empty
+            all_ids = load_geodataframe_from_db(tiles_queryset, ["id"]).id
+            total_records = tiles_queryset.count()
+            print(f"Number tiles already in the DB: {total_records}. \n")
+            if delete or (city.tiles_generated is False):
+                # Clean if asked or if not all Tiles have been generated
+                print("These tiles will be deleted and new one recomputed.")
+                City.objects.filter(id=city.id).update(tiles_generated=False)
+                for start in tqdm(range(0, total_records, batch_size)):
+                    batch_ids = all_ids[start : start + batch_size]
+                    with transaction.atomic():
+                        Tile.objects.filter(id__in=batch_ids).delete()
+                print(f"Deleted {total_records} tiles.")
+            elif city.tiles_generated:
+                return
+            print("Creating new tiles.")
+            if grid_type == 1:  # Hexagonal grid
+                create_hexs_for_city(city, unit, a, logger, int(1e4))
+            elif grid_type == 2:  # square grid
+                create_squares_for_city(city, grid_size, logger, int(1e4))
+            City.objects.filter(id=city.id).update(tiles_generated=True)
 
     def handle(self, *args, **options):
         """Create grid and save it to DB."""
