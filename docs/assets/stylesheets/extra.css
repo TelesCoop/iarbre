@@ -2,35 +2,11 @@
   font-family: "Bricolage Grotesque";
   src: url("BricolageGrotesque-Regular.otf") format("opentype");
 }
-body {
-  font-family: "Bricolage Grotesque", Arial, sans-serif;
-  color: #32312d;
-  background-color: #efefed;
-  overflow-x: hidden;
-}
-.md-header {
-  background-color: #92a48d;
-}
-.md-tabs {
-  background-color: #92a48d;
-}
-.md-sidebar {
-  background-color: #efefed;
-}
+:root {
+  --md-primary-fg-color: #92a48d;
+  --md-primary-fg-color--light: #efefed;
+  --md-primary-fg-color--dark: #90030c;
+  --md-text-font: "Bricolage Grotesque";
 
-.md-grid {
-  max-width: 100%;
-}
-@media (min-width: 1220px) {
-  .md-main__inner {
-    margin-top: 0;
-  }
-  .md-nav {
-    font-size: 16px;
-    color: #efefed;
-    background-color: #92a48d;
-  }
-  .md-nav .md-nav__title {
-    display: none;
-  }
+  --md-accent-fg-color: #32412d;
 }

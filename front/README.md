@@ -1,60 +1,62 @@
-# iarbre-front
+# Frontend IA.rbre
 
-This template should help get you started developing with Vue 3 in Vite.
+Ces instructions vont vous aider à installer et servir le frontend.
 
-## Recommended IDE Setup
+## Configuration IDE recommandée
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (et désactiver Vetur).
 
-## Type Support for `.vue` Imports in TS
+## Support des types pour les importations `.vue` en TS
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+TypeScript ne gère pas par défaut les informations de type pour les importations `.vue`, donc nous remplaçons le CLI
+`tsc` par `vue-tsc` pour la vérification des types. Dans les éditeurs, nous avons besoin de [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+pour que le service de langage TypeScript soit conscient des types `.vue`.
 
-## Customize configuration
+## Personnaliser la configuration
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+Voir [Référence de configuration Vite](https://vitejs.dev/config/).
 
-## Project Setup
+## Configuration du projet
 
 ```sh
 yarn
 ```
 
-### Compile and Hot-Reload for Development
+### Compiler et rechargement à chaud pour le développement
 
 ```sh
 yarn dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Vérification des types, compilation pour la production
 
 ```sh
 yarn build
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Exécuter des tests unitaires avec [Vitest](https://vitest.dev/)
 
 ```sh
 yarn test:unit
 ```
 
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+### Exécuter des tests end to end avec [Cypress](https://www.cypress.io/)
 
 ```sh
 yarn test:e2e:dev
 ```
 
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
+Cela exécute les tests end to end avec le serveur de développement Vite.
+C'est beaucoup plus rapide que la version de production.
 
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
+Il est tout de même recommandé de tester la version de production avec `test:e2e` avant le déploiement (par exemple dans les environnements CI) :
 
 ```sh
 yarn build
 yarn test:e2e
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### Lint avec [ESLint](https://eslint.org/)
 
 ```sh
 yarn lint

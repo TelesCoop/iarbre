@@ -32,6 +32,9 @@
       - mkdocs
       - mkdocs-material
       - mkdocstrings[python]
+      - mkdocs-git-revision-date-localized-plugin
+      - mkdocs-minify-plugin
+      - pymdown-extensions
     virtualenv: "{{ venv.path }}"
 
 - name: Init documentation

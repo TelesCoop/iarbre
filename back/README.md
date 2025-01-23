@@ -1,120 +1,115 @@
-# IArbre Backend
+# Backend IArbre
 
-## Overview
+## Aperçu
 
-The backend of IArbre calculates the various indices for Métropole de Lyon (plantability, etc).
-Built with [Django](https://www.djangoproject.com/) and powered by a [PostGIS](https://postgis.net/) database, it forms the core of the project.
+Le backend d'IArbre calcule l'occupation des sols et les différents indices (plantabilité, etc.).
+Le backend utilise [Django](https://www.djangoproject.com/) et une base de données [PostGIS](https://postgis.net/).
 
-It is organized in Django Apps, `iarbre_data` corresponds to land occupancy computation. Then you can run the various
-modules such as `plantability` to compute indices.
+Avec Django, nous avons créer différents **aplications**.
+`iarbre_data` correspond au calcul de l'occupation des sols.
+Vous pouvez ensuite utiliser les autres applications telles que `plantability` pour calculer les indices (plantabilité, etc).
 
-This backend was developed by [Telescoop](https://telescoop.fr), following the [V1 implementation](https://forge.grandlyon.com/erasme/script-recalcul-calque) by [Exo-dev](https://exo-dev.fr/).
+Ce backend a été développé suite à l'[implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) par [Exo-dev](https://exo-dev.fr/).
 
-For more details about the IA.bre project, visit [iarbre.fr](https://iarbre.fr).
+## Contenu
 
-## Contents
+- [Données requises](#données-requises)
+- [Déploiement avec Ansible](#déploiement-avec-ansible)
+- [Installation manuelle](#installation-manuelle)
+- [Génération de la base de données](#génération-de-la-base-de-données)
+- [Démarrage du backend](#démarrage-du-service-backend)
+- [Aide](#aide)
 
-- [Required Data](#required-data)
-- [Deploy with Ansible](#deploy-with-ansible)
-- [Manual installation](#manual-installation)
-- [Populating the Database](#populating-the-database)
-- [Running the Server](#running-the-server)
-- [Help](#help)
+## Données requises
 
-## Required Data
+Un dossier nommé `file_data` contenant les données nécessaires doit être présent à la racine du projet.
+Pour obtenir ces données pour la Métropole de Lyon, veuillez envoyer un e-mail à [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
-A folder named `file_data` containing necessary data must be present at the root of the project.
-To obtain this data, please email [contact@telescoop.fr](mailto:contact@telescoop.fr).
+## Déploiement avec Ansible
 
-## Deploy with Ansible
+Consultez la documentation de [déploiement](https://docs.iarbre.fr/deploy/) pour plus de détails.
 
-See the deploy doc for more details.
+## Installation manuelle
 
-## Manual installation
+> **Note** : Ces instructions sont pour Ubuntu. Elles n'ont pas été testées sur Windows ou macOS.
 
-> **Note**: These steps are designed for Linux. They have not been tested on Windows or macOS.
+Le backend nécessite [GDAL](https://gdal.org/en/stable/) et [PostGIS](https://postgis.net/).
 
-The backend requires [GDAL](https://gdal.org/en/stable/) and [PostGIS](https://postgis.net/).
+Suivez le [guide d'installation Django GIS](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/postgis/) pour Linux et installez les packages nécessaires depuis la source.
 
-Follow the [Django GIS installation guide](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/postgis/) for Linux and install the necessary packages from source.
-
-Alternatively, you can try installing the required packages using `apt`, though it may not always suffice:
+Vous pouvez également essayer d'installer les packages requis via `apt`, bien que cela puisse ne pas toujours suffire :
 
 ```bash
 sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg
-sudo apt install binutils libproj-dev gdal-bin  # For geographic queries
+sudo apt install binutils libproj-dev gdal-bin  # Pour les requêtes géographiques
 ```
 
-_(Replace `x` with your desired PostgreSQL version.)_
+_(Remplacez `x` par la version de PostgreSQL souhaitée.)_
 
-### Initializing the Database
+### Initialisation de la base de données
 
-After installation, create a user and a new PostGIS-enabled database:
+Après l'installation, créez un utilisateur et une nouvelle base de données PostGIS :
 
-1. Log in as the `postgres` superuser:
+1. Connectez-vous en tant que super-utilisateur `postgres` :
 
    ```bash
    sudo -u postgres psql postgres
    ```
 
-2. Create a new user and database:
+2. Créez un nouvel utilisateur et une base de données :
 
    ```sql
-   CREATE USER <user_name> WITH PASSWORD 'your_secure_password';
-   ALTER USER <user_name> WITH SUPERUSER CREATEDB;
-   CREATE DATABASE <db_name> OWNER <user_name>;
+   CREATE USER <nom_utilisateur> WITH PASSWORD 'votre_mot_de_passe_sécurisé';
+   ALTER USER <nom_utilisateur> WITH SUPERUSER CREATEDB;
+   CREATE DATABASE <nom_base_de_données> OWNER <nom_utilisateur>;
    \q
    ```
 
-3. Connect with the new user and enable PostGIS:
+3. Connectez-vous avec le nouvel utilisateur et activez PostGIS :
    ```bash
-   psql -U <user_name> <db_name>
+   psql -U <nom_utilisateur> <nom_base_de_données>
    CREATE EXTENSION postgis;
    \q
    ```
 
-### Installing Required Python Packages
+### Installation des packages Python requis
 
-We recommend using a Python virtual environment managed with [`pew`](https://github.com/pew-org/pew):
+Nous recommandons d'utiliser un environnement virtuel Python géré par [`pew`](https://github.com/pew-org/pew) :
 
 ```bash
 pip install pew
-cd <path>
-pew mkproject <project_name>
+cd <chemin>
+pew mkproject <nom_projet>
 ```
 
-This creates a new virtual environment and an associated project directory in `<path>`.
+Cela crée un nouvel environnement virtuel et un répertoire de projet associé dans `<chemin>`.
 
-Next, clone the repository and install the required packages:
+Ensuite, clonez le dépôt et installez les packages requis :
 
 ```bash
 git clone https://github.com/TelesCoop/iarbre-back.git
 pip install -r requirements.txt
 ```
 
-Create a `local_settings.ini` file with the following content:
+Créez un fichier `local_settings.ini` avec le contenu suivant :
 
 ```
 [database]
 engine=postgresql
-user=<user_name>
-name=<db_name>
-password=your_secure_password
+user=<nom_utilisateur>
+name=<nom_base_de_données>
+password=votre_mot_de_passe_sécurisé
 ```
 
-To work on the project in the future, activate the environment:
+Pour travailler sur le projet à l'avenir, activez l'environnement :
 
 ```bash
-pew workon <project_name>
+pew workon <nom_projet>
 ```
 
-This activates the environment and navigates to the project directory.
+## Génération de la base de données
 
-## Populating the Database
-
-### Importing Data to the PostGIS Database
-
-Use the land occupancy data in `file_data` to compute plantability scores by running these management commands:
+Utilisation des données d'occupation des sols dans `file_data` et calcul de l'indice de plantabilité :
 
 ```bash
 python manage.py migrate
@@ -126,22 +121,21 @@ python manage.py c01_compute_plantability_indice
 python manage.py generate_mvt_files
 ```
 
-For details on the land occupancy data and processing, see [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
+Pour plus de détails sur les données d'occupation des sols et leur traitement, consultez [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
 
-The final command, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py), generates Mapbox Vector Tiles ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) for various zoom levels. These tiles can be accessed via the [API](https://github.com/TelesCoop/iarbre/blob/main/back/api/views.py) and displayed with [MapLibre](https://maplibre.org/).
+La dernière commande, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),
+génère des tuiles vectorielles Mapbox ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) pour différents niveaux de zoom.
+Ces tuiles sont accessibles via l'[API](https://github.com/TelesCoop/iarbre/blob/main/back/api/views.py) et peuvent être
+affichées avec [MapLibre](https://maplibre.org/).
 
-## Running the Server
-
-Start the backend server:
+## Démarrage du service backend
 
 ```bash
 python manage.py runserver --nostatic
 ```
 
-The backend is now running, and the API is ready for the frontend.
+Le backend est maintenant en cours d'exécution, et l'API est prête pour le frontend.
 
-## Help
+## Aide
 
-🆘 If you encounter issues or have suggestions for improvement, please open a new issue on our [GitHub issues page](https://github.com/TelesCoop/iarbre/issues).
-
-We are eager to assist and continuously enhance the project! 🚀
+🆘 Si vous rencontrez des problèmes ou avez des suggestions d'amélioration, veuillez ouvrir un nouvel issue sur notre [page GitHub Issues](https://github.com/TelesCoop/iarbre/issues).

@@ -1,9 +1,60 @@
-site_name: Documentation IA.rbre
+site_name: IA.rbre
+site_url: "https://docs.iarbre.fr/"
+repo_name: "Telescoop/iarbre"
+repo_url: "https://github.com/TelesCoop/iarbre"
+extra:
+  social:
+    - icon: "fontawesome/brands/square-github"
+      link: "https://github.com/TelesCoop/iarbre/tree/dev/docs"
+    - icon: "fontawesome/solid/tree"
+      link: "https://iarbre.fr"
+    - icon: "fontawesome/solid/map"
+      link: "https://carte.iarbre.fr"
+    - icon: "fontawesome/solid/house"
+      link: "https://telescoop.fr"
+  generator: false
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+copyright: Copyright &copy; 2020 - 2025 TELESCOOP
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tilde
+  - pymdownx.mark
+  - pymdownx.keys
+
+plugins:
+  - search:
+      lang: ["fr"]
+
+  - git-revision-date-localized
+  - minify:
+      minify_html: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+
 nav:
-  - Home: index.md
+  - Documentation IA.rbre: index.md
   - Backend:
-      - Backend overview: backend.md
-      - Back-end code documentation:
+      - Instructions: backend.md
+      - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md
           - Import Data: api/c03_import_data.md
@@ -13,19 +64,20 @@ nav:
   - Frontend: front.md
   - Deploy: deploy.md
 
-plugins:
-  - search
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            show_source: true
 theme:
   name: "material"
+  language: "fr"
   features:
-    - navigation.tabs
-    - navigation.sections
+    - instant
+    - tabs
+    - content.tabs.link
+  custom_dir: "docs/theme/"
   logo: "assets/images/logo.png"
   favicon: "assets/images/logo.png"
+  palette:
+    primary: custom
+    accent: custom
+    icon:
+      repo: fontawesome/brands/square-github
 
 extra_css: [assets/stylesheets/extra.css]
