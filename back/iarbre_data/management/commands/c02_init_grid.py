@@ -263,7 +263,7 @@ class Command(BaseCommand):
         tiles_queryset = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
-        if len(tiles_queryset > 0): # When database is empty
+        if len(tiles_queryset) > 0: # When database is empty
             all_ids = load_geodataframe_from_db(tiles_queryset, ["id"]).id
             total_records = tiles_queryset.count()
             print(f"Number tiles already in the DB: {total_records}. \n")
