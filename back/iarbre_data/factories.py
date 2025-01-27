@@ -1,6 +1,7 @@
 import factory
 from django.contrib.gis.geos import Polygon
 from iarbre_data.models import Tile, Iris, City, TileFactor
+import numpy as np
 
 
 class IrisFactory(factory.django.DjangoModelFactory):
@@ -16,7 +17,16 @@ class CityFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = City
 
-    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    geometry = factory.LazyFunction(
+        lambda: Polygon.from_bbox(
+            (
+                np.random.uniform(-180, 180),
+                np.random.uniform(-90, 90),
+                np.random.uniform(-180, 180),
+                np.random.uniform(-90, 90),
+            )
+        )
+    )
     code = factory.Faker("random_int", min=69123, max=69999)
     name = factory.Faker("name")
     tiles_generated = True

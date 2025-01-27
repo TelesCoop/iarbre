@@ -1,4 +1,6 @@
 import shapely
+from django.db.models import Count
+
 from iarbre_data.models import City
 import geopandas as gpd
 import pandas as pd
@@ -19,21 +21,40 @@ def load_geodataframe_from_db(queryset, fields):
     Returns:
         df (GeoDataFrame): GeoDataFrame with data from the queryset.
     """
-    import geopandas as gpd
-
-    df = gpd.GeoDataFrame(
-        [
-            dict(
-                geometry=data.geometry,
-                **{field: getattr(data, field) for field in fields},
-            )
-            for data in queryset
-        ]
-    )
-    df.geometry = df["geometry"].apply(
-        lambda el: shapely.wkt.loads(el.wkt)
-    )  # Shapely used to transform string to geometry
+    if len(queryset) == 0:
+        df = gpd.GeoDataFrame([], columns=["id", "geometry"])
+    else:
+        df = gpd.GeoDataFrame(
+            [
+                dict(
+                    geometry=data.geometry,
+                    **{field: getattr(data, field) for field in fields},
+                )
+                for data in queryset
+            ]
+        )
+        df.geometry = df["geometry"].apply(
+            lambda el: shapely.wkt.loads(el.wkt)
+        )  # Shapely used to transform string to geometry
     return df.set_geometry("geometry")
+
+
+def remove_duplicates(Model) -> None:
+    """Deletes duplicates in the instance model based on geometry.
+    Args:
+        Model (class): iarbre_data.models in which duplicates are removed
+    """
+    duplicates = (
+        Model.objects.values("geometry").annotate(count=Count("id")).filter(count__gt=1)
+    )
+
+    for duplicate in duplicates:
+        geometry = duplicate["geometry"]
+        duplicate_instances = Model.objects.filter(geometry=geometry)
+        # Keep the first and delete the rest
+        ids_to_delete = duplicate_instances.values_list("id", flat=True)[1:]
+        Model.objects.filter(id__in=ids_to_delete).delete()
+    print(f"Removed duplicates for {duplicates.count()} entries.")
 
 
 def select_city(insee_code_city):

@@ -33,12 +33,12 @@ class MVTGeneratorTestCase(TestCase):
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
         poly1.srid = 2154
-        tile1 = TileFactory.create(geometry=poly1)
+        TileFactory.create(geometry=poly1)
         poly2 = Polygon.from_bbox(
             [844613.06777516, 6527071.52195335, 848112.69915193, 6529699.83431857]
         )
         poly2.srid = 2154
-        tile2 = TileFactory.create(geometry=poly2)
+        TileFactory.create(geometry=poly2)
 
         qs = Tile.objects.all()
         mvt_generator = MVTGenerator(qs, zoom_levels=(8, 10))
@@ -142,11 +142,11 @@ class MVTGeneratorTestCase(TestCase):
 
         try:
             with open(path, "rb") as f:
-                tiles_data = mapbox_vector_tile.decode(
+                _ = mapbox_vector_tile.decode(
                     f.read(),
                     transformer=lambda x, y: pixel2deg(tile_x, tile_y, tile_zoom, x, y),
                 )
-        except:
+        except Exception:
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
 
     def test_view(self):
