@@ -1,9 +1,14 @@
 from django.test import TestCase
-from iarbre_data.management.commands.utils import load_geodataframe_from_db, remove_duplicates, select_city
+from iarbre_data.management.commands.utils import (
+    load_geodataframe_from_db,
+    remove_duplicates,
+    select_city,
+)
 from iarbre_data.factories import CityFactory
 from iarbre_data.models import City
 from django.contrib.gis.geos import Polygon
 import geopandas as gpd
+
 
 class utilsTestCase(TestCase):
     def setUp(self):
@@ -13,7 +18,7 @@ class utilsTestCase(TestCase):
         city_qs = City.objects.all()
         result_df = load_geodataframe_from_db(city_qs, [])
         self.assertIsInstance(result_df, gpd.GeoDataFrame)
-        self.assertIn('geometry', result_df.columns)
+        self.assertIn("geometry", result_df.columns)
 
         empty_queryset = City.objects.none()
         result_df = load_geodataframe_from_db(empty_queryset, [])

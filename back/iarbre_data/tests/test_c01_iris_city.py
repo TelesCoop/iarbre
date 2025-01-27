@@ -1,7 +1,10 @@
-from iarbre_data.management.commands.c01_insert_cities_and_iris import Command as c01_city_iris
+from iarbre_data.management.commands.c01_insert_cities_and_iris import (
+    Command as c01_city_iris,
+)
 from django.test import TestCase
 from iarbre_data.models import City, Iris
 from iarbre_data.settings import BASE_DIR
+
 
 class c01_city_irisTestCase(TestCase):
     def setUp(self):
@@ -18,5 +21,3 @@ class c01_city_irisTestCase(TestCase):
         self.command._insert_iris([qs])
         qs_iris = Iris.objects.all()
         self.assertNotEquals(len(qs_iris), 0)
-
-
