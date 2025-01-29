@@ -40,7 +40,7 @@ Suivez le [guide d'installation Django GIS](https://docs.djangoproject.com/en/5.
 Vous pouvez également essayer d'installer les packages requis via `apt`, bien que cela puisse ne pas toujours suffire :
 
 ```bash
-sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg
+sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg2
 sudo apt install binutils libproj-dev gdal-bin  # Pour les requêtes géographiques
 ```
 

@@ -10,7 +10,7 @@ from plantability.management.commands.c01_compute_plantability_indice import (
 )
 
 
-class c01_compute_plantabilityTestCase(TestCase):
+class C01ComputePlantabilityTestCase(TestCase):
     def setUp(self):
         factors_names = list(FACTORS.keys())
         TileFactory.create_batch(50)

@@ -16,15 +16,38 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
       - name: Install python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
-      - name: Install GDAL
-        run: sudo apt-get update && sudo apt install postgresql-14 postgresql-14-postgis-3 postgresql-server-dev-14 python3-psycopg binutils libproj-dev gdal-bin
+
+      - name: Install PostgreSQL, PostGIS, and GDAL
+        run: |
+         sudo apt-get update && sudo apt-get install -y \
+            postgresql-14 \
+            postgresql-14-postgis-3 \
+            postgresql-server-dev-14 \
+            binutils \
+            libproj-dev \
+            gdal-bin \
+            python3-psycopg2
+
       - name: Install python dependencies
         run: pip install -r back/requirements.txt
+      - name: Start PostgreSQL service
+        run: |
+          sudo service postgresql start
+      - name: Create PostgreSQL user and database
+        run: |
+          sudo -u postgres psql -c "CREATE USER travis WITH PASSWORD '42';"
+          sudo -u postgres psql -c "ALTER USER travis WITH SUPERUSER CREATEDB;"
+          sudo -u postgres psql -c "CREATE DATABASE iarbre OWNER travis;"
+      - name: Connect to the database and enable PostGIS
+        run: |
+          sudo -u postgres psql -U travis iarbre -c "CREATE EXTENSION postgis;"
+
       - name: Install front js dependencies
         run: npm install
         working-directory: ./front

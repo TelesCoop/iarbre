@@ -12,7 +12,7 @@ from iarbre_data.settings import TARGET_PROJ
 import geopandas as gpd
 
 
-class c03_dataTestCase(TestCase):
+class C03DataTestCase(TestCase):
     def setUp(self):
         self.data_config = DATA_FILES[0]
         self.df = read_data(self.data_config)

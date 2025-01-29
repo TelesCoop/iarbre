@@ -27,7 +27,7 @@ from iarbre_data.settings import BASE_DIR
 from iarbre_data.data_config import DATA_FILES
 
 
-class c04_computefactorsTestCase(TestCase):
+class C04ComputeFactorsTestCase(TestCase):
     def setUp(self):
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris()._insert_cities(data)

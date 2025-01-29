@@ -15,7 +15,7 @@ import numpy as np
 import logging
 
 
-class c02_gridTestCase(TestCase):
+class C02GridTestCase(TestCase):
     def setUp(self):
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris._insert_cities(data)

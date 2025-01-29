@@ -10,7 +10,7 @@ from django.contrib.gis.geos import Polygon
 import geopandas as gpd
 
 
-class utilsTestCase(TestCase):
+class UtilsTestCase(TestCase):
     def setUp(self):
         CityFactory.create_batch(10)
 

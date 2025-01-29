@@ -6,7 +6,7 @@ from iarbre_data.models import City, Iris
 from iarbre_data.settings import BASE_DIR
 
 
-class c01_city_irisTestCase(TestCase):
+class C01CityIrisTestCase(TestCase):
     def setUp(self):
         self.command = c01_city_iris()
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
