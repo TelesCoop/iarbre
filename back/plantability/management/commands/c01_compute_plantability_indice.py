@@ -1,7 +1,11 @@
 """Compute and save indice data for the selected cities."""
 import pandas as pd
+from django.db import transaction
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Min, Max
+from django.db.models import F
+
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import Tile, TileFactor
@@ -9,7 +13,6 @@ from iarbre_data.management.commands.utils import (
     load_geodataframe_from_db,
     select_city,
 )
-from iarbre_data.management.commands.c02_init_grid import clean_outside
 
 
 def compute_indice(tiles_id) -> None:
@@ -32,41 +35,46 @@ def compute_indice(tiles_id) -> None:
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
-    Tile.objects.bulk_update(
-        [
-            Tile(
-                id=row.tile_id,
-                plantability_indice=row.value,
-            )
-            for row in df.itertuples()
-        ],
-        ["plantability_indice"],
-        batch_size=10000,
-    )
+    with transaction.atomic():
+        Tile.objects.bulk_update(
+            [
+                Tile(
+                    id=row.tile_id,
+                    plantability_indice=row.value,
+                )
+                for row in df.itertuples()
+            ],
+            ["plantability_indice"],
+            batch_size=10000,
+        )
 
 
 def compute_normalized_indice() -> None:
     """Normalized indice is a score between 0 and 1."""
-    tiles = load_geodataframe_from_db(Tile.objects.all(), ["id", "plantability_indice"])
-    min_indice = tiles.plantability_indice.min()
-    max_indice = tiles.plantability_indice.max()
-    if min_indice is None or max_indice is None or min_indice == max_indice:
-        print("Normalization not possible (no data or all values are the same).")
-        return
-    tiles["plantability_normalized_indice"] = (
-        tiles["plantability_indice"] - min_indice
-    ) / (max_indice - min_indice)
-    Tile.objects.bulk_update(
-        [
-            Tile(
-                id=row.id,
-                plantability_normalized_indice=row.plantability_normalized_indice,
+
+    with transaction.atomic():
+        # Calculate the min and max directly in the database
+        min_indice = Tile.objects.aggregate(Min("plantability_indice"))[
+            "plantability_indice__min"
+        ]
+        max_indice = Tile.objects.aggregate(Max("plantability_indice"))[
+            "plantability_indice__max"
+        ]
+
+        # Fetch in batches to avoid OOM issues
+        batch_size = 1e5
+        offset = 0
+        qs = Tile.objects.all()
+        while True:
+            print(f"Batch: {offset+1}")
+            tiles_batch = qs[offset : offset + batch_size]
+            if not tiles_batch:
+                break
+            Tile.objects.filter(id__in=[tile.id for tile in tiles_batch]).update(
+                plantability_normalized_indice=(F("plantability_indice") - min_indice)
+                / (max_indice - min_indice)
             )
-            for row in tiles.itertuples()
-        ],
-        ["plantability_normalized_indice"],
-        batch_size=5000,
-    )
+            offset += 1
 
 
 class Command(BaseCommand):
@@ -86,7 +94,6 @@ class Command(BaseCommand):
         insee_code_city = options["insee_code_city"]
 
         selected_city = select_city(insee_code_city)
-        clean_outside(selected_city, int(1e4))
         nb_city = len(selected_city)
         for idx, city in enumerate(selected_city.itertuples()):
             print(f"{city.name} ({idx+1} on {nb_city} city).")
