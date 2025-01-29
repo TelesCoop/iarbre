@@ -18,17 +18,8 @@ from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 from iarbre_data.management.commands.utils import load_geodataframe_from_db
 
-import numpy as np
-import gc
-import itertools
-from shapely.geometry import Point, box
-from tqdm import tqdm
-from django.db import transaction
 
-
-def create_tiles_for_city(
-    city, grid_size, tile_shape_cls, logger, batch_size=int(1e6), unit=None, a=1
-) -> None:
+def create_squares_for_city(city, grid_size, logger, batch_size=int(1e6)) -> None:
     """
     Create square tiles for a specific city and save it to DB.
 
@@ -44,31 +35,38 @@ def create_tiles_for_city(
     city_id = city.id
     city_geom = city.geometry
     xmin, ymin, xmax, ymax = city_geom.bounds
-    # Bounds for the generation
-    xmin, ymin, xmax, ymax = tile_shape_cls.adjust_bounds(
-        xmin, ymin, xmax, ymax, grid_size, unit, a
-    )
+    # Snap bounds to the nearest grid alignment so that all grids are aligned
+    xmin = np.floor(xmin / grid_size) * grid_size
+    ymin = np.floor(ymin / grid_size) * grid_size
+    xmax = np.ceil(xmax / grid_size) * grid_size
+    ymax = np.ceil(ymax / grid_size) * grid_size
 
     tiles = []
-    tile_count = 0
-
-    for x, (i, y) in tqdm(
-        tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a)
+    i = 0
+    for x0, y0 in tqdm(
+        itertools.product(
+            np.arange(xmin, xmax + grid_size, grid_size),
+            np.arange(ymin, ymax + grid_size, grid_size),
+        )
     ):
-        tile = box(x, y * a, x - 2 * grid_size, y * a - 2 * grid_size)
-        # point = Point(x, y * a)
-        if not city_geom.intersects(tile):
+        point = Point([x0, y0])
+        if not city_geom.covers(point):
             continue
         i += 1
         # Bounds
         x1 = x0 - grid_size
         y1 = y0 + grid_size
 
-        tile_count += 1
-        polygon = tile_shape_cls.create_tile_polygon(x, y, grid_size, unit, a, i)
-
-        iris_id = tile_shape_cls.get_iris_id(polygon)
-
+        number_of_decimals = 2  # centimeter-level precision
+        x0, y0, x1, y1 = map(lambda v: round(v, number_of_decimals), (x0, y0, x1, y1))
+        polygon = Polygon.from_bbox([x0, y0, x1, y1])
+        polygon.srid = TARGET_PROJ
+        iris_id = Iris.objects.filter(geometry__intersects=polygon)
+        if len(iris_id) > 0:
+            iris_id = iris_id[0].id
+        else:
+            iris_id = None
+        # Init with -1 value
         tile = Tile(
             geometry=polygon,
             map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
@@ -118,57 +116,18 @@ def create_hexs_for_city(
     xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
     ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
 
-    @staticmethod
-    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, unit=None, a=None):
-        """Snap bounds to the nearest grid alignment."""
-        xmin = np.floor(xmin / grid_size) * grid_size
-        ymin = np.floor(ymin / grid_size) * grid_size
-        xmax = np.ceil(xmax / grid_size) * grid_size
-        ymax = np.ceil(ymax / grid_size) * grid_size
-        return xmin, ymin, xmax, ymax
-
-    @staticmethod
-    def tile_positions(xmin, ymin, xmax, ymax, grid_size, unit=None, a=None):
-        """Generate an iterator for all the position where to create a tile."""
-        return itertools.product(
-            np.arange(xmin, xmax + grid_size, grid_size),
-            enumerate(np.arange(ymin, ymax + grid_size, grid_size)),
-        )
-
-    @staticmethod
-    def create_tile_polygon(x, y, grid_size, unit=None, a=None, i=None):
-        """Create a single square and round geometries to optimize storage."""
-        x1 = x - grid_size
-        y1 = y + grid_size
-        return Polygon.from_bbox([round(x, 2) for x in [x, y, x1, y1]])
-
-
-class HexTileShape(TileShape):
-    """Generate hexagonal tile."""
-
-    @staticmethod
-    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, unit, a):
-        """Snap bounds to the nearest grid alignment."""
-        hex_width = 3 * unit
-        hex_height = 2 * unit * a
-        xmin = hex_width * (np.floor(xmin / hex_width) - 1)
-        ymin = hex_height * (np.floor(ymin / hex_height) - 1)
-        xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
-        ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
-        return xmin, ymin, xmax, ymax
-
-    @staticmethod
-    def tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a):
-        """Generate an iterator for all the position where to create a tile."""
-        cols = np.arange(xmin, xmax, 3 * unit)
-        rows = np.arange(ymin / a, ymax / a, unit)
-        return itertools.product(cols, enumerate(rows))
-
-    @staticmethod
-    def create_tile_polygon(x, y, grid_size, unit, a, i):
-        """Create a single hexagon and round geometries to optimize storage."""
+    cols = np.arange(xmin, xmax, 3 * unit)
+    rows = np.arange(ymin / a, ymax / a, unit)
+    tiles = []
+    tiles_count = 0
+    for x, (i, y) in tqdm(itertools.product(cols, enumerate(rows))):
+        point = Point([x, y * a])
+        # Rows are not aligned
         offset = 1.5 * unit if i % 2 != 0 else 0
-        x0 = x - offset
+        x0 = x + offset
+        if not city_geom.covers(point):
+            continue
+        tiles_count += 1
         dim = [
             (x0, y * a),
             (x0 + unit, y * a),
@@ -202,7 +161,6 @@ class HexTileShape(TileShape):
             logger.info(f"Got {len(tiles)} tiles")
             del tiles[:]
             gc.collect()
-
     if tiles:  # Save last batch
         Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
 
@@ -229,7 +187,7 @@ def clean_outside(selected_city, batch_size) -> None:
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)
-                .exclude(geometry__intersects=city_union_geom.wkt)
+                .exclude(geometry__within=city_union_geom.wkt)
                 .delete()
             )
             total_deleted += deleted_count
@@ -368,6 +326,6 @@ class Command(BaseCommand):
                 )
                 gc.collect()  # just to be sure gc is called...
         print("Removing duplicates...")
-        remove_duplicates(Tile)
+        self._remove_duplicates()
         if keep_outside is False:
             clean_outside(selected_city, batch_size)
