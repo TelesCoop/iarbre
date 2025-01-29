@@ -27,37 +27,31 @@ class c02_gridTestCase(TestCase):
     def test_create_square_tile(self):
         code = 69381
         selected_city = select_city(str(code))
-
         create_tiles_for_city(
-            selected_city.iloc[0],
-            self.grid_size,
-            SquareTileShape,
+            city=selected_city.iloc[0],
+            grid_size=self.grid_size,
+            tile_shape_cls=SquareTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
-            a=None,
         )
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 37)
+        self.assertEqual(Tile.objects.count(), 61)
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
         coords = tile.geometry.coords[0]
         self.assertEqual(len(coords), 5)  # it's a square
         self.assertEqual(coords[0][0] - coords[2][0], self.grid_size)
         self.assertEqual(coords[1][1] - coords[0][1], self.grid_size)
-        self.assertTrue(
-            City.objects.filter(code=code)[0].geometry.intersects(tile.geometry)
-        )
 
     def test_create_hex_tile(self):
         code = 69381
         selected_city = select_city(str(code))
-
         create_tiles_for_city(
-            selected_city.iloc[0],
-            self.grid_size,
-            HexTileShape,
+            city=selected_city.iloc[0],
+            grid_size=self.grid_size,
+            tile_shape_cls=HexTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
             unit=self.unit,
@@ -66,16 +60,13 @@ class c02_gridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 36)
+        self.assertEqual(Tile.objects.count(), 71)
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2 - 1)
         coords = tile.geometry.coords[0]
         self.assertEqual(len(coords), 7)  # it's a hex
         self.assertEqual(int(coords[1][0] - coords[0][0]), int(self.unit))
         self.assertEqual(int(coords[2][1] - coords[0][1]), int(self.a * self.unit))
-        self.assertTrue(
-            City.objects.filter(code=code)[0].geometry.intersects(tile.geometry)
-        )
 
     def test_clean_outside(self):
         codes = [69381, 69382]

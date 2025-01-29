@@ -1,5 +1,4 @@
 import logging
-import time
 
 from django.test import TestCase
 
