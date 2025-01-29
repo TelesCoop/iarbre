@@ -139,7 +139,7 @@ jobs:
       - name: Migrate database
         run: python back/manage.py migrate
       - name: Load test database
-        run: python back/manage.py backup_db restore_db test_db
+        run: python back/manage.py backup_db.py recover_db_and_media --file_media 2025-01-23T16:35_media.zip --file 2025-01-23T16:35_postgres_backup.dump
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
@@ -164,4 +164,4 @@ jobs:
     needs: [setup]
     steps:
       - name: Run documentation validation
-        run: make validate
+        run: mkdocs build
