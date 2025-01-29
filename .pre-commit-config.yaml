@@ -94,6 +94,11 @@ repos:
     repo: https://gitlab.com/devopshq/gitlab-ci-linter
     rev: v1.0.1
 
+  - repo: https://github.com/thoughtworks/talisman
+    rev: "v1.32.0"
+    hooks:
+      - id: talisman-commit
+        entry: cmd --githook pre-commit
   - repo: local
     hooks:
       - id: js-lint
@@ -118,7 +123,7 @@ repos:
     hooks:
       - id: prettier
         name: prettier
-        exclude: (back/biophonia/(templates|static)/*)|.json
+        exclude: (back/iarbre_data/(templates|static)/*)|.json
   - repo: local
     hooks:
       - id: django-test

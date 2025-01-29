@@ -1,4 +1,4 @@
-site_name: IA.rbre
+site_name: Documentation IA.rbre
 site_url: "https://docs.iarbre.fr/"
 repo_name: "Telescoop/iarbre"
 repo_url: "https://github.com/TelesCoop/iarbre"
@@ -65,7 +65,7 @@ theme:
     - tabs
     - content.tabs.link
   custom_dir: "docs/theme/"
-  logo: "assets/images/logo.png"
+  logo: "assets/images/banner.png"
   favicon: "assets/images/logo.png"
   palette:
     primary: custom
