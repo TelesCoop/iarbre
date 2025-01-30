@@ -15,12 +15,11 @@ from iarbre_data.models import Data, Tile, TileFactor, City
 TILE_BATCH_SIZE = 10_000
 
 
-def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area):
+def _compute_for_factor_partial_tiles(factor_df, tiles_df, std_area):
     """
     Compute and store the proportion of standard tile area occupied by a geographic factor.
 
     Args:
-        factor_name (str): Name of the factor (e.g., 'Parking', 'Route') to process
         factor_df (GeoDataFrame): GeoDataFrame containing factor geometries that will be
             intersected with tiles.
         tiles_df (GeoDataFrame): GeoDataFrame containing tile geometries.
@@ -92,16 +91,9 @@ def _compute_for_factor_partial_tiles(factor_name, factor_df, tiles_df, std_area
     if len(possible_matches) > 0:
         df = tiles_df.clip(possible_matches)
         df["value"] = df.geometry.area / std_area
-        # Do not add a TileFactor if it already exists in the DB
-        existing_pairs = set(TileFactor.objects.values_list("id", "factor"))
-        tile_factors = [
-            TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
-            for row in df.itertuples(index=False)
-            if (row.id, factor_name) not in existing_pairs
-        ]
-        return tile_factors
     else:
-        return []
+        df = gpd.GeoDataFrame([])
+    return df
 
 
 def compute_for_factor(factor_name, tiles_df, std_area) -> None:
@@ -135,13 +127,20 @@ def compute_for_factor(factor_name, tiles_df, std_area) -> None:
         total=n_batches,
     ):
         tiles_df = tiles_df[tiles_df.geometry.notnull() & tiles_df.geometry.is_valid]
-        tile_factors = _compute_for_factor_partial_tiles(
-            factor_name,
+        df = _compute_for_factor_partial_tiles(
             factor_df,
             tiles_df.iloc[batch : batch + TILE_BATCH_SIZE],
             std_area,
         )
-        TileFactor.objects.bulk_create(tile_factors)
+        if len(df) > 0:
+            # Do not add a TileFactor if it already exists in the DB
+            existing_pairs = set(TileFactor.objects.values_list("id", "factor"))
+            tile_factors = [
+                TileFactor(tile_id=row.id, factor=factor_name, value=row.value)
+                for row in df.itertuples(index=False)
+                if (row.id, factor_name) not in existing_pairs
+            ]
+            TileFactor.objects.bulk_create(tile_factors)
 
 
 def process_city(city, FACTORS, std_area, delete) -> None:
@@ -155,12 +154,12 @@ def process_city(city, FACTORS, std_area, delete) -> None:
         delete (bool): If True, delete already computed Tiles.
 
     Returns:
-        None
+        Completion (int): 0 if already computed, 1 otherwise.
     """
     city_name = city.name
     if city.tiles_computed and delete is False:
         print(f"TileFactor already computed for city {city_name}.")
-        return
+        return 0
 
     city_geometry = city.geometry.wkt
     print(f"Processing city: {city_name}")
@@ -175,6 +174,7 @@ def process_city(city, FACTORS, std_area, delete) -> None:
         compute_for_factor(factor_name, tiles_df, std_area)
     City.objects.filter(id=city.id).update(tiles_computed=True)
     print(f"Finished city {city_name}. Time taken: {time.perf_counter() - t}")
+    return 1
 
 
 class Command(BaseCommand):

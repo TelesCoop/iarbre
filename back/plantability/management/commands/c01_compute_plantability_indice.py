@@ -13,6 +13,7 @@ from iarbre_data.management.commands.utils import (
     load_geodataframe_from_db,
     select_city,
 )
+from tqdm import tqdm
 
 
 def compute_indice(tiles_id) -> None:
@@ -62,19 +63,23 @@ def compute_normalized_indice() -> None:
         ]
 
         # Fetch in batches to avoid OOM issues
-        batch_size = 1e5
+        batch_size = int(1e5)
         offset = 0
         qs = Tile.objects.all()
-        while True:
-            print(f"Batch: {offset+1}")
-            tiles_batch = qs[offset : offset + batch_size]
-            if not tiles_batch:
-                break
-            Tile.objects.filter(id__in=[tile.id for tile in tiles_batch]).update(
-                plantability_normalized_indice=(F("plantability_indice") - min_indice)
-                / (max_indice - min_indice)
-            )
-            offset += 1
+        total_batches = (len(qs) + batch_size - 1) // batch_size
+        with tqdm(total=total_batches, desc="Processing Batches") as pbar:
+            while True:
+                tiles_batch = qs[offset : offset + batch_size]
+                if not tiles_batch:
+                    break
+                Tile.objects.filter(id__in=[tile.id for tile in tiles_batch]).update(
+                    plantability_normalized_indice=(
+                        F("plantability_indice") - min_indice
+                    )
+                    / (max_indice - min_indice)
+                )
+                offset += 1
+                pbar.update(1)
 
 
 class Command(BaseCommand):

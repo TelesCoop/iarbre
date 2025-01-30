@@ -16,6 +16,8 @@ from iarbre_data.models import MVTTile
 from tqdm import tqdm
 import gc
 
+MVT_EXTENT = 4096
+
 
 class MVTGenerator:
     def __init__(
@@ -49,7 +51,6 @@ class MVTGenerator:
         """Generate MVT tiles for the entire geometry queryset."""
         # Get total bounds of the queryset
         bounds = self._get_queryset_bounds()
-
         for zoom in range(self.min_zoom, self.max_zoom + 1):
             print(f"Generating tiles for zoom level {zoom}")
             # Get all tiles that cover the entire geometry bounds
@@ -72,7 +73,7 @@ class MVTGenerator:
                 }
                 for future in as_completed(future_to_tiles):
                     future.result()
-                    future_to_tiles.pop(future)
+                    future_to_tiles.pop(future)  # Free RAM after completion
                     gc.collect()  # just to be sure gc is called...
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
@@ -147,7 +148,6 @@ class MVTGenerator:
         Returns:
             List of features to encode in MVT format.
         """
-        MVT_EXTENT = 4096
         features = []
         (x0, y0, x_max, y_max) = tile_polygon.extent
         x_span = x_max - x0
@@ -155,13 +155,9 @@ class MVTGenerator:
         for obj in tqdm(queryset, desc="Preparing MVT features", total=len(queryset)):
             clipped_geom = obj.clipped_geometry
             if not clipped_geom.empty:
-                tile_based_coords = []  # Transform geometry in tile relative coordinate
-                for x_merc, y_merc in clipped_geom.coords[0]:
-                    tile_based_coord = (
-                        int((x_merc - x0) * MVT_EXTENT / x_span),
-                        int((y_merc - y0) * MVT_EXTENT / y_span),
-                    )
-                    tile_based_coords.append(tile_based_coord)
+                tile_based_coords = MVTGenerator.transform_to_tile_relative(
+                    clipped_geom, x0, y0, x_span, y_span
+                )
                 feature = {
                     "geometry": Polygon_shapely(tile_based_coords),
                     "properties": obj.get_layer_properties(),
@@ -169,3 +165,14 @@ class MVTGenerator:
                 features.append(feature)
 
         return features
+
+    @staticmethod
+    def transform_to_tile_relative(clipped_geom, x0, y0, x_span, y_span):
+        tile_based_coords = []  # Transform geometry in tile relative coordinate
+        for x_merc, y_merc in clipped_geom.coords[0]:
+            tile_based_coord = (
+                int((x_merc - x0) * MVT_EXTENT / x_span),
+                int((y_merc - y0) * MVT_EXTENT / y_span),
+            )
+            tile_based_coords.append(tile_based_coord)
+        return tile_based_coords

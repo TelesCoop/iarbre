@@ -55,15 +55,23 @@ def download_from_url(url, layer_name):
         content = requests.get(url, timeout=600).content
         io = BytesIO(content)
         gdf = gpd.read_file(io)
-        gdf = gdf.to_crs(TARGET_PROJ)
     return gdf
 
 
 def read_data(data_config):
-    """Read data from a file or URL and return a GeoDataFrame"""
+    """Read data from a file or URL and return a GeoDataFrame
+    Args:
+        data_config (dict): Contains either URL of the data or path to the file.
+    Returns:
+        df (GeoDataFrame): Use TARGET_PROJ and null and not valid geometry are removed.
+    """
     if data_config.get("url"):
-        return download_from_url(data_config["url"], data_config["layer_name"])
-    return gpd.read_file(DATA_DIR / data_config["file"])
+        df = download_from_url(data_config["url"], data_config["layer_name"])
+    else:
+        df = gpd.read_file(DATA_DIR / data_config["file"])
+    df = df.to_crs(TARGET_PROJ)  # Re_proj if needed
+    df = df[df.geometry.notnull() & df.geometry.is_valid]  # Drop null or invalid geom
+    return df
 
 
 def apply_actions(df, actions):
@@ -110,36 +118,51 @@ def apply_actions(df, actions):
             df = df["geometry"]
         geometry = unary_union(df)
         df = gpd.GeoDataFrame({"geometry": [geometry]}, crs=TARGET_PROJ)
+
+    # Transform in Polygon
+    df = df.explode(index_parts=False)
+    df = df[df.geometry.type == "Polygon"]
     return df
 
 
-def save_geometries(df: gpd.GeoDataFrame, data_config) -> None:
+def process_data(df: gpd.GeoDataFrame, data_config):
     """
-    Save geometries to the database.
+    Process geometries.
 
     Args:
-        df (GeoDataFrame): GeoDataFrame to save to the database.
+        df (GeoDataFrame): GeoDataFrame to be apply actions on.
         data_config (dict): Configuration of the data.
 
     Returns:
-        None
+        datas (list): Processed data.
     """
-    df = df.to_crs(TARGET_PROJ)
     datas = []
     actions_factors = zip(
-        data_config.get("actions", [None]), data_config["factors"]
+        data_config.get("actions", [{}]), data_config["factors"]
     )  # Default actions to None
 
     for actions, factor in actions_factors:
-        sub_df = apply_actions(df.copy(), actions) if actions else df.copy()
-        sub_df = sub_df.explode(index_parts=False)
-        sub_df = sub_df[sub_df.geometry.type != "Point"]
+        sub_df = apply_actions(df.copy(), actions)
         if len(sub_df) == 0:
             print(f"Factor: {factor} only contained Points")
             continue
         datas += [
             {"geometry": geometry, "factor": factor} for geometry in sub_df.geometry
         ]
+    return datas
+
+
+def save_geometries(datas, data_config) -> None:
+    """
+    Save geometries to the database.
+
+    Args:
+        datas (GeoDataFrame): GeoDataFrame to save to the database.
+        data_config (dict): Configuration of the data.
+
+    Returns:
+        None
+    """
     for ix, batch in enumerate(tqdm(batched(datas, 1000))):
         Data.objects.bulk_create(
             [
@@ -158,11 +181,6 @@ def save_geometries(df: gpd.GeoDataFrame, data_config) -> None:
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--grid-size", type=int, default=5, help="Grid size in meters"
-        )
-
     def handle(self, *args, **options):
         """Save all land occupancy data to the database."""
         for data_config in DATA_FILES + URL_FILES:
@@ -175,12 +193,9 @@ class Command(BaseCommand):
             start = time.time()
             try:
                 df = read_data(data_config)
-                df = df.to_crs(TARGET_PROJ)  # Re_proj if needed
-                df = df[
-                    df.geometry.notnull() & df.geometry.is_valid
-                ]  # Drop null or invalid geom
             except pyogrio.errors.DataSourceError:
                 print(f"Error reading data {data_config['name']}")
                 continue
-            save_geometries(df, data_config)
+            datas = process_data(df, data_config)
+            save_geometries(datas, data_config)
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")

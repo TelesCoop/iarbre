@@ -3,13 +3,15 @@ import logging
 
 from django.contrib.gis.utils import LayerMapping
 from django.core.management import BaseCommand
-from django.db.models import Count
 import requests
 from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 
 from iarbre_data.models import City, Iris
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
+from iarbre_data.management.commands.utils import (
+    load_geodataframe_from_db,
+    remove_duplicates,
+)
 from iarbre_data.settings import TARGET_PROJ
 
 mapping_city = {"geometry": "POLYGON", "name": "nom", "code": "insee"}
@@ -22,37 +24,12 @@ class Command(BaseCommand):
     help = "Insert cities geojson file"
 
     @staticmethod
-    def _remove_duplicates(Model):
-        """Deletes duplicates in the instance model based on geometry."""
-        duplicates = (
-            Model.objects.values("geometry")
-            .annotate(count=Count("id"))
-            .filter(count__gt=1)
-        )
-
-        for duplicate in duplicates:
-            geometry = duplicate["geometry"]
-            duplicate_instances = Model.objects.filter(geometry=geometry)
-            # Keep the first and delete the rest
-            ids_to_delete = duplicate_instances.values_list("id", flat=True)[1:]
-            Model.objects.filter(id__in=ids_to_delete).delete()
-        print(f"Removed duplicates for {duplicates.count()} entries.")
-
-    def handle(self, *args, **options):
-        """Insert cities from geojson file and IRIS from BPCE API."""
-        logger = logging.getLogger(__name__)
-        lm = LayerMapping(City, "file_data/communes_gl_2025.geojson", mapping_city)
-        lm.save()
-        for city in City.objects.all():
-            city.tiles_generated = False
-            city.tiles_computed = False
-            city.save()
-        logger.info("Data insertion for city complete.")
-        print("Removing duplicated cities...")
-        self._remove_duplicates(City)
-        logger.info("Duplicate removal complete.")
-
-        cities = load_geodataframe_from_db(City.objects.all(), ["id", "name", "code"])
+    def _insert_iris(qs_city) -> None:
+        """Use BPCE API to download IRIS and insert them in a table
+        Args:
+            qs_city (QuerySet): Query set that correspond to one or multiple cities.
+        """
+        cities = load_geodataframe_from_db(qs_city, ["id", "name", "code"])
         limit = 100
         for city in cities.itertuples():
             city_GEOS = GEOSGeometry(city.geometry.wkt)
@@ -102,5 +79,28 @@ class Command(BaseCommand):
                     "offset": offset,
                 }
                 response = requests.get(api_url, params=params)
+
+    @staticmethod
+    def _insert_cities(data) -> None:
+        """Insert cities from a GEOJSON file.
+        Args:
+            data (str): path to the GEOJSON containing cities geometry.
+        """
+        lm = LayerMapping(City, data=data, mapping=mapping_city)
+        lm.save()
+        for city in City.objects.all():
+            city.tiles_generated = False
+            city.tiles_computed = False
+            city.save()
+
+    def handle(self, *args, **options):
+        """Insert cities from geojson file and IRIS from BPCE API."""
+        logger = logging.getLogger(__name__)
+        self._insert_cities(data="file_data/communes_gl_2025.geojson")
+        print("Removing duplicated cities...")
+        remove_duplicates(City)
+        logger.info("Duplicate removal complete.")
+        qs_city = City.objects.all()
+        self._insert_iris(qs_city=qs_city)
         print("Removing duplicated IRIS...")
-        self._remove_duplicates(Iris)
+        remove_duplicates(Iris)
