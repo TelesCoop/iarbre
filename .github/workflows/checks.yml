@@ -25,14 +25,14 @@ jobs:
 
       - name: Install PostgreSQL, PostGIS, and GDAL
         run: |
-         sudo apt-get update && sudo apt-get install -y \
-            postgresql-14 \
-            postgresql-14-postgis-3 \
-            postgresql-server-dev-14 \
-            binutils \
-            libproj-dev \
-            gdal-bin \
-            python3-psycopg2
+          sudo apt-get update && sudo apt-get install -y \
+             postgresql-14 \
+             postgresql-14-postgis-3 \
+             postgresql-server-dev-14 \
+             binutils \
+             libproj-dev \
+             gdal-bin \
+             python3-psycopg2
 
       - name: Install python dependencies
         run: pip install -r back/requirements.txt
