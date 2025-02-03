@@ -44,6 +44,10 @@ def create_tiles_for_city(
     city_geom = city.geometry
     city_id = city.id
     xmin, ymin, xmax, ymax = city_geom.bounds
+    xmin -= grid_size
+    ymin -= grid_size
+    xmax += grid_size
+    ymax += grid_size
     # Bounds for the generation
     xmin, ymin, xmax, ymax = tile_shape_cls.adjust_bounds(
         xmin, ymin, xmax, ymax, grid_size, unit, a
@@ -55,7 +59,7 @@ def create_tiles_for_city(
     for x, (i, y) in tqdm(
         tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a)
     ):
-        tile = box(x, y * a, x - 2 * grid_size, y * a - 2 * grid_size)
+        tile = box(x, y * a, x - 3 * grid_size, y * a + 3 * grid_size)
         if not city_geom.intersects(tile):
             continue
 

@@ -37,7 +37,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 61)
+        self.assertEqual(Tile.objects.count(), 83)
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
         coords = tile.geometry.coords[0]
@@ -60,7 +60,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 71)
+        self.assertEqual(Tile.objects.count(), 100)
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2 - 1)
         coords = tile.geometry.coords[0]
