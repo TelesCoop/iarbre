@@ -53,33 +53,38 @@ def compute_indice(tiles_id) -> None:
 def compute_normalized_indice() -> None:
     """Normalized indice is a score between 0 and 1."""
 
-    with transaction.atomic():
-        # Calculate the min and max directly in the database
-        min_indice = Tile.objects.aggregate(Min("plantability_indice"))[
-            "plantability_indice__min"
-        ]
-        max_indice = Tile.objects.aggregate(Max("plantability_indice"))[
-            "plantability_indice__max"
-        ]
+    # Calculate the min and max directly in the database
+    min_indice = Tile.objects.aggregate(Min("plantability_indice"))[
+        "plantability_indice__min"
+    ]
+    max_indice = Tile.objects.aggregate(Max("plantability_indice"))[
+        "plantability_indice__max"
+    ]
 
-        # Fetch in batches to avoid OOM issues
-        batch_size = int(1e5)
-        offset = 0
-        qs = Tile.objects.all()
-        total_batches = (len(qs) + batch_size - 1) // batch_size
-        with tqdm(total=total_batches, desc="Processing Batches") as pbar:
-            while True:
-                tiles_batch = qs[offset : offset + batch_size]
-                if not tiles_batch:
-                    break
-                Tile.objects.filter(id__in=[tile.id for tile in tiles_batch]).update(
+    # Fetch in batches to avoid OOM issues
+    batch_size = int(1e6)
+    last_processed_id = 0
+    qs = Tile.objects.all()
+    print(f"Total tiles: {len(qs)} with a  batch size of {batch_size}.")
+    total_batches = (len(qs) + batch_size - 1) // batch_size
+    with tqdm(total=total_batches, desc="Processing Batches") as pbar:
+        while True:
+            tiles_batch = list(
+                qs.filter(id__gt=last_processed_id)
+                .order_by("id")
+                .values_list("id", flat=True)[:batch_size]
+            )
+            if not tiles_batch:
+                break
+            with transaction.atomic():
+                Tile.objects.filter(id__in=tiles_batch).update(
                     plantability_normalized_indice=(
                         F("plantability_indice") - min_indice
                     )
                     / (max_indice - min_indice)
                 )
-                offset += 1
-                pbar.update(1)
+            last_processed_id = tiles_batch[-1]
+            pbar.update(1)
 
 
 class Command(BaseCommand):
