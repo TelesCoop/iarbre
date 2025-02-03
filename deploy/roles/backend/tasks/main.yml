@@ -185,6 +185,11 @@
     cmd: "{{ project_slug }}-ctl collectstatic --no-input"
   when: clonecode.changed or force_update is defined
 
+- name: Clear cache
+  command:
+    cmd: "{{ project_slug }}-ctl clear_cache"
+  when: clonecode.changed or force_update is defined
+
 - name: Restart {{ project_slug }} supervisor
   supervisorctl:
     name: "{{ project_slug }}-backend"
