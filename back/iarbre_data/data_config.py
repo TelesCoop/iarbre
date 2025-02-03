@@ -291,6 +291,19 @@ URL_FILES = [
         "output_type": "POINT",
     },
     {
+        "name": "Aerodrome",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+               "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+               "typename=metropole-de-lyon:adr_voie_lieu.adraerodrome&"
+               "outputFormat=GML3&"
+               "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "layer_name": "adr_voie_lieu.adraerodrome",
+        "scripts": [""],
+        "actions": [],
+        "factors": ["aerodrome"],
+        "output_type": "Polygon",
+    },
+    {
         "name": "Arrêts transport en",
         "url": "https://data.grandlyon.com/geoserver/sytral/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature"
@@ -374,6 +387,7 @@ URL_FILES = [
 FACTORS = {
     "Souches ou emplacements libres": 3,
     "Arbres": 1,
+    "Aerodrome": -5,
     "Parkings": -2,
     "Signalisation tricolore et lumineuse matériel": -2,
     "Station velov": -1,
