@@ -293,10 +293,10 @@ URL_FILES = [
     {
         "name": "Aerodrome",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
-               "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-               "typename=metropole-de-lyon:adr_voie_lieu.adraerodrome&"
-               "outputFormat=GML3&"
-               "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:adr_voie_lieu.adraerodrome&"
+        "outputFormat=GML3&"
+        "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "layer_name": "adr_voie_lieu.adraerodrome",
         "scripts": [""],
         "actions": [],

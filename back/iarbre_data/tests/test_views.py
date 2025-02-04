@@ -11,7 +11,7 @@ from api.views import tile_view
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Intersection
 
-from back.iarbre_data.settings import BASE_DIR
+from iarbre_data.settings import BASE_DIR
 
 import math
 
