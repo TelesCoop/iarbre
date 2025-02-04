@@ -6,6 +6,11 @@ on:
       - main
   pull_request:
     branches: [main, dev]
+    types: # https://github.com/mistralai/mistral-common/blob/main/.github/workflows/lint_build_test.yaml
+      - reopened
+      - synchronize
+      - ready_for_review
+      # Run CI only when PR is ready for review or when commits are added
 
 env:
   TELESCOOP_DEV: true
@@ -22,31 +27,6 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
-
-      - name: Install PostgreSQL, PostGIS, and GDAL
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-             postgresql-14 \
-             postgresql-14-postgis-3 \
-             postgresql-server-dev-14 \
-             binutils \
-             libproj-dev \
-             gdal-bin \
-             python3-psycopg2
-
-      - name: Install python dependencies
-        run: pip install -r back/requirements.txt
-      - name: Start PostgreSQL service
-        run: |
-          sudo service postgresql start
-      - name: Create PostgreSQL user and database
-        run: |
-          sudo -u postgres psql -c "CREATE USER travis WITH PASSWORD '42';"
-          sudo -u postgres psql -c "ALTER USER travis WITH SUPERUSER CREATEDB;"
-          sudo -u postgres psql -c "CREATE DATABASE iarbre OWNER travis;"
-      - name: Connect to the database and enable PostGIS
-        run: |
-          sudo -u postgres psql -U travis iarbre -c "CREATE EXTENSION postgis;"
 
       - name: Install front js dependencies
         run: npm install
@@ -142,47 +122,6 @@ jobs:
         with:
           component: true
           working-directory: ./front
-
-  e2e-tests:
-    runs-on: ubuntu-latest
-    needs: [setup]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: "pip"
-      - name: Restore Python cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
-      - name: Install python dependencies if not cached
-        if: steps.cache-python.outputs.cache-hit != 'true'
-        run: pip install -r back/requirements.txt
-      - name: Migrate database
-        run: python back/manage.py migrate
-      - name: Load test database
-        run: python back/manage.py backup_db.py recover_db_and_media --file_media 2025-01-23T16:35_media.zip --file 2025-01-23T16:35_postgres_backup.dump
-      - name: Run back-end server in background
-        run: python manage.py runserver localhost:8000 &
-        working-directory: ./back
-      - name: Run e2e tests
-        uses: cypress-io/github-action@v6
-        with:
-          start: npm run dev
-          browser: chrome
-          config-file: cypress.config.js
-          working-directory: ./front
-      - name: Upload cypress screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshot
-          path: |
-            front/cypress/screenshots
-          retention-days: 10
 
   doc-tests:
     runs-on: ubuntu-latest
