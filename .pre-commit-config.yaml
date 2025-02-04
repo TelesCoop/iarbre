@@ -129,7 +129,8 @@ repos:
       - id: django-test
         name: django-test
         # https://github.com/pre-commit/pre-commit/issues/1417
-        entry: bash -c "cd back && python3 manage.py test"
+        # Use coverage to ensure a code coverage of at least 75%
+        entry: bash -c "cd back && coverage run manage.py test && coverage report --fail-under=75"
         types: [python]
         pass_filenames: false
         language: system
