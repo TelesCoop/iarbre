@@ -1,0 +1,3 @@
+— Le **consortium IA.rbre** vise à développer des outils pour la **végétalisation** et l’**adaptation au changement climatique**, en collaboration avec la [**Métropole de Lyon**](https://www.grandlyon.com), le [**laboratoire LIRIS**](https://liris.cnrs.fr) et d'autres partenaires. Le laboratoire **[Erasme](https://www.erasme.org)** joue un rôle clé en coordonnant des projets de **co-développement** pour pérenniser et généraliser les innovations publiques.
+
+Ces outils permettent une meilleure **analyse** et **visualisation des données**, répondant aux enjeux de **résilience urbaine**. Le projet reflète une dynamique collective d'**innovation ouverte** et d’adaptation aux politiques publiques complexes.

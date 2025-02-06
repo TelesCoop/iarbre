@@ -1,12 +1,12 @@
 /* Importer les polices */
 @font-face {
   font-family: "Bricolage Grotesque";
-  src: url("BricolageGrotesque-Regular.otf") format("opentype");
+  src: url("/fonts/BricolageGrotesque-Regular.otf") format("opentype");
 }
 
 @font-face {
   font-family: "Sligoil";
-  src: url("Sligoil-Micro.otf") format("opentype");
+  src: url("/fonts/Sligoil-Micro.otf") format("opentype");
 }
 
 * {
@@ -177,7 +177,7 @@ hr.full-width {
   position: relative;
   height: 65vh;
   width: 100%;
-  background-image: url("map2.png");
+  background-image: url("/images/map2.png");
   background-size: cover;
   background-position: center;
   image-rendering: pixelated;

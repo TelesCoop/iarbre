@@ -1,0 +1,5 @@
+— **Le projet IA.rbre** est une initiative collaborative dédiée à la transition écologique de la Métropole de Lyon, soutenue par un consortium comprenant la SCOP TelesCoop et le laboratoire Univ-Lyon2/CNRS LIRIS.
+
+En s’appuyant sur des compétences variées, ce projet vise à co-développer des outils innovants de gestion et de visualisation de données territoriales pour favoriser **la résilience urbaine**. S'étalant sur trois ans, IA.rbre bénéficie d'un financement de la Caisse des Dépôts, garantissant les ressources pour atteindre ses ambitions.
+
+Le projet se distingue par son approche d'**intelligence artificielle frugale et responsable**, favorisant des analyses multicritères grâce à des calques thématiques (plantabilité, désimperméabilisation, etc.) et une plateforme de visualisation interservices. **Les outils développés** permettent une meilleure allocation des ressources publiques et un suivi précis de l'impact des actions urbaines, soutenant les objectifs de durabilité du territoire.
