@@ -2,10 +2,10 @@ import time
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
-from tqdm import tqdm
+from django.db import transaction
 from shapely.geometry import box
-from shapely.ops import unary_union
 import geopandas as gpd
+from tqdm import tqdm
 
 from iarbre_data.data_config import FACTORS
 
@@ -13,6 +13,23 @@ from iarbre_data.management.commands.utils import load_geodataframe_from_db, sel
 from iarbre_data.models import Data, Tile, TileFactor, City
 
 TILE_BATCH_SIZE = 10_000
+
+
+def has_intersection(geom, tiles_index):
+    """
+    Check if a geometry intersects with any tile.
+
+    Args:
+        geom (shapely.geometry.base.BaseGeometry): Geometry to check.
+        tiles_index (geopandas.GeoDataFrame.sindex):  R-tree spatial index of the tiles.
+
+    Returns:
+        bool: True if the geometry intersects with any tile, False otherwise.
+    """
+    if geom is None or geom.is_empty:
+        return False
+    bounding_box = box(*geom.bounds)
+    return any(tiles_index.query(bounding_box))
 
 
 def _compute_for_factor_partial_tiles(factor_df, tiles_df, std_area):
@@ -28,65 +45,12 @@ def _compute_for_factor_partial_tiles(factor_df, tiles_df, std_area):
     Returns:
         list[TileFactor]: List of TileFactor objects to be created in the database
     """
-    factor_crs = factor_df.crs
-
-    # Split large factor geometries into smaller ones
-    def split_large_polygon(geom, grid_size=10):
-        """
-        Split a large polygon into smaller chunks based on a grid.
-
-        Args:
-            geom (shapely.geometry.Polygon): Polygon to split.
-            grid_size (int): Size of the grid in meters.
-
-        Returns:
-            list[shapely.geometry.MultiPolygon]: MultiPolygon with the split parts.
-        """
-        if geom is None or geom.is_empty:
-            return None
-        # Create a grid covering the bounding box of the geometry
-        minx, miny, maxx, maxy = tiles_df.geometry.total_bounds
-        grid_cells = [
-            box(x, y, x + grid_size, y + grid_size)
-            for x in range(int(minx), int(maxx), grid_size)
-            for y in range(int(miny), int(maxy), grid_size)
-        ]
-        clipped_parts = [
-            geom.intersection(cell) for cell in grid_cells if geom.intersects(cell)
-        ]
-        return unary_union([part for part in clipped_parts if not part.is_empty])
-
-    factor_df["geometry"] = factor_df["geometry"].apply(
-        lambda g: split_large_polygon(g, grid_size=4000) if g and not g.is_empty else g
-    )
-
-    flattened_geometries = []
-    for idx, row in factor_df.iterrows():
-        flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
-
-    factor_df = gpd.GeoDataFrame(
-        flattened_geometries, geometry="geometry", crs=factor_crs
-    )
-
     # Filter polygons in the bounding box of the tiles
     tiles_index = tiles_df.sindex
 
-    def has_intersection(geom):
-        """
-        Check if a geometry intersects with any tile.
-
-        Args:
-            geom (shapely.geometry.base.BaseGeometry): Geometry to check.
-
-        Returns:
-            bool: True if the geometry intersects with any tile, False otherwise.
-        """
-        if geom is None or geom.is_empty:
-            return False
-        bounding_box = box(*geom.bounds)
-        return any(tiles_index.query(bounding_box))
-
-    idx_intersect = factor_df.geometry.apply(has_intersection)
+    idx_intersect = factor_df.geometry.apply(
+        lambda geom: has_intersection(geom, tiles_index)
+    )
     possible_matches = factor_df[idx_intersect].copy()
     if len(possible_matches) > 0:
         df = tiles_df.clip(possible_matches)
@@ -119,6 +83,7 @@ def compute_for_factor(factor_name, tiles_df, std_area) -> None:
     if not qs.exists():
         return
     factor_df = load_geodataframe_from_db(qs, [])
+
     # compute and store by batch of 10k tiles
     n_batches = len(tiles_df) // TILE_BATCH_SIZE + 1
     for batch in tqdm(
@@ -140,7 +105,8 @@ def compute_for_factor(factor_name, tiles_df, std_area) -> None:
                 for row in df.itertuples(index=False)
                 if (row.id, factor_name) not in existing_pairs
             ]
-            TileFactor.objects.bulk_create(tile_factors)
+            with transaction.atomic():
+                TileFactor.objects.bulk_create(tile_factors)
 
 
 def process_city(city, FACTORS, std_area, delete) -> None:

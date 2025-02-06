@@ -2,26 +2,23 @@
 
 # Configuration
 input_file="insee.txt"      # File containing the INSEE codes
-num_groups=5                # Number of groups (can be changed)
-task_command="python manage.py c04_compute_factors --insee_code_city" # Base task command
+task_command="python manage.py c04_compute_factors --delete --insee_code_city" # Base task command
+num_parallel_tasks=4        # Number of parallel tasks
 
-# Divide the input file into groups
-total_lines=$(wc -l < "$input_file")
-lines_per_group=$(( (total_lines + num_groups - 1) / num_groups )) # Calculate lines per group, round up
-split -l "$lines_per_group" "$input_file" insee_group_
+# Function to process INSEE codes
+process_insee_code() {
+    local insee_code=$1
+    $task_command "$insee_code"
+}
 
-# Launch tasks in parallel
-for file in insee_group_*; do
-    # Read the codes from the file and join them with commas
-    insee_codes=$(paste -sd, "$file")
-    echo $insee_codes
+# Export function for parallel execution
+export -f process_insee_code
+export task_command
+mkdir -p output
 
-    # Run the command in parallel
-    $task_command "$insee_codes" &
-done
+# Run tasks with parallel, limiting concurrency
+parallel -j $num_parallel_tasks "$task_command {} > output/{}.log 2>&1" < "$input_file"
+
 
 # Wait for all tasks to complete
 wait
-
-# Cleanup
-rm insee_group_*

@@ -2,19 +2,21 @@
 name: User Story
 about: Décrire la user story
 title: ETQ dev/utilisateur.ice/SysAdmin/designer je ...
-labels: ''
-assignees: ''
-
+labels: ""
+assignees: ""
 ---
 
-## Merci de décrire une nouvelle user story !  
+## Merci de décrire une nouvelle user story !
 
-### Comportement attendu  
-**Explication :** Explique brièvement ce que l'utilisateur attend.  
-**Obligatoire** ✅  
+### Comportement attendu
 
-### Contexte  
-Ajouter ici tout élément de contexte.  
+**Explication :** Explique brièvement ce que l'utilisateur attend.
+**Obligatoire** ✅
 
-### Piste de solution  
+### Contexte
+
+Ajouter ici tout élément de contexte.
+
+### Piste de solution
+
 Proposez une solution possible.

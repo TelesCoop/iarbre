@@ -10,11 +10,14 @@ import requests
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from shapely import unary_union
+from shapely.geometry import box
 from tqdm import tqdm
 
 from iarbre_data.data_config import DATA_FILES, URL_FILES
 from iarbre_data.models import Data
 from iarbre_data.settings import DATA_DIR, TARGET_PROJ
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def batched(iterable, n) -> None:
@@ -130,7 +133,7 @@ def process_data(df: gpd.GeoDataFrame, data_config):
     Process geometries.
 
     Args:
-        df (GeoDataFrame): GeoDataFrame to be apply actions on.
+        df (GeoDataFrame): GeoDataFrame to apply actions on.
         data_config (dict): Configuration of the data.
 
     Returns:
@@ -143,6 +146,7 @@ def process_data(df: gpd.GeoDataFrame, data_config):
 
     for actions, factor in actions_factors:
         sub_df = apply_actions(df.copy(), actions)
+        sub_df = split_factor_dataframe(sub_df, grid_size=10000)
         if len(sub_df) == 0:
             print(f"Factor: {factor} only contained Points")
             continue
@@ -176,6 +180,79 @@ def save_geometries(datas, data_config) -> None:
                 for data in batch
             ]
         )
+
+
+def split_large_polygon(geom, grid_size, bounds, factor_crs) -> list:
+    """
+    Split a large polygon into smaller chunks based on a grid.
+
+    Args:
+        geom (shapely.geometry.Polygon): Polygon to split.
+        grid_size (flaot): Size of the grid in meters.
+        bounds (tuple): Bounds of all the factors
+        factor_crs (int): SRID of the factors data
+
+    Returns:
+        list(shapely.geometry.MultiPolygon): MultiPolygon with the split parts.
+    """
+    if geom is None or geom.is_empty:
+        return None
+    # Create a grid covering the bounding box of the geometry
+    minx, miny, maxx, maxy = bounds
+    grid_cells = [
+        box(x, y, x + grid_size, y + grid_size)
+        for x in range(int(minx), int(maxx), grid_size)
+        for y in range(int(miny), int(maxy), grid_size)
+    ]
+    grid_gdf = gpd.GeoDataFrame({"geometry": grid_cells}, crs=factor_crs)
+    split_polygons = []
+    for _, grid_cell in grid_gdf.iterrows():
+        if geom.intersects(grid_cell.geometry):
+            # The intersection between the polygon and the grid cell
+            intersection = geom.intersection(grid_cell.geometry)
+            if intersection.is_valid and not intersection.is_empty:
+                split_polygons.append(intersection)
+    return split_polygons
+
+
+def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
+    """Split Polygons of each row into smaller ones, following a grid.
+
+    Args:
+        factor_df (geopandas.DataFrame): DataFrame with geometries for a factor
+        grid_size (float): Size of the grid in meters that will be used to break geometries.
+
+    Returns:
+        factor_df (geopandas.GeoDataFrame): New dataframe with smaller geometries.
+    """
+    bounds = factor_df.total_bounds
+    geometries = factor_df.geometry.values
+
+    def split_polygon_parallel(polygon):
+        """Utils"""
+        return split_large_polygon(
+            polygon, grid_size=grid_size, bounds=bounds, factor_crs=factor_df.crs
+        )
+
+    split_geom = []
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_polygon = {
+            executor.submit(split_polygon_parallel, polygon): polygon
+            for polygon in geometries
+        }
+        for future in as_completed(future_to_polygon):
+            polygon = future_to_polygon.pop(future)
+            try:
+                results = future.result()
+                split_geom.extend(results)
+            except Exception as e:
+                print(f"Error processing polygon {polygon}: {e}")
+
+    # split_geom = [geom for polygon in geometries
+    #               for geom in
+    #               split_large_polygon(polygon, grid_size=grid_size, bounds=bounds, factor_crs=factor_df.crs)]
+
+    return gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
 
 
 class Command(BaseCommand):
