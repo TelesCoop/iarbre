@@ -1,0 +1,13 @@
+baseURL = 'https://iarbre.fr/'
+languageCode = 'fr-FR'
+title = 'IA.rbre'
+defaultContentLanguage = "fr"
+defaultContentLanguageInSubdir = false
+[languages]
+    [languages.fr]
+        languageCode = "fr-fr"
+        languageDirection = "ltr"
+        languageName = "Français"
+        title = "IA.rbre"
+        weight = 1
+disableKinds = ['taxonomy', 'term', 'category']

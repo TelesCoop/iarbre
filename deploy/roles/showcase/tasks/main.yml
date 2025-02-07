@@ -19,14 +19,19 @@
   become_user: "{{ main_user }}"
   register: clonecode
 
-# - name: Build showcase code for static rendering
-#   # yamllint disable-line rule:line-length
-#   shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm build-only"
-#   args:
-#     chdir: "{{ showcase_path }}"
-#     executable: /bin/bash
-#   when: clonecode.changed or force_update is defined
-#   register: build_code
+- name: Install Hugo
+  apt:
+    name:
+      - hugo
+
+- name: Build showcase code for static rendering
+  # yamllint disable-line rule:line-length
+  shell: "hugo build"
+  args:
+    chdir: "{{ showcase_path }}"
+    executable: /bin/bash
+  when: clonecode.changed or force_update is defined
+  register: build_code
 
 # - debug: msg="{{ build_code.stdout }}"
 #   when: clonecode.changed  or force_update is defined
@@ -44,7 +49,7 @@
 
 - name: update showcase static folder content
   synchronize:
-    src: "{{ showcase_path }}/"
+    src: "{{ showcase_path }}/public"
     dest: "{{ showcase_static_path }}/"
     rsync_opts:
       - "-og"
