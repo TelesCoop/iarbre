@@ -7,10 +7,10 @@ on:
   pull_request:
     branches: [main, dev]
     types: # https://github.com/mistralai/mistral-common/blob/main/.github/workflows/lint_build_test.yaml
+      - opened
       - reopened
       - synchronize
       - ready_for_review
-      # Run CI only when PR is ready for review or when commits are added
 
 env:
   TELESCOOP_DEV: true
