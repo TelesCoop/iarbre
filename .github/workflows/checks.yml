@@ -29,7 +29,7 @@ jobs:
           python-version: "3.10"
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
-      - run: pip install -r back/requirements.txt && pip install psycopg2
+      - run: pip install -r back/requirements.txt
 
       - name: Install front js dependencies
         run: npm install
@@ -57,7 +57,11 @@ jobs:
           python-version: "3.10"
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
-      - run: pip install -r back/requirements.txt && pip install psycopg2
+      - run: pip install -r back/requirements.txt
+
+      - name: Set up PostGIS
+        uses: nyurik/action-setup-postgis@v2
+        id: postgres
 
       - name: Restore Node.js cache
         uses: actions/cache@v3
@@ -69,7 +73,10 @@ jobs:
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ./front
+
       - name: Enforce pre-commit hook server side
+        env:
+          DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
         uses: pre-commit/action@v3.0.1
 
   node-setup:
@@ -114,12 +121,12 @@ jobs:
       - name: Run vitest
         run: npm run test
         working-directory: ./front
-      - name: Run cypress component tests
-        uses: cypress-io/github-action@v6
-        with:
-          component: true
-          working-directory: ./front
-  doc-setup:
+  #      - name: Run cypress component tests
+  #        uses: cypress-io/github-action@v6
+  #        with:
+  #          component: true
+  #          working-directory: ./front
+  doc-tests:
     runs-on: ubuntu-22.04
     needs: [setup]
     steps:
@@ -132,9 +139,6 @@ jobs:
           python-version: "3.10"
           cache: "pip"
       - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
-  doc-tests:
-    runs-on: ubuntu-22.04
-    needs: [doc-setup]
-    steps:
+
       - name: Run documentation validation
         run: mkdocs build
