@@ -49,25 +49,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
-      - name: Restore Python cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
-      - name: Install python dependencies if not cached
-        if: steps.cache-python.outputs.cache-hit != 'true'
-        run: pip install -r back/requirements.txt
+      - run: pip install -r back/requirements.txt # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+
       - name: Restore Node.js cache
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
       - name: Install js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
