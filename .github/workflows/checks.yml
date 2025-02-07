@@ -28,7 +28,8 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
-      - run: pip install -r back/requirements.txt # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      - run: pip install -r back/requirements.txt psycopg2
 
       - name: Install front js dependencies
         run: npm install
@@ -36,14 +37,17 @@ jobs:
       - name: Create back/local_settings.conf
         run: echo "${{ secrets.LOCAL_SETTINGS_CONF }}" > local_settings.conf
         working-directory: ./back
+
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
 
+      -
+
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: setup
     steps:
       - name: Checkout repository
@@ -54,7 +58,8 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
-      - run: pip install -r back/requirements.txt # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      - run: pip install -r back/requirements.txt psycopg2
 
       - name: Restore Node.js cache
         uses: actions/cache@v3
@@ -70,7 +75,7 @@ jobs:
         uses: pre-commit/action@v3.0.1
 
   node-setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: setup
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +95,7 @@ jobs:
         working-directory: ./front
 
   frontend-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [setup, node-setup]
     steps:
       - uses: actions/checkout@v4
@@ -116,10 +121,22 @@ jobs:
         with:
           component: true
           working-directory: ./front
-
-  doc-tests:
-    runs-on: ubuntu-latest
+  doc-setup:
+    runs-on: ubuntu-22.04
     needs: [setup]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python doc
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
+  doc-tests:
+    runs-on: ubuntu-22.04
+    needs: [doc-setup]
     steps:
       - name: Run documentation validation
         run: mkdocs build

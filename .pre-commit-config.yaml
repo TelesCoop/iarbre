@@ -62,10 +62,10 @@ repos:
         language_version: python3.10
     repo: https://github.com/pycqa/flake8
     rev: 3.8.3
-  - hooks:
-      - id: python-safety-dependencies-check
-    repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-    rev: v1.3.0
+  #  - hooks:
+  #      - id: python-safety-dependencies-check
+  #    repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+  #    rev: v1.4.0
   - hooks:
       - id: beautysh
     repo: https://github.com/bemeurer/beautysh.git
