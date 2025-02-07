@@ -44,8 +44,6 @@ jobs:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
 
-      -
-
   pre-commit:
     runs-on: ubuntu-22.04
     needs: setup
