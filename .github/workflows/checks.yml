@@ -65,8 +65,7 @@ jobs:
 
       - name: Create local_setting.ini
         run: |
-          mkdir -p back
-          cat <<EOF > back/local_setting.ini
+          cat <<EOF > back/local_settings.ini
           [database]
           engine=postgresql
           user=myuser
