@@ -61,6 +61,13 @@ jobs:
 
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
+        with:
+          username: myuser
+          password: securepassword
+          database: mydatabase
+          port: 5432
+          postgres-version: 14.15
+          postgis-version: 3.5.0
         id: postgres
 
       - name: Create local_setting.ini
@@ -87,6 +94,7 @@ jobs:
       - name: Enforce pre-commit hook server side
         env:
           DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
+          PGSERVICE: ${{ steps.postgres.outputs.service-name }}
         uses: pre-commit/action@v3.0.1
 
   node-setup:
