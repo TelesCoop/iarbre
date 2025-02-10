@@ -1,64 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <meta property="og:URL" content="{{ .Site.BaseURL }}"/>
-    <meta property="og:site_name" content="{{ .Site.Title }}"/>
-    <meta property="twitter:site" content="{{ .Site.Title }}"/>
-    <meta property="og:type" content="website"/>
+    <meta property="og:URL" content="{{ .Site.BaseURL }}" />
+    <meta property="og:site_name" content="{{ .Site.Title }}" />
+    <meta property="twitter:site" content="{{ .Site.Title }}" />
+    <meta property="og:type" content="website" />
 
     {{ if .Params.noRobots }}
-    <meta name="robots" content="noindex">
-    {{ end }}
-
-    {{ if .Description }}
-      <meta name="description" content="{{ .Description }}"/>
-      <meta property="og:description" content="{{ .Description }}"/>
-      <meta property="twitter:description" content="{{ .Description }}"/>
+    <meta name="robots" content="noindex" />
+    {{ end }} {{ if .Description }}
+    <meta name="description" content="{{ .Description }}" />
+    <meta property="og:description" content="{{ .Description }}" />
+    <meta property="twitter:description" content="{{ .Description }}" />
     {{ else }}
-      <meta name="description" content="{{ .Site.Params.meta.Description }}"/>
-      <meta property="og:description" content="{{ .Site.Params.meta.Description }}"/>
-      <meta property="twitter:description" content="{{ .Site.Params.meta.Description }}"/>
-    {{ end }}
-    {{ block "meta-extended" . }}
-    {{end}}
-
-    {{ if .Title }}
+    <meta name="description" content="{{ .Site.Params.meta.Description }}" />
+    <meta
+      property="og:description"
+      content="{{ .Site.Params.meta.Description }}"
+    />
+    <meta
+      property="twitter:description"
+      content="{{ .Site.Params.meta.Description }}"
+    />
+    {{ end }} {{ block "meta-extended" . }} {{end}} {{ if .Title }}
     <title>{{ .Title }}</title>
-    <meta property="og:title" content="{{ .Title }}"/>
-    <meta property="twitter:title" content="{{ .Title }}"/>
+    <meta property="og:title" content="{{ .Title }}" />
+    <meta property="twitter:title" content="{{ .Title }}" />
     {{ else }}
     <title>{{ .Site.Title }}</title>
-    <meta property="og:title" content="{{ .Site.Title }}"/>
-    <meta property="twitter:title" content="{{ .Site.Title }}"/>
+    <meta property="og:title" content="{{ .Site.Title }}" />
+    <meta property="twitter:title" content="{{ .Site.Title }}" />
     {{ end }}
 
     <!-- Style -->
-    {{ with resources.Get "sass/main.scss" }}
-      {{ $opts := dict "transpiler" "libsass" "targetPath" "css/style.css" }}
-      {{ with . | toCSS $opts }}
-        {{ if hugo.IsDevelopment }}
-          <link rel="stylesheet" href="{{ .RelPermalink }}">
-        {{ else }}
-          {{ with . | minify | fingerprint }}
-            <link rel="stylesheet" href="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
-          {{ end }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-      <link rel="icon" href="/images/picto_tree.png" type="image/png" />
+    {{ with resources.Get "sass/main.scss" }} {{ $opts := dict "transpiler"
+    "libsass" "targetPath" "css/style.css" }} {{ with . | toCSS $opts }} {{ if
+    hugo.IsDevelopment }}
+    <link rel="stylesheet" href="{{ .RelPermalink }}" />
+    {{ else }} {{ with . | minify | fingerprint }}
+    <link
+      rel="stylesheet"
+      href="{{ .RelPermalink }}"
+      integrity="{{ .Data.Integrity }}"
+      crossorigin="anonymous"
+    />
+    {{ end }} {{ end }} {{ end }} {{ end }}
+    <link rel="icon" href="/images/picto_tree.png" type="image/png" />
   </head>
   <body class="">
     {{ template "_internal/navbar.html" }}
 
     <section class="main">
-      {{ .Params.robots }}
-      {{ .Params.robots }}
+      {{ .Params.robots }} {{ .Params.robots }}
       <!-- Code that all your templates share, like a header -->
       {{ block "main" . }}
-        <!-- The part of the page that begins to differ between templates -->
+      <!-- The part of the page that begins to differ between templates -->
       {{ end }}
     </section>
     <footer>
@@ -67,8 +66,8 @@
         <a href="#">contact</a>
       </p>
     </footer>
-  {{ with resources.Get "js/script.js" }}
-  <script src="{{ .RelPermalink}}"></script>
-  {{ end }}
+    {{ with resources.Get "js/script.js" }}
+    <script src="{{ .RelPermalink}}"></script>
+    {{ end }}
   </body>
 </html>

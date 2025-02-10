@@ -17,17 +17,6 @@ DATA_FILES = [
         "output_type": "POINT",
     },
     {
-        "name": "Batiments",
-        "file": "batiments_geom.shp",
-        "scripts": ["batiment.py", "facade.py"],
-        "actions": [
-            {},
-            {"buffer_size": 2, "union": True},
-        ],
-        "factors": ["Bâtiments", "Proximité façade"],
-        "output_type": "POLYGON",
-    },
-    {
         "name": "Assainissement",
         "file": "assainissement.geojson",
         "scripts": ["assainissement.py"],
@@ -77,37 +66,6 @@ DATA_FILES = [
             "Espaces jeux et pietonnier",
             "Friche naturelle",
         ],
-        "output_type": "POLYGON",
-    },
-    {
-        "name": "Réseau Fibre",
-        "file": "fibre.geojson",
-        "scripts": ["fibre.py"],
-        "actions": [{"buffer_size": 2, "union": True}],
-        "factors": ["Réseau Fibre"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Friches",
-        "file": "cartofriches_2025-01-20.geojson",
-        "scripts": None,
-        "factors": ["Friches"],
-        "output_type": "POLYGON",
-    },
-    {
-        "name": "Plan eau",
-        "file": "plan_deau.geojson",
-        "actions": [{"explode": True, "buffer_size": 0.1, "union": True}],
-        "scripts": ["plan_eau.py"],
-        "factors": ["Plan eau"],
-        "output_type": "POLYGON",
-    },
-    {
-        "name": "Ponts",
-        "file": "pont.geojson",
-        "actions": [{"buffer_size": 2}],
-        "scripts": ["pont.py"],
-        "factors": ["Ponts"],
         "output_type": "POLYGON",
     },
     {
@@ -217,6 +175,42 @@ DATA_FILES = [
     },
 ]
 URL_FILES = [
+    {
+        "name": "Réseau Fibre",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
+        "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:tel_telecom.telfibreripthd_1&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "scripts": ["fibre.py"],
+        "layer_name": "tel_telecom.telfibreripthd_1",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "factors": ["Réseau Fibre"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Plan eau",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
+        "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:fpc_fond_plan_communaut.fpcplandeau&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "actions": [{"explode": True, "buffer_size": 0.1, "union": True}],
+        "scripts": ["plan_eau.py"],
+        "layer_name": "fpc_fond_plan_communaut.fpcplandeau",
+        "factors": ["Plan eau"],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "Ponts",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
+        "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
+        "typename=metropole-de-lyon:fpc_fond_plan_communaut.fpcpont&"
+        "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
+        "actions": [{"buffer_size": 2}],
+        "scripts": ["pont.py"],
+        "layer_name": "fpc_fond_plan_communaut.fpcpont",
+        "factors": ["Ponts"],
+        "output_type": "POLYGON",
+    },
     {
         "name": "Arbres alignements Métropole",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
@@ -381,6 +375,26 @@ URL_FILES = [
         "scripts": ["rsx_chaleur.py"],
         "factors": ["Réseau de chaleur urbain"],
         "output_type": "LINESTRING",
+    },
+    {
+        "name": "Friches",
+        "url": "https://apidf-preprod.cerema.fr/cartofriches/geofriches/",
+        "layer_name": "",
+        "scripts": None,
+        "factors": ["Friches"],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "Bâtiments",
+        "url": "https://data.geopf.fr/wfs/ows",
+        "layer_name": "",
+        "scripts": ["batiment.py", "facade.py"],
+        "actions": [
+            {},
+            {"buffer_size": 2, "union": True},
+        ],
+        "factors": ["Bâtiments", "Proximité façade"],
+        "output_type": "POLYGON",
     },
 ]
 
