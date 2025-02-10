@@ -136,7 +136,7 @@ class MVTGeneratorTestCase(TestCase):
         path = str(BASE_DIR) + qs[0].mvt_file.url
         explode_url = qs[0].mvt_file.url.split("/")
         tile_x = int(explode_url[-2])
-        tile_y = int(explode_url[-1].split("_")[0])
+        tile_y = int(explode_url[-1].split(".")[0])
         tile_zoom = int(explode_url[-3])
         self.assertTrue(os.path.exists(path))
 
@@ -148,6 +148,9 @@ class MVTGeneratorTestCase(TestCase):
                 )
         except Exception:
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
+
+        # Clean media files
+        MVTTile.objects.all().delete()
 
     def test_view(self):
         tile1 = Polygon.from_bbox(
@@ -181,7 +184,7 @@ class MVTGeneratorTestCase(TestCase):
         qs = MVTTile.objects.all()
         explode_url = qs[0].mvt_file.url.split("/")
         tile_x = int(explode_url[-2])
-        tile_y = int(explode_url[-1].split("_")[0])
+        tile_y = int(explode_url[-1].split(".")[0])
         tile_zoom = int(explode_url[-3])
 
         request = HttpRequest()
@@ -198,3 +201,6 @@ class MVTGeneratorTestCase(TestCase):
         received_tile = decoded_tile["tile"]["features"][0]
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
+
+        # Clean media files
+        MVTTile.objects.all().delete()
