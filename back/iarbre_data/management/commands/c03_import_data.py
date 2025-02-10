@@ -158,12 +158,12 @@ def download_from_url(url, layer_name):
     params = dict(
         service="WFS",
         version="2.0.0",
-            request="GetFeature",
-            typeName=layer_name,
-            outputFormat="GML3",
-            crs=TARGET_PROJ,
-        )
-        content = requests.get(url, params=params, timeout=600).content
+        request="GetFeature",
+        typeName=layer_name,
+        outputFormat="GML3",
+        crs=TARGET_PROJ,
+    )
+    content = requests.get(url, params=params, timeout=600).content
     # save content to bytes io and open with gp.GeoDataFrame.read_file
     io = BytesIO(content)
     gdf = gpd.read_file(io)
@@ -261,6 +261,7 @@ def process_data(df: gpd.GeoDataFrame, data_config):
 
     for actions, factor in actions_factors:
         sub_df = apply_actions(df.copy(), actions)
+        print(f"Breaking large geometries: {len(sub_df)}")
         sub_df = split_factor_dataframe(sub_df, grid_size=10000)
         if len(sub_df) == 0:
             print(f"Factor: {factor} only contained Points")
@@ -297,15 +298,13 @@ def save_geometries(datas, data_config) -> None:
         )
 
 
-def split_large_polygon(geom, grid_size, bounds, factor_crs) -> list:
+def split_large_polygon(geom, grid_size) -> list:
     """
     Split a large polygon into smaller chunks based on a grid.
 
     Args:
         geom (shapely.geometry.Polygon): Polygon to split.
         grid_size (flaot): Size of the grid in meters.
-        bounds (tuple): Bounds of all the factors
-        factor_crs (int): SRID of the factors data
 
     Returns:
         list(shapely.geometry.MultiPolygon): MultiPolygon with the split parts.
@@ -313,21 +312,26 @@ def split_large_polygon(geom, grid_size, bounds, factor_crs) -> list:
     if geom is None or geom.is_empty:
         return None
     # Create a grid covering the bounding box of the geometry
-    minx, miny, maxx, maxy = bounds
-    grid_cells = [
-        box(x, y, x + grid_size, y + grid_size)
-        for x in range(int(minx), int(maxx), grid_size)
-        for y in range(int(miny), int(maxy), grid_size)
-    ]
-    grid_gdf = gpd.GeoDataFrame({"geometry": grid_cells}, crs=factor_crs)
-    split_polygons = []
-    for _, grid_cell in grid_gdf.iterrows():
-        if geom.intersects(grid_cell.geometry):
-            # The intersection between the polygon and the grid cell
-            intersection = geom.intersection(grid_cell.geometry)
-            if intersection.is_valid and not intersection.is_empty:
-                split_polygons.append(intersection)
-    return split_polygons
+    minx, miny, maxx, maxy = geom.bounds
+    if (maxx - minx > grid_size) or (maxy - miny > grid_size):
+        gridx = np.arange(minx, maxx, grid_size)
+        if gridx[-1] != maxx:
+            gridx = np.append(gridx, maxx)
+        gridy = np.arange(miny, maxy, grid_size)
+        if gridy[-1] != maxy:
+            gridy = np.append(gridy, maxy)
+
+        grid_cells = [
+            box(x, y, x + grid_size, y + grid_size) for x in gridx for y in gridy
+        ]
+
+        clipped_parts = [
+            geom.intersection(cell) for cell in grid_cells if geom.intersects(cell)
+        ]
+        result = [part for part in clipped_parts if not part.is_empty]
+    else:
+        result = [geom]
+    return result
 
 
 def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
@@ -340,14 +344,11 @@ def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
     Returns:
         factor_df (geopandas.GeoDataFrame): New dataframe with smaller geometries.
     """
-    bounds = factor_df.total_bounds
     geometries = factor_df.geometry.values
 
     def split_polygon_parallel(polygon):
         """Utils"""
-        return split_large_polygon(
-            polygon, grid_size=grid_size, bounds=bounds, factor_crs=factor_df.crs
-        )
+        return split_large_polygon(polygon, grid_size=grid_size)
 
     split_geom = []
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -362,12 +363,22 @@ def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
                 split_geom.extend(results)
             except Exception as e:
                 print(f"Error processing polygon {polygon}: {e}")
+    # split_geom = [
+    #     geom
+    #     for polygon in geometries
+    #     for geom in split_large_polygon(polygon, grid_size=grid_size, bounds=bounds)
+    # ]
+    factor_df_split = gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
 
-    # split_geom = [geom for polygon in geometries
-    #               for geom in
-    #               split_large_polygon(polygon, grid_size=grid_size, bounds=bounds, factor_crs=factor_df.crs)]
+    flattened_geometries = []
+    for idx, row in factor_df_split.iterrows():
+        flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
 
-    return gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
+    factor_df_split = gpd.GeoDataFrame(
+        flattened_geometries, geometry="geometry", crs=factor_df.crs
+    )
+
+    return factor_df_split
 
 
 class Command(BaseCommand):
@@ -384,10 +395,12 @@ class Command(BaseCommand):
                 qs.delete()
             start = time.time()
             try:
+                print(f"Loading data {data_config['name']}")
                 df = read_data(data_config)
             except pyogrio.errors.DataSourceError:
                 print(f"Error reading data {data_config['name']}")
                 continue
+            print("Processing data.")
             datas = process_data(df, data_config)
             save_geometries(datas, data_config)
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")
