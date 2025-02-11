@@ -42,6 +42,7 @@ def create_tiles_for_city(
         None
     """
     city_geom = city.geometry
+    city_geom = city_geom.buffer(50)  # Margin for intersection
     city_id = city.id
     xmin, ymin, xmax, ymax = city_geom.bounds
     xmin -= grid_size
@@ -59,7 +60,9 @@ def create_tiles_for_city(
     for x, (i, y) in tqdm(
         tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a)
     ):
-        tile = box(x, y * a, x - 3 * grid_size, y * a + 3 * grid_size)
+        tile = box(
+            x, y * a, x - 3 * grid_size, y * a + 3 * grid_size
+        )  # square of size 3 * grid_size
         if not city_geom.intersects(tile):
             continue
 
@@ -145,8 +148,8 @@ class HexTileShape(TileShape):
     @staticmethod
     def tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a):
         """Generate an iterator for all the position where to create a tile."""
-        cols = np.arange(xmin, xmax, 3 * unit)
-        rows = np.arange(ymin / a, ymax / a, unit)
+        cols = np.arange(xmin - 3 * unit, xmax + 3 * unit, 3 * unit)
+        rows = np.arange(ymin / a - unit, ymax / a + unit, unit)
         return itertools.product(cols, enumerate(rows))
 
     @staticmethod
