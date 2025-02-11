@@ -66,8 +66,6 @@ jobs:
           password: securepassword
           database: mydatabase
           port: 5432
-          postgres-version: 14.15
-          postgis-version: 3.5.0
         id: postgres
 
       - name: Create local_setting.ini
