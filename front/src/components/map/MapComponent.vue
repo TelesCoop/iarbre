@@ -27,11 +27,12 @@ onMounted(() => {
 
 <template>
   <div :id="mapId" class="map-container"></div>
-  <MapPlantabiliteLegend />
+  <map-plantabilite-legend />
 </template>
 
-<style lang="sass" scoped>
+<style lang="sass">
 .map-container
   height: 100%
   width: 100%
+  position: relative
 </style>
