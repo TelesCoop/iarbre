@@ -149,7 +149,7 @@ class MVTGeneratorTestCase(TestCase):
         except Exception:
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
 
-        # Clean media files
+        # Clean media files before the reset_db does not trigger media delete signal
         MVTTile.objects.all().delete()
 
     def test_view(self):
@@ -202,5 +202,5 @@ class MVTGeneratorTestCase(TestCase):
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
 
-        # Clean media files
+        # Clean media files before the reset_db does not trigger media delete signal
         MVTTile.objects.all().delete()

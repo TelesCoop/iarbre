@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
-    branches: [main, dev]
-    types: # https://github.com/mistralai/mistral-common/blob/main/.github/workflows/lint_build_test.yaml
+    branches:
+      - main
+      - dev
+    types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
-
 env:
   TELESCOOP_DEV: true
   IS_TESTING: true

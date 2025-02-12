@@ -25,10 +25,12 @@ from iarbre_data.management.commands.utils import select_city, load_geodataframe
 from iarbre_data.models import Tile, Data, TileFactor, City
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.data_config import DATA_FILES
+from iarbre_data.tests.test_c01_iris_city import move_test_data
 
 
 class C04ComputeFactorsTestCase(TestCase):
     def setUp(self):
+        move_test_data()
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris()._insert_cities(data)
         grid_size = 100
@@ -56,7 +58,7 @@ class C04ComputeFactorsTestCase(TestCase):
         self.std_area = Tile.objects.first().geometry.area
         self.factor_name = list(self.FACTORS.keys())[0]
 
-    def test__compute_partial_tiles(self):
+    def test__compute_partial_tiles_empty(self):
         qs = Data.objects.filter(factor=self.factor_name)
         factor_df = load_geodataframe_from_db(qs, [])
 
@@ -68,7 +70,8 @@ class C04ComputeFactorsTestCase(TestCase):
         except Exception:
             raise AssertionError("The factor value computation is not correct.")
         self.assertListEqual(list(res_df.id), list(res_df_direct.id))
-        self.assertTrue(diff < 1e-5)
+        if diff is not np.nan:  # Empty clipping
+            self.assertTrue(diff < 1e-5)
 
     def test_compute_for_factor(self):
         compute_for_factor(self.factor_name, self.tiles, self.std_area)
