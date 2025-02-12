@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [main, dev]
     types: # https://github.com/mistralai/mistral-common/blob/main/.github/workflows/lint_build_test.yaml
+      - opened
       - reopened
       - synchronize
       - ready_for_review
