@@ -9,6 +9,15 @@
   src: url("/fonts/Sligoil-Micro.otf") format("opentype");
 }
 
+$offWhite: #efefed;
+$darkGreen: #32412d;
+$lightGreen: #92a48d;
+$brown: #32312d;
+$white: #ffffff;
+
+$primaryFont: "Bricolage Grotesque";
+$secondaryFont: "Sligoil";
+
 * {
   margin: 0;
   padding: 0;
@@ -16,25 +25,25 @@
 }
 
 a {
-  color: #32412d; /* Vert foncé */
+  color: $darkGreen; /* Vert foncé */
   text-decoration: underline; /* Soulignement par défaut */
   font-weight: bold; /* Optionnel : met en valeur le lien */
 }
 
 a:hover {
   text-decoration: none; /* Supprime le soulignement au survol */
-  color: #32412d; /* Maintient la couleur verte au survol */
+  color: $darkGreen; /* Maintient la couleur verte au survol */
 }
 body {
-  font-family: "Bricolage Grotesque", Arial, sans-serif;
-  color: #32312d;
-  background-color: #efefed;
+  font-family: $primaryFont, Arial, sans-serif;
+  color: $brown;
+  background-color: $offWhite;
   overflow-x: hidden;
 }
 
 hr.full-width {
   border: none; /* Supprime les styles par défaut */
-  border-top: 1px solid #32412d; /* Vert foncé et fin */
+  border-top: 1px solid $darkGreen; /* Vert foncé et fin */
   width: 100%; /* S'étend sur toute la largeur */
 }
 
@@ -55,7 +64,7 @@ hr.full-width {
   flex-direction: row-reverse; /* Inverse l'ordre des colonnes */
   width: 80%;
   max-width: 1200px;
-  background-color: #ffffff; /* Fond blanc */
+  background-color: $white; /* Fond blanc */
   margin: 40px auto; /* Centrer la section */
   padding: 20px;
 }
@@ -88,16 +97,16 @@ hr.full-width {
 .reversed-section .text {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #32312d;
+  color: $brown;
   text-align: left;
-  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-family: $primaryFont, Arial, sans-serif;
 }
 
 /* Bandeau 2030 */
 .bandeau-2030 {
-  background-color: #92a48d; /* Vert clair */
+  background-color: $lightGreen; /* Vert clair */
   padding: 40px 20px; /* Espacement interne */
-  color: #ffffff; /* Texte blanc */
+  color: $white; /* Texte blanc */
 }
 
 .bandeau-content {
@@ -111,7 +120,7 @@ hr.full-width {
 
 .bandeau-text {
   flex: 2; /* 2/3 pour le texte */
-  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-family: $primaryFont, Arial, sans-serif;
   font-size: 1.2rem;
   line-height: 1.6;
 }
@@ -137,7 +146,7 @@ hr.full-width {
   left: 0;
   width: 100%;
   height: 80px;
-  background-color: #efefed; /* Même couleur que le background */
+  background-color: $offWhite; /* Même couleur que le background */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -162,15 +171,15 @@ hr.full-width {
 }
 
 .navbar-link {
-  font-family: "Sligoil", Arial, sans-serif;
-  color: #32312d;
+  font-family: $secondaryFont, Arial, sans-serif;
+  color: $brown;
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.3s ease;
 }
 
 .navbar-link:hover {
-  color: #92a48d;
+  color: $lightGreen;
 }
 
 .fullscreen {
@@ -197,9 +206,9 @@ hr.full-width {
 }
 
 .fullscreen-tagline {
-  font-family: "Sligoil", Arial, sans-serif; /* Utilise la police Sligoil */
+  font-family: $secondaryFont, Arial, sans-serif; /* Utilise la police Sligoil */
   font-size: 2rem; /* Taille de la phrase */
-  color: #ffffff; /* Couleur blanche */
+  color: $white; /* Couleur blanche */
   text-align: center; /* Texte centré horizontalement */
   position: absolute; /* Permet de centrer l’élément */
   top: 50%; /* Position verticale */
@@ -211,14 +220,14 @@ hr.full-width {
 
 .team {
   padding: 100px 20px;
-  background-color: #efefed; /* Couleur de fond */
+  background-color: $offWhite; /* Couleur de fond */
   text-align: center;
 }
 
 .team h2 {
-  font-family: "Sligoil", Arial, sans-serif;
+  font-family: $secondaryFont, Arial, sans-serif;
   font-size: 2rem;
-  color: #32312d;
+  color: $brown;
   margin-bottom: 40px;
 }
 
@@ -230,7 +239,7 @@ hr.full-width {
 }
 
 .team-member {
-  background-color: #ffffff; /* Fond blanc pour chaque membre */
+  background-color: $white; /* Fond blanc pour chaque membre */
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Légère ombre */
   padding: 20px;
@@ -245,27 +254,27 @@ hr.full-width {
 }
 
 .team-member h3 {
-  font-family: "Bricolage Grotesque", Arial, sans-serif;
+  font-family: $primaryFont, Arial, sans-serif;
   font-size: 1.2rem;
-  color: #32312d;
+  color: $brown;
   margin-bottom: 5px;
 }
 
 .team-member .title {
-  font-family: "Sligoil", Arial, sans-serif;
+  font-family: $secondaryFont, Arial, sans-serif;
   font-size: 1rem;
-  color: #92a48d; /* Vert */
+  color: $lightGreen; /* Vert */
   margin-bottom: 10px;
 }
 
 .team-member .function {
   font-size: 0.9rem;
-  color: #32312d;
+  color: $brown;
 }
 
 .discord-section {
   width: 100%; /* Section pleine largeur */
-  background-color: #ffffff; /* Fond blanc */
+  background-color: $white; /* Fond blanc */
   padding: 40px 20px; /* Espacement interne */
   text-align: center; /* Centre le contenu */
 }
@@ -276,17 +285,17 @@ hr.full-width {
 }
 
 .discord-section p {
-  font-family: "Bricolage Grotesque", Arial, sans-serif; /* Police du texte */
+  font-family: $primaryFont, Arial, sans-serif; /* Police du texte */
   font-size: 1.2rem; /* Taille du texte */
-  color: #32312d; /* Couleur du texte */
+  color: $brown; /* Couleur du texte */
   margin-bottom: 20px; /* Espacement en bas */
   line-height: 1.6;
 }
 
 .discord-button {
-  font-family: "Sligoil", Arial, sans-serif; /* Police pour le bouton */
-  background-color: #92a48d; /* Couleur de fond du bouton */
-  color: #ffffff; /* Couleur du texte */
+  font-family: $secondaryFont, Arial, sans-serif; /* Police pour le bouton */
+  background-color: $lightGreen; /* Couleur de fond du bouton */
+  color: $white; /* Couleur du texte */
   padding: 15px 30px; /* Espacement interne */
   text-decoration: none; /* Pas de soulignement */
   border-radius: 9999px; /* Coins arrondis */
@@ -299,8 +308,8 @@ hr.full-width {
 }
 
 .discord-button:hover {
-  background-color: #32412d; /* Changement de couleur au survol */
-  color: #ffffff; /* Maintient le texte blanc */
+  background-color: $darkGreen; /* Changement de couleur au survol */
+  color: $white; /* Maintient le texte blanc */
   text-decoration: none; /* Pas de soulignement au survol */
 }
 
@@ -326,7 +335,7 @@ hr.full-width {
   display: flex;
   width: 80%;
   max-width: 1200px;
-  background-color: #efefed;
+  background-color: $offWhite;
   padding: 20px;
 }
 
@@ -357,7 +366,7 @@ hr.full-width {
   font-size: 1.1rem;
   line-height: 1.8;
   text-align: left;
-  color: #32312d;
+  color: $brown;
   position: relative;
 }
 
@@ -367,9 +376,9 @@ hr.full-width {
 
 /* CTA Button */
 .cta-button {
-  font-family: "Sligoil", Arial, sans-serif;
-  background-color: #92a48d;
-  color: #ffffff;
+  font-family: $secondaryFont, Arial, sans-serif;
+  background-color: $lightGreen;
+  color: $white;
   padding: 15px 30px;
   margin-top: 20px;
   border: none;
@@ -383,13 +392,13 @@ hr.full-width {
 }
 
 .cta-button:hover {
-  background-color: #32312d;
+  background-color: $brown;
 }
 
 /* Section Partenaires */
 .partenaires {
   padding: 40px 0 120px;
-  background-color: #ffffff;
+  background-color: $white;
   text-align: center;
   height: auto;
   box-shadow: 0 -9px 20px rgba(0, 0, 0, 0.01); /* Ombre portée au-dessus de la section */
@@ -398,9 +407,9 @@ hr.full-width {
 .partenaires h2 {
   font-size: 1.5rem; /* Réduit la taille du titre */
   margin-bottom: 40px;
-  font-family: "Sligoil", Arial, sans-serif;
+  font-family: $secondaryFont, Arial, sans-serif;
   text-transform: uppercase;
-  color: #32312d;
+  color: $brown;
 }
 
 .logos {
@@ -415,23 +424,23 @@ hr.full-width {
 .logo-placeholder {
   width: 60px; /* Taille des logos */
   height: 60px;
-  background-color: #92a48d; /* Couleur par défaut des logos */
+  background-color: $lightGreen; /* Couleur par défaut des logos */
   border-radius: 50%;
   transition: background-color 0.3s ease; /* Transition pour un effet lisse */
 }
 
 .logo-placeholder:hover {
-  background-color: #32312d; /* Change la couleur au survol */
+  background-color: $brown; /* Change la couleur au survol */
 }
 
 /* Footer */
 footer {
-  background-color: #32312d;
-  color: #ffffff;
+  background-color: $brown;
+  color: $white;
   text-align: center;
   padding: 80px 0;
   font-size: 0.9rem;
-  font-family: "Sligoil", Arial, sans-serif;
+  font-family: $secondaryFont, Arial, sans-serif;
   text-transform: uppercase;
 }
 
@@ -443,13 +452,13 @@ footer p {
 }
 
 footer a {
-  color: #ffffff; /* Couleur blanche par défaut */
+  color: $white; /* Couleur blanche par défaut */
   text-decoration: none; /* Pas de soulignement par défaut */
   font-weight: bold; /* Optionnel : met en valeur les liens */
 }
 
 footer a:hover {
-  color: #ffffff; /* Reste blanc au survol */
+  color: $white; /* Reste blanc au survol */
   text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
 }
 
