@@ -56,7 +56,9 @@ def _compute_for_factor_partial_tiles(factor_df, tiles_df, std_area):
         df = tiles_df.clip(possible_matches)
         df["value"] = df.geometry.area / std_area
     else:
-        df = gpd.GeoDataFrame([])
+        df = gpd.GeoDataFrame(
+            [], columns=["id", "value", "geometry"], geometry="geometry"
+        )
     return df
 
 
