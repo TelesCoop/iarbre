@@ -25,12 +25,11 @@ DEBUG = IS_LOCAL_DEV
 IS_TESTING = "test" in sys.argv
 
 if IS_LOCAL_DEV:
-    print("is local dev ?")
     config_paths = ["local_settings.conf", "local_settings.ini"]
 else:
     config_paths = [os.environ["CONFIG_PATH"]]
 config = getconf.ConfigGetter("myproj", config_paths)
-print(config)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -138,7 +137,6 @@ DATABASES = {
     }
 }
 
-print(DATABASES)
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
