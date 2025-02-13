@@ -171,10 +171,9 @@ jobs:
           name=mydatabase
           password=securepassword
           EOF
-      - name: Verify local settings
-        run: cat back/local_settings.ini
       - name: Migrate database
-        run: python back/manage.py migrate
+        run: python manage.py migrate
+        working-directory: ./back
       # - name: Populate database with test data
       #   run: python back/manage.py populate
       - name: Run back-end server in background
