@@ -49,7 +49,7 @@
 
 - name: update showcase static folder content
   synchronize:
-    src: "{{ showcase_path }}/public"
+    src: "{{ showcase_path }}/public/"
     dest: "{{ showcase_static_path }}/"
     rsync_opts:
       - "-og"
