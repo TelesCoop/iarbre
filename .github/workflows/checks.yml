@@ -123,7 +123,7 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
-      - name: Restore Node.js cache from node-setup
+      - name: Restore Node.js cache
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
