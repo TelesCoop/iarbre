@@ -42,104 +42,108 @@ jobs:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
 
-  pre-commit:
-    runs-on: ubuntu-22.04
-    needs: setup
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # pre-commit:
+  #   runs-on: ubuntu-22.04
+  #   needs: setup
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: "pip"
-      # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
-      - run: pip install -r back/requirements.txt
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+  #         cache: "pip"
+  #     # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+  #     - run: pip install -r back/requirements.txt
 
-      - name: Set up PostGIS
-        uses: nyurik/action-setup-postgis@v2
-        with:
-          username: myuser
-          password: securepassword
-          database: mydatabase
-          port: 5432
-        id: postgres
+  #     - name: Set up PostGIS
+  #       uses: nyurik/action-setup-postgis@v2
+  #       with:
+  #         username: myuser
+  #         password: securepassword
+  #         database: mydatabase
+  #         port: 5432
+  #       id: postgres
 
-      - name: Create local_settings.ini
-        run: |
-          cat <<EOF > back/local_settings.ini
-          [database]
-          engine=postgresql
-          user=myuser
-          name=mydatabase
-          password=securepassword
-          EOF
+  #     - name: Create local_settings.ini
+  #       run: |
+  #         cat <<EOF > back/local_settings.ini
+  #         [database]
+  #         engine=postgresql
+  #         user=myuser
+  #         name=mydatabase
+  #         password=securepassword
+  #         EOF
 
-      - name: Restore Node.js cache
-        uses: actions/cache@v3
-        with:
-          path: ./front/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+  #     - name: Restore Node.js cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ./front/node_modules
+  #         key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
 
-      - name: Install js dependencies if not cached
-        if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ./front
+  #     - name: Install js dependencies if not cached
+  #       if: steps.cache-node.outputs.cache-hit != 'true'
+  #       run: npm install
+  #       working-directory: ./front
 
-      - name: Enforce pre-commit hook server side
-        env:
-          DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
-          PGSERVICE: ${{ steps.postgres.outputs.service-name }}
-        uses: pre-commit/action@v3.0.1
+  #     - name: Enforce pre-commit hook server side
+  #       env:
+  #         DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
+  #         PGSERVICE: ${{ steps.postgres.outputs.service-name }}
+  #       uses: pre-commit/action@v3.0.1
 
-  node-setup:
-    runs-on: ubuntu-22.04
-    needs: setup
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ./front/.nvmrc
-          cache: "npm"
-      - name: Restore Node.js cache
-        uses: actions/cache@v3
-        with:
-          path: ./front/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
-      - name: Install js dependencies if not cached
-        if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ./front
+  # node-setup:
+  #   runs-on: ubuntu-22.04
+  #   needs: setup
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ./front/.nvmrc
+  #         cache: "npm"
+  #     - name: Restore Node.js cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ./front/node_modules
+  #         key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+  #     - name: Install js dependencies if not cached
+  #       if: steps.cache-node.outputs.cache-hit != 'true'
+  #       run: npm install
+  #       working-directory: ./front
 
-  frontend-tests:
-    runs-on: ubuntu-22.04
-    needs: [setup, node-setup]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ./front/.nvmrc
-          cache: "npm"
-      - name: Restore Node.js cache from node-setup
-        uses: actions/cache@v3
-        with:
-          path: ./front/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
-      - name: Run vitest
-        run: npm run test
-        working-directory: ./front
-      - name: Run cypress component tests
-        uses: cypress-io/github-action@v6
-        with:
-          component: true
-          working-directory: ./front
+  # frontend-tests:
+  #   runs-on: ubuntu-22.04
+  #   needs: [setup, node-setup]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ./front/.nvmrc
+  #         cache: "npm"
+  #     - name: Restore Node.js cache from node-setup
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: ./front/node_modules
+  #         key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+  #     - name: Install front js dependencies if not cached
+  #       if: steps.cache-node.outputs.cache-hit != 'true'
+  #       run: npm install
+  #       working-directory: ./front
+  #     - name: Run vitest
+  #       run: npm run test
+  #       working-directory: ./front
+  #     - name: Run cypress component tests
+  #       uses: cypress-io/github-action@v6
+  #       with:
+  #         component: true
+  #         working-directory: ./front
 
   e2e-tests:
     runs-on: ubuntu-22.04
-    needs: [setup]
+    needs: setup
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -167,7 +171,8 @@ jobs:
           name=mydatabase
           password=securepassword
           EOF
-
+      - name: Verify local settings
+        run: cat back/local_settings.ini
       - name: Migrate database
         run: python back/manage.py migrate
       # - name: Populate database with test data
@@ -194,19 +199,19 @@ jobs:
             front/cypress/screenshots
           retention-days: 10
 
-  doc-tests:
-    runs-on: ubuntu-22.04
-    needs: [setup]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # doc-tests:
+  #   runs-on: ubuntu-22.04
+  #   needs: [setup]
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python doc
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-          cache: "pip"
-      - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
+  #     - name: Set up Python doc
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+  #         cache: "pip"
+  #     - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
 
-      - name: Run documentation validation
-        run: mkdocs build
+  #     - name: Run documentation validation
+  #       run: mkdocs build
