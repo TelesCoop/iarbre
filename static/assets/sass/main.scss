@@ -15,8 +15,8 @@ $lightGreen: #92a48d;
 $brown: #32312d;
 $white: #ffffff;
 
-$primaryFont: "Bricolage Grotesque";
-$secondaryFont: "Sligoil";
+$main-font: "Bricolage Grotesque";
+$accent-font: "Sligoil";
 
 * {
   margin: 0;
@@ -35,7 +35,7 @@ a:hover {
   color: $darkGreen; /* Maintient la couleur verte au survol */
 }
 body {
-  font-family: $primaryFont, Arial, sans-serif;
+  font-family: $main-font, Arial, sans-serif;
   color: $brown;
   background-color: $offWhite;
   overflow-x: hidden;
@@ -99,7 +99,7 @@ hr.full-width {
   line-height: 1.6;
   color: $brown;
   text-align: left;
-  font-family: $primaryFont, Arial, sans-serif;
+  font-family: $main-font, Arial, sans-serif;
 }
 
 /* Bandeau 2030 */
@@ -120,7 +120,7 @@ hr.full-width {
 
 .bandeau-text {
   flex: 2; /* 2/3 pour le texte */
-  font-family: $primaryFont, Arial, sans-serif;
+  font-family: $main-font, Arial, sans-serif;
   font-size: 1.2rem;
   line-height: 1.6;
 }
@@ -171,7 +171,7 @@ hr.full-width {
 }
 
 .navbar-link {
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   color: $brown;
   text-decoration: none;
   font-size: 1rem;
@@ -206,7 +206,7 @@ hr.full-width {
 }
 
 .fullscreen-tagline {
-  font-family: $secondaryFont, Arial, sans-serif; /* Utilise la police Sligoil */
+  font-family: $accent-font, Arial, sans-serif; /* Utilise la police Sligoil */
   font-size: 2rem; /* Taille de la phrase */
   color: $white; /* Couleur blanche */
   text-align: center; /* Texte centré horizontalement */
@@ -225,7 +225,7 @@ hr.full-width {
 }
 
 .team h2 {
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   font-size: 2rem;
   color: $brown;
   margin-bottom: 40px;
@@ -254,14 +254,14 @@ hr.full-width {
 }
 
 .team-member h3 {
-  font-family: $primaryFont, Arial, sans-serif;
+  font-family: $main-font, Arial, sans-serif;
   font-size: 1.2rem;
   color: $brown;
   margin-bottom: 5px;
 }
 
 .team-member .title {
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   font-size: 1rem;
   color: $lightGreen; /* Vert */
   margin-bottom: 10px;
@@ -285,7 +285,7 @@ hr.full-width {
 }
 
 .discord-section p {
-  font-family: $primaryFont, Arial, sans-serif; /* Police du texte */
+  font-family: $main-font, Arial, sans-serif; /* Police du texte */
   font-size: 1.2rem; /* Taille du texte */
   color: $brown; /* Couleur du texte */
   margin-bottom: 20px; /* Espacement en bas */
@@ -293,7 +293,7 @@ hr.full-width {
 }
 
 .discord-button {
-  font-family: $secondaryFont, Arial, sans-serif; /* Police pour le bouton */
+  font-family: $accent-font, Arial, sans-serif; /* Police pour le bouton */
   background-color: $lightGreen; /* Couleur de fond du bouton */
   color: $white; /* Couleur du texte */
   padding: 15px 30px; /* Espacement interne */
@@ -376,7 +376,7 @@ hr.full-width {
 
 /* CTA Button */
 .cta-button {
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   background-color: $lightGreen;
   color: $white;
   padding: 15px 30px;
@@ -407,7 +407,7 @@ hr.full-width {
 .partenaires h2 {
   font-size: 1.5rem; /* Réduit la taille du titre */
   margin-bottom: 40px;
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   text-transform: uppercase;
   color: $brown;
 }
@@ -440,7 +440,7 @@ footer {
   text-align: center;
   padding: 80px 0;
   font-size: 0.9rem;
-  font-family: $secondaryFont, Arial, sans-serif;
+  font-family: $accent-font, Arial, sans-serif;
   text-transform: uppercase;
 }
 
