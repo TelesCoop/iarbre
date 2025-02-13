@@ -165,8 +165,7 @@ jobs:
         working-directory: ./back
       - name: Build front
         run: npm run build
-        with:
-          working-directory: "./front"
+        working-directory: "./front"
       - name: Run e2e tests
         uses: cypress-io/github-action@v6
         with:
