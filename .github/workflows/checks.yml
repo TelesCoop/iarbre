@@ -36,10 +36,6 @@ jobs:
       - name: Install front js dependencies
         run: npm install
         working-directory: ./front
-      - name: Create back/local_settings.conf
-        run: echo "${{ secrets.LOCAL_SETTINGS_CONF }}" > local_settings.conf
-        working-directory: ./back
-
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
@@ -70,7 +66,7 @@ jobs:
           port: 5432
         id: postgres
 
-      - name: Create local_setting.ini
+      - name: Create local_settings.ini
         run: |
           cat <<EOF > back/local_settings.ini
           [database]
@@ -127,15 +123,11 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
-      - name: Restore Node.js cache
+      - name: Restore Node.js cache from node-setup
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
-      - name: Install front js dependencies if not cached
-        if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ./front
       - name: Run vitest
         run: npm run test
         working-directory: ./front
@@ -166,7 +158,7 @@ jobs:
           port: 5432
         id: postgres
 
-      - name: Create local_setting.ini
+      - name: Create local_settings.ini
         run: |
           cat <<EOF > back/local_settings.ini
           [database]
