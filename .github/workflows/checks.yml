@@ -156,6 +156,26 @@ jobs:
           python-version: "3.10"
           cache: "pip"
       - run: pip install -r back/requirements.txt
+
+      - name: Set up PostGIS
+        uses: nyurik/action-setup-postgis@v2
+        with:
+          username: myuser
+          password: securepassword
+          database: mydatabase
+          port: 5432
+        id: postgres
+
+      - name: Create local_setting.ini
+        run: |
+          cat <<EOF > back/local_settings.ini
+          [database]
+          engine=postgresql
+          user=myuser
+          name=mydatabase
+          password=securepassword
+          EOF
+
       - name: Migrate database
         run: python back/manage.py migrate
       # - name: Populate database with test data

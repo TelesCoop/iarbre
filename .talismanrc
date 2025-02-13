@@ -8,5 +8,5 @@ fileignoreconfig:
 - filename: back/iarbre_data/tests/test_data/communes_gl_2025.geojson
   checksum: be406c3274b27238f1d5497edb83f0b4331ad92cab8d28bc77e151202663b9d0
 - filename: .github/workflows/checks.yml
-  checksum: df506935e3eb679468e4af6d7f9e990b3bbb84330d701d50ecca518963fc5c75
+  checksum: 11b0fc835bc28b87e6c052ac767b9b2ab1e5c3c1ed1c9198a9e92a34cf60ceca
 version: ""
