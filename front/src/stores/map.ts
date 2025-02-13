@@ -33,16 +33,6 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const setupControls = (map: Map) => {
-    console.log("setup controls")
-    map.addControl(
-      new NavigationControl({
-        visualizePitch: true,
-        showZoom: true,
-        showCompass: true
-      })
-    )
-  }
   const setupSource = (map: Map, modelType: ModelType) => {
     const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceIdByModelType(modelType)
@@ -59,10 +49,9 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initMap = (mapId: string) => {
-    console.log("initMap")
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
-      // style: "map/map-style.json",
+      style: "map/map-style.json",
       // center to France,
       center: [4.8537684279176645, 45.75773479280862],
       // zoom to a level where France is visible
@@ -70,8 +59,6 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-    setupControls(mapInstance)
-
     mapInstance.on("style.load", () => {
       mapInstance.on("moveend", () => {
         console.log(mapInstance.getCenter())
