@@ -11,12 +11,14 @@ from iarbre_data.management.commands.c02_init_grid import (
 from iarbre_data.management.commands.utils import select_city, load_geodataframe_from_db
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.models import Tile, City
+from iarbre_data.tests.test_c01_iris_city import move_test_data
 import numpy as np
 import logging
 
 
 class C02GridTestCase(TestCase):
     def setUp(self):
+        move_test_data()
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris._insert_cities(data)
         self.grid_size = 200
@@ -25,7 +27,7 @@ class C02GridTestCase(TestCase):
         self.a = np.sin(np.pi / 3)
 
     def test_create_square_tile(self):
-        code = 69381
+        code = 69286
         selected_city = select_city(str(code))
         create_tiles_for_city(
             city=selected_city.iloc[0],
@@ -37,7 +39,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 83)
+        self.assertEqual(Tile.objects.count(), 567)
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
         coords = tile.geometry.coords[0]
@@ -46,7 +48,7 @@ class C02GridTestCase(TestCase):
         self.assertEqual(coords[1][1] - coords[0][1], self.grid_size)
 
     def test_create_hex_tile(self):
-        code = 69381
+        code = 69286
         selected_city = select_city(str(code))
         create_tiles_for_city(
             city=selected_city.iloc[0],
@@ -60,7 +62,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 100)
+        self.assertEqual(Tile.objects.count(), 561)
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2 - 1)
         coords = tile.geometry.coords[0]
@@ -69,7 +71,7 @@ class C02GridTestCase(TestCase):
         self.assertEqual(int(coords[2][1] - coords[0][1]), int(self.a * self.unit))
 
     def test_clean_outside(self):
-        codes = [69381, 69382]
+        codes = [69286, 69071]
         for code in codes:
             selected_city = select_city(str(code))
             create_tiles_for_city(

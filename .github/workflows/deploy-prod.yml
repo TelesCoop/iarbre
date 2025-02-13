@@ -3,17 +3,17 @@ name: Run deploy prod
 on:
   push:
     branches:
-      - main
+      - dev
   # From https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#running-a-workflow-when-a-pull-request-is-approved
-  pull_request_review:
+  pull_request:
     branches:
-      - main
+      - dev
     types:
-      - submitted
+      - closed
 
 jobs:
   deploy-prod:
-    if: github.event.review.state == 'approved'
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
