@@ -69,5 +69,10 @@
     {{ with resources.Get "js/script.js" }}
     <script src="{{ .RelPermalink}}"></script>
     {{ end }}
+    <script
+      defer
+      data-domain="iarbre.fr"
+      src="https://plausible.io/js/script.outbound-links.js"
+    ></script>
   </body>
 </html>
