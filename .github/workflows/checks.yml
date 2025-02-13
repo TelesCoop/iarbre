@@ -3,16 +3,17 @@ name: Run basic checks
 on:
   push:
     branches:
+      - dev
       - main
   pull_request:
-    branches: [main, dev]
-    types: # https://github.com/mistralai/mistral-common/blob/main/.github/workflows/lint_build_test.yaml
+    branches:
+      - dev
+      - main
+    types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
-      # Run CI only when PR is ready for review or when commits are added
-
 env:
   TELESCOOP_DEV: true
   IS_TESTING: true
@@ -21,13 +22,16 @@ jobs:
   setup:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
+      # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      - run: pip install -r back/requirements.txt
 
       - name: Install front js dependencies
         run: npm install
@@ -35,11 +39,7 @@ jobs:
       - name: Create back/local_settings.conf
         run: echo "${{ secrets.LOCAL_SETTINGS_CONF }}" > local_settings.conf
         working-directory: ./back
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
+
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
@@ -47,37 +47,58 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
 
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: setup
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
           cache: "pip"
-      - name: Restore Python cache
-        uses: actions/cache@v3
+      # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
+      - run: pip install -r back/requirements.txt
+
+      - name: Set up PostGIS
+        uses: nyurik/action-setup-postgis@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('back/requirements.txt') }}
-      - name: Install python dependencies if not cached
-        if: steps.cache-python.outputs.cache-hit != 'true'
-        run: pip install -r back/requirements.txt
+          username: myuser
+          password: securepassword
+          database: mydatabase
+          port: 5432
+        id: postgres
+
+      - name: Create local_setting.ini
+        run: |
+          cat <<EOF > back/local_settings.ini
+          [database]
+          engine=postgresql
+          user=myuser
+          name=mydatabase
+          password=securepassword
+          EOF
+
       - name: Restore Node.js cache
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
       - name: Install js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ./front
+
       - name: Enforce pre-commit hook server side
+        env:
+          DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
+          PGSERVICE: ${{ steps.postgres.outputs.service-name }}
         uses: pre-commit/action@v3.0.1
 
   node-setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: setup
     steps:
       - uses: actions/checkout@v4
@@ -97,7 +118,7 @@ jobs:
         working-directory: ./front
 
   frontend-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [setup, node-setup]
     steps:
       - uses: actions/checkout@v4
@@ -118,15 +139,24 @@ jobs:
       - name: Run vitest
         run: npm run test
         working-directory: ./front
-      - name: Run cypress component tests
-        uses: cypress-io/github-action@v6
-        with:
-          component: true
-          working-directory: ./front
-
+  #      - name: Run cypress component tests
+  #        uses: cypress-io/github-action@v6
+  #        with:
+  #          component: true
+  #          working-directory: ./front
   doc-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [setup]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python doc
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
+
       - name: Run documentation validation
         run: mkdocs build

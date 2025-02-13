@@ -1,4 +1,12 @@
 fileignoreconfig:
 - filename: front/package-lock.json
   checksum: 959d50937c8f78882cde73093c114ecafe1f436ed8a72730655e67b994fe5f21
+- filename: back/iarbre_data/tests/test_data/parkingsurfacique.geojson
+  checksum: 66a6bee103123c599470c847555001aff5d7db6e7571e5904160f88b6d4ad0c0
+- filename: back/iarbre_data/tests/test_data/espacepublic.geojson
+  checksum: 923eba4992fca9f4d232e3ecec353c4698f91f7a1578a51c81a0b1d01d32210b
+- filename: back/iarbre_data/tests/test_data/communes_gl_2025.geojson
+  checksum: be406c3274b27238f1d5497edb83f0b4331ad92cab8d28bc77e151202663b9d0
+- filename: .github/workflows/checks.yml
+  checksum: df506935e3eb679468e4af6d7f9e990b3bbb84330d701d50ecca518963fc5c75
 version: ""

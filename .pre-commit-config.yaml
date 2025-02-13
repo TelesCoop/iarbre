@@ -29,6 +29,7 @@ repos:
       - args:
           - --autofix
         id: pretty-format-json
+        exclude: back/file_data/.*\.json$
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
   - hooks:
@@ -65,7 +66,7 @@ repos:
   - hooks:
       - id: python-safety-dependencies-check
     repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-    rev: v1.3.0
+    rev: v1.4.0
   - hooks:
       - id: beautysh
     repo: https://github.com/bemeurer/beautysh.git

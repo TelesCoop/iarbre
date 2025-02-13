@@ -22,3 +22,5 @@ mvt_files/*
 media/*
 back/site/*
 site/*
+
+back/.coverage
