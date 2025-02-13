@@ -139,11 +139,50 @@ jobs:
       - name: Run vitest
         run: npm run test
         working-directory: ./front
-  #      - name: Run cypress component tests
-  #        uses: cypress-io/github-action@v6
-  #        with:
-  #          component: true
-  #          working-directory: ./front
+      - name: Run cypress component tests
+        uses: cypress-io/github-action@v6
+        with:
+          component: true
+          working-directory: ./front
+
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: [setup]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: pip install -r back/requirements.txt
+      - name: Migrate database
+        run: python back/manage.py migrate
+      # - name: Populate database with test data
+      #   run: python back/manage.py populate
+      - name: Run back-end server in background
+        run: python manage.py runserver localhost:8000 &
+        working-directory: ./back
+      - name: Build front
+        run: npm run build
+        with:
+          working-directory: "./front"
+      - name: Run e2e tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run preview
+          browser: chrome
+          config-file: cypress.config.js
+          working-directory: ./front
+      - name: Upload cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshot
+          path: |
+            front/cypress/screenshots
+          retention-days: 10
+
   doc-tests:
     runs-on: ubuntu-22.04
     needs: [setup]
