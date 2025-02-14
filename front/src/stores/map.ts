@@ -1,7 +1,7 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
-import { Map, NavigationControl } from "maplibre-gl"
-import { FULL_BASE_API_URL, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
+import { Map } from "maplibre-gl"
+import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
