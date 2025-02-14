@@ -1,7 +1,7 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map } from "maplibre-gl"
-import { FULL_BASE_API_URL, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
+import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -32,6 +32,7 @@ export const useMapStore = defineStore("map", () => {
       }
     })
   }
+
   const setupSource = (map: Map, modelType: ModelType) => {
     const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceIdByModelType(modelType)
@@ -58,7 +59,6 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-
     mapInstance.on("style.load", () => {
       mapInstance.on("moveend", () => {
         console.log(mapInstance.getCenter())

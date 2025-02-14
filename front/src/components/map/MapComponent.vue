@@ -26,12 +26,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" data-cy="map-component" class="map-container"></div>
-  <MapPlantabiliteLegend />
+  <div :id="mapId" data-cy="map-component" class="map-component"></div>
+  <map-plantabilite-legend />
 </template>
 
 <style lang="sass" scoped>
-.map-container
+.map-component
   height: 100%
   width: 100%
 </style>
