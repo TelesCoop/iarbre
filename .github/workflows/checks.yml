@@ -30,21 +30,8 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
-      # Install and cache Python dependencies
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
-
-      - name: Restore Node.js cache
-        uses: actions/cache@v3
-        with:
-          path: ./front/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
-
-      # Install and cache JS dependencies
-      - name: Install js dependencies if not cached
-        if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
-        working-directory: ./front
 
       - name: Install front js dependencies
         run: npm install
@@ -54,8 +41,6 @@ jobs:
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
-
-      # Install and cache
 
   pre-commit:
     runs-on: ubuntu-22.04
@@ -96,6 +81,11 @@ jobs:
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
+      - name: Install js dependencies if not cached
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ./front
 
       - name: Enforce pre-commit hook server side
         env:
@@ -163,14 +153,14 @@ jobs:
           cache: "pip"
       - run: pip install -r back/requirements.txt
 
-      # - name: Set up PostGIS
-      #   uses: nyurik/action-setup-postgis@v2
-      #   with:
-      #     username: myuser
-      #     password: securepassword
-      #     database: mydatabase
-      #     port: 5432
-      #   id: postgres
+      - name: Set up PostGIS
+        uses: nyurik/action-setup-postgis@v2
+        with:
+          username: myuser
+          password: securepassword
+          database: mydatabase
+          port: 5432
+        id: postgres
 
       - name: Create local_settings.ini
         run: |
@@ -184,8 +174,6 @@ jobs:
       - name: Migrate database
         run: python manage.py migrate
         working-directory: ./back
-      # - name: Populate database with test data
-      #   run: python back/manage.py populate
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
