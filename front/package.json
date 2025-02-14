@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "test": "vitest tests",
     "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+    "test:cypress": "start-server-and-test preview http://localhost:4173 'cypress run'",
+    "test:cypress:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
@@ -18,12 +18,13 @@
   },
   "dependencies": {
     "maplibre-gl": "^4.7.1",
-    "pinia": "^2.1.7",
+    "pinia": "^3.0.0",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
+    "@pinia/testing": "^1.0.0",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/jsdom": "^21.1.7",
