@@ -1,6 +1,8 @@
 """Save all land occupancy data to the database."""
 import time
-from datetime import datetime
+import glob
+import os
+from datetime import datetime, timedelta
 from functools import reduce
 from io import BytesIO
 from itertools import islice
@@ -34,6 +36,36 @@ def batched(iterable, n) -> None:
         yield batch
 
 
+def recent_file_exist(file_pattern: str) -> (bool, str):
+    """
+    Check if a file exists that is dated from less than 365 days.
+
+    Args:
+        file_pattern (str): File pattern to search for.
+
+    Returns:
+        tuple: A tuple containing:
+            - bool: True if a recent file exists, False otherwise.
+            - str: Path to the most recent file if it exists, otherwise None.
+    """
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_date_obj = datetime.strptime(current_date, "%Y-%m-%d")
+    directory = "file_data"
+    files = glob.glob(os.path.join(directory, file_pattern))
+    most_recent_file = None
+    most_recent_date = None
+    exists = False
+    for file in files:
+        file_date_str = os.path.basename(file).split("_")[1].split(".")[0]
+        file_date_obj = datetime.strptime(file_date_str, "%Y-%m-%d")
+        if current_date_obj - file_date_obj < timedelta(days=365):
+            if most_recent_date is None or file_date_obj > most_recent_date:
+                most_recent_file = file
+                most_recent_date = file_date_obj
+                exists = True
+    return exists, most_recent_file
+
+
 def download_dbtopo(url):
     """
     Download Batiments from IGN BD TOPO V3.
@@ -44,44 +76,54 @@ def download_dbtopo(url):
     Returns:
         gdf (GeoDataFrame): GeoDataFrame with data from URL
     """
-    params = {
-        "SERVICE": "WFS",
-        "VERSION": "2.0.0",
-        "REQUEST": "GetFeature",
-        "TYPENAMES": "BDTOPO_V3:batiment",
-        "SRSNAME": "EPSG:2154",
-        "OUTPUTFORMAT": "text/xml; subtype=gml/3.2",
-        "COUNT": 5000,
-    }
-    cities = select_city(None)
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    output_file = f"file_data/batiments_{current_date}.geojson"
+    exists, most_recent_file = recent_file_exist("batiments_*.geojson")
+    if exists:
+        gdf = gpd.read_file(most_recent_file)
+    else:  # Load data
+        params = {
+            "SERVICE": "WFS",
+            "VERSION": "2.0.0",
+            "REQUEST": "GetFeature",
+            "TYPENAMES": "BDTOPO_V3:batiment",
+            "SRSNAME": "EPSG:2154",
+            "OUTPUTFORMAT": "text/xml; subtype=gml/3.2",
+            "COUNT": 5000,
+        }
+        cities = select_city(None)
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        output_file = f"file_data/batiments_{current_date}.geojson"
 
-    all_geometries = []
+        all_geometries = []
 
-    for city in tqdm(cities.itertuples()):
-        bbox = ",".join(map(str, city.geometry.bounds))
-        params["BBOX"] = bbox + ",EPSG:2154"
-        start_index = 0
-        while True:
-            params["STARTINDEX"] = start_index
+        for city in tqdm(cities.itertuples()):
+            bbox = ",".join(map(str, city.geometry.bounds))
+            params["BBOX"] = bbox + ",EPSG:2154"
+            start_index = 0
+            while True:
+                params["STARTINDEX"] = start_index
 
-            response = requests.get(url, params=params, timeout=60)
-            if response.status_code != 200:
-                raise Exception(
-                    f"Error for BD TOPO: {response.status_code}, {response.text}"
+                response = requests.get(url, params=params, timeout=60)
+                if response.status_code != 200:
+                    raise Exception(
+                        f"Error for BD TOPO: {response.status_code}, {response.text}"
+                    )
+
+                tmp_gdf = gpd.read_file(BytesIO(response.content))
+                if tmp_gdf.empty:
+                    break
+                geom = tmp_gdf[
+                    "geometry"
+                ].force_2d()  # We don't need height of the buildings
+                geom.name = (
+                    "geometry"  # Restore name that has been erased by `force_2d`
                 )
+                all_geometries.append(geom)
+                start_index += 5000
 
-            tmp_gdf = gpd.read_file(BytesIO(response.content))
-            if tmp_gdf.empty:
-                break
-            all_geometries.append(tmp_gdf[["geometry"]])
-            start_index += 5000
-
-    gdf = gpd.GeoDataFrame(
-        pd.concat(all_geometries, ignore_index=True), crs="EPSG:2154"
-    )
-    gdf.to_file(output_file, driver="GeoJSON")
+        gdf = gpd.GeoDataFrame(
+            pd.concat(all_geometries, ignore_index=True), crs="EPSG:2154"
+        )
+        gdf.to_file(output_file, driver="GeoJSON")
     return gdf
 
 
@@ -95,52 +137,56 @@ def download_cerema(url):
     Returns:
         gdf (GeoDataFrame): GeoDataFrame with data from URL
     """
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    output_file = f"file_data/cartofriches_{current_date}.geojson"
-    coddep = "69"
-    cities = select_city(None)
+    exists, most_recent_file = recent_file_exist("cartofriches_*.geojson")
+    if exists:
+        gdf = gpd.read_file(most_recent_file)
+    else:  # Load data
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        output_file = f"file_data/cartofriches_{current_date}.geojson"
+        coddep = "69"
+        cities = select_city(None)
 
-    cities.crs = 2154
-    cities_4326 = cities.to_crs(4326)
-    combined_gdf = gpd.GeoDataFrame()
+        cities.crs = 2154
+        cities_4326 = cities.to_crs(4326)
+        combined_gdf = gpd.GeoDataFrame()
 
-    max_retries = 3  # Number of retries, CEREMA API is shit
-    backoff_factor = 2  # Exponential wait if fail to avoid hitting API limits
+        max_retries = 3  # Number of retries, CEREMA API is shit
+        backoff_factor = 2  # Exponential wait if fail to avoid hitting API limits
 
-    all_geometries = []
-    for city in tqdm(cities_4326.itertuples()):
-        bbox = ",".join(map(str, city.geometry.bounds))
-        params = {
-            "coddep": coddep,
-            "code_insee": int(city.code),
-            "in_bbox": bbox,
-            "page_size": 1000,
-        }
-        for attempt in range(max_retries):
-            try:
-                response = requests.get(url, params=params, timeout=10)
-                response.raise_for_status()
-                break  # Exit the loop if successful
-            except requests.exceptions.Timeout:
-                print(f"Timeout occurred, retrying {attempt + 1}/{max_retries}...")
-            except requests.exceptions.RequestException as e:
-                print(f"Request failed: {e}")
-                break
-            time.sleep(backoff_factor**attempt)  # Wait before retrying
+        all_geometries = []
+        for city in tqdm(cities_4326.itertuples()):
+            bbox = ",".join(map(str, city.geometry.bounds))
+            params = {
+                "coddep": coddep,
+                "code_insee": int(city.code),
+                "in_bbox": bbox,
+                "page_size": 1000,
+            }
+            for attempt in range(max_retries):
+                try:
+                    response = requests.get(url, params=params, timeout=10)
+                    response.raise_for_status()
+                    break  # Exit the loop if successful
+                except requests.exceptions.Timeout:
+                    print(f"Timeout occurred, retrying {attempt + 1}/{max_retries}...")
+                except requests.exceptions.RequestException as e:
+                    print(f"Request failed: {e}")
+                    break
+                time.sleep(backoff_factor**attempt)  # Wait before retrying
 
-        if response.status_code != 200:
-            raise Exception(
-                f"Error for Cartofriche: {response.status_code}, {response.text}"
-            )
-        tmp_gdf = gpd.read_file(BytesIO(response.content))
-        all_geometries.append(tmp_gdf[["geometry"]])
+            if response.status_code != 200:
+                raise Exception(
+                    f"Error for Cartofriche: {response.status_code}, {response.text}"
+                )
+            tmp_gdf = gpd.read_file(BytesIO(response.content))
+            all_geometries.append(tmp_gdf[["geometry"]])
 
-        combined_gdf = pd.concat([combined_gdf, tmp_gdf], ignore_index=True)
-        time.sleep(1)  # Avoid hitting API rate limits
-    gdf = gpd.GeoDataFrame(pd.concat(all_geometries, ignore_index=True))
-    gdf.crs = 4326
-    gdf = gdf.to_crs(2154)
-    gdf.to_file(output_file, driver="GeoJSON")
+            combined_gdf = pd.concat([combined_gdf, tmp_gdf], ignore_index=True)
+            time.sleep(1)  # Avoid hitting API rate limits
+        gdf = gpd.GeoDataFrame(pd.concat(all_geometries, ignore_index=True))
+        gdf.crs = 4326
+        gdf = gdf.to_crs(2154)
+        gdf.to_file(output_file, driver="GeoJSON")
     return gdf
 
 
@@ -402,5 +448,6 @@ class Command(BaseCommand):
                 continue
             print("Processing data.")
             datas = process_data(df, data_config)
+
             save_geometries(datas, data_config)
             print(f"Data {data_config['name']} saved in {time.time() - start:.2f}s")
