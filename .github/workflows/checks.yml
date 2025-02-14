@@ -36,10 +36,6 @@ jobs:
       - name: Install front js dependencies
         run: npm install
         working-directory: ./front
-      - name: Create back/local_settings.conf
-        run: echo "${{ secrets.LOCAL_SETTINGS_CONF }}" > local_settings.conf
-        working-directory: ./back
-
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
@@ -70,7 +66,7 @@ jobs:
           port: 5432
         id: postgres
 
-      - name: Create local_setting.ini
+      - name: Create local_settings.ini
         run: |
           cat <<EOF > back/local_settings.ini
           [database]
@@ -139,11 +135,81 @@ jobs:
       - name: Run vitest
         run: npm run test
         working-directory: ./front
-  #      - name: Run cypress component tests
-  #        uses: cypress-io/github-action@v6
-  #        with:
-  #          component: true
-  #          working-directory: ./front
+      - name: Run cypress component tests
+        uses: cypress-io/github-action@v6
+        with:
+          component: true
+          working-directory: ./front
+
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: pip install -r back/requirements.txt
+
+      - name: Set up PostGIS
+        uses: nyurik/action-setup-postgis@v2
+        with:
+          username: myuser
+          password: securepassword
+          database: mydatabase
+          port: 5432
+        id: postgres
+
+      - name: Create local_settings.ini
+        run: |
+          cat <<EOF > back/local_settings.ini
+          [database]
+          engine=postgresql
+          user=myuser
+          name=mydatabase
+          password=securepassword
+          EOF
+      - name: Migrate database
+        run: python manage.py migrate
+        working-directory: ./back
+      - name: Run back-end server in background
+        run: python manage.py runserver localhost:8000 &
+        working-directory: ./back
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ./front/.nvmrc
+          cache: "npm"
+      - name: Restore Node.js cache from node-setup
+        uses: actions/cache@v3
+        with:
+          path: ./front/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+      - name: Install front js dependencies if not cached
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: npm install
+        working-directory: ./front
+      - name: Build front
+        run: npm run build
+        working-directory: "./front"
+      - name: Run e2e tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run preview
+          browser: chrome
+          config-file: cypress.config.ts
+          working-directory: ./front
+      - name: Upload cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshot
+          path: |
+            front/cypress/screenshots
+          retention-days: 10
+
   doc-tests:
     runs-on: ubuntu-22.04
     needs: [setup]

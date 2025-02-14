@@ -11,7 +11,7 @@ const props = defineProps({
 })
 
 const mapStore = useMapStore()
-const mapInstance = mapStore.getMapInstance(props.mapId)
+// const mapInstance = mapStore.getMapInstance(props.mapId)
 
 onMounted(() => {
   mapStore.initMap(props.mapId)
@@ -26,7 +26,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" class="map-container"></div>
+  <div :id="mapId" data-cy="map-component" class="map-container"></div>
   <MapPlantabiliteLegend />
 </template>
 
