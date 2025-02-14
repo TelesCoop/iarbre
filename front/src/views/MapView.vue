@@ -13,4 +13,5 @@ import MapComponent from "@/components/map/MapComponent.vue"
   max-width: 100vw
   height:  $content-height
   overflow: hidden
+  position: relative
 </style>
