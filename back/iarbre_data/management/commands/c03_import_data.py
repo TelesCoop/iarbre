@@ -409,11 +409,6 @@ def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
                 split_geom.extend(results)
             except Exception as e:
                 print(f"Error processing polygon {polygon}: {e}")
-    # split_geom = [
-    #     geom
-    #     for polygon in geometries
-    #     for geom in split_large_polygon(polygon, grid_size=grid_size, bounds=bounds)
-    # ]
     factor_df_split = gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
 
     flattened_geometries = []
@@ -423,7 +418,9 @@ def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
     factor_df_split = gpd.GeoDataFrame(
         flattened_geometries, geometry="geometry", crs=factor_df.crs
     )
-
+    # Some 'Point' may appear on edges of the grid, remove them
+    factor_df_split = factor_df_split.explode(index_parts=False)
+    factor_df_split = factor_df_split[factor_df_split.geometry.type == "Polygon"]
     return factor_df_split
 
 
