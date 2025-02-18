@@ -21,6 +21,20 @@ class C03DataTestCase(TestCase):
                 break
 
         self.data_config = DATA_FILES[idc]
+        self.data_config["actions"] = [
+            {
+                "filters": [
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Parking",
+                    },
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Espace piétonnier",
+                    },
+                ]
+            }
+        ]
         move_test_data()
         self.df = read_data(self.data_config)
         self.datas = process_data(self.df, self.data_config)
