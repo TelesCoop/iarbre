@@ -151,6 +151,9 @@ class MVTGeneratorTestCase(TestCase):
         # Clean all tiles
         MVTTile.objects.all().delete()
 
+        # Clean media files before the reset_db does not trigger media delete signal
+        MVTTile.objects.all().delete()
+
     def test_view(self):
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
@@ -200,5 +203,5 @@ class MVTGeneratorTestCase(TestCase):
         received_tile = decoded_tile["tile"]["features"][0]
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
-        # Clean all tiles
+        # Clean media files before the reset_db does not trigger media delete signal
         MVTTile.objects.all().delete()
