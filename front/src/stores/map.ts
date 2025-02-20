@@ -1,8 +1,10 @@
-import { computed, ref } from "vue"
+import { computed, ref, createApp, h } from "vue"
 import { defineStore } from "pinia"
-import { Map } from "maplibre-gl"
+import { Map, Popup } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
+import MapScorePopup from "@/components/map/MapScorePopup.vue"
+
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
 
@@ -30,6 +32,24 @@ export const useMapStore = defineStore("map", () => {
         "fill-color": ["get", "color"],
         "fill-opacity": 0.6
       }
+    })
+
+    map.on("click", layerId, (e) => {
+      const ScorePopupApp = createApp({
+        setup() {
+          return () => h(MapScorePopup, { score: 4, lat: e.lngLat.lat, lng: e.lngLat.lng })
+        }
+      })
+      const wrapper = document.createElement("div")
+      ScorePopupApp.mount(wrapper)
+      document.body.appendChild(wrapper)
+
+      // console.log(wrapper.innerHTML)
+      new Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(wrapper.innerHTML)
+        // .setHTML("<p>boom</p>")
+        .addTo(map)
     })
   }
 
