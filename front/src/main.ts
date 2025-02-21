@@ -1,4 +1,5 @@
 import "./assets/styles/main.sass"
+import "./assets/styles/map.sass"
 
 import { createApp } from "vue"
 import { createPinia } from "pinia"
