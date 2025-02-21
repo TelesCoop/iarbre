@@ -140,3 +140,70 @@ class MVTTile(models.Model):
 def before_delete_mvt_tile(sender, instance, **kwargs):
     """Delete the file when the model is deleted."""
     instance.mvt_file.delete(save=False)
+
+
+class Lcz(models.Model):
+    """Elementary element on the map with the value of the LCZ description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=3857, null=True, blank=True)
+    lcz_indice = models.CharField(max_length=4, null=True)
+    lcz_description = models.CharField(max_length=50, null=True)
+
+    type = ModelType.LCZ.value
+
+    @property
+    def color(self):  # noqa: C901
+        """Return the color of the tile based on the normalized indice."""
+        if self.lcz_indice is None:
+            return "purple"
+        elif self.lcz_indice == "LCZ1":
+            return "#8c0000"
+        elif self.lcz_indice == "LCZ2":
+            return "#d10000"
+        elif self.lcz_indice == "LCZ3":
+            return "#ff0000"
+        elif self.lcz_indice == "LCZ4":
+            return "#bf4d00"
+        elif self.lcz_indice == "LCZ5":
+            return "#fa6600"
+        elif self.lcz_indice == "LCZ5":
+            return "#ff9955"
+        elif self.lcz_indice == "LCZ6":
+            return "#faee05"
+        elif self.lcz_indice == "LCZ7":
+            return "#bcbcbc"
+        elif self.lcz_indice == "LCZ8/10":
+            return "#ffccaa"
+        elif self.lcz_indice == "LCZ9":
+            return "#006a00"
+        elif self.lcz_indice == "LCZA":
+            return "#00aa00"
+        elif self.lcz_indice == "LCZB":
+            return "#648525"
+        elif self.lcz_indice == "LCZC":
+            return ""
+        elif self.lcz_indice == "LCZD":
+            return "#b9db79"
+        elif self.lcz_indice == "LCZE":
+            return "#000000"
+        elif self.lcz_indice == "LCZF":
+            return "#fbf7ae"
+        else:
+            return "#6a6aff"
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT layer."""
+        return {
+            "id": self.id,
+            "indice": self.lcz_indice,
+            "description": self.lcz_description,
+            "color": self.color,
+        }
+
+
+@receiver(pre_save, sender=Lcz)
+def before_save_lcz(sender, instance, **kwargs):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(3857, clone=True)
