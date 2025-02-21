@@ -5,3 +5,4 @@ class ModelType(TextChoices):
     TILE = "tile", "Tile"
     CITY = "city", "City"
     IRIS = "iris", "Iris"
+    LCZ = "lcz", "LCZ"

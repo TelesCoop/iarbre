@@ -7,11 +7,11 @@ from django.core.management import BaseCommand
 
 from api.utils.mvt_generator import MVTGenerator
 from iarbre_data import settings
-from iarbre_data.models import Tile, MVTTile
+from iarbre_data.models import Tile, Lcz, MVTTile
 
 
 class Command(BaseCommand):
-    help = "Generate MVT tiles for geographic model"
+    help = "Generate MVT file for a specif model."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -20,7 +20,12 @@ class Command(BaseCommand):
             default=1,
             help="Number of threads to use for generating tiles",
         )
-
+        parser.add_argument(
+            "--model",
+            type=str,
+            default="Tile",
+            help="What model to transform to MVT.",
+        )
         parser.add_argument(
             "--keep",
             action="store_true",
@@ -57,14 +62,22 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
+        model = options["model"]
+        if model == "Tile":
+            mdl = Tile
+        elif model == "Lcz":
+            mdl = Lcz
+        else:
+            raise ValueError(f"Unsupported model: {model}")
+
         # Generate MVT tiles for Tile model
         if options["keep"] is False:
-            print("Deleting existing MVTTile")
-            MVTTile.objects.all().delete()
+            print(f"Deleting existing MVTTile for model : {model}.")
+            MVTTile.objects.filter(model_type=mdl.type).delete()
         self.generate_tiles_for_model(
-            Tile,
-            Tile.objects.all(),
-            os.path.join(settings.BASE_DIR, "mvt_files", "tile"),
+            mdl,
+            mdl.objects.all(),
+            os.path.join(settings.BASE_DIR, "mvt_files", model.lower()),
             (8, 16),
             number_of_thread,
         )
