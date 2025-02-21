@@ -24,3 +24,5 @@ back/site/*
 site/*
 
 back/.coverage
+
+*.csv

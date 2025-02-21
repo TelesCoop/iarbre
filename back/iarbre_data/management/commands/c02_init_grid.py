@@ -84,13 +84,13 @@ def create_tiles_for_city(
         # Avoid OOM errors
         if tile_count % batch_size == 0:
             with transaction.atomic():
-                Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
+                Tile.objects.bulk_create(tiles, batch_size=batch_size // 2)
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()
             gc.collect()
 
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size // 8)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size // 2)
     City.objects.filter(id=city.id).update(tiles_generated=True)
 
 

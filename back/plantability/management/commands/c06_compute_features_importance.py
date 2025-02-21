@@ -14,8 +14,8 @@ from scipy.stats import spearmanr
 from scipy.cluster import hierarchy
 from scipy.spatial.distance import squareform
 
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.models import City, Tile, TileFactor
+from iarbre_data.management.commands.utils import load_geodataframe_from_db, select_city
+from iarbre_data.models import Tile, TileFactor
 
 
 class Command(BaseCommand):
@@ -32,18 +32,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         insee_code_city = options["insee_code_city"]
-        if insee_code_city is not None:  # Perform selection only for a city
-            insee_code_city = insee_code_city.split(",")
-            selected_city_qs = City.objects.filter(insee_code__in=insee_code_city)
-            if not selected_city_qs.exists():
-                raise ValueError(f"No city found with INSEE code {insee_code_city}")
-            selected_city = load_geodataframe_from_db(
-                selected_city_qs, ["name", "insee_code"]
-            )
-        else:
-            selected_city = load_geodataframe_from_db(
-                City.objects.all(), ["name", "insee_code"]
-            )
+        selected_city = select_city(insee_code_city)
         nb_city = len(selected_city)
 
         for city in selected_city.itertuples():
@@ -53,7 +42,7 @@ class Command(BaseCommand):
                 geometry__intersects=GEOSGeometry(city_geometry.wkt)
             )
             tile_data = load_geodataframe_from_db(
-                tiles_queryset, ["id", "indice"]
+                tiles_queryset, ["id", "plantability_indice"]
             )  # Get Tiles and indice values
             tile_data = pd.DataFrame(tile_data.drop(columns="geometry"))
             factor_queryset = TileFactor.objects.filter(
@@ -66,12 +55,12 @@ class Command(BaseCommand):
                     for data in factor_queryset
                 ]
             )
-            factor_scores["indice"] = tile_data.indice
+            factor_scores["plantability_indice"] = tile_data.plantability_indice
             factor_scores.fillna(0, inplace=True)
             # Compute correlation between factor values and indice (explainability)
             grouped_corr = (
                 factor_scores.groupby("factor")
-                .apply(lambda group: group["value"].corr(group["indice"]))
+                .apply(lambda group: group["value"].corr(group["plantability_indice"]))
                 .reset_index(name="pearson_correlation")
             )
             print(grouped_corr)
@@ -84,9 +73,11 @@ class Command(BaseCommand):
                 values="value",  # Values for the factor columns
             ).reset_index()  # Convert the tile_id index back to a column
             restructured_df.fillna(0, inplace=True)
-            y = tile_data[
-                np.isin(tile_data["id"], restructured_df["tile_id"].values)
-            ].indice
+            y = (
+                tile_data.set_index("id")
+                .loc[restructured_df["tile_id"], "plantability_indice"]
+                .values
+            )
             X = restructured_df.drop(columns=["tile_id"])
 
             scaler = StandardScaler()
