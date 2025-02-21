@@ -1,0 +1,7 @@
+[program:geoserver]
+directory = {{ geoserver_home }} ;
+command = {{ geoserver_home }}/bin/startup.sh ;
+user = geoserver ; User to run as
+stdout_logfile = {{ var_log_path }}/geoserver_supervisor.log        ; Where to write log messages
+redirect_stderr = true                                                ; Save stderr in the same log
+environment=LANG="en_US.UTF-8",LC_ALL="en_US.UTF-8",GEOSERVER_HOME=/usr/share/geoserver,HTTP_SCHEME=https,HTTP_PROXY_NAME=geoserver.iarbre.fr ;

@@ -1,0 +1,8 @@
+---
+geoserver_home: "/usr/share/geoserver"
+tomcat_home: "/opt/tomcat"
+project_slug: geoserver
+geoserver_port: 8080
+hostname: geoserver.iarbre.fr
+requests_timeout: 600
+https_enabled: true
