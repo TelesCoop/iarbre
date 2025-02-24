@@ -9,4 +9,6 @@ fileignoreconfig:
   checksum: be406c3274b27238f1d5497edb83f0b4331ad92cab8d28bc77e151202663b9d0
 - filename: .github/workflows/checks.yml
   checksum: 11b0fc835bc28b87e6c052ac767b9b2ab1e5c3c1ed1c9198a9e92a34cf60ceca
+- filename: deploy/roles/frontend/templates/frontend.env
+  checksum: 6e396bc2cc5133e607da9a344fec414e525204427dd81b9811c3241e03a5dc06
 version: ""
