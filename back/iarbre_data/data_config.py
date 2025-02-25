@@ -249,6 +249,7 @@ URL_FILES = [
         "layer_name": "gin_nettoiement.ginmarche",
         "scripts": [],
         "factors": ["Marchés forains"],
+        "output_type": "POLYGON",
     },
     {
         "name": "Voies ferrées",
@@ -257,17 +258,8 @@ URL_FILES = [
         "actions": [{"buffer_size": 1, "union": True}],
         "scripts": ["voie_ferree.py"],
         "factors": ["Voies ferrées"],
+        "output_type": "LINESTRING",
     },
-    # {
-    #     "name": "QPV",
-    #     "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
-    #     "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-    #     "typename=metropole-de-lyon:ter_territoire.qpv_2024"
-    #     "&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
-    #     "layer_name": "ter_territoire.qpv_2024",
-    #     "scripts": [],
-    #     "factors": ["QPV"],
-    # },
     {
         "name": "Velov",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
@@ -295,7 +287,7 @@ URL_FILES = [
         "scripts": [""],
         "actions": [],
         "factors": ["aerodrome"],
-        "output_type": "Polygon",
+        "output_type": "POLYGON",
     },
     {
         "name": "Arrêts transport en",
