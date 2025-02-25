@@ -1,32 +1,52 @@
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
+- name: Maxime Tribolet
+  title: Chef de projet
+  function: TelesCoop
+  portrait: max.png
+- name: David Parent
+  title: Responsable de Erasme
+  function: ERASME
+  portrait: parent.png
+- name: Geoffrey Dorne
+  title: Designer
+  function: TelesCoop
+  portrait: geoff.png
+- name: Anthony Angelot
+  title: Directeur de projet
+  function: ERASME
+  portrait: angelot.png
+- name: Ludovic De Clermont
+  title: Data-scientist
+  function: TelesCoop
+  portrait: ludo.png
+- name: Patrick Vincent
+  title: Directeur de projet
+  function: Erasme
+  portrait: vinc.png
+- name: Natacha Salmeron
+  title: Geomaticienne
+  function: Exo-Dev
+  portrait: nat.png
+- name: Antoine Bernier
+  title: Développeur
+  function: TelesCoop
   portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
-- name: Prénom nom
-  title: Titre
-  function: Fonction sur le projet
-  portrait: portrait.png
+- name: Romain Matias
+  title: Chef de projet, Développeur
+  function: Exo-Dev
+  portrait: mati.png
+- name: Marc-Antoine Augé
+  title: Développeur
+  function: TelesCoop
+  portrait: ma.png
+- name: Nicolas Sapay
+  title: Senior Lead Tech
+  function: Datagora
+  portrait: sap.png
+- name: Quentin Madura
+  title: Développeur
+  function: TelesCoop
+  portrait: mad.png
+- name: Maxime Bellec
+  title: Développeur
+  function: TelesCoop
+  portrait: bel.png
