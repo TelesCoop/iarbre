@@ -7,12 +7,7 @@ La documentation du projet est construite avec [Mkdocs 📚](https://www.mkdocs.
 Pour pouvoir lancer `Mkdocs` en local, vous avez besoin d’installer plusieurs dépendances Python :
 
 ```
-mkdocs
-mkdocs-material
-mkdocstrings[python]
-mkdocs-git-revision-date-localized-plugin
-mkdocs-minify-plugin
-pymdown-extensions
+pip install -r mkdocs-requirements.txt
 ```
 
 Vous pouvez ensuite lancer la documentation en local avec la commande suivante :
