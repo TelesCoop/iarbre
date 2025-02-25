@@ -46,7 +46,7 @@ plugins:
 nav:
   - Documentation IA.rbre: index.md
   - Backend:
-      - Instructions: backend/index.md
+      - Instructions: backend.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md
@@ -56,7 +56,7 @@ nav:
           - Utils: api/utils.md
   - Frontend: front.md
   - Déploiement: deploy.md
-  - Documentation: README.md
+  - Documentation: docs.md
 
 theme:
   name: "material"

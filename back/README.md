@@ -13,11 +13,11 @@ Il existe trois applications Django :
 
 ## Contenu
 
-- [Données requises](#données-requises)
-- [Déploiement avec Ansible](#déploiement-avec-ansible)
+- [Données requises](#donnees-requises)
+- [Déploiement avec Ansible](#deploiement-avec-ansible)
 - [Installation manuelle](#installation-manuelle)
-- [Génération de la base de données](#génération-de-la-base-de-données)
-- [Démarrage du backend](#démarrage-du-service-backend)
+- [Génération de la base de données](#generation-de-la-base-de-donnees)
+- [Démarrage du backend](#demarrage-du-service-backend)
 - [Aide](#aide)
 
 ## Données requises
