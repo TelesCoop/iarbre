@@ -55,7 +55,8 @@ nav:
           - Compute Indices: api/c05_compute_indice.md
           - Utils: api/utils.md
   - Frontend: front.md
-  - Deploy: deploy.md
+  - Déploiement: deploy.md
+  - Documentation: docs.md
 
 theme:
   name: "material"

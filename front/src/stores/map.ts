@@ -1,6 +1,6 @@
 import { computed, ref, createApp, h } from "vue"
 import { defineStore } from "pinia"
-import { Map, Popup } from "maplibre-gl"
+import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
 import MapScorePopup from "@/components/map/MapScorePopup.vue"
@@ -63,6 +63,19 @@ export const useMapStore = defineStore("map", () => {
       minzoom: MIN_ZOOM
     })
   }
+
+  const setupControls = (map: Map) => {
+    map.addControl(
+      new NavigationControl({
+        visualizePitch: false,
+        visualizeRoll: false,
+        showZoom: true,
+        showCompass: false
+      }),
+      "bottom-right"
+    )
+  }
+
   const initTiles = (mapInstance: Map) => {
     setupSource(mapInstance, ModelType.TILE)
     setupTile(mapInstance, ModelType.TILE)
@@ -85,6 +98,7 @@ export const useMapStore = defineStore("map", () => {
         console.log(mapInstance.getZoom())
       })
       initTiles(mapInstance)
+      setupControls(mapInstance)
     })
   }
   return { mapInstancesByIds, initMap, getMapInstance }

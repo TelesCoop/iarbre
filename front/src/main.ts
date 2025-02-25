@@ -1,5 +1,5 @@
 import "./assets/styles/main.sass"
-import "maplibre-gl/dist/maplibre-gl.css"
+import "./assets/styles/map.sass"
 
 import { createApp } from "vue"
 import { createPinia } from "pinia"

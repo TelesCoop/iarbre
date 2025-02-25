@@ -1,4 +1,4 @@
-# Mise en production et maintenance avec Ansible d'un site avec Stack Django Vue
+# Scripts de mise en production et maintenance avec Ansible d'un site
 
 ## Stack technique
 
@@ -6,7 +6,7 @@ Principaux outils open-sources
 
 - frontend:
   - Serveur nginx
-  - framework Nuxt 3
+  - framework Vue 3
 - backend: framework Django, gunicorn pour le wsgi
 
 Outils externes potentiellement payants
@@ -17,7 +17,7 @@ Outils externes potentiellement payants
 
 Ce considère donc :
 
-- Que vous utilisez `Nuxt` ou un autre projet qui se compile avec
+- Que vous utilisez Vite ou un autre projet qui se compile avec
   `yarn generate/build` pour le frontend. Adapter
   `roles/frontend/tasks/main.yml:Build frontend code` si nécessaire.
   Il est possible d'utiliser les modes statiques et SSR de Nuxt, en fonction
