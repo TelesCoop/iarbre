@@ -5,19 +5,19 @@
 Le backend d'IArbre calcule l'occupation des sols et les différents indices (plantabilité, etc.).
 Le backend utilise [Django](https://www.djangoproject.com/) et une base de données [PostGIS](https://postgis.net/).
 
-Avec Django, nous avons créer différents **aplications**.
-`iarbre_data` correspond au calcul de l'occupation des sols.
-Vous pouvez ensuite utiliser les autres applications telles que `plantability` pour calculer les indices (plantabilité, etc).
+Il existe trois applications Django :
 
-Ce backend a été développé suite à l'[implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) par [Exo-dev](https://exo-dev.fr/).
+- `iarbre_data` pour les calculs d’occupation des sols ;
+- `plantability` pour le calcul de l'indice de plantabilité. Le développement correspond à une réplication de [l'implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) réalisée par [Exo-dev](https://exo-dev.fr/).
+- `api` pour rendre accessible ces résultats par à une API rest ;
 
 ## Contenu
 
-- [Données requises](#données-requises)
-- [Déploiement avec Ansible](#déploiement-avec-ansible)
+- [Données requises](#donnees-requises)
+- [Déploiement avec Ansible](#deploiement-avec-ansible)
 - [Installation manuelle](#installation-manuelle)
-- [Génération de la base de données](#génération-de-la-base-de-données)
-- [Démarrage du backend](#démarrage-du-service-backend)
+- [Génération de la base de données](#generation-de-la-base-de-donnees)
+- [Démarrage du backend](#demarrage-du-service-backend)
 - [Aide](#aide)
 
 ## Données requises
