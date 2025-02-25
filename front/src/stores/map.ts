@@ -1,12 +1,13 @@
-import { computed, ref, createApp, h } from "vue"
+import { computed, ref, nextTick } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
-import MapScorePopup from "@/components/map/MapScorePopup.vue"
+import type { ScorePopupData } from "@/types"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
+  const popup = ref<ScorePopupData | undefined>(undefined)
 
   const getMapInstance = (id: string) => {
     return computed(() => mapInstancesByIds.value[id])
@@ -19,7 +20,7 @@ export const useMapStore = defineStore("map", () => {
     return `${modelType}-layer`
   }
 
-  const setupTile = (map: Map, modelType: ModelType) => {
+  const setupTile = (map: Map, modelType: ModelType, mapId: string) => {
     const sourceId = getSourceIdByModelType(modelType)
     const layerId = getLayerIdByModelType(modelType)
     map.addLayer({
@@ -35,20 +36,16 @@ export const useMapStore = defineStore("map", () => {
     })
 
     map.on("click", layerId, (e) => {
-      const ScorePopupApp = createApp({
-        setup() {
-          return () => h(MapScorePopup, { score: 4, lat: e.lngLat.lat, lng: e.lngLat.lng })
-        }
-      })
-      const wrapper = document.createElement("div")
-      ScorePopupApp.mount(wrapper)
-      document.body.appendChild(wrapper)
-
-      // console.log(wrapper.innerHTML)
+      popup.value = {
+        score: 4,
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat
+      }
+      console.log(e.features)
       new Popup()
         .setLngLat(e.lngLat)
-        .setHTML(wrapper.innerHTML)
-        // .setHTML("<p>boom</p>")
+        .setDOMContent(document.getElementById(`popup-${mapId}`)!)
+        .setMaxWidth("400px")
         .addTo(map)
     })
   }
@@ -76,9 +73,9 @@ export const useMapStore = defineStore("map", () => {
     )
   }
 
-  const initTiles = (mapInstance: Map) => {
+  const initTiles = (mapInstance: Map, mapId: string) => {
     setupSource(mapInstance, ModelType.TILE)
-    setupTile(mapInstance, ModelType.TILE)
+    setupTile(mapInstance, ModelType.TILE, mapId)
   }
 
   const initMap = (mapId: string) => {
@@ -97,9 +94,9 @@ export const useMapStore = defineStore("map", () => {
         console.log(mapInstance.getCenter())
         console.log(mapInstance.getZoom())
       })
-      initTiles(mapInstance)
+      initTiles(mapInstance, mapId)
       setupControls(mapInstance)
     })
   }
-  return { mapInstancesByIds, initMap, getMapInstance }
+  return { mapInstancesByIds, initMap, getMapInstance, popup }
 })

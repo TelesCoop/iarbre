@@ -23,7 +23,7 @@ const props = defineProps({
 
 <style lang="sass" scoped>
 
-$hexagons-width: ("small": 12px, "huge": 30px)
+$hexagons-width: ("small": 12px, "huge": 20px)
 
 .hexagon
     @each $name, $hexagon-width in $hexagons-width
@@ -110,7 +110,8 @@ $hexagons-width: ("small": 12px, "huge": 30px)
         width: 0
 
     &.huge
-        font-size: 2.7rem
+        font-size: 1.6rem
+        line-height: 2.3rem
 
     &.small
         font-size: 1.3rem

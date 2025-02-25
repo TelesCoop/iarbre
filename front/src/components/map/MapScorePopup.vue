@@ -31,28 +31,33 @@ const label = computed(() => {
       </div>
       <div class="right">
         <h3 class="title">{{ label }}</h3>
-        <button class="button primary">Voir les détails</button>
+        <button class="button primary small rounded">Voir les détails</button>
       </div>
     </div>
-    <div class="text-light-green">{{ lat }}° N, {{ lng }}° E <button>(copy)</button></div>
+    <div class="text-light-green">
+      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E <button class="button text">(copy)</button>
+    </div>
   </div>
 </template>
 
 <style lang="sass" scoped>
 .popover
-    padding: 10px
+  padding: 10px
 
-    .columns
-        .left
-            flex-grow: 1
+  .columns
+      .left
+        flex-grow: 1
+        margin-right: 5px
 
-        .right
-            flex-grow: 2
+      .right
+        flex-grow: 2
+        margin-left: 5px
 
-        display: flex
-        flex-direction: row
-
-
+      justify-content: space-between
+      display: flex
+      flex-direction: row
+  max-width: 400px // also defined in `stores/map.ts::setupTile`
 .title
     font: $accent-font
+    font-size: 1.2rem
 </style>
