@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import PlantabiliteLegend from "@/components/map/PlantabiliteLegend.vue"
+import PlantabilityLegend from "@/components/map/PlantabilityLegend.vue"
 </script>
 
 <template>
-  <div class="map-plantabilitie-legend">
-    <plantabilite-legend />
+  <div class="map-plantability-legend">
+    <plantability-legend />
   </div>
 </template>
 
 <style lang="sass" scoped>
-.map-plantabilitie-legend
+.map-plantability-legend
   z-index: 3
   position: absolute
   top: 1rem
