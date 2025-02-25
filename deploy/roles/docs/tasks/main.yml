@@ -28,13 +28,7 @@
 
 - name: Install MkDocs and dependencies
   pip:
-    name:
-      - mkdocs
-      - mkdocs-material
-      - mkdocstrings[python]
-      - mkdocs-git-revision-date-localized-plugin
-      - mkdocs-minify-plugin
-      - pymdown-extensions
+    requirements: mkdocs-requirements.txt
     virtualenv: "{{ venv.path }}"
 
 - name: Init documentation

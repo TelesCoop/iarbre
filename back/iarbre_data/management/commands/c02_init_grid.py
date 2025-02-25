@@ -24,7 +24,13 @@ from django.db import transaction
 
 
 def create_tiles_for_city(
-    city, grid_size, tile_shape_cls, logger, batch_size=int(1e6), unit=None, a=1
+    city,
+    grid_size,
+    tile_shape_cls,
+    logger,
+    batch_size=int(1e6),
+    unit=None,
+    a=1,
 ) -> None:
     """
     Create tiles (square or hexagonal) for a specific city.
@@ -242,9 +248,6 @@ class Command(BaseCommand):
             unit (float): The size of the hexagon in meters (for hexagonal grid only).
             a (float): The ratio of the hexagon (for hexagonal grid only).
             grid_size (float): The size of the grid in meters (for square grid).
-
-        Returns:
-            None
         """
         print(f"Selected city: {city.name} with id {city.id}.")
         # Get already existing tiles

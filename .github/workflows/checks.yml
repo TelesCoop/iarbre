@@ -222,7 +222,6 @@ jobs:
         with:
           python-version: "3.10"
           cache: "pip"
-      - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-git-revision-date-localized-plugin mkdocs-minify-plugin pymdown-extensions
-
+      - run: pip install -r mkdocs-requirements.txt
       - name: Run documentation validation
-        run: mkdocs build
+        run: mkdocs build --strict

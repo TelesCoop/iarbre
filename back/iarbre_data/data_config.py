@@ -384,6 +384,10 @@ URL_FILES = [
     },
 ]
 
+# Plantability factor.
+# The higher, the more plantable it is
+# For example, it's easier to plant a tree on wasteland
+# than at an airport
 FACTORS = {
     "Souches ou emplacements libres": 3,
     "Arbres": 1,
