@@ -4,6 +4,7 @@ import logging
 from django.contrib.gis.utils import LayerMapping
 from django.core.management import BaseCommand
 import requests
+from django.db.models import QuerySet
 from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 
@@ -24,7 +25,7 @@ class Command(BaseCommand):
     help = "Insert cities geojson file"
 
     @staticmethod
-    def _insert_iris(qs_city) -> None:
+    def _insert_iris(qs_city: QuerySet) -> None:
         """Use BPCE API to download IRIS and insert them in a table
         Args:
             qs_city (QuerySet): Query set that correspond to one or multiple cities.
@@ -81,7 +82,7 @@ class Command(BaseCommand):
                 response = requests.get(api_url, params=params)
 
     @staticmethod
-    def _insert_cities(data) -> None:
+    def _insert_cities(data: str) -> None:
         """Insert cities from a GEOJSON file.
         Args:
             data (str): path to the GEOJSON containing cities geometry.

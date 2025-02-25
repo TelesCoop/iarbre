@@ -35,8 +35,7 @@ class C04ComputeFactorsTestCase(TestCase):
         c01_city_iris()._insert_cities(data)
         grid_size = 100
         desired_area = grid_size * grid_size
-        unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
-        a = np.sin(np.pi / 3)
+        side_length = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
         self.code = 69381
         selected_city = select_city(str(self.code))
         self.city = selected_city.iloc[0]
@@ -46,8 +45,8 @@ class C04ComputeFactorsTestCase(TestCase):
             HexTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
-            unit=unit,
-            a=a,
+            side_length=side_length,
+            height_ratio=np.sin(np.pi / 3),
         )
         data_config = DATA_FILES[0]
         df = read_data(data_config)
