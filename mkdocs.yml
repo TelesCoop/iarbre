@@ -53,7 +53,7 @@ nav:
           - Initialize Grid: api/c02_init_grid.md
           - Import Data: api/c03_import_data.md
           - Compute Factors: api/c04_compute_factors.md
-          - Compute Indices: api/c05_compute_indice.md
+          - Compute Indices: api/c01_compute_indice.md
           - Utils: api/utils.md
   - Frontend: front.md
   - Deploy: deploy.md
