@@ -1,8 +1,7 @@
 """Save all land occupancy data to the database."""
 import time
-import glob
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import reduce
 from io import BytesIO
 from itertools import islice
@@ -12,6 +11,7 @@ import numpy as np
 import pandas as pd
 import pyogrio
 import requests
+import shapely
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from shapely import unary_union
@@ -36,37 +36,7 @@ def batched(iterable, n) -> None:
         yield batch
 
 
-def recent_file_exist(file_pattern: str) -> (bool, str):
-    """
-    Check if a file exists that is dated from less than 365 days.
-
-    Args:
-        file_pattern (str): File pattern to search for.
-
-    Returns:
-        tuple: A tuple containing:
-            - bool: True if a recent file exists, False otherwise.
-            - str: Path to the most recent file if it exists, otherwise None.
-    """
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    current_date_obj = datetime.strptime(current_date, "%Y-%m-%d")
-    directory = "file_data"
-    files = glob.glob(os.path.join(directory, file_pattern))
-    most_recent_file = None
-    most_recent_date = None
-    exists = False
-    for file in files:
-        file_date_str = os.path.basename(file).split("_")[1].split(".")[0]
-        file_date_obj = datetime.strptime(file_date_str, "%Y-%m-%d")
-        if current_date_obj - file_date_obj < timedelta(days=365):
-            if most_recent_date is None or file_date_obj > most_recent_date:
-                most_recent_file = file
-                most_recent_date = file_date_obj
-                exists = True
-    return exists, most_recent_file
-
-
-def download_dbtopo(url):
+def download_dbtopo(url: str) -> gpd.GeoDataFrame:
     """
     Download Batiments from IGN BD TOPO V3.
 
@@ -76,9 +46,10 @@ def download_dbtopo(url):
     Returns:
         gdf (GeoDataFrame): GeoDataFrame with data from URL
     """
-    exists, most_recent_file = recent_file_exist("batiments_*.geojson")
-    if exists:
-        gdf = gpd.read_file(most_recent_file)
+    current_year = datetime.now().strftime("%Y")
+    file_path = f"file_data/batiments_{current_year}.geojson"
+    if os.path.isfile(file_path):
+        gdf = gpd.read_file(file_path)
     else:  # Load data
         params = {
             "SERVICE": "WFS",
@@ -90,8 +61,6 @@ def download_dbtopo(url):
             "COUNT": 5000,
         }
         cities = select_city(None)
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        output_file = f"file_data/batiments_{current_date}.geojson"
 
         all_geometries = []
 
@@ -123,11 +92,11 @@ def download_dbtopo(url):
         gdf = gpd.GeoDataFrame(
             pd.concat(all_geometries, ignore_index=True), crs="EPSG:2154"
         )
-        gdf.to_file(output_file, driver="GeoJSON")
+        gdf.to_file(file_path, driver="GeoJSON")
     return gdf
 
 
-def download_cerema(url):
+def download_cerema(url: str) -> gpd.GeoDataFrame:
     """
     Download Friches from CEREMA API.
 
@@ -137,12 +106,12 @@ def download_cerema(url):
     Returns:
         gdf (GeoDataFrame): GeoDataFrame with data from URL
     """
-    exists, most_recent_file = recent_file_exist("cartofriches_*.geojson")
-    if exists:
-        gdf = gpd.read_file(most_recent_file)
+
+    current_year = datetime.now().strftime("%Y")
+    file_path = f"file_data/cartofriches_{current_year}.geojson"
+    if os.path.isfile(file_path):
+        gdf = gpd.read_file(file_path)
     else:  # Load data
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        output_file = f"file_data/cartofriches_{current_date}.geojson"
         coddep = "69"
         cities = select_city(None)
 
@@ -150,7 +119,7 @@ def download_cerema(url):
         cities_4326 = cities.to_crs(4326)
         combined_gdf = gpd.GeoDataFrame()
 
-        max_retries = 3  # Number of retries, CEREMA API is shit
+        max_retries = 3  # Number of retries, CEREMA API is not always reliable
         backoff_factor = 2  # Exponential wait if fail to avoid hitting API limits
 
         all_geometries = []
@@ -186,11 +155,11 @@ def download_cerema(url):
         gdf = gpd.GeoDataFrame(pd.concat(all_geometries, ignore_index=True))
         gdf.crs = 4326
         gdf = gdf.to_crs(2154)
-        gdf.to_file(output_file, driver="GeoJSON")
+        gdf.to_file(file_path, driver="GeoJSON")
     return gdf
 
 
-def download_from_url(url, layer_name):
+def download_from_url(url: str, layer_name: str) -> gpd.GeoDataFrame:
     """
     Download data from a URL.
 
@@ -217,10 +186,12 @@ def download_from_url(url, layer_name):
     return gdf
 
 
-def read_data(data_config):
-    """Read data from a file or URL and return a GeoDataFrame
+def read_data(data_config: dict) -> gpd.GeoDataFrame:
+    """Read data from a file or URL and return a GeoDataFrame.
+
     Args:
         data_config (dict): Contains either URL of the data or path to the file.
+
     Returns:
         df (GeoDataFrame): Use TARGET_PROJ and null and not valid geometry are removed.
     """
@@ -238,7 +209,7 @@ def read_data(data_config):
     return df
 
 
-def apply_actions(df, actions):
+def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
     """
     Apply a sequence of actions to a Geometry.
 
@@ -289,7 +260,7 @@ def apply_actions(df, actions):
     return df
 
 
-def process_data(df: gpd.GeoDataFrame, data_config):
+def process_data(df: gpd.GeoDataFrame, data_config: dict) -> list:
     """
     Process geometries.
 
@@ -318,12 +289,12 @@ def process_data(df: gpd.GeoDataFrame, data_config):
     return datas
 
 
-def save_geometries(datas, data_config) -> None:
+def save_geometries(datas: list[dict], data_config: dict) -> None:
     """
     Save geometries to the database.
 
     Args:
-        datas (GeoDataFrame): GeoDataFrame to save to the database.
+        datas (list[dict]): List of dictionaries containing geometries and metadata to save to the database.
         data_config (dict): Configuration of the data.
 
     Returns:
@@ -344,16 +315,18 @@ def save_geometries(datas, data_config) -> None:
         )
 
 
-def split_large_polygon(geom, grid_size) -> list:
+def split_large_polygon(
+    geom: shapely.geometry.Polygon, grid_size: float
+) -> list[shapely.geometry.MultiPolygon]:
     """
     Split a large polygon into smaller chunks based on a grid.
 
     Args:
         geom (shapely.geometry.Polygon): Polygon to split.
-        grid_size (flaot): Size of the grid in meters.
+        grid_size (float): Size of the grid in meters.
 
     Returns:
-        list(shapely.geometry.MultiPolygon): MultiPolygon with the split parts.
+        list[shapely.geometry.MultiPolygon]: MultiPolygon with the split parts.
     """
     if geom is None or geom.is_empty:
         return None
@@ -380,11 +353,13 @@ def split_large_polygon(geom, grid_size) -> list:
     return result
 
 
-def split_factor_dataframe(factor_df, grid_size=10000) -> gpd.GeoDataFrame:
+def split_factor_dataframe(
+    factor_df: gpd.GeoDataFrame, grid_size: float = 10000
+) -> gpd.GeoDataFrame:
     """Split Polygons of each row into smaller ones, following a grid.
 
     Args:
-        factor_df (geopandas.DataFrame): DataFrame with geometries for a factor
+        factor_df (geopandas.GeoDataFrame): DataFrame with geometries for a factor
         grid_size (float): Size of the grid in meters that will be used to break geometries.
 
     Returns:

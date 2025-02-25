@@ -1,9 +1,19 @@
 """Create a grid over the metropole or a selection of city and save it to DB"""
 import logging
-
+import pandas as pd
+import numpy as np
+import gc
+import itertools
+from tqdm import tqdm
+from typing import Optional, Type
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 from django.contrib.gis.geos import Polygon, GEOSGeometry
+from django.contrib.gis.gdal import DataSource
 from django.core.management import BaseCommand
+from django.db import transaction
+from shapely.geometry import box
 
 
 from iarbre_data.management.commands.utils import select_city
@@ -15,16 +25,96 @@ from iarbre_data.management.commands.utils import (
     remove_duplicates,
 )
 
-import numpy as np
-import gc
-import itertools
-from shapely.geometry import box
-from tqdm import tqdm
-from django.db import transaction
+
+class TileShape:
+    @staticmethod
+    def get_iris_id(polygon):
+        iris_id = Iris.objects.filter(geometry__intersects=polygon)
+        if iris_id:
+            return iris_id[0].id
+        return None
+
+
+class SquareTileShape(TileShape):
+    """Generate square tile."""
+
+    @staticmethod
+    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, side_length=None, sin_60=None):
+        """Snap bounds to the nearest grid alignment."""
+        xmin = np.floor(xmin / grid_size) * grid_size
+        ymin = np.floor(ymin / grid_size) * grid_size
+        xmax = np.ceil(xmax / grid_size) * grid_size
+        ymax = np.ceil(ymax / grid_size) * grid_size
+        return xmin, ymin, xmax, ymax
+
+    @staticmethod
+    def tile_positions(
+        xmin, ymin, xmax, ymax, grid_size, side_length=None, sin_60=None
+    ):
+        """Generate an iterator for all the position where to create a tile."""
+        return itertools.product(
+            np.arange(xmin, xmax + grid_size, grid_size),
+            enumerate(np.arange(ymin, ymax + grid_size, grid_size)),
+        )
+
+    @staticmethod
+    def create_tile_polygon(x, y, grid_size, side_length=None, sin_60=None, i=None):
+        """Create a single square and round geometries to optimize storage."""
+        x1 = x - grid_size
+        y1 = y + grid_size
+        return Polygon.from_bbox([round(x, 2) for x in [x, y, x1, y1]])
+
+
+class HexTileShape(TileShape):
+    """Generate hexagonal tile."""
+
+    @staticmethod
+    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, side_length, sin_60):
+        """Snap bounds to the nearest grid alignment."""
+        hex_width = 3 * side_length
+        hex_height = 2 * side_length * sin_60
+        xmin = hex_width * (np.floor(xmin / hex_width) - 1)
+        ymin = hex_height * (np.floor(ymin / hex_height) - 1)
+        xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
+        ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
+        return xmin, ymin, xmax, ymax
+
+    @staticmethod
+    def tile_positions(xmin, ymin, xmax, ymax, grid_size, side_length, sin_60):
+        """Generate an iterator for all the position where to create a tile."""
+        cols = np.arange(
+            xmin - 3 * side_length, xmax + 3 * side_length, 3 * side_length
+        )
+        rows = np.arange(
+            ymin / sin_60 - side_length, ymax / sin_60 + side_length, side_length
+        )
+        return itertools.product(cols, enumerate(rows))
+
+    @staticmethod
+    def create_tile_polygon(x, y, grid_size, side_length, sin_60, i):
+        """Create a single hexagon and round geometries to optimize storage."""
+        offset = 1.5 * side_length if i % 2 != 0 else 0
+        x0 = x - offset
+        dim = [
+            (x0, y * sin_60),
+            (x0 + side_length, y * sin_60),
+            (x0 + (1.5 * side_length), (y + side_length) * sin_60),
+            (x0 + side_length, (y + (2 * side_length)) * sin_60),
+            (x0, (y + (2 * side_length)) * sin_60),
+            (x0 - (0.5 * side_length), (y + side_length) * sin_60),
+            (x0, y * sin_60),
+        ]
+        return Polygon([(round(x, 2), round(y, 2)) for (x, y) in dim], srid=TARGET_PROJ)
 
 
 def create_tiles_for_city(
-    city, grid_size, tile_shape_cls, logger, batch_size=int(1e6), unit=None, a=1
+    city: DataSource,
+    grid_size: float,
+    tile_shape_cls: Type[TileShape],
+    logger: logging.Logger,
+    batch_size: int = int(1e6),
+    side_length: Optional[float] = None,
+    sin_60: float = 1,
 ) -> None:
     """
     Create tiles (square or hexagonal) for a specific city.
@@ -33,10 +123,10 @@ def create_tiles_for_city(
         city (GeoPandas DataFrame): City GeoDataFrame.
         grid_size (float): The size of the grid in meters.
         tile_shape_cls (class): Class to generate individual tile shapes.
-        logger (Logger): The logger object.
+        logger (logging.Logger): The logger object.
         batch_size (int): The size of the batch to save to DB.
-        unit (float, optional): Parameter for hexagonal tiles.
-        a (float, optional): Parameter for hexagonal tiles.
+        side_length (float, optional): Size of equilateral triangles forming the hexagon.
+        sin_60 (float, optional): The height ratio of equilateral triangles forming the hexagon.
 
     Returns:
         None
@@ -51,23 +141,27 @@ def create_tiles_for_city(
     ymax += grid_size
     # Bounds for the generation
     xmin, ymin, xmax, ymax = tile_shape_cls.adjust_bounds(
-        xmin, ymin, xmax, ymax, grid_size, unit, a
+        xmin, ymin, xmax, ymax, grid_size, side_length, sin_60
     )
 
     tiles = []
     tile_count = 0
 
     for x, (i, y) in tqdm(
-        tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a)
+        tile_shape_cls.tile_positions(
+            xmin, ymin, xmax, ymax, grid_size, side_length, sin_60
+        )
     ):
         tile = box(
-            x, y * a, x - 3 * grid_size, y * a + 3 * grid_size
+            x, y * sin_60, x - 3 * grid_size, y * sin_60 + 3 * grid_size
         )  # square of size 3 * grid_size
         if not city_geom.intersects(tile):
             continue
 
         tile_count += 1
-        polygon = tile_shape_cls.create_tile_polygon(x, y, grid_size, unit, a, i)
+        polygon = tile_shape_cls.create_tile_polygon(
+            x, y, grid_size, side_length, sin_60, i
+        )
 
         iris_id = tile_shape_cls.get_iris_id(polygon)
 
@@ -84,97 +178,22 @@ def create_tiles_for_city(
         # Avoid OOM errors
         if tile_count % batch_size == 0:
             with transaction.atomic():
-                Tile.objects.bulk_create(tiles, batch_size=batch_size // 2)
+                Tile.objects.bulk_create(tiles, batch_size=batch_size)
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()
             gc.collect()
 
     if tiles:  # Save last batch
-        Tile.objects.bulk_create(tiles, batch_size=batch_size // 2)
+        Tile.objects.bulk_create(tiles, batch_size=batch_size)
     City.objects.filter(id=city.id).update(tiles_generated=True)
 
 
-class TileShape:
-    @staticmethod
-    def get_iris_id(polygon):
-        iris_id = Iris.objects.filter(geometry__intersects=polygon)
-        if iris_id:
-            return iris_id[0].id
-        return None
-
-
-class SquareTileShape(TileShape):
-    """Generate square tile."""
-
-    @staticmethod
-    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, unit=None, a=None):
-        """Snap bounds to the nearest grid alignment."""
-        xmin = np.floor(xmin / grid_size) * grid_size
-        ymin = np.floor(ymin / grid_size) * grid_size
-        xmax = np.ceil(xmax / grid_size) * grid_size
-        ymax = np.ceil(ymax / grid_size) * grid_size
-        return xmin, ymin, xmax, ymax
-
-    @staticmethod
-    def tile_positions(xmin, ymin, xmax, ymax, grid_size, unit=None, a=None):
-        """Generate an iterator for all the position where to create a tile."""
-        return itertools.product(
-            np.arange(xmin, xmax + grid_size, grid_size),
-            enumerate(np.arange(ymin, ymax + grid_size, grid_size)),
-        )
-
-    @staticmethod
-    def create_tile_polygon(x, y, grid_size, unit=None, a=None, i=None):
-        """Create a single square and round geometries to optimize storage."""
-        x1 = x - grid_size
-        y1 = y + grid_size
-        return Polygon.from_bbox([round(x, 2) for x in [x, y, x1, y1]])
-
-
-class HexTileShape(TileShape):
-    """Generate hexagonal tile."""
-
-    @staticmethod
-    def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, unit, a):
-        """Snap bounds to the nearest grid alignment."""
-        hex_width = 3 * unit
-        hex_height = 2 * unit * a
-        xmin = hex_width * (np.floor(xmin / hex_width) - 1)
-        ymin = hex_height * (np.floor(ymin / hex_height) - 1)
-        xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
-        ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
-        return xmin, ymin, xmax, ymax
-
-    @staticmethod
-    def tile_positions(xmin, ymin, xmax, ymax, grid_size, unit, a):
-        """Generate an iterator for all the position where to create a tile."""
-        cols = np.arange(xmin - 3 * unit, xmax + 3 * unit, 3 * unit)
-        rows = np.arange(ymin / a - unit, ymax / a + unit, unit)
-        return itertools.product(cols, enumerate(rows))
-
-    @staticmethod
-    def create_tile_polygon(x, y, grid_size, unit, a, i):
-        """Create a single hexagon and round geometries to optimize storage."""
-        offset = 1.5 * unit if i % 2 != 0 else 0
-        x0 = x - offset
-        dim = [
-            (x0, y * a),
-            (x0 + unit, y * a),
-            (x0 + (1.5 * unit), (y + unit) * a),
-            (x0 + unit, (y + (2 * unit)) * a),
-            (x0, (y + (2 * unit)) * a),
-            (x0 - (0.5 * unit), (y + unit) * a),
-            (x0, y * a),
-        ]
-        return Polygon([(round(x, 2), round(y, 2)) for (x, y) in dim], srid=TARGET_PROJ)
-
-
-def clean_outside(selected_city, batch_size) -> None:
+def clean_outside(selected_city: pd.DataFrame, batch_size: int) -> None:
     """
     Remove all tiles outside the selected cities.
 
     Args:
-        selected_city (DataFrame): The DataFrame of the selected cities.
+        selected_city (pd.DataFrame): The DataFrame of the selected cities.
         batch_size (int): The size of the batch to delete.
 
     Returns:
@@ -232,19 +251,28 @@ class Command(BaseCommand):
 
     @staticmethod
     def _create_grid_city(
-        city, batch_size, logger, grid_type, unit, a, grid_size, delete
-    ):
+        self,
+        city: City,
+        batch_size: int,
+        logger: logging.Logger,
+        grid_type: int,
+        side_length: Optional[float],
+        sin_60: float,
+        grid_size: float,
+        delete: bool,
+    ) -> None:
         """
         Create grid for a specific city.
 
         Args:
             city (City): The city object with geometry, id and name.
             batch_size (int): The size of the batch to save to the DB.
-            logger (Logger): The logger object.
+            logger (logging.Logger): The logger object.
             grid_type (int): The type of grid to create.
-            unit (float): The size of the hexagon in meters (for hexagonal grid only).
-            a (float): The ratio of the hexagon (for hexagonal grid only).
+            side_length (float, optional): The size of equilateral triangles forming the hexagon. (for hexagonal grid only).
+            sin_60 (float): The height ratio of equilateral triangles forming the hexagon (for hexagonal grid only).
             grid_size (float): The size of the grid in meters (for square grid).
+            delete (bool): Flag to indicate if existing tiles should be deleted.
 
         Returns:
             None
@@ -272,7 +300,7 @@ class Command(BaseCommand):
         print("Creating new tiles.")
         if grid_type == 1:  # Hexagonal grid
             create_tiles_for_city(
-                city, grid_size, HexTileShape, logger, batch_size, unit, a
+                city, grid_size, HexTileShape, logger, batch_size, side_length, sin_60
             )
         elif grid_type == 2:  # square grid
             create_tiles_for_city(city, grid_size, SquareTileShape, logger, batch_size)
@@ -290,8 +318,8 @@ class Command(BaseCommand):
             raise ValueError("Grid type should be either 1 (hexagonal) or 2 (square).")
         selected_city = select_city(insee_code_city)
         desired_area = grid_size * grid_size
-        unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
-        a = np.sin(np.pi / 3)
+        side_length = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
+        sin_60 = np.sin(np.pi / 3)
         total_city = len(selected_city)
         processed_city = 0
         with ThreadPoolExecutor(max_workers=12) as executor:
@@ -302,8 +330,8 @@ class Command(BaseCommand):
                     batch_size,
                     logger,
                     grid_type,
-                    unit,
-                    a,
+                    side_length,
+                    sin_60,
                     grid_size,
                     delete,
                 ): city
