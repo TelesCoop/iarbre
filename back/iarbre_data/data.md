@@ -1,19 +1,24 @@
 # Sources de données
 
-# Format données
+## Format données
 
-## Données open-data
+### Structuration de la donnée
+
+Les données que l'on récupère sont des géométries de type `POLYGON`, `LINESTRING` ou `POINT`. Un certain nombre de transformation
+sont appliquées pour transformer en un `POLYGON` qui représente l'occupation au sol du facteur.
+
+### Données open-data
 
 Toues les données de https://data.grandlyon.com sont récupérées sur leur `geoserver` en utilisant le `WFS` (Web Feature Service).
 Les données sont donc récupérées au format `GML3` (Geography Markup Language), un subset de XML. On récupère les données directement dans le référentiel (EPSG) 2154, Lambert-93. Pour le format de l'URL, il est spécifié en suivant les liens de chaque données.
 
 Pour les données BD TOPO et Cartofriches, voir le lien pour les paramètres de l'API.
 
-## Données autres
+### Données autres
 
 Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été récupéres directement auprès des services métropolitains.
 
-## Tableau récapitulatif
+### Tableau récapitulatif
 
 | Nom                                           | Facteur                                                                                          | Source                       | Lien                                                                                                                                       |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -42,7 +47,7 @@ Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été ré
 | Lignes souterraines basse et moyenne tension  | Rsx souterrains ERDF                                                                             | Enedis                       | Enedis                                                                                                                                     |
 | Ligne aérienne basse et moyenne tension       | Rsx aériens ERDF                                                                                 | Enedis                       | Enedis                                                                                                                                     |
 
-# Pondération des facteurs
+## Pondération des facteurs
 
 La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable
 et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
