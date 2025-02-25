@@ -1,6 +1,6 @@
 - name: Maxime Tribolet
   title: Chef de projet
-  function: Telescoop
+  function: TelesCoop
   portrait: max.png
 - name: David Parent
   title: Responsable de Erasme
@@ -8,7 +8,7 @@
   portrait: parent.png
 - name: Geoffrey Dorne
   title: Designer
-  function: Telescoop
+  function: TelesCoop
   portrait: geoff.png
 - name: Anthony Angelot
   title: Directeur de projet
@@ -16,7 +16,7 @@
   portrait: angelot.png
 - name: Ludovic De Clermont
   title: Data-scientist
-  function: Telescoop
+  function: TelesCoop
   portrait: ludo.png
 - name: Patrick Vincent
   title: Directeur de projet
@@ -28,15 +28,15 @@
   portrait: nat.png
 - name: Antoine Bernier
   title: Développeur
-  function: Telescoop
+  function: TelesCoop
   portrait: portrait.png
 - name: Romain Matias
   title: Chef de projet, Développeur
   function: Exo-Dev
   portrait: mati.png
-- name: Marc-Antoine Augier
+- name: Marc-Antoine Augé
   title: Développeur
-  function: Telescoop
+  function: TelesCoop
   portrait: ma.png
 - name: Nicolas Sapay
   title: Senior Lead Tech
@@ -44,9 +44,9 @@
   portrait: sap.png
 - name: Quentin Madura
   title: Développeur
-  function: Telescoop
+  function: TelesCoop
   portrait: mad.png
 - name: Maxime Bellec
   title: Développeur
-  function: Telescoop
+  function: TelesCoop
   portrait: bel.png
