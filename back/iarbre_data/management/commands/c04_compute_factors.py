@@ -15,7 +15,7 @@ from iarbre_data.models import Data, Tile, TileFactor, City
 TILE_BATCH_SIZE = 10_000
 
 
-def has_intersection(geom, tiles_index):
+def has_intersection(geom, tiles_index) -> bool:
     """
     Check if a geometry intersects with any tile.
 
@@ -24,7 +24,7 @@ def has_intersection(geom, tiles_index):
         tiles_index (geopandas.GeoDataFrame.sindex):  R-tree spatial index of the tiles.
 
     Returns:
-        bool: True if the geometry intersects with any tile, False otherwise.
+        True if the geometry intersects with any tile, False otherwise.
     """
     if geom is None or geom.is_empty:
         return False
@@ -43,7 +43,7 @@ def _compute_for_factor_partial_tiles(factor_df, tiles_df, std_area):
         std_area (float): Standard tile area in square meters (m²).
 
     Returns:
-        list[TileFactor]: List of TileFactor objects to be created in the database
+        (list[TileFactor]): List of TileFactor objects to be created in the database
     """
     # Filter polygons in the bounding box of the tiles
     tiles_index = tiles_df.sindex
