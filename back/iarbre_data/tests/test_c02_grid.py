@@ -23,12 +23,13 @@ class C02GridTestCase(TestCase):
         c01_city_iris._insert_cities(data)
         self.grid_size = 200
         desired_area = self.grid_size * self.grid_size
-        self.unit = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
-        self.a = np.sin(np.pi / 3)
+        self.side_length = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
+        self.sin_60 = np.sin(np.pi / 3)
 
     def test_create_square_tile(self):
         code = 69286
         selected_city = select_city(str(code))
+        print("Creating tiles")
         create_tiles_for_city(
             city=selected_city.iloc[0],
             grid_size=self.grid_size,
@@ -56,8 +57,8 @@ class C02GridTestCase(TestCase):
             tile_shape_cls=HexTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
-            unit=self.unit,
-            a=self.a,
+            side_length=self.side_length,
+            height_ratio=self.sin_60,
         )
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
@@ -67,8 +68,10 @@ class C02GridTestCase(TestCase):
         self.assertEqual(int(tile.geometry.area), self.grid_size**2)
         coords = tile.geometry.coords[0]
         self.assertEqual(len(coords), 7)  # it's a hex
-        self.assertEqual(int(coords[1][0] - coords[0][0]), int(self.unit))
-        self.assertEqual(int(coords[2][1] - coords[0][1]), int(self.a * self.unit))
+        self.assertEqual(int(coords[1][0] - coords[0][0]), int(self.side_length))
+        self.assertEqual(
+            int(coords[2][1] - coords[0][1]), int(self.sin_60 * self.side_length)
+        )
 
     def test_clean_outside(self):
         codes = [69286, 69071]
@@ -80,8 +83,8 @@ class C02GridTestCase(TestCase):
                 HexTileShape,
                 logger=logging.getLogger(__name__),
                 batch_size=int(1e6),
-                unit=self.unit,
-                a=self.a,
+                side_length=self.side_length,
+                height_ratio=self.sin_60,
             )
         selected_city = select_city(str(codes[0]))
         clean_outside(selected_city, 1e4)
