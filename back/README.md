@@ -8,7 +8,7 @@ Le backend utilise [Django](https://www.djangoproject.com/) et une base de donn�
 Il existe trois applications Django :
 
 - `iarbre_data` pour les calculs d’occupation des sols ;
-- `plantability` pour le calcul de l'inidice de plantabilité. Le développement correspond à une réplication de [l'implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) réalisée par [Exo-dev](https://exo-dev.fr/).
+- `plantability` pour le calcul de l'indice de plantabilité. Le développement correspond à une réplication de [l'implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) réalisée par [Exo-dev](https://exo-dev.fr/).
 - `api` pour rendre accessible ces résultats par à une API rest ;
 
 ## Contenu
