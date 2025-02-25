@@ -28,7 +28,7 @@
 
 - name: Install MkDocs and dependencies
   pip:
-    requirements: mkdocs-requirements.txt
+    requirements: "{{ docs_path }}/mkdocs-requirements.txt"
     virtualenv: "{{ venv.path }}"
 
 - name: Init documentation
