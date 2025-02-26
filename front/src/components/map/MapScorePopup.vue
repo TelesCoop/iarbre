@@ -27,15 +27,16 @@ const label = computed(() => {
   <div class="popover">
     <div class="columns">
       <div class="left">
-        <score-label :score="4" label="4/10" size="huge" />
+        <score-label :score="score" :label="`${score}/10`" size="huge" />
       </div>
       <div class="right">
         <h3 class="title">{{ label }}</h3>
-        <button class="button primary small rounded">Voir les détails</button>
+        <!-- <button class="button primary small rounded">Voir les détails</button> -->
       </div>
     </div>
-    <div class="text-light-green">
-      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E <button class="button text">(copy)</button>
+    <div class="text-light-green text-right">
+      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E
+      <!--  <button class="button text">(copy)</button> -->
     </div>
   </div>
 </template>

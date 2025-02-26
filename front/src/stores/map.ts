@@ -1,4 +1,4 @@
-import { computed, ref, nextTick } from "vue"
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
@@ -20,6 +20,15 @@ export const useMapStore = defineStore("map", () => {
     return `${modelType}-layer`
   }
 
+  const extractFeatureIndice = (features: Array<any>, modelType: ModelType) => {
+    if (!features) return undefined
+    const f = features.filter(
+      (feature: any) => (feature.layer.id = getLayerIdByModelType(modelType))
+    )
+    if (f.length === 0) return undefined
+    return f[0].properties.indice
+  }
+
   const setupTile = (map: Map, modelType: ModelType, mapId: string) => {
     const sourceId = getSourceIdByModelType(modelType)
     const layerId = getLayerIdByModelType(modelType)
@@ -37,11 +46,11 @@ export const useMapStore = defineStore("map", () => {
 
     map.on("click", layerId, (e) => {
       popup.value = {
-        score: 4,
+        score: Math.round(10 * extractFeatureIndice(e.features!, modelType)),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
       }
-      console.log(e.features)
+
       new Popup()
         .setLngLat(e.lngLat)
         .setDOMContent(document.getElementById(`popup-${mapId}`)!)

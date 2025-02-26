@@ -50,7 +50,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
             border-bottom-color: $scale-0
         &::after
             border-top-color: $scale-0
-    &.scale-2
+    &.scale-1, &.scale-2
         background-color: $scale-2
         color: $brown
         &::before
@@ -58,7 +58,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         &::after
             border-top-color: $scale-2
 
-    &.scale-4
+    &.scale-3, &.scale-4
         background-color: $scale-4
         color: $brown
         &::before
@@ -66,7 +66,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         &::after
             border-top-color: $scale-4
 
-    &.scale-6
+    &.scale-5, &.scale-6
         color: $brown
         background-color: $scale-6
         &::before
@@ -74,7 +74,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         &::after
             border-top-color: $scale-6
 
-    &.scale-8
+    &.scale-7, &.scale-8
         color: $brown
         background-color: $scale-8
         &::before
@@ -82,7 +82,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         &::after
             border-top-color: $scale-8
 
-    &.scale-10
+    &.scale-9, &.scale-10
         background-color: $scale-10
         color: $white
         &::before
@@ -110,7 +110,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         width: 0
 
     &.huge
-        font-size: 1.6rem
+        font-size: 1.4rem
         line-height: 2.3rem
 
     &.small
