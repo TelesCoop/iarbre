@@ -130,13 +130,32 @@ hr.full-width {
 }
 
 .bandeau-logo {
-  flex: 1; /* 1/3 pour le logo */
+  flex: 0.3; /* 1/3 pour le logo */
   text-align: right; /* Aligne le logo à droite */
 }
 
 .bandeau-logo img {
   max-width: 150px; /* Taille maximale pour le logo */
   height: auto; /* Conserve les proportions */
+}
+
+/* Bandeau CDC */
+.bandeau-cdc {
+  background-color: #efefed; /* Couleur de fond légèrement grise */
+  padding: 40px 20px; /* Espacement interne */
+}
+
+.bandeau-cdc .bandeau-logo {
+  text-align: left; /* Logo aligné à gauche */
+  flex: 0.3; /* 1/3 pour le logo */
+}
+.bandeau-cdc .bandeau-text {
+  flex: 2; /* 2/3 pour le texte */
+  font-family: $main-font, Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  text-align: left;
+  color: #32312d;
 }
 
 /* Bandeau de navigation */
@@ -306,30 +325,6 @@ hr.full-width {
   display: inline-block; /* Maintient la taille */
   font-weight: normal; /* Texte non gras */
   box-shadow: none; /* Supprime l'ombre */
-}
-
-.bandeau-cdc {
-  background-color: #efefed; /* Couleur de fond légèrement grise */
-  padding: 40px 20px; /* Espacement interne */
-}
-
-.bandeau-cdc .bandeau-content {
-  display: flex;
-  flex-wrap: wrap; /* Adapte le contenu sur mobile */
-  align-items: center; /* Centre verticalement */
-  justify-content: space-between; /* Équilibre horizontalement */
-  max-width: 1200px;
-  margin: 0 auto; /* Centre le contenu */
-}
-
-.bandeau-cdc .bandeau-logo {
-  flex: 1; /* Prend 1/3 de l'espace */
-  text-align: left; /* Logo aligné à gauche */
-}
-
-.bandeau-cdc .bandeau-logo img {
-  max-width: 150px; /* Limite la taille du logo */
-  height: auto;
 }
 
 .discord-button:hover {
