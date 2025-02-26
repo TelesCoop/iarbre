@@ -1,5 +1,5 @@
 [prod]
-plantabilite.telescoop.fr:42722 ansible_user=ubuntu
+s00.tlscp.fr:42722 ansible_user=ubuntu
 
 [geoserver]
 s00.tlscp.fr:42722 ansible_user=ubuntu
