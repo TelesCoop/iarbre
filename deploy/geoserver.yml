@@ -1,0 +1,5 @@
+---
+- hosts:
+    - geoserver
+  roles:
+    - geoserver
