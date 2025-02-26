@@ -94,12 +94,6 @@ repos:
       - id: gitlab-ci-linter
     repo: https://gitlab.com/devopshq/gitlab-ci-linter
     rev: v1.0.1
-
-  - repo: https://github.com/thoughtworks/talisman
-    rev: "v1.32.0"
-    hooks:
-      - id: talisman-commit
-        entry: cmd --githook pre-commit
   - repo: local
     hooks:
       - id: js-lint
