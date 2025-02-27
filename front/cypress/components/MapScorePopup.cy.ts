@@ -9,5 +9,10 @@ describe("Component:MapScorePopup", () => {
         lng: 4.8537684279176645
       }
     })
+
+    cy.contains("8/10")
+    cy.contains("45.76")
+    cy.contains("4.85")
+    cy.contains("Plantabilité élevée")
   })
 })
