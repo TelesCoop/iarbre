@@ -27,80 +27,81 @@
   <a href="https://carte.iarbre.fr/" target="_blank" rel="noopener noreferrer">
     <img src="/images/mockup.jpg" alt="Mockup du projet IA.rbre" />
   </a>
+</section>
 
-  <section class="content">
-    <div class="split-section reversed-section">
-      <div class="left">
-        <img src="/images/telescoop.png" alt="Logo TelesCoop" />
-      </div>
-      <div class="right">
-        <div class="text">
-          {{ with .Resources.GetMatch "telescoop.md" }} {{ .Content }} {{ end }}
-        </div>
+<section class="content">
+  <div class="split-section reversed-section">
+    <div class="left">
+      <img src="/images/telescoop.png" alt="Logo TelesCoop" />
+    </div>
+    <div class="right">
+      <div class="text">
+        {{ with .Resources.GetMatch "telescoop.md" }} {{ .Content }} {{ end }}
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <hr class="full-width" />
+<hr class="full-width" />
 
-  <section class="content">
-    <div class="split-section reversed-section">
-      <div class="left">
-        <img
-          src="/images/part.png"
-          alt="Logo partenaires"
-          class="logo-partners"
-        />
-      </div>
-      <div class="right">
-        <div class="text">
-          <p>
-            — Le <strong>consortium IA.rbre</strong> vise à développer des
-            outils pour la <strong>végétalisation</strong> et l’<strong
-              >adaptation au changement climatique</strong
-            >, en collaboration avec la
-            <a href="https://www.grandlyon.com" target="_blank"
-              ><strong>Métropole de Lyon</strong></a
-            >, le
-            <a href="https://liris.cnrs.fr" target="_blank"
-              ><strong>laboratoire LIRIS</strong></a
-            >
-            et d'autres partenaires. Le laboratoire
-            <a href="https://www.erasme.org" target="_blank"
-              ><strong>Erasme</strong></a
-            >
-            joue un rôle clé en coordonnant des projets de
-            <strong>co-développement</strong> pour pérenniser et généraliser les
-            innovations publiques.
-          </p>
+<section class="content">
+  <div class="split-section reversed-section">
+    <div class="left">
+      <img
+        src="/images/part.png"
+        alt="Logo partenaires"
+        class="logo-partners"
+      />
+    </div>
+    <div class="right">
+      <div class="text">
+        <p>
+          — Le <strong>consortium IA.rbre</strong> vise à développer des outils
+          pour la <strong>végétalisation</strong> et l’<strong
+            >adaptation au changement climatique</strong
+          >, en collaboration avec la
+          <a href="https://www.grandlyon.com" target="_blank"
+            ><strong>Métropole de Lyon</strong></a
+          >, le
+          <a href="https://liris.cnrs.fr" target="_blank"
+            ><strong>laboratoire LIRIS</strong></a
+          >
+          et d'autres partenaires. Le laboratoire
+          <a href="https://www.erasme.org" target="_blank"
+            ><strong>Erasme</strong></a
+          >
+          joue un rôle clé en coordonnant des projets de
+          <strong>co-développement</strong> pour pérenniser et généraliser les
+          innovations publiques.
+        </p>
 
-          <p>
-            Ces outils permettent une meilleure <strong>analyse</strong> et
-            <strong>visualisation des données</strong>, répondant aux enjeux de
-            <strong>résilience urbaine</strong>. Le projet reflète une dynamique
-            collective d'<strong>innovation ouverte</strong> et d’adaptation aux
-            politiques publiques complexes.
-          </p>
-        </div>
+        <p>
+          Ces outils permettent une meilleure <strong>analyse</strong> et
+          <strong>visualisation des données</strong>, répondant aux enjeux de
+          <strong>résilience urbaine</strong>. Le projet reflète une dynamique
+          collective d'<strong>innovation ouverte</strong> et d’adaptation aux
+          politiques publiques complexes.
+        </p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="discord-section">
-    <div class="discord-container">
-      <p>
-        <strong
-          >Pour suivre l’évolution du projet et participer aux discussions,
-          inscrivez-vous aux actualités !</strong
-        >
-      </p>
-      <a href="#" target="_blank" class="discord-button"
-        >Je m’inscris par e-mail</a
+<section class="discord-section">
+  <div class="discord-container">
+    <p>
+      <strong
+        >Pour suivre l’évolution du projet et participer aux discussions,
+        inscrivez-vous aux actualités !</strong
       >
-    </div>
-  </section>
+    </p>
+    <a href="#" target="_blank" class="discord-button"
+      >Je m’inscris par e-mail</a
+    >
+  </div>
+</section>
 
-  <!-- Section des partenaires
+<!-- Section des partenaires
 <section class="partenaires">
 <h2>Partenaires</h2>
 <div class="logos">
@@ -113,38 +114,54 @@
 </div>
 </section> -->
 
-  <section class="team">
-    <h2>Équipe du projet</h2>
-    <div class="team-grid">
-      {{ range $member := .Site.Data.team }}
-      <div class="team-member">
-        <img
-          src="/images/{{ $member.portrait }}"
-          alt="Photo de {{ $member.name }}"
-        />
-        <h3>{{ $member.name }}</h3>
-        <p class="title">{{ $member.title}}</p>
-        <p class="function">{{ $member.function }}</p>
-      </div>
-      {{ end}}
+<section class="team">
+  <h2>Équipe du projet</h2>
+  <div class="team-grid">
+    {{ range $member := .Site.Data.team }}
+    <div class="team-member">
+      <img
+        src="/images/{{ $member.portrait }}"
+        alt="Photo de {{ $member.name }}"
+      />
+      <h3>{{ $member.name }}</h3>
+      <p class="title">{{ $member.title}}</p>
+      <p class="function">{{ $member.function }}</p>
     </div>
-  </section>
-
-  <section class="bandeau-2030">
-    <div class="bandeau-content">
-      <div class="bandeau-text">
-        <p>
-          #France2030 est un plan ambitieux doté de 54 milliards d’euros visant
-          à transformer durablement les secteurs clés de l’économie française
-          par l’innovation, en soutenant des projets décarbonés et portés par
-          des acteurs émergens pour positionner la France comme leader mondial
-          des technologies et industries du futur.
-        </p>
-      </div>
-      <div class="bandeau-logo">
-        <img src="/images/2030.png" alt="Logo 2030" />
-      </div>
-    </div>
-  </section>
+    {{ end}}
+  </div>
 </section>
+
+<section class="bandeau-2030">
+  <div class="bandeau-content">
+    <div class="bandeau-text">
+      <p>
+        #France2030 est un plan ambitieux doté de 54 milliards d’euros visant à
+        transformer durablement les secteurs clés de l’économie française par
+        l’innovation, en soutenant des projets décarbonés et portés par des
+        acteurs émergens pour positionner la France comme leader mondial des
+        technologies et industries du futur.
+      </p>
+    </div>
+    <div class="bandeau-logo">
+      <img src="/images/2030.png" alt="Logo 2030" />
+    </div>
+  </div>
+</section>
+
+<section class="bandeau-cdc">
+  <div class="bandeau-content">
+    <div class="bandeau-logo">
+      <img src="/images/cdc.png" alt="Logo Caisse des Dépôts" />
+    </div>
+    <div class="bandeau-text">
+      <p>
+        Ce projet est financé par la <strong>Caisse des Dépôts</strong>, un
+        acteur majeur de la transition écologique et du développement des
+        territoires. Découvrez plus sur leur engagement
+        <a href="https://www.caissedesdepots.fr/" target="_blank">ici</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
 {{ end}}

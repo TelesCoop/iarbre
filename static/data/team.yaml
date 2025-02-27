@@ -3,7 +3,7 @@
   function: TelesCoop
   portrait: max.png
 - name: David Parent
-  title: Responsable de Erasme
+  title: Responsable de ERASME
   function: ERASME
   portrait: parent.png
 - name: Geoffrey Dorne
@@ -20,7 +20,7 @@
   portrait: ludo.png
 - name: Patrick Vincent
   title: Directeur de projet
-  function: Erasme
+  function: ERASME
   portrait: vinc.png
 - name: Natacha Salmeron
   title: Geomaticienne
