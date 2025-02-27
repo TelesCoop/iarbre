@@ -134,7 +134,7 @@ class MVTTile(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Tile {self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
+        return f"{self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
 
 
 @receiver(pre_delete, sender=MVTTile)

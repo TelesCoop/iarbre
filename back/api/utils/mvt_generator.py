@@ -122,6 +122,7 @@ class MVTGenerator:
                 )
                 filename = f"{self.layer_name}/{zoom}/{tile.x}/{tile.y}.mvt"
                 mvt_tile = MVTTile(
+                    model_type=self.layer_name,
                     zoom_level=zoom,
                     tile_x=tile.x,
                     tile_y=tile.y,
