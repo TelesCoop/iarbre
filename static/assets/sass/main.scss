@@ -139,25 +139,6 @@ hr.full-width {
   height: auto; /* Conserve les proportions */
 }
 
-/* Bandeau CDC */
-.bandeau-cdc {
-  background-color: #efefed; /* Couleur de fond légèrement grise */
-  padding: 40px 20px; /* Espacement interne */
-}
-
-.bandeau-cdc .bandeau-logo {
-  text-align: left; /* Logo aligné à gauche */
-  flex: 0.3; /* 1/3 pour le logo */
-}
-.bandeau-cdc .bandeau-text {
-  flex: 2; /* 2/3 pour le texte */
-  font-family: $main-font, Arial, sans-serif;
-  font-size: 1.2rem;
-  line-height: 1.6;
-  text-align: left;
-  color: #32312d;
-}
-
 /* Bandeau de navigation */
 .navbar {
   position: relative;
@@ -325,6 +306,25 @@ hr.full-width {
   display: inline-block; /* Maintient la taille */
   font-weight: normal; /* Texte non gras */
   box-shadow: none; /* Supprime l'ombre */
+}
+
+/* Bandeau CDC */
+.bandeau-cdc {
+  background-color: #efefed; /* Couleur de fond légèrement grise */
+  padding: 40px 20px; /* Espacement interne */
+}
+
+.bandeau-cdc .bandeau-logo {
+  text-align: left; /* Logo aligné à gauche */
+  flex: 0.3; /* 1/3 pour le logo */
+}
+.bandeau-cdc .bandeau-text {
+  flex: 2; /* 2/3 pour le texte */
+  font-family: $main-font, Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  text-align: left;
+  color: #32312d;
 }
 
 .discord-button:hover {
