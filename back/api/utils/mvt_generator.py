@@ -1,20 +1,20 @@
 """
 MVT Generator as django-media.
 """
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import gc
 
-from django.conf import settings
 from django.contrib.gis.db.models import Extent
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.db.models import QuerySet
 from shapely import Polygon as Polygon_shapely
 from django.contrib.gis.db.models.functions import Intersection
 import mercantile
 import mapbox_vector_tile
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from iarbre_data.models import MVTTile
 from tqdm import tqdm
-import gc
+
 
 MVT_EXTENT = 4096
 
@@ -22,11 +22,10 @@ MVT_EXTENT = 4096
 class MVTGenerator:
     def __init__(
         self,
-        queryset,
-        layer_name="geometries",
-        zoom_levels=(0, 14),
-        output_dir=None,
-        number_of_thread=1,
+        queryset: QuerySet,
+        layer_name: str = "geometries",
+        zoom_levels: tuple[int, int] = (0, 14),
+        number_of_thread: int = 1,
     ):
         """
         Initialize MVT Generator for Django GeoDjango QuerySet.
@@ -34,18 +33,13 @@ class MVTGenerator:
         Args:
             queryset (QuerySet): QuerySet of the model.
             layer_name (str): Name of the layer to generate MVT tiles for.
-            zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
-            output_dir (str): Output directory to save the MVT tiles.
+            zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
             number_of_thread (int): Number of threads to use for generating tiles.
         """
         self.queryset = queryset
         self.layer_name = layer_name
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_thread = number_of_thread
-
-        # Ensure output directory exists
-        self.output_dir = output_dir or os.path.join(settings.BASE_DIR, "mvt_tiles")
-        os.makedirs(self.output_dir, exist_ok=True)
 
     def generate_tiles(self):
         """Generate MVT tiles for the entire geometry queryset."""
@@ -74,7 +68,7 @@ class MVTGenerator:
                 for future in as_completed(future_to_tiles):
                     future.result()
                     future_to_tiles.pop(future)  # Free RAM after completion
-                    gc.collect()  # just to be sure gc is called...
+                    gc.collect()
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
         """
@@ -95,13 +89,13 @@ class MVTGenerator:
             "north": bbox_polygon.extent[3],
         }
 
-    def _generate_tile_for_zoom(self, tile, zoom):
+    def _generate_tile_for_zoom(self, tile: mercantile.Tile, zoom: int) -> None:
         """
-        Generate an individual MVT tile
+        Generate an individual MVT tile for the given tile and zoom level.
 
         Args:
-            tile (mercantile.Tile): Tile to generate MVT for.
-            zoom (int): Zoom level of the tile.
+            tile (mercantile.Tile): The tile to generate the MVT for.
+            zoom (int): The zoom level of the tile.
 
         Returns:
             None
@@ -113,7 +107,6 @@ class MVTGenerator:
         # Create GeoDjango polygon for tile extent
         tile_polygon = Polygon.from_bbox((west, south, east, north))
         tile_polygon.srid = 3857
-
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
             map_geometry__intersects=tile_polygon
@@ -122,7 +115,6 @@ class MVTGenerator:
         if clipped_queryset.exists():
             # Prepare MVT features
             features = self._prepare_mvt_features(clipped_queryset, tile_polygon)
-
             if features:
                 # Encode MVT
                 mvt_data = mapbox_vector_tile.encode(
@@ -137,7 +129,9 @@ class MVTGenerator:
                 mvt_tile.save_mvt(mvt_data, filename)
 
     @staticmethod
-    def _prepare_mvt_features(queryset, tile_polygon) -> List[Dict[str, Any]]:
+    def _prepare_mvt_features(
+        queryset: QuerySet, tile_polygon: Polygon
+    ) -> List[Dict[str, Any]]:
         """
         Prepare features for MVT encoding.
 
@@ -155,24 +149,55 @@ class MVTGenerator:
         for obj in tqdm(queryset, desc="Preparing MVT features", total=len(queryset)):
             clipped_geom = obj.clipped_geometry
             if not clipped_geom.empty:
-                tile_based_coords = MVTGenerator.transform_to_tile_relative(
-                    clipped_geom, x0, y0, x_span, y_span
-                )
-                feature = {
-                    "geometry": Polygon_shapely(tile_based_coords),
-                    "properties": obj.get_layer_properties(),
-                }
-                features.append(feature)
+                if isinstance(clipped_geom, MultiPolygon):
+                    clipped_geom_list = list(clipped_geom)
+                elif isinstance(clipped_geom, Polygon):
+                    clipped_geom_list = [clipped_geom]
+                else:
+                    raise TypeError("clipped_geom is not MultiPolygon or a Polygon.")
+                for clipped in clipped_geom_list:
+                    tile_based_coords = MVTGenerator.transform_to_tile_relative(
+                        clipped, x0, y0, x_span, y_span
+                    )
+                    feature = {
+                        "geometry": Polygon_shapely(tile_based_coords),
+                        "properties": obj.get_layer_properties(),
+                    }
+                    features.append(feature)
 
         return features
 
     @staticmethod
-    def transform_to_tile_relative(clipped_geom, x0, y0, x_span, y_span):
-        tile_based_coords = []  # Transform geometry in tile relative coordinate
-        for x_merc, y_merc in clipped_geom.coords[0]:
+    def transform_to_tile_relative(
+        clipped_geom: Polygon, x0: float, y0: float, x_span: float, y_span: float
+    ) -> List[Tuple[int, int]]:
+        """
+        Transform coordinates to relative coordinates within the MVT tile.
+
+        Args:
+            clipped_geom (Polygon): The clipped geometry object.
+            x0 (float): The minimum x-coordinate of the tile extent.
+            y0 (float): The minimum y-coordinate of the tile extent.
+            x_span (float): The span of the x-coordinates of the tile extent.
+            y_span (float): The span of the y-coordinates of the tile extent.
+
+        Returns:
+            List[Tuple[int, int]]: List of transformed coordinates relative to the MVT tile.
+        """
+        tile_based_coords = []
+
+        coords = clipped_geom.coords[0]
+
+        if (
+            len(clipped_geom.coords) == 2
+        ):  # Some geometry have too many points and tuple is length 2
+            coords = coords + clipped_geom.coords[1]
+
+        for x_merc, y_merc in coords:
             tile_based_coord = (
                 int((x_merc - x0) * MVT_EXTENT / x_span),
                 int((y_merc - y0) * MVT_EXTENT / y_span),
             )
             tile_based_coords.append(tile_based_coord)
+
         return tile_based_coords

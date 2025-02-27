@@ -79,6 +79,8 @@ def load_data():
     gdf = geopandas.read_file(shp_path)
     gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
+    # Check and explode MultiPolygon geometries
+    gdf = gdf.explode(ignore_index=True)
     gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
     gdf["lcz"] = gdf["lcz"].astype(str)
     return gdf

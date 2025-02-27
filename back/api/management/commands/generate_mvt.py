@@ -1,12 +1,35 @@
 """
 Generate MVT tiles for geographic model.
+
+This script provides a Django management command to generate MVT (Mapbox Vector Tiles)
+for specified geographic models. It supports multi-threading for improved performance
+and allows for the deletion of existing tiles before generating new ones.
+
+Usage:
+    python manage.py generate_mvt_tiles --number_of_thread=<num> --model=<model> [--keep]
+
+Arguments:
+    --number_of_thread: Number of threads to use for generating tiles (default: 1).
+    --model: The model to transform to MVT (default: "Tile").
+    --keep: Keep already existing tiles, do not delete them (default: False).
+
+Models supported:
+    - Tile
+    - Lcz
+
+Example:
+    python manage.py generate_mvt_tiles --number_of_thread=4 --model=Tile --keep
 """
-import os
+
+from typing import Tuple, Type
 
 from django.core.management import BaseCommand
+from django.db import transaction
+from django.db.models import QuerySet, Model
+from tqdm import tqdm
 
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data import settings
+
 from iarbre_data.models import Tile, Lcz, MVTTile
 
 
@@ -33,17 +56,25 @@ class Command(BaseCommand):
         )
 
     def generate_tiles_for_model(
-        self, model, queryset, output_dir, zoom_levels=(8, 20), number_of_thread=1
-    ):
+        self,
+        model: Type[Model],
+        queryset: QuerySet,
+        zoom_levels: Tuple[int, int] = (8, 20),
+        number_of_thread: int = 1,
+    ) -> None:
         """
         Generate MVT tiles for a geographic model.
 
+        This method generates MVT (Mapbox Vector Tiles) for a specified geographic model
+        based on the provided queryset and zoom levels. It utilizes multiple threads
+        to enhance performance.
+
         Args:
-            model (Model): Model to generate MVT tiles for.
-            queryset (QuerySet): Queryset of the model.
-            output_dir (str): Output directory to save the MVT tiles.
-            zoom_levels (tuple): Tuple of zoom levels to generate tiles for.
-            number_of_thread (int): Number of threads to use for generating tiles.
+            model (Type[Model]): The model class to generate MVT tiles for.
+            queryset (QuerySet): The queryset of the model instances to process.
+            zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
+                                           to generate tiles for (inclusive).
+            number_of_thread (int): The number of threads to use for generating tiles.
 
         Returns:
             None
@@ -52,7 +83,6 @@ class Command(BaseCommand):
             queryset=queryset,
             zoom_levels=zoom_levels,
             layer_name=model.type,
-            output_dir=output_dir,
             number_of_thread=number_of_thread,
         )
 
@@ -63,21 +93,29 @@ class Command(BaseCommand):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
         model = options["model"]
+        batch_size = 10000
         if model == "Tile":
             mdl = Tile
         elif model == "Lcz":
             mdl = Lcz
         else:
-            raise ValueError(f"Unsupported model: {model}")
+            raise ValueError(
+                f"Unsupported model: {model}. Should be either 'Tile' or 'Lcz'."
+            )
 
-        # Generate MVT tiles for Tile model
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {model}.")
-            MVTTile.objects.filter(model_type=mdl.type).delete()
+            qs = MVTTile.objects.filter(model_type=mdl.type).values_list(
+                "id", flat=True
+            )
+            for start in tqdm(range(0, len(qs), batch_size)):
+                batch_ids = qs[start : start + batch_size]
+                with transaction.atomic():
+                    deleted_count, _ = Tile.objects.filter(id__in=batch_ids).delete()
+        # Generate new tiles
         self.generate_tiles_for_model(
             mdl,
             mdl.objects.all(),
-            os.path.join(settings.BASE_DIR, "mvt_files", model.lower()),
-            (8, 16),
+            (10, 20),
             number_of_thread,
         )
