@@ -186,8 +186,8 @@ def clean_outside(selected_city, batch_size) -> None:
     total_records = Tile.objects.all().count()
     total_deleted = 0
     qs = Tile.objects.all().values_list("id", flat=True)
-    for start in tqdm(range(0, total_records, batch_size * 10)):
-        batch_ids = qs[start : start + batch_size * 10]
+    for start in tqdm(range(0, total_records, batch_size)):
+        batch_ids = qs[start : start + batch_size]
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)

@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models import Avg
 
 from api.constants import ModelType
+from iarbre_data.settings import TARGET_MAP_PROJ
 
 
 class TileAggregateBase(models.Model):
@@ -53,7 +54,7 @@ class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=3857, null=True, blank=True)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
@@ -146,7 +147,7 @@ class Lcz(models.Model):
     """Elementary element on the map with the value of the LCZ description."""
 
     geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=3857, null=True, blank=True)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     lcz_indice = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
 
