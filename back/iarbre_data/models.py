@@ -159,39 +159,39 @@ class Lcz(models.Model):
         if self.lcz_indice is None:
             return "purple"
         elif self.lcz_indice == "LCZ1":
-            return "#8c0000"
+            return "#8C0000"
         elif self.lcz_indice == "LCZ2":
-            return "#d10000"
+            return "#D10000"
         elif self.lcz_indice == "LCZ3":
-            return "#ff0000"
+            return "#FF0000"
         elif self.lcz_indice == "LCZ4":
-            return "#bf4d00"
+            return "#BF4D00"
         elif self.lcz_indice == "LCZ5":
-            return "#fa6600"
+            return "#FA6600"
         elif self.lcz_indice == "LCZ5":
-            return "#ff9955"
+            return "#FF9955"
         elif self.lcz_indice == "LCZ6":
-            return "#faee05"
+            return "#FAEE05"
         elif self.lcz_indice == "LCZ7":
-            return "#bcbcbc"
+            return "#BCBCBC"
         elif self.lcz_indice == "LCZ8/10":
-            return "#ffccaa"
+            return "#FFCCAA"
         elif self.lcz_indice == "LCZ9":
-            return "#006a00"
+            return "#006A00"
         elif self.lcz_indice == "LCZA":
-            return "#00aa00"
+            return "#00AA00"
         elif self.lcz_indice == "LCZB":
             return "#648525"
         elif self.lcz_indice == "LCZC":
             return ""
         elif self.lcz_indice == "LCZD":
-            return "#b9db79"
+            return "#B9DB79"
         elif self.lcz_indice == "LCZE":
             return "#000000"
         elif self.lcz_indice == "LCZF":
-            return "#fbf7ae"
+            return "#FBF7AE"
         else:
-            return "#6a6aff"
+            return "#6A6AFF"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT layer."""

@@ -24,9 +24,8 @@ Example:
 from typing import Tuple, Type
 
 from django.core.management import BaseCommand
-from django.db import transaction
+
 from django.db.models import QuerySet, Model
-from tqdm import tqdm
 
 from api.utils.mvt_generator import MVTGenerator
 
@@ -46,7 +45,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--model",
             type=str,
-            default="Tile",
+            required=True,
             help="What model to transform to MVT.",
         )
         parser.add_argument(
@@ -93,7 +92,6 @@ class Command(BaseCommand):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
         model = options["model"]
-        batch_size = 10000
         if model == "Tile":
             mdl = Tile
         elif model == "Lcz":
@@ -105,13 +103,7 @@ class Command(BaseCommand):
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {model}.")
-            qs = MVTTile.objects.filter(model_type=mdl.type).values_list(
-                "id", flat=True
-            )
-            for start in tqdm(range(0, len(qs), batch_size)):
-                batch_ids = qs[start : start + batch_size]
-                with transaction.atomic():
-                    deleted_count, _ = Tile.objects.filter(id__in=batch_ids).delete()
+            MVTTile.objects.filter(model_type=model).delete()
         # Generate new tiles
         self.generate_tiles_for_model(
             mdl,
