@@ -1,10 +1,13 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
-import { Map, NavigationControl } from "maplibre-gl"
+import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { ModelType } from "@/utils/enum"
+import type { ScorePopupData } from "@/types"
+
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
+  const popup = ref<ScorePopupData | undefined>(undefined)
 
   const getMapInstance = (id: string) => {
     return computed(() => mapInstancesByIds.value[id])
@@ -17,7 +20,16 @@ export const useMapStore = defineStore("map", () => {
     return `${modelType}-layer`
   }
 
-  const setupTile = (map: Map, modelType: ModelType) => {
+  const extractFeatureIndice = (features: Array<any>, modelType: ModelType) => {
+    if (!features) return undefined
+    const f = features.filter(
+      (feature: any) => feature.layer.id === getLayerIdByModelType(modelType)
+    )
+    if (f.length === 0) return undefined
+    return f[0].properties.indice
+  }
+
+  const setupTile = (map: Map, modelType: ModelType, mapId: string) => {
     const sourceId = getSourceIdByModelType(modelType)
     const layerId = getLayerIdByModelType(modelType)
     map.addLayer({
@@ -31,6 +43,20 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.6
       }
     })
+
+    map.on("click", layerId, (e) => {
+      popup.value = {
+        score: Math.round(10 * extractFeatureIndice(e.features!, modelType)),
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat
+      }
+
+      new Popup()
+        .setLngLat(e.lngLat)
+        .setDOMContent(document.getElementById(`popup-${mapId}`)!)
+        .setMaxWidth("400px")
+        .addTo(map)
+    })
   }
 
   const setupSource = (map: Map, modelType: ModelType) => {
@@ -42,6 +68,17 @@ export const useMapStore = defineStore("map", () => {
       tiles: [tileUrl],
       minzoom: MIN_ZOOM
     })
+
+    const source = map.getSource(sourceId)!
+    const checkIfLoaded = () => {
+      if (source.loaded()) {
+        // This text is tested by Cypress.
+        console.info("cypress: map data loaded")
+        return
+      }
+      setTimeout(checkIfLoaded, 100)
+    }
+    checkIfLoaded()
   }
 
   const setupControls = (map: Map) => {
@@ -56,9 +93,9 @@ export const useMapStore = defineStore("map", () => {
     )
   }
 
-  const initTiles = (mapInstance: Map) => {
+  const initTiles = (mapInstance: Map, mapId: string) => {
     setupSource(mapInstance, ModelType.TILE)
-    setupTile(mapInstance, ModelType.TILE)
+    setupTile(mapInstance, ModelType.TILE, mapId)
   }
 
   const initMap = (mapId: string) => {
@@ -77,9 +114,9 @@ export const useMapStore = defineStore("map", () => {
         console.log(mapInstance.getCenter())
         console.log(mapInstance.getZoom())
       })
-      initTiles(mapInstance)
+      initTiles(mapInstance, mapId)
       setupControls(mapInstance)
     })
   }
-  return { mapInstancesByIds, initMap, getMapInstance }
+  return { mapInstancesByIds, initMap, getMapInstance, popup }
 })
