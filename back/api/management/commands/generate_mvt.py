@@ -103,7 +103,7 @@ class Command(BaseCommand):
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {model}.")
-            MVTTile.objects.filter(model_type=model).delete()
+            print(MVTTile.objects.filter(model_type=model.lower()).delete())
         # Generate new tiles
         self.generate_tiles_for_model(
             mdl,

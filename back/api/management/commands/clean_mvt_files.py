@@ -16,4 +16,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         model = options["model"]
         print("Deleting existing MVTTile")
-        MVTTile.objects.filter(model_type=model).delete()
+        print(MVTTile.objects.filter(model_type=model.lower()).delete())
