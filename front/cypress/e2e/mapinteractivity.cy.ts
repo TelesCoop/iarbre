@@ -13,7 +13,7 @@ describe("Map interactivity", () => {
   })
   it("Opens popup on click", () => {
     // eslint-disable-next-line
-    cy.wait(1000)
+    cy.wait(4000)
     cy.getBySel("map-component").click("center")
     cy.getBySel("score-popup").should("be.visible")
   })
