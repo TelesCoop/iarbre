@@ -1,0 +1,64 @@
+{{ ansible_managed | comment }}
+
+upstream geoserver {
+  server 127.0.0.1:{{ geoserver_port }};
+}
+
+server {
+
+    {% if https_enabled -%}
+    listen 443 ssl;
+
+    ssl_certificate /etc/letsencrypt/live/{{ hostname }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ hostname }}/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    {% else -%}
+    listen 80;
+    {% endif %}
+
+    server_name {{ hostname }};
+
+    access_log /var/log/nginx/access_{{ hostname.replace('.', '_') }}.log;
+    error_log /var/log/nginx/error_{{ hostname.replace('.', '_') }}.log;
+
+    # http://stackoverflow.com/questions/15238506/djangos-suspiciousoperation-invalid-http-host-header
+    # Deny illegal Host headers
+    if ($host !~* ^({{ hostname }})$ ) {
+        return 444;
+    }
+
+    # gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_types application/json application/javascript application/xml text/css text/javascript text/plain text/xml image/svg+xml;
+
+    proxy_read_timeout {{ requests_timeout }};
+    proxy_connect_timeout {{ requests_timeout }};
+    proxy_send_timeout {{ requests_timeout }};
+    send_timeout {{ requests_timeout }};
+
+    # send all to geoserver via tomcat
+    location / {
+        proxy_pass         http://geoserver/;
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+{% if https_enabled %}
+server {
+    if ($host = {{ hostname }}) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    server_name {{ hostname }};
+
+    listen 80;
+    return 404; # managed by Certbot
+}
+{% endif %}

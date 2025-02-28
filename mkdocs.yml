@@ -46,16 +46,18 @@ plugins:
 nav:
   - Documentation IA.rbre: index.md
   - Backend:
-      - Instructions: backend.md
+      - Instructions: back/backend.md
+      - Sources de données: back/data.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md
           - Import Data: api/c03_import_data.md
           - Compute Factors: api/c04_compute_factors.md
-          - Compute Indices: api/c05_compute_indice.md
+          - Compute Indices: api/c01_compute_indice.md
           - Utils: api/utils.md
   - Frontend: front.md
-  - Deploy: deploy.md
+  - Déploiement: deploy.md
+  - Documentation: docs.md
 
 theme:
   name: "material"

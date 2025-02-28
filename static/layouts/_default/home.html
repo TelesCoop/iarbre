@@ -7,21 +7,6 @@
   </div>
 </section>
 
-<section class="content">
-  <div class="split-section reversed-section">
-    <div class="left">
-      <img src="/images/telescoop.png" alt="Logo TelesCoop" />
-    </div>
-    <div class="right">
-      <div class="text">
-        {{ with .Resources.GetMatch "telescoop.md" }} {{ .Content }} {{ end }}
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="full-width" />
-
 <!-- Section de contenu avec mise en page à deux colonnes -->
 <section class="content">
   <div class="split-section">
@@ -39,8 +24,25 @@
 </section>
 
 <section class="image-fullwidth">
-  <img src="/images/mockup.jpg" alt="Mockup du projet IA.rbre" />
+  <a href="https://carte.iarbre.fr/" target="_blank" rel="noopener noreferrer">
+    <img src="/images/mockup.jpg" alt="Mockup du projet IA.rbre" />
+  </a>
 </section>
+
+<section class="content">
+  <div class="split-section reversed-section">
+    <div class="left">
+      <img src="/images/telescoop.png" alt="Logo TelesCoop" />
+    </div>
+    <div class="right">
+      <div class="text">
+        {{ with .Resources.GetMatch "telescoop.md" }} {{ .Content }} {{ end }}
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="full-width" />
 
 <section class="content">
   <div class="split-section reversed-section">
@@ -145,4 +147,21 @@
     </div>
   </div>
 </section>
+
+<section class="bandeau-cdc">
+  <div class="bandeau-content">
+    <div class="bandeau-logo">
+      <img src="/images/cdc.png" alt="Logo Caisse des Dépôts" />
+    </div>
+    <div class="bandeau-text">
+      <p>
+        Ce projet est financé par la <strong>Caisse des Dépôts</strong>, un
+        acteur majeur de la transition écologique et du développement des
+        territoires. Découvrez plus sur leur engagement
+        <a href="https://www.caissedesdepots.fr/" target="_blank">ici</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
 {{ end}}

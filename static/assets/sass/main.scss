@@ -130,7 +130,7 @@ hr.full-width {
 }
 
 .bandeau-logo {
-  flex: 1; /* 1/3 pour le logo */
+  flex: 0.3; /* 1/3 pour le logo */
   text-align: right; /* Aligne le logo à droite */
 }
 
@@ -247,10 +247,11 @@ hr.full-width {
 }
 
 .team-member img {
+  display: block;
+  margin: 0 auto 15px; /* Centre l'image dans le block */
   width: 100px; /* Taille de la photo */
   height: 100px;
   border-radius: 50%; /* Photo en rond */
-  margin-bottom: 15px;
 }
 
 .team-member h3 {
@@ -305,6 +306,25 @@ hr.full-width {
   display: inline-block; /* Maintient la taille */
   font-weight: normal; /* Texte non gras */
   box-shadow: none; /* Supprime l'ombre */
+}
+
+/* Bandeau CDC */
+.bandeau-cdc {
+  background-color: #efefed; /* Couleur de fond légèrement grise */
+  padding: 40px 20px; /* Espacement interne */
+}
+
+.bandeau-cdc .bandeau-logo {
+  text-align: left; /* Logo aligné à gauche */
+  flex: 0.3; /* 1/3 pour le logo */
+}
+.bandeau-cdc .bandeau-text {
+  flex: 2; /* 2/3 pour le texte */
+  font-family: $main-font, Arial, sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  text-align: left;
+  color: #32312d;
 }
 
 .discord-button:hover {

@@ -4,25 +4,10 @@ Dockerfiles/python/.env
 ! Dockerfiles/python/.env.example
 .env
 __pycache__
-file_data
 .idea
 .ipynb_checkpoints/
 *.ipynb
 *.zip
 __pycache__
 
-local_settings.ini
-local_settings.conf
-.telescoop_backup_last_backup
-dump.sql
-*.dump
-mvt_files/*
-*.mvt
-*.log
-media/*
-back/site/*
 site/*
-
-back/.coverage
-
-*.csv

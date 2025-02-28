@@ -15,13 +15,36 @@ import geopandas as gpd
 
 class C03DataTestCase(TestCase):
     def setUp(self):
-        self.data_config = DATA_FILES[0]
+        for idx, dic in enumerate(DATA_FILES):
+            if dic["name"] == "Espaces publics":
+                idc = idx
+                break
+
+        self.data_config = DATA_FILES[idc]
+        self.data_config["actions"] = [
+            {
+                "filters": [
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Parking",
+                    },
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Espace piétonnier",
+                    },
+                ]
+            }
+        ]
         move_test_data()
         self.df = read_data(self.data_config)
         self.datas = process_data(self.df, self.data_config)
 
     def test_download_from_url(self):
-        data_config = URL_FILES[1]
+        for idx, dic in enumerate(URL_FILES):
+            if dic["name"] == "Plan eau":
+                idc = idx
+                break
+        data_config = URL_FILES[idc]
         df_url = download_from_url(data_config["url"], data_config["layer_name"])
         self.assertTrue(isinstance(df_url, gpd.GeoDataFrame))
         self.assertTrue(hasattr(df_url, "geometry"))
@@ -53,9 +76,8 @@ class C03DataTestCase(TestCase):
                 },
             ]
         }
-        data_config = DATA_FILES[4]
-        df = read_data(data_config)
-        df = apply_actions(df, actions)
+
+        df = apply_actions(self.df, actions)
         self.assertTrue((df.geom_type == "Polygon").all())
         # Empty actions
         df = apply_actions(self.df, {})

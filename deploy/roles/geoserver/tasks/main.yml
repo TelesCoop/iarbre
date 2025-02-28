@@ -1,0 +1,150 @@
+- name: Install misc packages
+  apt:
+    name:
+      - openjdk-17-jre
+      - openjdk-17-jdk
+      - supervisor
+      - nginx
+      - python3-dev
+      - certbot
+      - python3-certbot-nginx
+
+- name: Create tomcat group
+  group:
+    name: tomcat
+    state: present
+
+- name: Create tomcat user
+  user:
+    name: tomcat
+    group: tomcat
+    shell: /bin/bash
+    home: "{{ tomcat_home }}"
+
+- name: Download tomcat binary
+  get_url:
+    url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.100/bin/apache-tomcat-9.0.100.tar.gz
+    dest: /home/ubuntu/apache-tomcat-9.0.100.tar.gz
+    checksum: sha512:e0b1379866d09b54f2743afb382c32a33bca9652c379467c1fa0a5b15a1b98830ae23fb1d8f96c43148844ce95b6c1d22a66db3f8efaf41f225b158c3cb71c92
+  register: download_tomcat
+
+- name: create tomcat home
+  file:
+    path: "{{ tomcat_home }}"
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: 0755
+
+- name: Unzip tomcat binary
+  unarchive:
+    src: /home/ubuntu/apache-tomcat-9.0.100.tar.gz
+    dest: "{{ tomcat_home }}"
+    remote_src: yes
+    extra_opts: ["--strip-components=1", "--show-stored-names"]
+    owner: tomcat
+    group: tomcat
+  when: download_tomcat.changed
+
+- name: make sure tomcat is owner of "{{ tomcat_home }}"
+  file:
+    path: "{{ tomcat_home }}"
+    owner: tomcat
+    group: tomcat
+    recurse: yes
+
+- name: Add tomcat service
+  template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/tomcat.service
+    owner: root
+    group: root
+    mode: 0644
+  register: tomcat_service
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  when: tomcat_service.changed
+
+- name: Start tomcat service
+  systemd:
+    name: tomcat
+    state: started
+    enabled: yes
+
+- name: Create geoserver user
+  user:
+    name: geoserver
+    system: yes
+    shell: /bin/bash
+
+- name: copy nginx config
+  template:
+    src: nginx.conf.j2
+    dest: "/etc/nginx/sites-enabled/{{ project_slug }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: Download geoserver zip
+  get_url:
+    url: "https://sourceforge.net/projects/geoserver/files/GeoServer/2.26.2/geoserver-2.26.2-war.zip"
+    dest: "/home/geoserver/geoserver-2.26.2-war.zip"
+    checksum: md5:ec1ee408dfc720aeca88045ac22cb9b5
+  register: download_geoserver
+
+- name: create geoserver home
+  file:
+    path: "{{ geoserver_home }}"
+    state: directory
+    owner: geoserver
+    group: geoserver
+    mode: 0755
+
+- name: create log directory
+  file:
+    path: "{{ var_log_path }}"
+    state: directory
+    owner: geoserver
+    group: geoserver
+    mode: 2770
+
+- name: create geoserver directory in webapps
+  file:
+    path: "{{ tomcat_home }}/webapps/geoserver"
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: 0755
+
+- name: Unzip geoserver binary
+  unarchive:
+    src: "/home/geoserver/geoserver-2.26.2-war.zip"
+    dest: "{{ tomcat_home }}/webapps/geoserver"
+    remote_src: yes
+    owner: tomcat
+    group: tomcat
+  register: unzip_geoserver
+
+- name: set tomcat admin password
+  lineinfile:
+    path: "{{ tomcat_home }}/conf/tomcat-users.xml"
+    line: '<user username="admin" password="{{ vault_tomcat_admin_password }}" roles="manager-gui"/>'
+    insertbefore: "</tomcat-users>"
+    state: present
+
+- name: configure https for tomcat throught nginx
+  lineinfile:
+    path: "{{ tomcat_home }}/conf/server.xml"
+    line: <Valve className="org.apache.catalina.valves.RemoteIpValve" remoteIpHeader="x-forwarded-for" proxiesHeader="x-forwarded-by" protocolHeader="x-forwarded-proto" />
+    insertafter: 'unpackWARs="true" autoDeploy="true">'
+    state: present
+
+- name: restart tomcat
+  systemd:
+    name: tomcat
+    state: restarted
+  when: unzip_geoserver.changed or tomcat_service.changed
