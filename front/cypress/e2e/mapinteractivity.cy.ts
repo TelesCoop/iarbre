@@ -11,7 +11,9 @@ describe("Map interactivity", () => {
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it.only("Opens popup on click", () => {
+  it("Opens popup on click", () => {
+    // eslint-disable-next-line
+    cy.wait(1000)
     cy.getBySel("map-component").click("center")
     cy.getBySel("score-popup").should("be.visible")
   })
