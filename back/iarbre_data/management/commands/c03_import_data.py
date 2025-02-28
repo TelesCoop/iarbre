@@ -33,7 +33,7 @@ def batched(iterable, n) -> None:
         raise ValueError("n must be at least one")
     it = iter(iterable)
     while batch := tuple(islice(it, n)):
-        yield batched
+        yield batch
 
 
 def download_dbtopo(url: str) -> gpd.GeoDataFrame:
