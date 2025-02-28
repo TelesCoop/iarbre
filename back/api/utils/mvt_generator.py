@@ -15,6 +15,7 @@ from typing import List, Dict, Any, Tuple
 from iarbre_data.models import MVTTile
 from tqdm import tqdm
 
+from iarbre_data.settings import TARGET_MAP_PROJ
 
 MVT_EXTENT = 4096
 
@@ -80,7 +81,7 @@ class MVTGenerator:
         # Assumes the queryset has a geographic field
         bbox = self.queryset.aggregate(bbox=Extent("map_geometry"))["bbox"]
         bbox_polygon = Polygon.from_bbox(bbox)
-        bbox_polygon.srid = 3857
+        bbox_polygon.srid = TARGET_MAP_PROJ
         bbox_polygon.transform(4326)
         return {
             "west": bbox_polygon.extent[0],
@@ -106,7 +107,7 @@ class MVTGenerator:
 
         # Create GeoDjango polygon for tile extent
         tile_polygon = Polygon.from_bbox((west, south, east, north))
-        tile_polygon.srid = 3857
+        tile_polygon.srid = TARGET_MAP_PROJ
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
             map_geometry__intersects=tile_polygon
