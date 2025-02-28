@@ -158,37 +158,37 @@ class Lcz(models.Model):
         """Return the color of the tile based on the normalized indice."""
         if self.lcz_indice is None:
             return "purple"
-        elif self.lcz_indice == "LCZ1":
+        elif self.lcz_indice == "1":
             return "#8C0000"
-        elif self.lcz_indice == "LCZ2":
+        elif self.lcz_indice == "2":
             return "#D10000"
-        elif self.lcz_indice == "LCZ3":
+        elif self.lcz_indice == "3":
             return "#FF0000"
-        elif self.lcz_indice == "LCZ4":
+        elif self.lcz_indice == "4":
             return "#BF4D00"
-        elif self.lcz_indice == "LCZ5":
+        elif self.lcz_indice == "5":
             return "#FA6600"
-        elif self.lcz_indice == "LCZ5":
+        elif self.lcz_indice == "5":
             return "#FF9955"
-        elif self.lcz_indice == "LCZ6":
+        elif self.lcz_indice == "6":
             return "#FAEE05"
-        elif self.lcz_indice == "LCZ7":
+        elif self.lcz_indice == "7":
             return "#BCBCBC"
-        elif self.lcz_indice == "LCZ8/10":
+        elif self.lcz_indice == "8":
             return "#FFCCAA"
-        elif self.lcz_indice == "LCZ9":
+        elif self.lcz_indice == "9":
             return "#006A00"
-        elif self.lcz_indice == "LCZA":
+        elif self.lcz_indice == "A":
             return "#00AA00"
-        elif self.lcz_indice == "LCZB":
+        elif self.lcz_indice == "B":
             return "#648525"
-        elif self.lcz_indice == "LCZC":
+        elif self.lcz_indice == "C":
             return ""
-        elif self.lcz_indice == "LCZD":
+        elif self.lcz_indice == "D":
             return "#B9DB79"
-        elif self.lcz_indice == "LCZE":
+        elif self.lcz_indice == "E":
             return "#000000"
-        elif self.lcz_indice == "LCZF":
+        elif self.lcz_indice == "F":
             return "#FBF7AE"
         else:
             return "#6A6AFF"
