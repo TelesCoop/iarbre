@@ -19,7 +19,7 @@ const props = defineProps({
 
 const label = computed(() => {
   if (props.score >= 5) return "Plantabilité élevée"
-  else return "Plantabilité faible"
+  return "Plantabilité faible"
 })
 </script>
 
@@ -31,13 +31,9 @@ const label = computed(() => {
       </div>
       <div class="right">
         <h3 class="title">{{ label }}</h3>
-        <!-- <button class="button primary small rounded">Voir les détails</button> -->
       </div>
     </div>
-    <div class="text-light-green text-right">
-      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E
-      <!--  <button class="button text">(copy)</button> -->
-    </div>
+    <div class="text-light-green text-right">{{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E</div>
   </div>
 </template>
 
@@ -58,7 +54,8 @@ const label = computed(() => {
       display: flex
       flex-direction: row
   max-width: 400px // also defined in `stores/map.ts::setupTile`
+
 .title
-    font: $accent-font
+    font-family: $accent-font
     font-size: 1.2rem
 </style>

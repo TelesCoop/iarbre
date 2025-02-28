@@ -23,7 +23,7 @@ export const useMapStore = defineStore("map", () => {
   const extractFeatureIndice = (features: Array<any>, modelType: ModelType) => {
     if (!features) return undefined
     const f = features.filter(
-      (feature: any) => (feature.layer.id = getLayerIdByModelType(modelType))
+      (feature: any) => feature.layer.id === getLayerIdByModelType(modelType)
     )
     if (f.length === 0) return undefined
     return f[0].properties.indice

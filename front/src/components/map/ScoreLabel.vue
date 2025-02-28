@@ -43,57 +43,21 @@ $hexagons-width: ("small": 12px, "huge": 20px)
                 border-right: calc(1.5 * $hexagon-width) solid transparent
                 border-top: calc(sqrt(3) / 2 * $hexagon-width) solid #007BFF
 
-    &.scale-0
-        background-color: $scale-0
-        color: $brown
-        &::before
-            border-bottom-color: $scale-0
-        &::after
-            border-top-color: $scale-0
-    &.scale-1, &.scale-2
-        background-color: $scale-2
-        color: $brown
-        &::before
-            border-bottom-color: $scale-2
-        &::after
-            border-top-color: $scale-2
+    @each $index, $color in $scales
+        &.scale-#{$index}
+            background-color: $color
 
-    &.scale-3, &.scale-4
-        background-color: $scale-4
-        color: $brown
-        &::before
-            border-bottom-color: $scale-4
-        &::after
-            border-top-color: $scale-4
-
-    &.scale-5, &.scale-6
-        color: $brown
-        background-color: $scale-6
-        &::before
-            border-bottom-color: $scale-6
-        &::after
-            border-top-color: $scale-6
-
-    &.scale-7, &.scale-8
-        color: $brown
-        background-color: $scale-8
-        &::before
-            border-bottom-color: $scale-8
-        &::after
-            border-top-color: $scale-8
-
-    &.scale-9, &.scale-10
-        background-color: $scale-10
-        color: $white
-        &::before
-            border-bottom-color: $scale-10
-        &::after
-            border-top-color: $scale-10
+            color: if(abs(lightness($color) - lightness($white)) < 40, $brown, $white)
+            &::before
+                border-bottom-color: $color
+            &::after
+                border-top-color: $color
 
     position: relative
     margin: 5px
     display: block
     text-align: center
+    font-family: $accent-font
 
     &::before
         content: ""
@@ -110,7 +74,7 @@ $hexagons-width: ("small": 12px, "huge": 20px)
         width: 0
 
     &.huge
-        font-size: 1.4rem
+        font-size: 1.2rem
         line-height: 2.3rem
 
     &.small
