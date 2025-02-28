@@ -3,7 +3,7 @@ import ScoreLabel from "./ScoreLabel.vue"
 </script>
 
 <template>
-  <div class="plantability-legend">
+  <div class="plantability-legend" data-cy="plantability-legend">
     <span class="plantability-legend-text">Non plantable</span>
     <div class="is-flex">
       <score-label

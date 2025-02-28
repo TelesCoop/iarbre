@@ -3,6 +3,7 @@
 describe("Map interactivity", () => {
   beforeEach(() => {
     cy.visit("/")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
   })
 
   it("Map loading seems to be okay", () => {
@@ -11,8 +12,6 @@ describe("Map interactivity", () => {
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
   it.only("Opens popup on click", () => {
-    // eslint-disable-next-line
-    cy.wait(4000)
     cy.getBySel("map-component").click("center")
     cy.getBySel("score-popup").should("be.visible")
   })

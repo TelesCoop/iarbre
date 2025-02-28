@@ -68,6 +68,17 @@ export const useMapStore = defineStore("map", () => {
       tiles: [tileUrl],
       minzoom: MIN_ZOOM
     })
+
+    const source = map.getSource(sourceId)!
+    const checkIfLoaded = () => {
+      if (source.loaded()) {
+        // This text is tested by Cypress.
+        console.info("cypress: map data loaded")
+        return
+      }
+      setTimeout(checkIfLoaded, 100)
+    }
+    checkIfLoaded()
   }
 
   const setupControls = (map: Map) => {

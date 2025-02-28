@@ -24,7 +24,7 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div class="popover">
+  <div class="popover" data-cy="score-popup">
     <div class="columns">
       <div class="left">
         <score-label :score="score" :label="`${score}/10`" size="huge" />
