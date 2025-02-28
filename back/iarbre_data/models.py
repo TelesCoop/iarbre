@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models import Avg
 
 from api.constants import ModelType
+from iarbre_data.settings import TARGET_MAP_PROJ
 
 
 class TileAggregateBase(models.Model):
@@ -53,7 +54,7 @@ class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=3857, null=True, blank=True)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
@@ -133,10 +134,77 @@ class MVTTile(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Tile {self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
+        return f"{self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
 
 
 @receiver(pre_delete, sender=MVTTile)
 def before_delete_mvt_tile(sender, instance, **kwargs):
     """Delete the file when the model is deleted."""
     instance.mvt_file.delete(save=False)
+
+
+class Lcz(models.Model):
+    """Elementary element on the map with the value of the LCZ description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    lcz_indice = models.CharField(max_length=4, null=True)
+    lcz_description = models.CharField(max_length=50, null=True)
+
+    type = ModelType.LCZ.value
+
+    @property
+    def color(self):  # noqa: C901
+        """Return the color of the tile based on the normalized indice."""
+        if self.lcz_indice is None:
+            return "purple"
+        elif self.lcz_indice == "1":
+            return "#8C0000"
+        elif self.lcz_indice == "2":
+            return "#D10000"
+        elif self.lcz_indice == "3":
+            return "#FF0000"
+        elif self.lcz_indice == "4":
+            return "#BF4D00"
+        elif self.lcz_indice == "5":
+            return "#FA6600"
+        elif self.lcz_indice == "5":
+            return "#FF9955"
+        elif self.lcz_indice == "6":
+            return "#FAEE05"
+        elif self.lcz_indice == "7":
+            return "#BCBCBC"
+        elif self.lcz_indice == "8":
+            return "#FFCCAA"
+        elif self.lcz_indice == "9":
+            return "#006A00"
+        elif self.lcz_indice == "A":
+            return "#00AA00"
+        elif self.lcz_indice == "B":
+            return "#648525"
+        elif self.lcz_indice == "C":
+            return ""
+        elif self.lcz_indice == "D":
+            return "#B9DB79"
+        elif self.lcz_indice == "E":
+            return "#000000"
+        elif self.lcz_indice == "F":
+            return "#FBF7AE"
+        else:
+            return "#6A6AFF"
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT layer."""
+        return {
+            "id": self.id,
+            "indice": self.lcz_indice,
+            "description": self.lcz_description,
+            "color": self.color,
+        }
+
+
+@receiver(pre_save, sender=Lcz)
+def before_save_lcz(sender, instance, **kwargs):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(3857, clone=True)
