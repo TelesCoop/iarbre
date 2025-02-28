@@ -383,6 +383,26 @@ URL_FILES = [
         "output_type": "LINESTRING",
     },
     {
+        "name": "Friches",
+        "url": "https://apidf-preprod.cerema.fr/cartofriches/geofriches/",
+        "layer_name": "",
+        "scripts": None,
+        "factors": ["Friches"],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "Bâtiments",
+        "url": "https://data.geopf.fr/wfs/ows",
+        "layer_name": "",
+        "scripts": ["batiment.py", "facade.py"],
+        "actions": [
+            {},
+            {"buffer_size": 2, "union": True},
+        ],
+        "factors": ["Bâtiments", "Proximité façade"],
+        "output_type": "POLYGON",
+    },
+    {
         "name": "Local Climate Zone",
         "url": "https://www.data.gouv.fr/fr/datasets/r/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
         "output_type": "POLYGON",

@@ -95,7 +95,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     Returns:
         None
     """
-    batch_size = 1000
+    batch_size = 10000
     for start in tqdm(range(0, len(lcz_datas), batch_size)):
         end = start + batch_size
         batch = lcz_datas.iloc[start:end]
@@ -116,7 +116,7 @@ class Command(BaseCommand):
     help = "Import LCZ data in the DB."
 
     def handle(self, *args, **options):
-        """Save all LCZ data in the DB."""
+        """Load LCZ from CEREMA and then save all LCZ data in the DB."""
         download_data()
         lcz_data = load_data()
         save_geometries(lcz_data)
