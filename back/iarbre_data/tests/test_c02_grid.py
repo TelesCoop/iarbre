@@ -1,4 +1,6 @@
 from django.test import TestCase
+from shapely.geometry.polygon import Polygon
+
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as c01_city_iris,
 )
@@ -17,17 +19,40 @@ import logging
 
 
 class C02GridTestCase(TestCase):
-    def setUp(self):
+    def setUp(self, gpd=None):
         move_test_data()
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris._insert_cities(data)
+        # Lyon-Part Dieu
+        x, y = 844612.097181, 6519563.100231
+        side = 400  # meters
+        half_side = side / 2
+        square = Polygon(
+            [
+                (x - half_side, y - half_side),
+                (x + half_side, y - half_side),
+                (x + half_side, y + half_side),
+                (x - half_side, y + half_side),
+                (x - half_side, y - half_side),
+            ]
+        )
+        city = City(
+            id=99999,
+            name="fake-city",
+            code="69000",
+            tiles_generated=False,
+            tiles_computed=False,
+            geometry=square.wkt,
+        )
+        city.save()
+
         self.grid_size = 200
         desired_area = self.grid_size * self.grid_size
         self.side_length = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
         self.sin_60 = np.sin(np.pi / 3)
 
     def test_create_square_tile(self):
-        code = 69286
+        code = 69000
         selected_city = select_city(str(code))
         print("Creating tiles")
         create_tiles_for_city(
@@ -40,7 +65,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 587)
+        self.assertEqual(Tile.objects.count(), 25)
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
         coords = tile.geometry.coords[0]
@@ -49,7 +74,7 @@ class C02GridTestCase(TestCase):
         self.assertEqual(coords[1][1] - coords[0][1], self.grid_size)
 
     def test_create_hex_tile(self):
-        code = 69286
+        code = 69000
         selected_city = select_city(str(code))
         create_tiles_for_city(
             city=selected_city.iloc[0],
@@ -63,7 +88,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(code=code)
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 593)
+        self.assertEqual(Tile.objects.count(), 30)
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2)
         coords = tile.geometry.coords[0]
