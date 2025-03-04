@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useFeedbackStore } from "@/stores/feedback";
-const store = useFeedbackStore();
+import { useFeedbackStore } from "@/stores/feedback"
+const store = useFeedbackStore()
 </script>
 
 <template>
@@ -13,7 +13,11 @@ const store = useFeedbackStore();
       </div>
       <nav class="navbar-right">
         <ul>
-          <li><a href="#" @click.prevent="store.showFeedback" class="navbar-link">✉️ Nous envoyer votre retour</a></li>
+          <li>
+            <a href="#" class="navbar-link" @click.prevent="store.showFeedback"
+              >✉️ Nous envoyer votre retour</a
+            >
+          </li>
           <li><a href="https://iarbre.fr" class="navbar-link">ⓘ En savoir plus</a></li>
         </ul>
       </nav>
@@ -48,7 +52,7 @@ const store = useFeedbackStore();
     ul
       list-style: none
       display: flex
-      gap: 1.1rem; 
+      gap: 1.1rem;
       flex-direction: horizontal
 
   .navbar-link

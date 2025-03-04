@@ -1,57 +1,60 @@
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import axios from "axios";
-import { useFeedbackStore } from "@/stores/feedback";
+import { defineComponent, ref } from "vue"
+import axios from "axios"
+import { useFeedbackStore } from "@/stores/feedback"
 
-const slackWebhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL;
+const slackWebhookUrl = import.meta.env.VITE_SLACK_WEBHOOK_URL
 
 export default defineComponent({
   setup() {
-    const feedback = ref<string>("");
-    const message = ref<string>("");
-    const store = useFeedbackStore();
+    const feedback = ref<string>("")
+    const message = ref<string>("")
+    const store = useFeedbackStore()
 
     const sendFeedback = async () => {
       if (!feedback.value.trim()) {
-        message.value = "Veuillez écrire un avis avant d'envoyer.";
-        return;
+        message.value = "Veuillez écrire un avis avant d'envoyer."
+        return
       }
       try {
-        await axios.post(slackWebhookUrl, { text: feedback.value }, { headers: { "Content-Type": "application/json" } });
-        message.value = "Merci pour votre avis !";
-        feedback.value = "";
+        await axios.post(
+          slackWebhookUrl,
+          { text: feedback.value },
+          { headers: { "Content-Type": "application/json" } }
+        )
+        message.value = "Merci pour votre avis !"
+        feedback.value = ""
       } catch (error) {
-        console.error("Erreur lors de l'envoi du feedback:", error);
-        message.value = "Une erreur s'est produite, veuillez réessayer plus tard.";
+        console.error("Erreur lors de l'envoi du feedback:", error)
+        message.value = "Une erreur s'est produite, veuillez réessayer plus tard."
       }
-    };
+    }
 
     return {
       feedback,
       message,
       store,
       sendFeedback
-    };
+    }
   }
-});
+})
 </script>
 
 <template>
-    <div class="feedback-container" v-if="store.isVisible">
-      <span class="close-btn" @click="store.hideFeedback">x</span>
-      <p><strong>Votre avis compte !</strong></p>
-      <p>Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
-      <textarea v-model="feedback" placeholder=""></textarea>
-      <button @click="sendFeedback">J'envoie mon avis</button>
-      <p v-if="message" class="message">{{ message }}</p>
-    </div>
-  </template>
-
+  <div v-if="store.isVisible" class="feedback-container">
+    <span class="close-btn" @click="store.hideFeedback">x</span>
+    <p><strong>Votre avis compte !</strong></p>
+    <p>Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
+    <textarea v-model="feedback" placeholder=""></textarea>
+    <button @click="sendFeedback">J'envoie mon avis</button>
+    <p v-if="message" class="message">{{ message }}</p>
+  </div>
+</template>
 
 <style lang="sass" scoped>
 .feedback-container
   position: relative
-  z-index: 1000 
+  z-index: 1000
   max-width: 400px
   margin: auto
   padding: 20px
@@ -106,5 +109,3 @@ button
   margin-top: 10px
   color: $dark-green
 </style>
-
-
