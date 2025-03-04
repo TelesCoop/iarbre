@@ -2,6 +2,7 @@ import time
 import json
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from api.constants import ModelType
 from api.map import load_tiles
@@ -33,6 +34,7 @@ def tile_view(request, model_type, zoom, x, y):
     return response
 
 
+@csrf_exempt
 @require_POST
 def receive_feedback(request):
     """Handles feedback submission."""

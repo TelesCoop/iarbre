@@ -74,7 +74,7 @@ export default defineComponent({
       <slot></slot>
     </main>
 
-    <!-- Feedback Component -->
+    <!-- Feedback -->
     <div v-if="isVisible" class="feedback-container">
       <span class="close-btn" @click="hideFeedback">x</span>
       <p><strong>Votre avis compte !</strong></p>
@@ -136,7 +136,10 @@ export default defineComponent({
   flex: 1
 
 .feedback-container
-  position: relative
+  position: fixed
+  top: 50%
+  left: 50%
+  transform: translate(-50%, -50%)
   z-index: 1000
   max-width: 400px
   margin: auto
@@ -170,6 +173,14 @@ textarea
   border-radius: 20px
   border: 1px solid #ccc
   resize: none
+  outline: none
+
+input
+  width: calc(100% - 10px)
+  margin-top: 10px
+  padding: 5px
+  border-radius: 20px
+  border: 1px solid #ccc
   outline: none
 
 button
