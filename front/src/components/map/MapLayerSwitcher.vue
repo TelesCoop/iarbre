@@ -12,6 +12,7 @@ const props = defineProps({
 const mapStore = useMapStore()
 
 const toggleLayer = (modelType: ModelType) => {
+  console.log("### 0", modelType)
   mapStore.toggleLayerVisibility(modelType, props.mapId)
 }
 </script>
@@ -25,18 +26,14 @@ const toggleLayer = (modelType: ModelType) => {
         :key="layer.modelType"
         class="map-layer-switcher-item"
       >
-        <label class="map-layer-switcher-label" :class="{ 'is-loading': layer.isLoading }">
+        <label class="map-layer-switcher-label">
           <input
             type="checkbox"
             :checked="layer.visibility === 'visible'"
-            :disabled="layer.isLoading"
             @change="toggleLayer(layer.modelType)"
           />
           <span class="map-layer-switcher-text">{{ layer.title }}</span>
           <span class="map-layer-switcher-color" :style="{ backgroundColor: layer.color }"></span>
-          <span v-if="layer.isLoading" class="map-layer-switcher-loading">
-            <span class="loading-spinner"></span>
-          </span>
         </label>
       </div>
     </div>
@@ -84,29 +81,4 @@ const toggleLayer = (modelType: ModelType) => {
     height: 12px
     border-radius: 50%
     display: inline-block
-
-  &-loading
-    margin-left: auto
-    display: flex
-    align-items: center
-    justify-content: center
-
-  .is-loading
-    opacity: 0.7
-    cursor: wait
-
-  .loading-spinner
-    display: inline-block
-    width: 12px
-    height: 12px
-    border: 2px solid rgba(0, 0, 0, 0.1)
-    border-top-color: #3498db
-    border-radius: 50%
-    animation: spin 1s linear infinite
-
-@keyframes spin
-  0%
-    transform: rotate(0deg)
-  100%
-    transform: rotate(360deg)
 </style>

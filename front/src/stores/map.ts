@@ -1,4 +1,4 @@
-import { computed, ref } from "vue"
+import { computed, ref, reactive } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
@@ -10,8 +10,6 @@ export interface LayerInfo {
   visibility: LayerVisibility
   title: string
   color: string
-  isLoaded: boolean
-  isLoading: boolean
 }
 
 export const useMapStore = defineStore("map", () => {
@@ -24,44 +22,31 @@ export const useMapStore = defineStore("map", () => {
       modelType: ModelType.TILE,
       visibility: LayerVisibility.VISIBLE,
       title: "Plantability",
-      color: "#4CAF50",
-      isLoaded: false,
-      isLoading: false
+      color: "#4CAF50"
     },
     {
       modelType: ModelType.VEGETATION,
       visibility: LayerVisibility.HIDDEN,
       title: "Vegetation",
-      color: "#8BC34A",
-      isLoaded: false,
-      isLoading: false
+      color: "#8BC34A"
     },
     {
       modelType: ModelType.TEMPERATURE,
       visibility: LayerVisibility.HIDDEN,
       title: "Temperature",
-      color: "#FF5722",
-      isLoaded: false,
-      isLoading: false
+      color: "#FF5722"
     },
     {
       modelType: ModelType.WATER,
       visibility: LayerVisibility.HIDDEN,
       title: "Water",
-      color: "#2196F3",
-      isLoaded: false,
-      isLoading: false
+      color: "#2196F3"
     }
   ])
 
   // Get visible layers
   const visibleLayers = computed(() => {
     return availableLayers.value.filter((layer) => layer.visibility === LayerVisibility.VISIBLE)
-  })
-
-  // Get layers that are currently loading
-  const loadingLayers = computed(() => {
-    return availableLayers.value.filter((layer) => layer.isLoading)
   })
 
   const getMapInstance = (id: string) => {
@@ -71,7 +56,6 @@ export const useMapStore = defineStore("map", () => {
   const getSourceIdByModelType = (modelType: ModelType) => {
     return `${modelType}-source`
   }
-
   const getLayerIdByModelType = (modelType: ModelType) => {
     return `${modelType}-layer`
   }
@@ -85,105 +69,56 @@ export const useMapStore = defineStore("map", () => {
     return f[0].properties.indice
   }
 
-  // Setup a single layer with optimized loading
-  const setupLayer = async (map: Map, modelType: ModelType, mapId: string): Promise<void> => {
-    const layer = availableLayers.value.find((l) => l.modelType === modelType)
-    if (!layer) return
+  const setupTile = (map: Map, modelType: ModelType, mapId: string) => {
+    const sourceId = getSourceIdByModelType(modelType)
+    const layerId = getLayerIdByModelType(modelType)
+    map.addLayer({
+      id: layerId,
+      type: "fill",
+      source: sourceId, // ID of the tile source created above
+      "source-layer": modelType,
+      layout: {},
+      paint: {
+        "fill-color": ["get", "color"],
+        "fill-opacity": 0.6
+      }
+    })
 
-    // If already loaded or loading, don't do anything
-    if (layer.isLoaded || layer.isLoading) return
-
-    // Mark as loading
-    layer.isLoading = true
-
-    try {
-      const sourceId = getSourceIdByModelType(modelType)
-      const layerId = getLayerIdByModelType(modelType)
-
-      // Check if source already exists
-      if (!map.getSource(sourceId)) {
-        const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
-
-        map.addSource(sourceId, {
-          type: "vector",
-          tiles: [tileUrl],
-          minzoom: MIN_ZOOM
-        })
+    map.on("click", layerId, (e) => {
+      popup.value = {
+        score: Math.round(10 * extractFeatureIndice(e.features!, modelType)),
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat
       }
 
-      // Check if layer already exists
-      if (!map.getLayer(layerId)) {
-        map.addLayer({
-          id: layerId,
-          type: "fill",
-          source: sourceId,
-          "source-layer": modelType,
-          layout: {
-            visibility: layer.visibility === LayerVisibility.VISIBLE ? "visible" : "none"
-          },
-          paint: {
-            "fill-color": ["get", "color"],
-            "fill-opacity": 0.6
-          }
-        })
+      new Popup()
+        .setLngLat(e.lngLat)
+        .setDOMContent(document.getElementById(`popup-${mapId}`)!)
+        .setMaxWidth("400px")
+        .addTo(map)
+    })
+  }
 
-        // Setup click handler
-        map.on("click", layerId, (e) => {
-          popup.value = {
-            score: Math.round(10 * extractFeatureIndice(e.features!, modelType)),
-            lng: e.lngLat.lng,
-            lat: e.lngLat.lat
-          }
+  const setupSource = (map: Map, modelType: ModelType) => {
+    const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
+    const sourceId = getSourceIdByModelType(modelType)
 
-          new Popup()
-            .setLngLat(e.lngLat)
-            .setDOMContent(document.getElementById(`popup-${mapId}`)!)
-            .setMaxWidth("400px")
-            .addTo(map)
-        })
+    map.addSource(sourceId, {
+      type: "vector",
+      tiles: [tileUrl],
+      minzoom: MIN_ZOOM
+    })
+
+    const source = map.getSource(sourceId)!
+    const checkIfLoaded = () => {
+      if (source.loaded()) {
+        // This text is tested by Cypress.
+        console.info("cypress: map data loaded")
+        return
       }
-
-      // Wait for source to load with a timeout
-      await new Promise<void>((resolve, reject) => {
-        const source = map.getSource(sourceId)
-        if (!source) {
-          reject(new Error(`Source ${sourceId} not found`))
-          return
-        }
-
-        // Check if already loaded
-        if (source.loaded()) {
-          resolve()
-          return
-        }
-
-        // Set a timeout to prevent infinite waiting
-        const timeout = setTimeout(() => {
-          console.warn(`Loading timeout for layer ${modelType}`)
-          resolve() // Resolve anyway to prevent blocking
-        }, 5000)
-
-        // Check loading status periodically
-        const checkLoading = () => {
-          if (source.loaded()) {
-            clearTimeout(timeout)
-            resolve()
-            return
-          }
-          setTimeout(checkLoading, 100)
-        }
-        checkLoading()
-      })
-
-      // Mark as loaded
-      layer.isLoaded = true
-      console.info(`Layer ${modelType} loaded successfully`)
-    } catch (error) {
-      console.error(`Error loading layer ${modelType}:`, error)
-    } finally {
-      // Mark as not loading anymore
-      layer.isLoading = false
+      setTimeout(checkIfLoaded, 100)
     }
+    checkIfLoaded()
   }
 
   const setupControls = (map: Map) => {
@@ -198,8 +133,9 @@ export const useMapStore = defineStore("map", () => {
     )
   }
 
-  // Toggle layer visibility with lazy loading
-  const toggleLayerVisibility = async (modelType: ModelType, mapId: string) => {
+  // Toggle layer visibility
+  const toggleLayerVisibility = (modelType: ModelType, mapId: string) => {
+    console.log("### 1", modelType)
     const layer = availableLayers.value.find((l) => l.modelType === modelType)
     if (!layer) return
 
@@ -207,32 +143,21 @@ export const useMapStore = defineStore("map", () => {
     if (!map) return
 
     // Toggle visibility
-    const newVisibility =
+    layer.visibility =
       layer.visibility === LayerVisibility.VISIBLE
         ? LayerVisibility.HIDDEN
         : LayerVisibility.VISIBLE
 
-    layer.visibility = newVisibility
-
-    // If making visible and not loaded yet, load the layer
-    if (newVisibility === LayerVisibility.VISIBLE && !layer.isLoaded) {
-      await setupLayer(map, modelType, mapId)
-    }
-
-    // Update layer visibility in the map if it exists
+    // Update layer visibility in the map
     const layerId = getLayerIdByModelType(modelType)
     if (map.getLayer(layerId)) {
-      const visibility = newVisibility === LayerVisibility.VISIBLE ? "visible" : "none"
+      const visibility = layer.visibility === LayerVisibility.VISIBLE ? "visible" : "none"
       map.setLayoutProperty(layerId, "visibility", visibility)
     }
   }
 
   // Set layer visibility
-  const setLayerVisibility = async (
-    modelType: ModelType,
-    visibility: LayerVisibility,
-    mapId: string
-  ) => {
+  const setLayerVisibility = (modelType: ModelType, visibility: LayerVisibility, mapId: string) => {
     const layer = availableLayers.value.find((l) => l.modelType === modelType)
     if (!layer) return
 
@@ -242,12 +167,7 @@ export const useMapStore = defineStore("map", () => {
     // Set visibility
     layer.visibility = visibility
 
-    // If making visible and not loaded yet, load the layer
-    if (visibility === LayerVisibility.VISIBLE && !layer.isLoaded) {
-      await setupLayer(map, modelType, mapId)
-    }
-
-    // Update layer visibility in the map if it exists
+    // Update layer visibility in the map
     const layerId = getLayerIdByModelType(modelType)
     if (map.getLayer(layerId)) {
       const mapVisibility = visibility === LayerVisibility.VISIBLE ? "visible" : "none"
@@ -255,23 +175,26 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Initialize only the visible layers
-  const initVisibleLayers = async (mapInstance: Map, mapId: string) => {
-    const visibleLayerModels = availableLayers.value
-      .filter((layer) => layer.visibility === LayerVisibility.VISIBLE)
-      .map((layer) => layer.modelType)
+  const initTiles = (mapInstance: Map, mapId: string) => {
+    // Initialize all available layers
+    for (const layer of availableLayers.value) {
+      setupSource(mapInstance, layer.modelType)
+      setupTile(mapInstance, layer.modelType, mapId)
 
-    // Load visible layers in parallel
-    await Promise.all(
-      visibleLayerModels.map((modelType) => setupLayer(mapInstance, modelType, mapId))
-    )
+      // Set initial visibility
+      const layerId = getLayerIdByModelType(layer.modelType)
+      const visibility = layer.visibility === LayerVisibility.VISIBLE ? "visible" : "none"
+      mapInstance.setLayoutProperty(layerId, "visibility", visibility)
+    }
   }
 
   const initMap = (mapId: string) => {
     mapInstancesByIds.value[mapId] = new Map({
-      container: mapId,
+      container: mapId, // container id
       style: "map/map-style.json",
+      // center to France,
       center: [4.8537684279176645, 45.75773479280862],
+      // zoom to a level where France is visible
       zoom: 16
     })
 
@@ -281,13 +204,10 @@ export const useMapStore = defineStore("map", () => {
         console.log(mapInstance.getCenter())
         console.log(mapInstance.getZoom())
       })
-
-      // Only initialize visible layers
-      initVisibleLayers(mapInstance, mapId)
+      initTiles(mapInstance, mapId)
       setupControls(mapInstance)
     })
   }
-
   return {
     mapInstancesByIds,
     initMap,
@@ -295,7 +215,6 @@ export const useMapStore = defineStore("map", () => {
     popup,
     availableLayers,
     visibleLayers,
-    loadingLayers,
     toggleLayerVisibility,
     setLayerVisibility
   }
