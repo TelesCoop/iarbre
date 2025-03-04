@@ -1,54 +1,40 @@
-<script lang="ts">
-import { defineComponent, ref } from "vue"
+<script setup lang="ts">
+import { ref } from "vue"
 import axios from "axios"
 import { FULL_BASE_API_URL } from "@/utils/constants"
 
-export default defineComponent({
-  setup() {
-    const isVisible = ref(false)
-    const feedback = ref<string>("")
-    const message = ref<string>("")
-    const email = ref<string>("")
+const isVisible = ref(false)
+const feedback = ref<string>("")
+const message = ref<string>("")
+const email = ref<string>("")
 
-    const showFeedback = () => {
-      isVisible.value = true
-    }
+const showFeedback = () => {
+  isVisible.value = true
+}
 
-    const hideFeedback = () => {
-      isVisible.value = false
-    }
+const hideFeedback = () => {
+  isVisible.value = false
+}
 
-    const sendFeedback = async () => {
-      if (!feedback.value.trim()) {
-        message.value = "Veuillez écrire un avis avant d'envoyer."
-        return
-      }
-      try {
-        await axios.post(
-          `${FULL_BASE_API_URL}/feedback/`,
-          { feedback: feedback.value, email: email.value },
-          { headers: { "Content-Type": "application/json" } }
-        )
-        message.value = "Merci pour votre avis !"
-        feedback.value = ""
-        email.value = ""
-      } catch (error) {
-        console.error("Erreur lors de l'envoi du feedback:", error)
-        message.value = "Une erreur s'est produite, veuillez réessayer plus tard."
-      }
-    }
-
-    return {
-      isVisible,
-      feedback,
-      message,
-      email,
-      showFeedback,
-      hideFeedback,
-      sendFeedback
-    }
+const sendFeedback = async () => {
+  if (!feedback.value.trim()) {
+    message.value = "Veuillez écrire un avis avant d'envoyer."
+    return
   }
-})
+  try {
+    await axios.post(
+      `${FULL_BASE_API_URL}/feedback/`,
+      { feedback: feedback.value, email: email.value },
+      { headers: { "Content-Type": "application/json" } }
+    )
+    message.value = "Merci pour votre avis !"
+    feedback.value = ""
+    email.value = ""
+  } catch (error) {
+    console.error("Erreur lors de l'envoi du feedback:", error)
+    message.value = "Une erreur s'est produite, veuillez réessayer plus tard."
+  }
+}
 </script>
 
 <template>
