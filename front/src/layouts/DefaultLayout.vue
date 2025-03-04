@@ -1,6 +1,53 @@
-<script setup lang="ts">
-import { useFeedbackStore } from "@/stores/feedback"
-const store = useFeedbackStore()
+<script lang="ts">
+import { defineComponent, ref } from "vue"
+import axios from "axios"
+
+export default defineComponent({
+  setup() {
+    const isVisible = ref(false)
+    const feedback = ref<string>("")
+    const message = ref<string>("")
+    const email = ref<string>("")
+
+    const showFeedback = () => {
+      isVisible.value = true
+    }
+
+    const hideFeedback = () => {
+      isVisible.value = false
+    }
+
+    const sendFeedback = async () => {
+      if (!feedback.value.trim()) {
+        message.value = "Veuillez écrire un avis avant d'envoyer."
+        return
+      }
+      try {
+        await axios.post(
+          "http://localhost:8000/api/feedback/",
+          { feedback: feedback.value, email: email.value },
+          { headers: { "Content-Type": "application/json" } }
+        )
+        message.value = "Merci pour votre avis !"
+        feedback.value = ""
+        email.value = ""
+      } catch (error) {
+        console.error("Erreur lors de l'envoi du feedback:", error)
+        message.value = "Une erreur s'est produite, veuillez réessayer plus tard."
+      }
+    }
+
+    return {
+      isVisible,
+      feedback,
+      message,
+      email,
+      showFeedback,
+      hideFeedback,
+      sendFeedback
+    }
+  }
+})
 </script>
 
 <template>
@@ -14,17 +61,29 @@ const store = useFeedbackStore()
       <nav class="navbar-right">
         <ul>
           <li>
-            <a href="#" class="navbar-link" @click.prevent="store.showFeedback"
-              >✉️ Nous envoyer votre retour</a
-            >
+            <a href="#" class="navbar-link" @click.prevent="showFeedback">
+              ✉️ Nous envoyer votre retour
+            </a>
           </li>
           <li><a href="https://iarbre.fr" class="navbar-link">ⓘ En savoir plus</a></li>
         </ul>
       </nav>
     </header>
+
     <main class="default-content">
       <slot></slot>
     </main>
+
+    <!-- Feedback Component -->
+    <div v-if="isVisible" class="feedback-container">
+      <span class="close-btn" @click="hideFeedback">x</span>
+      <p><strong>Votre avis compte !</strong></p>
+      <p>Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
+      <input v-model="email" type="email" placeholder="Votre email" />
+      <textarea v-model="feedback" placeholder="Votre message"></textarea>
+      <button @click="sendFeedback">J'envoie mon avis</button>
+      <p v-if="message" class="message">{{ message }}</p>
+    </div>
   </div>
 </template>
 
@@ -75,4 +134,61 @@ const store = useFeedbackStore()
   min-height: $content-height
   margin-top: $header-height
   flex: 1
+
+.feedback-container
+  position: relative
+  z-index: 1000
+  max-width: 400px
+  margin: auto
+  padding: 20px
+  border: 1px solid #ccc
+  border-radius: 5px
+  background: $white
+  color : $dark-green
+  text-align: left
+  display: flex
+  flex-direction: column
+  font-size: 0.9rem
+  box-sizing: border-box
+
+.close-btn
+  position: absolute
+  top: 10px
+  right: 10px
+  font-size: 18px
+  color: $dark-green
+  cursor: pointer
+  transition: 0.3s
+  &:hover
+    color: red
+
+textarea
+  width: calc(100% - 20px)
+  height: 150px
+  margin-top: 10px
+  padding: 10px
+  border-radius: 20px
+  border: 1px solid #ccc
+  resize: none
+  outline: none
+
+button
+  margin-top: 10px
+  padding: 10px 26px
+  border: none
+  background-color: $light-green
+  color: $white
+  cursor: pointer
+  border-radius: 20px
+  width: 100%
+  font-weight: bold
+  transition: background 0.3s
+  text-align: center
+  font-family: 'Sligoil', sans-serif
+
+
+
+.message
+  margin-top: 10px
+  color: $dark-green
 </style>
