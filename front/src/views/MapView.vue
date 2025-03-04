@@ -6,7 +6,7 @@ import MapComponent from "@/components/map/MapComponent.vue"
   <div class="map-container max-full-height">
     <map-component map-id="default" class="h-100" />
     <a href="https://github.com/TelesCoop/iarbre" target="_blank" class="code-source-link"
-      >code_source</a
+      >code source</a
     >
   </div>
 </template>
@@ -20,13 +20,12 @@ import MapComponent from "@/components/map/MapComponent.vue"
 
 .code-source-link
   position: absolute
-  bottom: 1rem
+  bottom: 0.38rem
   left: 1.1rem
-  color: black
+  color: $dark-green
+  background-color: white
+  padding: 0.25rem 0.5rem
+  border-radius: 10px
   text-decoration: underline
-  font-size: 1.2rem
-  font-weight: bold
-  background-color: rgba(239, 239, 237, 0.6)  // Semi-transparent $off-white
-  padding: 0.2rem 0.5rem
-  border-radius: 5px
+  font-size: 0.8rem
 </style>
