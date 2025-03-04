@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue"
 import axios from "axios"
+import { FULL_BASE_API_URL } from "@/utils/constants"
 
 export default defineComponent({
   setup() {
@@ -24,7 +25,7 @@ export default defineComponent({
       }
       try {
         await axios.post(
-          "http://localhost:8000/api/feedback/",
+          `${FULL_BASE_API_URL}/feedback/`,
           { feedback: feedback.value, email: email.value },
           { headers: { "Content-Type": "application/json" } }
         )

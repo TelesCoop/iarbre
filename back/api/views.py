@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from api.constants import ModelType
 from api.map import load_tiles
+from typing import Any, Dict
 
 from django.http import JsonResponse
 from iarbre_data.models import Feedback
@@ -34,16 +35,32 @@ def tile_view(request, model_type, zoom, x, y):
     return response
 
 
-@csrf_exempt
+@csrf_exempt  # Mandatory but not really satisfactory
 @require_POST
-def receive_feedback(request):
-    """Handles feedback submission."""
+def receive_feedback(request) -> JsonResponse:
+    """
+    Handles feedback submission.
+
+    This view accepts POST requests with JSON data containing feedback.
+    The feedback is stored in the database, and a response is returned indicating
+    the success or failure of the operation.
+
+    Request JSON format:
+    {
+        "email": "user@example.com",  # Optional
+        "feedback": "User feedback text"
+    }
+    Returns:
+        JsonResponse: A JSON response indicating the result of the feedback submission.
+            - On success: {"message": "Feedback saved!", "id": <feedback_id>}
+            - On failure: {"error": <error_message>}
+    """
     try:
-        data = json.loads(request.body)
+        data: Dict[str, Any] = json.loads(request.body)
         if not data.get("feedback"):  # Email is not mandatory
             return JsonResponse({"error": "Feedback is required."}, status=400)
         feedback = Feedback.objects.create(
-            email=data.get("email"),  # Use .get() to avoid KeyError
+            email=data.get("email"),
             feedback=data.get("feedback"),
         )
         return JsonResponse(
