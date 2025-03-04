@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
 import MapPlantabilityLegend from "@/components/map/MapPlantabilityLegend.vue"
 import MapScorePopup from "@/components/map/MapScorePopup.vue"
+import MapLayerSwitcher from "@/components/map/MapLayerSwitcher.vue"
 
 const props = defineProps({
   mapId: {
@@ -22,7 +23,8 @@ onMounted(() => {
 <template>
   <div :id="mapId" data-cy="map-component" class="map-component"></div>
   <map-plantability-legend />
-  <div :id="`popup-${mapId}`" style="{ 'hidden': true }">
+  <map-layer-switcher :map-id="mapId" />
+  <div :id="`popup-${mapId}`" :style="{ display: 'none' }">
     <map-score-popup
       v-if="mapStore.popup"
       :score="mapStore.popup.score"

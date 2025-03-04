@@ -1,5 +1,6 @@
 import time
 
+from django.http import Http404
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
@@ -24,7 +25,10 @@ def tile_view(request, model_type, zoom, x, y):
         HttpResponse: Response containing the MVT tile.
     """
     start_time = time.time()
-    model = MODEL_BY_TYPE[model_type]
+    try:
+        model = MODEL_BY_TYPE[model_type]
+    except KeyError:
+        raise Http404("Model not found")
     response = load_tiles(model, x, y, zoom)
     print(f"Request duration: {time.time() - start_time} seconds")
     return response
