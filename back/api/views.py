@@ -7,7 +7,7 @@ from api.constants import ModelType
 from api.map import load_tiles
 
 from django.http import JsonResponse
-from api.serializers import FeedbackSerializer
+from iarbre_data.models import Feedback
 
 MODEL_BY_TYPE = {
     ModelType.TILE.value: "tile",
@@ -35,14 +35,17 @@ def tile_view(request, model_type, zoom, x, y):
 
 @require_POST
 def receive_feedback(request):
-    """The FeedbackSerialize automatically populates the `id` and `created_at` fields as we only receive
-    'feedback' and 'email'.
-    """
-    data = json.loads(request.body)
-    serializer = FeedbackSerializer(data=data)
-    print(request)
-    print(serializer)
-    if serializer.is_valid():
-        serializer.save()
-        return JsonResponse({"message": "Feedback received successfully!"}, status=201)
-    return JsonResponse(serializer.errors, status=400)
+    """Handles feedback submission."""
+    try:
+        data = json.loads(request.body)
+        if not data.get("feedback"):  # Email is not mandatory
+            return JsonResponse({"error": "Feedback is required."}, status=400)
+        feedback = Feedback.objects.create(
+            email=data.get("email"),  # Use .get() to avoid KeyError
+            feedback=data.get("feedback"),
+        )
+        return JsonResponse(
+            {"message": "Feedback saved!", "id": feedback.id}, status=201
+        )
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
