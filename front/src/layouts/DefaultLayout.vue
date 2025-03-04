@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useFeedbackStore } from "@/stores/feedback";
+const store = useFeedbackStore();
+</script>
 
 <template>
   <div class="layout">
@@ -10,6 +13,7 @@
       </div>
       <nav class="navbar-right">
         <ul>
+          <li><a href="#" @click.prevent="store.showFeedback" class="navbar-link">✉️ Nous envoyer votre retour</a></li>
           <li><a href="https://iarbre.fr" class="navbar-link">ⓘ En savoir plus</a></li>
         </ul>
       </nav>
@@ -44,6 +48,7 @@
     ul
       list-style: none
       display: flex
+      gap: 1.1rem; 
       flex-direction: horizontal
 
   .navbar-link
