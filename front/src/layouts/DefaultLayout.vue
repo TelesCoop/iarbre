@@ -52,7 +52,7 @@ const store = useFeedbackStore()
     ul
       list-style: none
       display: flex
-      gap: 1.1rem;
+      gap: 1.1rem
       flex-direction: horizontal
 
   .navbar-link
