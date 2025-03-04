@@ -140,3 +140,14 @@ class MVTTile(models.Model):
 def before_delete_mvt_tile(sender, instance, **kwargs):
     """Delete the file when the model is deleted."""
     instance.mvt_file.delete(save=False)
+
+
+class Feedback(models.Model):
+    """Store feedbacks from carte.iarbre.fr"""
+
+    email = models.EmailField(blank=True, null=True)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.email or 'Anonymous'}"
