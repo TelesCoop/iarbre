@@ -286,7 +286,7 @@ URL_FILES = [
         "layer_name": "adr_voie_lieu.adraerodrome",
         "scripts": [""],
         "actions": [],
-        "factors": ["aerodrome"],
+        "factors": ["Aerodrome"],
         "output_type": "POLYGON",
     },
     {
