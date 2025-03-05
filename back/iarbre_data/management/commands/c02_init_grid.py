@@ -249,7 +249,6 @@ class Command(BaseCommand):
 
     @staticmethod
     def _create_grid_city(
-        self,
         city: City,
         batch_size: int,
         logger: logging.Logger,
@@ -320,7 +319,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=12) as executor:
             future_to_city = {
                 executor.submit(
-                    Command._create_grid_city,
+                    self._create_grid_city,
                     city=city,
                     batch_size=batch_size,
                     logger=logger,
