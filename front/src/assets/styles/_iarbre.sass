@@ -16,10 +16,30 @@ $white: #ffffff
 $main-font: "Bricolage Grotesque"
 $accent-font: "Sligoil"
 
+$scales: ( 0: #dfdfdf, 1: #e7e7cf, 2: #eff1bf, 3: #dcdaa2, 4: #ccc688, 5: #c2cf8b, 6: #b7d98f, 7: #95cb80, 8: #72bc71, 9: #3a9254, 10: #026838)
 
-$scale-0: #dfdfdf
-$scale-2: #eff1bf
-$scale-4: #ccc688
-$scale-6: #b7d98f
-$scale-8: #72bc71
-$scale-10: #026838
+.button
+  font-family: $accent-font
+  text-decoration: none
+  border: none
+  padding: 10px 20px
+  border-radius: 50px
+
+  &.primary
+    color: $white
+    background-color: $dark-green
+
+  &.small
+    padding: 7px 10px
+    font-size: 0.8rem
+
+  &.text
+    background-color: unset
+    border-radius: 0px
+    padding: 3px
+
+.text-light-green
+  color: $light-green
+
+.text-right
+  text-align: right
