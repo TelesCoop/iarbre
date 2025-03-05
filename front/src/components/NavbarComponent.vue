@@ -88,6 +88,7 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
     text-decoration: none
     font-size: 1rem
     transition: color 0.3s ease
+    background-color: $off-white
     border: none;
     outline: none;
 
