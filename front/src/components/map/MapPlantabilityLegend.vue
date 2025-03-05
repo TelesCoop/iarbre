@@ -28,7 +28,6 @@ const mapStore = useMapStore()
   border-radius: 10px
   box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.3)
   padding: 0.75rem 1.5rem
-  max-width: 300px
 
   .no-layers-message
     font-family: $accent-font
