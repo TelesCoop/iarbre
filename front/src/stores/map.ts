@@ -98,7 +98,6 @@ export const useMapStore = defineStore("map", () => {
     setupTile(mapInstance, ModelType.TILE, mapId)
     //setupSource(mapInstance, ModelType.LCZ)
     //setupTile(mapInstance, ModelType.LCZ, mapId)
-
   }
 
   const initMap = (mapId: string) => {
