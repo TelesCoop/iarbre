@@ -392,6 +392,7 @@ URL_FILES = [
         "name": "Local Climate Zone",
         "url": "https://www.data.gouv.fr/fr/datasets/r/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
         "output_type": "POLYGON",
+        "factors": "",
     },
 ]
 

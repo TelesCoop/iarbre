@@ -408,7 +408,7 @@ def find_config(factor: str) -> dict:
     """
     data_configs = DATA_FILES + URL_FILES
     for data_config in data_configs:
-        if data_config["name"] == factor:
+        if factor in data_config["factors"]:
             return data_config
     raise ValueError(f"No data config found for factor: {factor}")
 
