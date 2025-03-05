@@ -104,25 +104,25 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // // Remove existing layers and sources
-      // const existingLayers = Object.values(LAYERS)
-      // existingLayers.forEach(layer => {
-      //   const layerId = getLayerId(layer, currentModelType.value)
-      //   if (mapInstance.getLayer(layerId)) {
-      //     mapInstance.removeLayer(layerId)
-      //   }
+      const existingLayers = Object.values(LAYERS)
+      existingLayers.forEach((layer) => {
+        const layerId = getLayerId(layer, currentModelType.value)
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
 
-      //   const sourceId = getSourceId(layer, currentModelType.value)
-      //   if (mapInstance.getSource(sourceId)) {
-      //     mapInstance.removeSource(sourceId)
-      //   }
-      // })
+        const sourceId = getSourceId(layer, currentModelType.value)
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
+      })
       console.log("changelayer 2")
 
       // Add the new layer
       setupSource(mapInstance, selectedLayer.value, currentModelType.value)
-      // console.log("changelayer 3")
-      // setupTile(mapInstance, selectedLayer.value, currentModelType.value, mapId)
-      // console.log("changelayer 4")
+      console.log("changelayer 3")
+      setupTile(mapInstance, selectedLayer.value, currentModelType.value, mapId)
+      console.log("changelayer 4")
     })
   }
 
