@@ -1,41 +1,39 @@
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
-import { ModelType } from "@/utils/enum"
+import { ModelType, LAYERS } from "@/utils/enum"
 import type { ScorePopupData } from "@/types"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popup = ref<ScorePopupData | undefined>(undefined)
+  const selectedLayer = ref<LAYERS>(LAYERS.PLANTABILITY)
+  const currentModelType = ref<ModelType>(ModelType.TILE)
 
-  const getMapInstance = (id: string) => {
-    return computed(() => mapInstancesByIds.value[id])
+  const getSourceId = (layer: LAYERS, modelType: ModelType) => {
+    return `${layer}-${modelType}-source`
   }
 
-  const getSourceIdByModelType = (modelType: ModelType) => {
-    return `${modelType}-source`
-  }
-  const getLayerIdByModelType = (modelType: ModelType) => {
-    return `${modelType}-layer`
+  const getLayerId = (layer: LAYERS, modelType: ModelType) => {
+    return `${layer}-${modelType}-layer`
   }
 
-  const extractFeatureIndice = (features: Array<any>, modelType: ModelType) => {
+  const extractFeatureIndice = (features: Array<any>, layer: LAYERS, modelType: ModelType) => {
     if (!features) return undefined
-    const f = features.filter(
-      (feature: any) => feature.layer.id === getLayerIdByModelType(modelType)
-    )
+    const f = features.filter((feature: any) => feature.layer.id === getLayerId(layer, modelType))
     if (f.length === 0) return undefined
     return f[0].properties.indice
   }
 
-  const setupTile = (map: Map, modelType: ModelType, mapId: string) => {
-    const sourceId = getSourceIdByModelType(modelType)
-    const layerId = getLayerIdByModelType(modelType)
+  const setupTile = (map: Map, layer: LAYERS, modelType: ModelType, mapId: string) => {
+    const sourceId = getSourceId(layer, modelType)
+    const layerId = getLayerId(layer, modelType)
+
     map.addLayer({
       id: layerId,
       type: "fill",
-      source: sourceId, // ID of the tile source created above
+      source: sourceId,
       "source-layer": modelType,
       layout: {},
       paint: {
@@ -46,7 +44,7 @@ export const useMapStore = defineStore("map", () => {
 
     map.on("click", layerId, (e) => {
       popup.value = {
-        score: Math.round(10 * extractFeatureIndice(e.features!, modelType)),
+        score: Math.round(10 * extractFeatureIndice(e.features!, layer, modelType)),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
       }
@@ -59,17 +57,20 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const setupSource = (map: Map, modelType: ModelType) => {
+  const setupSource = (map: Map, layer: LAYERS, modelType: ModelType) => {
     const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
-    const sourceId = getSourceIdByModelType(modelType)
+    const sourceId = getSourceId(layer, modelType)
 
+    console.log("### setupsource 0")
     map.addSource(sourceId, {
       type: "vector",
       tiles: [tileUrl],
       minzoom: MIN_ZOOM
     })
+    console.log("### setupsource 1")
 
     const source = map.getSource(sourceId)!
+    console.log("### setupsource 2")
     const checkIfLoaded = () => {
       if (source.loaded()) {
         // This text is tested by Cypress.
@@ -93,9 +94,41 @@ export const useMapStore = defineStore("map", () => {
     )
   }
 
+  const changeLayer = (layerType: LAYERS) => {
+    console.log("changelayer 1")
+    selectedLayer.value = layerType
+
+    // Update all map instances with the new layer
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      console.log("changelayer 1.5")
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      // // Remove existing layers and sources
+      // const existingLayers = Object.values(LAYERS)
+      // existingLayers.forEach(layer => {
+      //   const layerId = getLayerId(layer, currentModelType.value)
+      //   if (mapInstance.getLayer(layerId)) {
+      //     mapInstance.removeLayer(layerId)
+      //   }
+
+      //   const sourceId = getSourceId(layer, currentModelType.value)
+      //   if (mapInstance.getSource(sourceId)) {
+      //     mapInstance.removeSource(sourceId)
+      //   }
+      // })
+      console.log("changelayer 2")
+
+      // Add the new layer
+      setupSource(mapInstance, selectedLayer.value, currentModelType.value)
+      // console.log("changelayer 3")
+      // setupTile(mapInstance, selectedLayer.value, currentModelType.value, mapId)
+      // console.log("changelayer 4")
+    })
+  }
+
   const initTiles = (mapInstance: Map, mapId: string) => {
-    setupSource(mapInstance, ModelType.TILE)
-    setupTile(mapInstance, ModelType.TILE, mapId)
+    setupSource(mapInstance, selectedLayer.value, currentModelType.value)
+    setupTile(mapInstance, selectedLayer.value, currentModelType.value, mapId)
   }
 
   const initMap = (mapId: string) => {
@@ -118,5 +151,5 @@ export const useMapStore = defineStore("map", () => {
       setupControls(mapInstance)
     })
   }
-  return { mapInstancesByIds, initMap, getMapInstance, popup }
+  return { mapInstancesByIds, initMap, popup, selectedLayer, currentModelType, changeLayer }
 })
