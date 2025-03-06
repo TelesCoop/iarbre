@@ -69,7 +69,7 @@ class C02GridTestCase(TestCase):
         self.assertTrue(df.tiles_generated.values)
 
         # City bound is adjusted
-        self.assertEqual(Tile.objects.count(), 25)
+        self.assertEqual(Tile.objects.count(), 12)
 
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
@@ -92,7 +92,7 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(name="square-city")
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 30)
+        self.assertEqual(Tile.objects.count(), 12)
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2)
         coords = tile.geometry.coords[0]
@@ -116,7 +116,7 @@ class C02GridTestCase(TestCase):
                 height_ratio=self.sin_60,
             )
         selected_city = select_city(str(codes[0]))
-        clean_outside(selected_city, 1e4)
+        clean_outside(selected_city, int(1e4))
         self.assertFalse(
             City.objects.filter(code=codes[1])[0].geometry.intersects(
                 Tile.objects.first().geometry

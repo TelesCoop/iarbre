@@ -4,6 +4,7 @@ from iarbre_data.settings import BASE_DIR
 
 
 def setup_test_data() -> None:
+    """If there is no data in file_data, put test_data in it."""
     file_data_dir = os.path.join(BASE_DIR, "file_data")
     test_data_dir = os.path.join(BASE_DIR, "iarbre_data/tests/test_data")
 
@@ -19,3 +20,10 @@ def setup_test_data() -> None:
 
             if os.path.isfile(source_path):
                 shutil.copy(source_path, destination_path)
+
+
+def clean_media() -> None:
+    """If it exists, clean the media folder corresponding to fake data."""
+    directory = "media/mvt_files/fake_data"
+    if os.path.exists(directory) and os.path.isdir(directory):
+        shutil.rmtree(directory)

@@ -75,18 +75,17 @@ class HexTileShape(TileShape):
         """Snap bounds to the nearest grid alignment."""
         hex_width = 3 * side_length
         hex_height = 2 * side_length * SIN_60
-        xmin = hex_width * (np.floor(xmin / hex_width) - 1)
-        ymin = hex_height * (np.floor(ymin / hex_height) - 1)
-        xmax = hex_width * (np.ceil(xmax / hex_width) + 1)
-        ymax = hex_height * (np.ceil(ymax / hex_height) + 1)
+        xmin = hex_width * np.floor(xmin / hex_width)
+        ymin = hex_height * np.floor(ymin / hex_height)
+        xmax = hex_width * np.ceil(xmax / hex_width)
+        ymax = hex_height * np.ceil(ymax / hex_height)
         return xmin, ymin, xmax, ymax
 
     @staticmethod
     def tile_positions(xmin, ymin, xmax, ymax, grid_size, side_length):
         """Generate an iterator for all the position where to create a tile."""
-        cols = np.arange(
-            xmin - 3 * side_length, xmax + 3 * side_length, 3 * side_length
-        )
+        hex_width = 3 * side_length
+        cols = np.arange(xmin - hex_width, xmax + hex_width, hex_width)
         rows = np.arange(
             ymin / SIN_60 - side_length, ymax / SIN_60 + side_length, side_length
         )
@@ -134,13 +133,9 @@ def create_tiles_for_city(
         None
     """
     city_geom = city.geometry
-    city_geom = city_geom.buffer(50)  # Margin for intersection
+    city_geom = city_geom.buffer(20)  # Margin for intersection
     city_id = city.id
     xmin, ymin, xmax, ymax = city_geom.bounds
-    xmin -= grid_size
-    ymin -= grid_size
-    xmax += grid_size
-    ymax += grid_size
     # Bounds for the generation
     xmin, ymin, xmax, ymax = tile_shape_cls.adjust_bounds(
         xmin, ymin, xmax, ymax, grid_size, side_length
@@ -152,9 +147,7 @@ def create_tiles_for_city(
     for x, (i, y) in tqdm(
         tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, side_length)
     ):
-        tile = box(
-            x, y * height_ratio, x - 3 * grid_size, y * height_ratio + 3 * grid_size
-        )  # square of size 3 * grid_size
+        tile = box(x, y * height_ratio, x - grid_size, y * height_ratio + grid_size)
         if not city_geom.intersects(tile):
             continue
 
@@ -197,7 +190,6 @@ def clean_outside(selected_city: pd.DataFrame, batch_size: int) -> None:
     Returns:
         None
     """
-    batch_size = int(batch_size)
     if len(selected_city) > 1:
         city_union_geom = selected_city.geometry.union_all()
     else:
@@ -206,8 +198,8 @@ def clean_outside(selected_city: pd.DataFrame, batch_size: int) -> None:
     total_records = Tile.objects.all().count()
     total_deleted = 0
     qs = Tile.objects.all().values_list("id", flat=True)
-    for start in tqdm(range(0, total_records, batch_size * 10)):
-        batch_ids = qs[start : start + batch_size * 10]
+    for start in tqdm(range(0, total_records, batch_size)):
+        batch_ids = qs[start : start + batch_size]
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)
