@@ -25,12 +25,10 @@ from iarbre_data.management.commands.utils import select_city, load_geodataframe
 from iarbre_data.models import Tile, Data, TileFactor, City
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.data_config import DATA_FILES
-from iarbre_data.tests.test_c01_iris_city import move_test_data
 
 
 class C04ComputeFactorsTestCase(TestCase):
     def setUp(self):
-        move_test_data()
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris()._insert_cities(data)
         grid_size = 100

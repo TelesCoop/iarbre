@@ -9,7 +9,6 @@ from iarbre_data.management.commands.c03_import_data import (
     save_geometries,
 )
 from iarbre_data.settings import TARGET_PROJ
-from iarbre_data.tests.test_c01_iris_city import move_test_data
 import geopandas as gpd
 
 
@@ -35,7 +34,6 @@ class C03DataTestCase(TestCase):
                 ]
             }
         ]
-        move_test_data()
         self.df = read_data(self.data_config)
         self.datas = process_data(self.df, self.data_config)
 

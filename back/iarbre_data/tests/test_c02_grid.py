@@ -13,21 +13,20 @@ from iarbre_data.management.commands.c02_init_grid import (
 from iarbre_data.management.commands.utils import select_city, load_geodataframe_from_db
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.models import Tile, City
-from iarbre_data.tests.test_c01_iris_city import move_test_data
 import numpy as np
 import logging
 
 
 class C02GridTestCase(TestCase):
-    def setUp(self, gpd=None):
-        move_test_data()
+    def setUp(self):
         data = str(BASE_DIR) + "/file_data/communes_gl_2025.geojson"
         c01_city_iris._insert_cities(data)
         # Lyon-Part Dieu
         x, y = 844612.097181, 6519563.100231
         side = 400  # meters
         half_side = side / 2
-        square = Polygon(
+        # square with center on Lyon Part-Dieu and side 400m
+        city_geometry = Polygon(
             [
                 (x - half_side, y - half_side),
                 (x + half_side, y - half_side),
@@ -41,13 +40,16 @@ class C02GridTestCase(TestCase):
             code="69000",
             tiles_generated=False,
             tiles_computed=False,
-            geometry=square.wkt,
+            geometry=city_geometry.wkt,
         )
         city.save()
 
-        self.grid_size = 200
-        desired_area = self.grid_size * self.grid_size
-        self.side_length = np.sqrt((2 * desired_area) / (3 * np.sqrt(3)))
+        self.grid_size = 200  # meters
+
+        # This is the hexagonal side length in order to have
+        # an hex with a surface area of 200x200 m^2
+        tile_area = self.grid_size * self.grid_size
+        self.hex_side_length = np.sqrt((2 * tile_area) / (3 * np.sqrt(3)))
         self.sin_60 = np.sin(np.pi / 3)
 
     def test_create_square_tile(self):
@@ -61,11 +63,14 @@ class C02GridTestCase(TestCase):
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
         )
-        qs = City.objects.filter(name="square_city")
+        qs = City.objects.filter(name="square-city")
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
 
         self.assertTrue(df.tiles_generated.values)
+
+        # City bound is adjusted
         self.assertEqual(Tile.objects.count(), 25)
+
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
         coords = tile.geometry.coords[0]
@@ -81,7 +86,7 @@ class C02GridTestCase(TestCase):
             tile_shape_cls=HexTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
-            side_length=self.side_length,
+            side_length=self.hex_side_length,
             height_ratio=self.sin_60,
         )
         qs = City.objects.filter(name="square-city")
@@ -92,9 +97,9 @@ class C02GridTestCase(TestCase):
         self.assertEqual(int(tile.geometry.area), self.grid_size**2)
         coords = tile.geometry.coords[0]
         self.assertEqual(len(coords), 7)  # it's a hex
-        self.assertEqual(int(coords[1][0] - coords[0][0]), int(self.side_length))
+        self.assertEqual(int(coords[1][0] - coords[0][0]), int(self.hex_side_length))
         self.assertEqual(
-            int(coords[2][1] - coords[0][1]), int(self.sin_60 * self.side_length)
+            int(coords[2][1] - coords[0][1]), int(self.sin_60 * self.hex_side_length)
         )
 
     def test_clean_outside(self):
@@ -107,7 +112,7 @@ class C02GridTestCase(TestCase):
                 HexTileShape,
                 logger=logging.getLogger(__name__),
                 batch_size=int(1e6),
-                side_length=self.side_length,
+                side_length=self.hex_side_length,
                 height_ratio=self.sin_60,
             )
         selected_city = select_city(str(codes[0]))

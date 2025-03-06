@@ -45,10 +45,12 @@ class SquareTileShape(TileShape):
     @staticmethod
     def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, side_length=None):
         """Snap bounds to the nearest grid alignment."""
+        print(xmax)
         xmin = np.floor(xmin / grid_size) * grid_size
         ymin = np.floor(ymin / grid_size) * grid_size
         xmax = np.ceil(xmax / grid_size) * grid_size
         ymax = np.ceil(ymax / grid_size) * grid_size
+        print(xmax)
         return xmin, ymin, xmax, ymax
 
     @staticmethod
@@ -64,7 +66,7 @@ class SquareTileShape(TileShape):
         """Create a single square and round geometries to optimize storage."""
         x1 = x - grid_size
         y1 = y + grid_size
-        return Polygon.from_bbox([round(x, 2) for x in [x, y, x1, y1]])
+        return Polygon.from_bbox(round(v, 2) for v in [x, y, x1, y1])
 
 
 class HexTileShape(TileShape):
