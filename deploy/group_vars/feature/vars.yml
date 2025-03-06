@@ -1,9 +1,9 @@
-backend_application_port: 8031 # must be unique for each project on the same server
-frontend_application_port: 3000 # must be unique for each project on the same server
-environment_suffix: ""
+backend_application_port: 8033 # must be unique for each project on the same server
+frontend_application_port: 3003 # must be unique for each project on the same server
+environment_suffix: "_feature"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "carte.iarbre.fr"
+main_hostname: "feature-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
@@ -19,7 +19,7 @@ https_enabled: true
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
-frontend_branch: main
-backend_branch: main
+frontend_branch: layers2
+backend_branch: layers2
 
-environment_name: production
+environment_name: feature
