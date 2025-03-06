@@ -5,9 +5,11 @@ from iarbre_data.models import MVTTile
 
 
 @lru_cache(maxsize=1024)
-def load_tiles(model, x, y, zoom):
+def load_tiles(model, x, y, zoom, layer):
     try:
-        tile = MVTTile.objects.get(zoom_level=zoom, tile_x=x, tile_y=y)
+        tile = MVTTile.objects.get(
+            zoom_level=zoom, tile_x=x, tile_y=y, model_type=model, layer=layer
+        )
         return HttpResponse(tile.mvt_file, content_type="application/x-protobuf")
     except (MVTTile.DoesNotExist, FileNotFoundError):
         raise Http404("Tile not found")

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
-import MapLegend from "@/components/map/MapLegend.vue"
+import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/MapScorePopup.vue"
-import MapSidebar from "@/components/map/MapSidebar.vue"
+import MapSidebar from "@/components/map/sidebar/MapSidebar.vue"
 
 const props = defineProps({
   mapId: {

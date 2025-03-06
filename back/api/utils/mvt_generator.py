@@ -1,6 +1,7 @@
 """
 MVT Generator as django-media.
 """
+
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -133,6 +134,7 @@ class MVTGenerator:
                     zoom_level=zoom,
                     tile_x=tile.x,
                     tile_y=tile.y,
+                    layer=self.layer_name,
                 )
                 mvt_tile.save_mvt(mvt_data, filename)
 

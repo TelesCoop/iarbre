@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ScoreLabel from "./ScoreLabel.vue"
+import ScoreLabel from "../ScoreLabel.vue"
 </script>
 
 <template>

@@ -185,6 +185,7 @@ class MVTGeneratorTestCase(TestCase):
 
         qs = MVTTile.objects.all()
         explode_url = qs[0].mvt_file.url.split("/")
+        breakpoint()
         tile_x = int(explode_url[-2])
         tile_y = int(explode_url[-1].split(".")[0])
         tile_zoom = int(explode_url[-3])
@@ -194,7 +195,12 @@ class MVTGeneratorTestCase(TestCase):
         request.META["SERVER_NAME"] = "localhost"
         request.META["SERVER_PORT"] = "8000"
         response = tile_view(
-            request=request, model_type="tile", zoom=tile_zoom, x=tile_x, y=tile_y
+            request=request,
+            model_type="tile",
+            layer="plantability",
+            zoom=tile_zoom,
+            x=tile_x,
+            y=tile_y,
         )
         decoded_tile = mapbox_vector_tile.decode(response.content)
 

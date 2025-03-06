@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import PlantabilityLegend from "@/components/map/PlantabilityLegend.vue"
-import ClimateZonesLegend from "@/components/map/ClimateZonesLegend.vue"
+import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
+import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
 import { useMapStore } from "@/stores/map"
 import { LAYERS } from "@/utils/enum"
 

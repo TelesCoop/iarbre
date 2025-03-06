@@ -124,6 +124,7 @@ class MVTTile(models.Model):
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
     model_type = models.CharField(max_length=50)
+    layer = models.CharField(max_length=50, default="plantability")
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
@@ -133,7 +134,7 @@ class MVTTile(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Tile {self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
+        return f"Tile {self.mvt_file.path}"
 
 
 @receiver(pre_delete, sender=MVTTile)

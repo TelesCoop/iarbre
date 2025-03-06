@@ -58,7 +58,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, layer: LAYERS, modelType: ModelType) => {
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
+    const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/${layer}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(layer, modelType)
 
     console.log("### setupsource 0")
