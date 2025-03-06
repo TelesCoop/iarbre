@@ -45,12 +45,10 @@ class SquareTileShape(TileShape):
     @staticmethod
     def adjust_bounds(xmin, ymin, xmax, ymax, grid_size, side_length=None):
         """Snap bounds to the nearest grid alignment."""
-        print(xmax)
         xmin = np.floor(xmin / grid_size) * grid_size
         ymin = np.floor(ymin / grid_size) * grid_size
         xmax = np.ceil(xmax / grid_size) * grid_size
         ymax = np.ceil(ymax / grid_size) * grid_size
-        print(xmax)
         return xmin, ymin, xmax, ymax
 
     @staticmethod
@@ -251,7 +249,6 @@ class Command(BaseCommand):
 
     @staticmethod
     def _create_grid_city(
-        self,
         city: City,
         batch_size: int,
         logger: logging.Logger,

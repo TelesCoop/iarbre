@@ -8,6 +8,7 @@ from api.map import load_tiles
 
 MODEL_BY_TYPE = {
     ModelType.TILE.value: "tile",
+    "fake_data": "fake_data",  # used only for testing
 }
 
 
