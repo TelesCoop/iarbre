@@ -37,8 +37,7 @@ class C02GridTestCase(TestCase):
             ]
         )
         city = City(
-            id=99999,
-            name="fake-city",
+            name="square-city",
             code="69000",
             tiles_generated=False,
             tiles_computed=False,
@@ -52,8 +51,8 @@ class C02GridTestCase(TestCase):
         self.sin_60 = np.sin(np.pi / 3)
 
     def test_create_square_tile(self):
-        code = 69000
-        selected_city = select_city(str(code))
+        selected_city = select_city("69000")
+
         print("Creating tiles")
         create_tiles_for_city(
             city=selected_city.iloc[0],
@@ -62,8 +61,9 @@ class C02GridTestCase(TestCase):
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
         )
-        qs = City.objects.filter(code=code)
+        qs = City.objects.filter(name="square_city")
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
+
         self.assertTrue(df.tiles_generated.values)
         self.assertEqual(Tile.objects.count(), 25)
         tile = Tile.objects.first()
@@ -74,8 +74,7 @@ class C02GridTestCase(TestCase):
         self.assertEqual(coords[1][1] - coords[0][1], self.grid_size)
 
     def test_create_hex_tile(self):
-        code = 69000
-        selected_city = select_city(str(code))
+        selected_city = select_city("69000")
         create_tiles_for_city(
             city=selected_city.iloc[0],
             grid_size=self.grid_size,
@@ -85,7 +84,7 @@ class C02GridTestCase(TestCase):
             side_length=self.side_length,
             height_ratio=self.sin_60,
         )
-        qs = City.objects.filter(code=code)
+        qs = City.objects.filter(name="square-city")
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
         self.assertEqual(Tile.objects.count(), 30)
