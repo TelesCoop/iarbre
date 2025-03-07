@@ -2,6 +2,7 @@
 /*@tailwind components;*/
 /*@tailwind utilities;*/
 @import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 @font-face {
   font-family: "Bricolage Grotesque";

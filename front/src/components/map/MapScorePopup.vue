@@ -33,6 +33,8 @@ const label = computed(() => {
         <h3 class="font-accent text-lg">{{ label }}</h3>
       </div>
     </div>
-    <div class="text-green-300 text-right">{{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E</div>
+    <div class="text-[var(--color-light-green)] text-right">
+      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E
+    </div>
   </div>
 </template>
