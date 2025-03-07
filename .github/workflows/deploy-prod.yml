@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - dev
+      - main
   # From https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#running-a-workflow-when-a-pull-request-is-approved
   pull_request:
     branches:
       - dev
+      - main
     types:
       - closed
 
@@ -17,30 +19,41 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy frontend in prod
+      - name: Set environment
+        id: set_env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            echo "ENVIRONMENT=preprod" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+      - name: Deploy frontend
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: frontend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
-            -l prod
+            # -l ${{ env.ENVIRONMENT }}
+            -l prod preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy backend in prod
+      - name: Deploy backend
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: backend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
-            -l prod
+            # -l ${{ env.ENVIRONMENT }}
+            -l prod preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy static in prod
+      - name: Deploy static
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: showcase.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
-            -l prod
+            # -l ${{ env.ENVIRONMENT }}
+            -l prod preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
