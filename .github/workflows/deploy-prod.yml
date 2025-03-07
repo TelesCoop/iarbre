@@ -55,5 +55,5 @@ jobs:
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod,preprod
+            -l prod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
