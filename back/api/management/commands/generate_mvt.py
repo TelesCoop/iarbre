@@ -57,6 +57,7 @@ class Command(BaseCommand):
     def generate_tiles_for_model(
         self,
         model: Type[Model],
+        layer: str,
         queryset: QuerySet,
         zoom_levels: Tuple[int, int] = (8, 20),
         number_of_thread: int = 1,
@@ -70,6 +71,7 @@ class Command(BaseCommand):
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
+            layer(str): The layer to generate MVT tiles for.
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
@@ -81,7 +83,8 @@ class Command(BaseCommand):
         mvt_generator = MVTGenerator(
             queryset=queryset,
             zoom_levels=zoom_levels,
-            layer_name=model.type,
+            layer_name=layer,
+            model_name=model.type,
             number_of_thread=number_of_thread,
         )
 
@@ -94,8 +97,10 @@ class Command(BaseCommand):
         model = options["model"]
         if model == "Tile":
             mdl = Tile
+            layer = "plantability"
         elif model == "Lcz":
             mdl = Lcz
+            layer = "lcz"
         else:
             raise ValueError(
                 f"Unsupported model: {model}. Should be either 'Tile' or 'Lcz'."
@@ -103,11 +108,14 @@ class Command(BaseCommand):
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {model}.")
-            print(MVTTile.objects.filter(model_type=model.lower()).delete())
+            print(
+                MVTTile.objects.filter(model_type=model.lower(), layer=layer).delete()
+            )
         # Generate new tiles
         self.generate_tiles_for_model(
-            mdl,
-            mdl.objects.all(),
-            (10, 20),
-            number_of_thread,
+            model=mdl,
+            layer=layer,
+            queryset=mdl.objects.all(),
+            zoom_levels=(10, 20),
+            number_of_thread=number_of_thread,
         )

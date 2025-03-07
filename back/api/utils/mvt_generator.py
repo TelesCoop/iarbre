@@ -24,7 +24,8 @@ class MVTGenerator:
     def __init__(
         self,
         queryset: QuerySet,
-        layer_name: str = "geometries",
+        model_name: str = "tile",
+        layer_name: str = "plantability",
         zoom_levels: tuple[int, int] = (0, 14),
         number_of_thread: int = 1,
     ):
@@ -33,12 +34,14 @@ class MVTGenerator:
 
         Args:
             queryset (QuerySet): QuerySet of the model.
+            model_name (str): Name of the model to generate MVT tiles for.
             layer_name (str): Name of the layer to generate MVT tiles for.
             zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
             number_of_thread (int): Number of threads to use for generating tiles.
         """
         self.queryset = queryset
         self.layer_name = layer_name
+        self.model_name = model_name
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_thread = number_of_thread
 
@@ -119,11 +122,19 @@ class MVTGenerator:
             if features:
                 # Encode MVT
                 mvt_data = mapbox_vector_tile.encode(
-                    [{"name": self.layer_name, "features": features}]
+                    [
+                        {
+                            "name": f"{self.model_name}/{self.layer_name}",
+                            "features": features,
+                        }
+                    ]
                 )
-                filename = f"{self.layer_name}/{zoom}/{tile.x}/{tile.y}.mvt"
+                filename = (
+                    f"{self.model_name}/{self.layer_name}/{zoom}/{tile.x}/{tile.y}.mvt"
+                )
                 mvt_tile = MVTTile(
-                    model_type=self.layer_name,
+                    model_type=self.model_name,
+                    layer=self.layer_name,
                     zoom_level=zoom,
                     tile_x=tile.x,
                     tile_y=tile.y,

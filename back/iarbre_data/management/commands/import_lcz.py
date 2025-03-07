@@ -30,17 +30,18 @@ def download_data():
     if not url:
         raise ValueError("URL for Local Climate Zone does not exist.")
 
-    # Check if a file with "lcz" in the name already exists in the directory
-    existing_files = [f for f in os.listdir("file_data/") if "lcz" in f.lower()]
-    if existing_files:
-        print(f"LCZ data already in file_data: {existing_files}")
+    lcz_path = "file_data/lcz"
+    if os.path.isdir(lcz_path) and any(os.listdir(lcz_path)):
+        shp_files = [f for f in os.listdir(lcz_path) if f.endswith(".shp")]
+        if shp_files:
+            return
+    response = requests.get(url)
+    if response.status_code == 200:
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            os.makedirs("file_data/lcz", exist_ok=True)
+            z.extractall("file_data/lcz")
     else:
-        response = requests.get(url)
-        if response.status_code == 200:
-            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-                z.extractall("file_data/")
-        else:
-            raise ValueError(f"Failed to download file from {url}")
+        raise ValueError(f"Failed to download file from {url}")
 
 
 def load_data():
@@ -52,30 +53,18 @@ def load_data():
     Raises:
         FileNotFoundError: If no folder with "lcz" in the name is found or no .shp file is found in the folder.
     """
-    # Search for a folder with "lcz" in the name
-    lcz_folder = None
-    for folder in os.listdir("file_data/"):
-        if "lcz" in folder.lower() and os.path.isdir(
-            os.path.join("file_data/", folder)
-        ):
-            lcz_folder = folder
-            break
-
-    if not lcz_folder:
+    lcz_path = "file_data/lcz"
+    if not os.path.isdir(lcz_path):
         raise FileNotFoundError("No folder for 'lcz' found in 'file_data/' directory.")
-
-    # Search for a .shp file in the found folder
     shp_file = None
-    for file in os.listdir(os.path.join("file_data/", lcz_folder)):
+    for file in os.listdir(lcz_path):
         if file.lower().endswith(".shp"):
             shp_file = file
             break
-
     if not shp_file:
-        raise FileNotFoundError(f"No .shp file found in the folder '{lcz_folder}'.")
+        raise FileNotFoundError(f"No .shp file found in the folder '{lcz_path}'.")
 
-    # Load the shapefile
-    shp_path = os.path.join("file_data/", lcz_folder, shp_file)
+    shp_path = os.path.join(lcz_path, shp_file)
     gdf = geopandas.read_file(shp_path)
     gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
@@ -104,7 +93,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
                 Lcz(
                     geometry=GEOSGeometry(data["geometry"].wkt),
                     map_geometry=GEOSGeometry(data["map_geometry"].wkt),
-                    lcz_indice=data["lcz"],
+                    lcz_index=data["lcz"],
                     lcz_description=LCZ[data["lcz"]],
                 )
                 for _, data in batch.iterrows()

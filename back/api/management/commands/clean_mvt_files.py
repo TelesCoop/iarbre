@@ -10,10 +10,17 @@ class Command(BaseCommand):
             "--model",
             type=str,
             required=True,
-            help="What model to transform to MVT.",
+            help="What model mvt to delete",
+        )
+        parser.add_argument(
+            "--layer",
+            type=str,
+            required=True,
+            help="What layer mvt to delete.",
         )
 
     def handle(self, *args, **options):
         model = options["model"]
+        layer = options["layer"]
         print("Deleting existing MVTTile")
-        print(MVTTile.objects.filter(model_type=model.lower()).delete())
+        print(MVTTile.objects.filter(model_type=model.lower(), layer=layer).delete())
