@@ -52,6 +52,28 @@ class C02GridTestCase(TestCase):
         self.hex_side_length = np.sqrt((2 * tile_area) / (3 * np.sqrt(3)))
         self.sin_60 = np.sin(np.pi / 3)
 
+    @staticmethod
+    def check_overlapping_tiles(tiles):
+        tiles = list(Tile.objects.all())
+        overlapping_tiles = []
+        for tile in tiles:
+            if (
+                Tile.objects.filter(geometry__overlaps=tile.geometry)
+                .exclude(id=tile.id)
+                .exists()
+            ):
+                overlapping_tiles.append(tile.id)
+        return overlapping_tiles
+
+    @staticmethod
+    def tile_covert_city(city, tiles):
+        covert_city = False
+        city_area = city.geometry.area
+        tile_area = sum(tile.geometry.area for tile in tiles)
+        if tile_area > city_area:
+            covert_city = True
+        return covert_city
+
     def test_create_square_tile(self):
         selected_city = select_city("69000")
 
@@ -68,8 +90,13 @@ class C02GridTestCase(TestCase):
 
         self.assertTrue(df.tiles_generated.values)
 
-        # City bound is adjusted
-        self.assertEqual(Tile.objects.count(), 12)
+        tiles = list(Tile.objects.all())
+        overlapping_tiles = self.check_overlapping_tiles(tiles)
+        self.assertFalse(overlapping_tiles)
+
+        city = City.objects.get(name="square-city")
+        covert_city = self.tile_covert_city(city, tiles)
+        self.assertTrue(covert_city)
 
         tile = Tile.objects.first()
         self.assertEqual(tile.geometry.area, self.grid_size**2)
@@ -92,7 +119,15 @@ class C02GridTestCase(TestCase):
         qs = City.objects.filter(name="square-city")
         df = load_geodataframe_from_db(qs, ["tiles_generated"])
         self.assertTrue(df.tiles_generated.values)
-        self.assertEqual(Tile.objects.count(), 12)
+
+        tiles = list(Tile.objects.all())
+        overlapping_tiles = self.check_overlapping_tiles(tiles)
+        self.assertFalse(overlapping_tiles)
+
+        city = City.objects.get(name="square-city")
+        covert_city = self.tile_covert_city(city, tiles)
+        self.assertTrue(covert_city)
+
         tile = Tile.objects.first()
         self.assertEqual(int(tile.geometry.area), self.grid_size**2)
         coords = tile.geometry.coords[0]
