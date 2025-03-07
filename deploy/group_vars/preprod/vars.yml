@@ -21,7 +21,5 @@ backend_static_path: "{{ project_dir }}/backend_static"
 
 frontend_branch: dev
 backend_branch: dev
-showcase_branch: dev
-docs_branch: dev
 
 environment_name: production
