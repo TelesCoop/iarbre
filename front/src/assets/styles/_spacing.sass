@@ -1,5 +1,0 @@
-$spacing-values: ("auto": auto)
-
-@for $i from 0 through 3
-  $new-spacing-values: (#{$i}: #{$i}rem, #{$i}_25: #{$i + 0.25}rem, #{$i}_5: #{$i + 0.5}rem, #{$i}_75: #{$i + 0.75}rem)
-  $spacing-values: map-merge($spacing-values, $new-spacing-values)
