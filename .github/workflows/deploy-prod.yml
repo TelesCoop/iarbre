@@ -35,7 +35,7 @@ jobs:
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod preprod
+            -l prod,preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy backend
         uses: dawidd6/action-ansible-playbook@v2
@@ -45,7 +45,7 @@ jobs:
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod preprod
+            -l prod,preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy static
         uses: dawidd6/action-ansible-playbook@v2
@@ -55,5 +55,5 @@ jobs:
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod preprod
+            -l prod,preprod
           key: ${{ secrets.SSH_PRIVATE_KEY }}
