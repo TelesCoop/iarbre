@@ -1,9 +1,9 @@
-backend_application_port: 8031 # must be unique for each project on the same server
-frontend_application_port: 3000 # must be unique for each project on the same server
-environment_suffix: ""
+backend_application_port: 8032 # must be unique for each project on the same server
+frontend_application_port: 3002 # must be unique for each project on the same server
+environment_suffix: "_preprod"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "carte.iarbre.fr"
+main_hostname: "preprod-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
@@ -21,5 +21,7 @@ backend_static_path: "{{ project_dir }}/backend_static"
 
 frontend_branch: dev
 backend_branch: dev
+showcase_branch: dev
+docs_branch: dev
 
 environment_name: production
