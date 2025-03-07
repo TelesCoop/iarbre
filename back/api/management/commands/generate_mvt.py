@@ -43,10 +43,10 @@ class Command(BaseCommand):
             help="Number of threads to use for generating tiles",
         )
         parser.add_argument(
-            "--model",
+            "--geolevel",
             type=str,
             required=True,
-            help="What model to transform to MVT.",
+            help="What geolevel to transform to MVT.",
         )
         parser.add_argument(
             "--keep",
@@ -57,7 +57,7 @@ class Command(BaseCommand):
     def generate_tiles_for_model(
         self,
         model: Type[Model],
-        layer: str,
+        datatype: str,
         queryset: QuerySet,
         zoom_levels: Tuple[int, int] = (8, 20),
         number_of_thread: int = 1,
@@ -71,7 +71,7 @@ class Command(BaseCommand):
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            layer(str): The layer to generate MVT tiles for.
+            datatype(str): The datatype to generate MVT tiles for.
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
@@ -83,8 +83,8 @@ class Command(BaseCommand):
         mvt_generator = MVTGenerator(
             queryset=queryset,
             zoom_levels=zoom_levels,
-            layer_name=layer,
-            model_name=model.type,
+            datatype=datatype,
+            geolevel=model.type,
             number_of_thread=number_of_thread,
         )
 
@@ -94,27 +94,29 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
-        model = options["model"]
-        if model == "Tile":
+        geolevel = options["geolevel"]
+        if geolevel == "Tile":
             mdl = Tile
-            layer = "plantability"
-        elif model == "Lcz":
+            datatype = Tile.datatype
+        elif geolevel == "Lcz":
             mdl = Lcz
-            layer = "lcz"
+            datatype = Lcz.datatype
         else:
             raise ValueError(
-                f"Unsupported model: {model}. Should be either 'Tile' or 'Lcz'."
+                f"Unsupported model: {geolevel}. Should be either 'Tile' or 'Lcz'."
             )
 
         if options["keep"] is False:
-            print(f"Deleting existing MVTTile for model : {model}.")
+            print(f"Deleting existing MVTTile for model : {geolevel}.")
             print(
-                MVTTile.objects.filter(model_type=model.lower(), layer=layer).delete()
+                MVTTile.objects.filter(
+                    geolevel=geolevel.lower(), datatype=datatype
+                ).delete()
             )
         # Generate new tiles
         self.generate_tiles_for_model(
             model=mdl,
-            layer=layer,
+            datatype=datatype,
             queryset=mdl.objects.all(),
             zoom_levels=(10, 20),
             number_of_thread=number_of_thread,

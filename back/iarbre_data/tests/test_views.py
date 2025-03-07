@@ -114,8 +114,8 @@ class MVTGeneratorTestCase(TestCase):
         mvt = MVTGenerator(
             Tile.objects.all(),
             zoom_levels=(8, 8),
-            model_name="fake_model",
-            layer_name="fake_layer",
+            geolevel="fake_model",
+            datatype="fake_layer",
         )
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
@@ -171,8 +171,8 @@ class MVTGeneratorTestCase(TestCase):
         mvt = MVTGenerator(
             Tile.objects.all(),
             zoom_levels=(8, 8),
-            model_name="fake_model",
-            layer_name="fake_layer",
+            geolevel="fake_model",
+            datatype="fake_layer",
         )
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
@@ -203,8 +203,8 @@ class MVTGeneratorTestCase(TestCase):
         request.META["SERVER_PORT"] = "8000"
         response = tile_view(
             request=request,
-            model_type="fake_model",
-            layer_type="fake_layer",
+            geolevel="fake_model",
+            datatype="fake_layer",
             zoom=tile_zoom,
             x=tile_x,
             y=tile_y,

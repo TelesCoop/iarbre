@@ -58,8 +58,8 @@ class Tile(models.Model):
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
-    type = GeoLevel.TILE.value
-    layer = DataType.TILE.value
+    geolevel = GeoLevel.TILE.value
+    datatype = DataType.TILE.value
 
     iris = models.ForeignKey(
         Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
@@ -87,7 +87,7 @@ class Tile(models.Model):
             return "#006837"
 
     def get_layer_properties(self):
-        """Return the properties of the tile for the MVT layer."""
+        """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.plantability_normalized_indice,
@@ -125,8 +125,8 @@ class MVTTile(models.Model):
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
-    model_type = models.CharField(max_length=50)
-    layer = models.CharField(max_length=50, default="plantability")
+    geolevel = models.CharField(max_length=50)
+    datatype = models.CharField(max_length=50, default="plantability")
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
@@ -153,8 +153,8 @@ class Lcz(models.Model):
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
 
-    type = GeoLevel.LCZ.value
-    layer = DataType.LCZ.value
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.LCZ.value
 
     @property
     def color(self):
@@ -181,7 +181,7 @@ class Lcz(models.Model):
         return color_map.get(self.lcz_index, "#6A6AFF")
 
     def get_layer_properties(self):
-        """Return the properties of the tile for the MVT layer."""
+        """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.lcz_index,

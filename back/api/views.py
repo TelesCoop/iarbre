@@ -23,7 +23,7 @@ LAYER_BY_DATATYPE = {
 @require_GET
 @cache_page(60 * 60 * 24)
 def tile_view(
-    request, model_type: str, layer_type: str, zoom: int, x: int, y: int
+    request, geolevel: str, datatype: str, zoom: int, x: int, y: int
 ) -> HttpResponse:
     """View to get tiles for a specific model type.
 
@@ -31,8 +31,8 @@ def tile_view(
     and tile coordinates (x, y).
     Args:
         request (HttpRequest): The HTTP request object.
-        model_type (str): Type of model to get tiles for.
-        layer_type (str): Layer to get tiles for.
+        geolevel (str): Geolevel to get tiles for.
+        datatype (str): Datatype to get tiles for.
         zoom (int): Zoom level of the tile.
         x (int): X coordinate of the tile.
         y (int): Y coordinate of the tile.
@@ -41,8 +41,8 @@ def tile_view(
         HttpResponse: Response containing the MVT tile.
     """
     start_time = time.time()
-    model = MODEL_BY_TYPE[model_type]
-    layer = LAYER_BY_DATATYPE[layer_type]
-    response = load_tiles(model, layer, x, y, zoom)
+    glvl = MODEL_BY_TYPE[geolevel]
+    dt = LAYER_BY_DATATYPE[datatype]
+    response = load_tiles(glvl, dt, x, y, zoom)
     print(f"Request duration: {time.time() - start_time} seconds")
     return response
