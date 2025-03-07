@@ -16,67 +16,104 @@ defineProps({
 </script>
 
 <template>
-  <div class="hexagon" :class="{ [`scale-${score}`]: true, [size]: true }">
+  <div
+    class="hexagon relative m-[5px] block text-center"
+    :class="{ [`scale-${score}`]: true, [size]: true }"
+  >
     <span>{{ label }}</span>
   </div>
 </template>
 
-<style lang="sass" scoped>
+<style scoped>
+/* Base hexagon styles */
+.hexagon {
+  font-family: var(--font-accent);
+  position: relative;
+}
 
-$hexagons-width: ("small": 12px, "huge": 20px)
+.hexagon::before,
+.hexagon::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  left: 0;
+}
 
-.hexagon
-    @each $name, $hexagon-width in $hexagons-width
-        &.#{$name}
-            height: calc(sqrt(3) * $hexagon-width)
-            width: calc(3 * $hexagon-width)
-            margin-top: calc($hexagon-width + 5px)
-            margin-bottom: calc($hexagon-width + 5px)
+.hexagon::before {
+  bottom: 100%;
+}
 
-            &::before
-                border-left: calc(1.5 * $hexagon-width) solid transparent
-                border-right: calc(1.5 * $hexagon-width) solid transparent
-                border-bottom: calc(sqrt(3) / 2 * $hexagon-width) solid red
+.hexagon::after {
+  top: 100%;
+}
 
-            &::after
-                border-left: calc(1.5 * $hexagon-width) solid transparent
-                border-right: calc(1.5 * $hexagon-width) solid transparent
-                border-top: calc(sqrt(3) / 2 * $hexagon-width) solid #007BFF
+/* Small hexagon */
+.hexagon.small {
+  height: calc(1.732 * 12px); /* sqrt(3) * 12px */
+  width: calc(3 * 12px);
+  margin-top: calc(12px + 5px);
+  margin-bottom: calc(12px + 5px);
+  font-size: 1.3rem;
+}
 
-    @each $index, $color in $scales
-        &.scale-#{$index}
-            background-color: $color
+.hexagon.small::before {
+  border-left: calc(1.5 * 12px) solid transparent;
+  border-right: calc(1.5 * 12px) solid transparent;
+  border-bottom: calc(1.732 / 2 * 12px) solid transparent;
+}
 
-            color: if(abs(lightness($color) - lightness($white)) < 40, $brown, $white)
-            &::before
-                border-bottom-color: $color
-            &::after
-                border-top-color: $color
+.hexagon.small::after {
+  border-left: calc(1.5 * 12px) solid transparent;
+  border-right: calc(1.5 * 12px) solid transparent;
+  border-top: calc(1.732 / 2 * 12px) solid transparent;
+}
 
-    position: relative
-    margin: 5px
-    display: block
-    text-align: center
-    font-family: $accent-font
+/* Huge hexagon */
+.hexagon.huge {
+  height: calc(1.732 * 20px); /* sqrt(3) * 20px */
+  width: calc(3 * 20px);
+  margin-top: calc(20px + 5px);
+  margin-bottom: calc(20px + 5px);
+  font-size: 1.2rem;
+  line-height: 2.3rem;
+}
 
-    &::before
-        content: ""
-        position: absolute
-        width: 0
-        bottom: 100%
-        left: 0
+.hexagon.huge::before {
+  border-left: calc(1.5 * 20px) solid transparent;
+  border-right: calc(1.5 * 20px) solid transparent;
+  border-bottom: calc(1.732 / 2 * 20px) solid transparent;
+}
 
-    &::after
-        content: ""
-        position: absolute
-        left: 0
-        top: 100%
-        width: 0
+.hexagon.huge::after {
+  border-left: calc(1.5 * 20px) solid transparent;
+  border-right: calc(1.5 * 20px) solid transparent;
+  border-top: calc(1.732 / 2 * 20px) solid transparent;
+}
 
-    &.huge
-        font-size: 1.2rem
-        line-height: 2.3rem
+/* Scale colors - using postcss-for */
+@for $i from 0 to 7 {
+  .hexagon.scale-$(i) {
+    background-color: var(--color-scale-$(i));
+    color: var(--color-brown);
+  }
+  .hexagon.scale-$(i)::before {
+    border-bottom-color: var(--color-scale-$(i));
+  }
+  .hexagon.scale-$(i)::after {
+    border-top-color: var(--color-scale-$(i));
+  }
+}
 
-    &.small
-        font-size: 1.3rem
+@for $i from 7 to 11 {
+  .hexagon.scale-$(i) {
+    background-color: var(--color-scale-$(i));
+    color: var(--color-white);
+  }
+  .hexagon.scale-$(i)::before {
+    border-bottom-color: var(--color-scale-$(i));
+  }
+  .hexagon.scale-$(i)::after {
+    border-top-color: var(--color-scale-$(i));
+  }
+}
 </style>

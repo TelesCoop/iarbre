@@ -1,5 +1,7 @@
-import "./assets/styles/main.sass"
-import "./assets/styles/map.sass"
+// import "./assets/styles/main.sass"
+// import "./assets/styles/map.sass"
+
+import "./styles/main.css"
 
 import { createApp } from "vue"
 import { createPinia } from "pinia"

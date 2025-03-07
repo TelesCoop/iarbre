@@ -24,38 +24,15 @@ const label = computed(() => {
 </script>
 
 <template>
-  <div class="popover" data-cy="score-popup">
-    <div class="columns">
-      <div class="left">
+  <div class="p-2.5 max-w-xs" data-cy="score-popup">
+    <div class="flex justify-between">
+      <div class="flex-grow mr-1.25">
         <score-label :score="score" :label="`${score}/10`" size="huge" />
       </div>
-      <div class="right">
-        <h3 class="title">{{ label }}</h3>
+      <div class="flex-grow ml-1.25">
+        <h3 class="font-accent text-lg">{{ label }}</h3>
       </div>
     </div>
-    <div class="text-light-green text-right">{{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E</div>
+    <div class="text-green-300 text-right">{{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E</div>
   </div>
 </template>
-
-<style lang="sass" scoped>
-.popover
-  padding: 10px
-
-  .columns
-      .left
-        flex-grow: 1
-        margin-right: 5px
-
-      .right
-        flex-grow: 2
-        margin-left: 5px
-
-      justify-content: space-between
-      display: flex
-      flex-direction: row
-  max-width: 400px // also defined in `stores/map.ts::setupTile`
-
-.title
-    font-family: $accent-font
-    font-size: 1.2rem
-</style>
