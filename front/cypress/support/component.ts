@@ -16,12 +16,12 @@
 // Import commands.js using ES2015 syntax:
 import "./commands"
 
+import "@/styles/main.css"
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
 import { mount } from "cypress/vue"
-
-import "../../src/assets/styles/main.sass"
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.

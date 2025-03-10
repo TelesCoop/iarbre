@@ -1,10 +1,11 @@
 import time
 import json
+from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
-from api.constants import ModelType
+from api.constants import GeoLevel, DataType
 from api.map import load_tiles
 from typing import Any, Dict
 
@@ -12,25 +13,42 @@ from django.http import JsonResponse
 from iarbre_data.models import Feedback
 
 MODEL_BY_TYPE = {
-    ModelType.TILE.value: "tile",
+    GeoLevel.TILE.value: "tile",
+    GeoLevel.LCZ.value: "lcz",
+    "fake_model": "fake_model",  # for the tests
+}
+
+LAYER_BY_DATATYPE = {
+    DataType.TILE.value: "plantability",
+    DataType.LCZ.value: "lcz",
+    "fake_layer": "fake_layer",  # for the tests
 }
 
 
 @require_GET
 @cache_page(60 * 60 * 24)
-def tile_view(request, model_type, zoom, x, y):
+def tile_view(
+    request, geolevel: str, datatype: str, zoom: int, x: int, y: int
+) -> HttpResponse:
     """View to get tiles for a specific model type.
-    Params:
-        model_type (str): Type of model to get tiles for.
+
+    This view handles GET requests to retrieve tiles for a given model type, zoom level,
+    and tile coordinates (x, y).
+    Args:
+        request (HttpRequest): The HTTP request object.
+        geolevel (str): Geolevel to get tiles for.
+        datatype (str): Datatype to get tiles for.
         zoom (int): Zoom level of the tile.
         x (int): X coordinate of the tile.
         y (int): Y coordinate of the tile.
+
     Returns:
         HttpResponse: Response containing the MVT tile.
     """
     start_time = time.time()
-    model = MODEL_BY_TYPE[model_type]
-    response = load_tiles(model, x, y, zoom)
+    glvl = MODEL_BY_TYPE[geolevel]
+    dt = LAYER_BY_DATATYPE[datatype]
+    response = load_tiles(glvl, dt, x, y, zoom)
     print(f"Request duration: {time.time() - start_time} seconds")
     return response
 

@@ -3,13 +3,13 @@ import ScoreLabel from "./ScoreLabel.vue"
 </script>
 
 <template>
-  <div class="plantabilite-legend">
+  <div class="plantabilite-legend flex items-center justify-center text-xs leading-3 gap-2">
     <span class="plantabilite-legend-text">Non plantable</span>
-    <div class="is-flex">
+    <div class="flex p-2">
       <score-label
         v-for="index in [0, 2, 4, 6, 8, 10]"
         :key="index"
-        class="plantabilite-legend-scale"
+        class="flex items-center justify-center"
         :score="index"
         :label="`${index}`"
         size="small"
@@ -19,26 +19,13 @@ import ScoreLabel from "./ScoreLabel.vue"
   </div>
 </template>
 
-<style lang="sass" scoped>
-.plantabilite-legend
-  font-family: $accent-font
-  display: flex
-  align-items: center
-  justify-content: center
-  line-height: 0.75rem // 12px
-  font-size: 0.75rem // 12px
-  gap: 8px
+<style scoped>
+.plantabilite-legend {
+  font-family: var(--font-accent);
+}
 
-  .is-flex
-    display: flex
-    padding: 0.5rem
-
-  .plantabilite-legend-scale
-    display: flex
-    align-items: center
-    justify-content: center
-
-  .plantabilite-legend-text
-    font-size: 0.9rem
-    line-height: 0.75rem
+.plantabilite-legend-text {
+  font-size: 0.9rem;
+  line-height: 0.75rem;
+}
 </style>

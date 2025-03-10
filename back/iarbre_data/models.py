@@ -5,7 +5,8 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
-from api.constants import ModelType
+from api.constants import GeoLevel, DataType
+from iarbre_data.settings import TARGET_MAP_PROJ
 
 
 class TileAggregateBase(models.Model):
@@ -53,11 +54,12 @@ class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
     geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=3857, null=True, blank=True)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
-    type = ModelType.TILE.value
+    geolevel = GeoLevel.TILE.value
+    datatype = DataType.TILE.value
 
     iris = models.ForeignKey(
         Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
@@ -85,7 +87,7 @@ class Tile(models.Model):
             return "#006837"
 
     def get_layer_properties(self):
-        """Return the properties of the tile for the MVT layer."""
+        """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.plantability_normalized_indice,
@@ -123,7 +125,8 @@ class MVTTile(models.Model):
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
-    model_type = models.CharField(max_length=50)
+    geolevel = models.CharField(max_length=50)
+    datatype = models.CharField(max_length=50, default="plantability")
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
@@ -133,13 +136,65 @@ class MVTTile(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Tile {self.model_type}/{self.zoom_level}/{self.tile_x}/{self.tile_y}"
+        return f"Tile {self.mvt_file.path}"
 
 
 @receiver(pre_delete, sender=MVTTile)
 def before_delete_mvt_tile(sender, instance, **kwargs):
     """Delete the file when the model is deleted."""
     instance.mvt_file.delete(save=False)
+
+
+class Lcz(models.Model):
+    """Elementary element on the map with the value of the LCZ description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    lcz_index = models.CharField(max_length=4, null=True)
+    lcz_description = models.CharField(max_length=50, null=True)
+
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.LCZ.value
+
+    @property
+    def color(self):
+        """Color defined by CEREMA in
+        https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75"""
+        color_map = {
+            None: "purple",
+            "1": "#8C0000",
+            "2": "#D10000",
+            "3": "#FF0000",
+            "4": "#BF4D00",
+            "5": "#fa6600",
+            "6": "#ff9955",
+            "7": "#faee05",
+            "8": "#bcbcbc",
+            "9": "#ffccaa",
+            "A": "#006a00",
+            "B": "#00aa00",
+            "C": "#648525",
+            "D": "#b9db79",
+            "E": "#fbf7ae",
+            "F": "#FBF7AE",
+        }
+        return color_map.get(self.lcz_index, "#6A6AFF")
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice": self.lcz_index,
+            "description": self.lcz_description,
+            "color": self.color,
+        }
+
+
+@receiver(pre_save, sender=Lcz)
+def before_save_lcz(sender, instance, **kwargs):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
 class Feedback(models.Model):

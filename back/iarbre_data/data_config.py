@@ -286,7 +286,7 @@ URL_FILES = [
         "layer_name": "adr_voie_lieu.adraerodrome",
         "scripts": [""],
         "actions": [],
-        "factors": ["aerodrome"],
+        "factors": ["Aerodrome"],
         "output_type": "POLYGON",
     },
     {
@@ -388,6 +388,12 @@ URL_FILES = [
         "factors": ["Bâtiments", "Proximité façade"],
         "output_type": "POLYGON",
     },
+    {
+        "name": "Local Climate Zone",
+        "url": "https://www.data.gouv.fr/fr/datasets/r/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
+        "output_type": "POLYGON",
+        "factors": "",
+    },
 ]
 
 # Plantability factor.
@@ -429,4 +435,22 @@ FACTORS = {
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
     # "QPV": 1,
+}
+
+LCZ = {
+    "1": "Ensemble compact de tours",
+    "2": "Ensemble compact d'immeubles",
+    "3": "Ensemble compact de maisons",
+    "4": "Ensemble de tours espacées",
+    "5": "Ensemble d'immeubles espacés",
+    "6": "Ensemble de maisons espacées",
+    "8": "Bâtiments bas de grande emprise",
+    "9": "Implantation diffuse de maisons",
+    "A": "Espace densément arboré",
+    "B": "Espace arboré clairsemé",
+    "C": "Espace végétalisé hétérogène",
+    "D": "Végétation basse",
+    "E": "Sol imperméable naturel ou artificiel",
+    "F": "Sol nu perméable",
+    "G": "Surface en eau",
 }

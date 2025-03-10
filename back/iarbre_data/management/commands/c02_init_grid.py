@@ -206,8 +206,8 @@ def clean_outside(selected_city: pd.DataFrame, batch_size: int) -> None:
     total_records = Tile.objects.all().count()
     total_deleted = 0
     qs = Tile.objects.all().values_list("id", flat=True)
-    for start in tqdm(range(0, total_records, batch_size * 10)):
-        batch_ids = qs[start : start + batch_size * 10]
+    for start in tqdm(range(0, total_records, batch_size)):
+        batch_ids = qs[start : start + batch_size]
         with transaction.atomic():
             deleted_count, _ = (
                 Tile.objects.filter(id__in=batch_ids)
@@ -249,7 +249,6 @@ class Command(BaseCommand):
 
     @staticmethod
     def _create_grid_city(
-        self,
         city: City,
         batch_size: int,
         logger: logging.Logger,
@@ -321,13 +320,13 @@ class Command(BaseCommand):
             future_to_city = {
                 executor.submit(
                     self._create_grid_city,
-                    city,
-                    batch_size,
-                    logger,
-                    grid_type,
-                    side_length,
-                    grid_size,
-                    delete,
+                    city=city,
+                    batch_size=batch_size,
+                    logger=logger,
+                    grid_type=grid_type,
+                    side_length=side_length,
+                    grid_size=grid_size,
+                    delete=delete,
                 ): city
                 for city in selected_city.itertuples()
             }
