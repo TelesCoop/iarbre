@@ -5,8 +5,6 @@ import FeedbackPopin from "@/components/FeedbackPopin.vue"
 
 const isVisible = ref(false)
 
-const emit = defineEmits(["show-toast"])
-
 const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
   try {
     const response = await fetch(`${FULL_BASE_API_URL}/feedback/`, {
@@ -17,15 +15,9 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
     if (!response.ok) {
       throw new Error("Erreur lors de l'envoi du feedback")
     }
-
-    emit("show-toast", { type: "success", message: "Merci pour votre avis !" })
     isVisible.value = false
   } catch (error) {
     console.error("Erreur lors de l'envoi du feedback:", error)
-    emit("show-toast", {
-      type: "error",
-      message: "Une erreur s'est produite. Merci de recommencer plus tard."
-    })
   }
 }
 </script>
@@ -48,11 +40,7 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
       </ul>
     </nav>
   </div>
-  <FeedbackPopin
-    v-if="isVisible"
-    @submit-feedback="sendFeedbackToAPI"
-    @on-close="isVisible = false"
-  />
+  <FeedbackPopin v-if="isVisible" @submit-feedback="sendFeedbackToAPI" @close="isVisible = false" />
 </template>
 
 <style scoped lang="sass">

@@ -5,7 +5,7 @@ const email = ref("")
 const feedback = ref("")
 const message = ref("")
 
-const emit = defineEmits(["submit-feedback", "on-close"])
+const emit = defineEmits(["submit-feedback", "close"])
 
 const sendFeedback = (event: Event) => {
   event.preventDefault()
@@ -22,7 +22,7 @@ const sendFeedback = (event: Event) => {
 
 <template>
   <div class="feedback-container">
-    <button class="button text close-btn" @click="emit('on-close')">x</button>
+    <button class="button text close-btn" @click="emit('close')">x</button>
     <h3>Votre avis compte !</h3>
     <p>Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
 
