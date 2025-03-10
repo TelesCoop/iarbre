@@ -312,13 +312,13 @@ class Command(BaseCommand):
             future_to_city = {
                 executor.submit(
                     self._create_grid_city,
-                    city,
-                    batch_size,
-                    logger,
-                    grid_type,
-                    side_length,
-                    grid_size,
-                    delete,
+                    city=city,
+                    batch_size=batch_size,
+                    logger=logger,
+                    grid_type=grid_type,
+                    side_length=side_length,
+                    grid_size=grid_size,
+                    delete=delete,
                 ): city
                 for city in selected_city.itertuples()
             }

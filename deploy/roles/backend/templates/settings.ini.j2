@@ -8,7 +8,7 @@ api_key={{ vault_mailgun_api_key }}
 [backup]
 backup_access={{ vault_backup_access }}
 backup_secret={{ vault_backup_secret }}
-backup_bucket={{ organization_slug }}-{{ project_slug }}
+backup_bucket=telescoop-iarbre
 backup_compress=true
 backup_recovery_n_workers=4
 backup_host=s3.fr-par.scw.cloud
@@ -16,7 +16,7 @@ backup_host=s3.fr-par.scw.cloud
 [external_file_storage]
 access={{ vault_backup_access }}
 secret={{ vault_backup_secret }}
-bucket={{ organization_slug }}-{{ project_slug }}
+bucket=telescoop-iarbre
 host=s3.fr-par.scw.cloud
 region=fr-par
 

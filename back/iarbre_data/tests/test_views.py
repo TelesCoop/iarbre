@@ -112,7 +112,10 @@ class MVTGeneratorTestCase(TestCase):
         TileFactory.create(geometry=tile2)
 
         mvt = MVTGenerator(
-            Tile.objects.all(), zoom_levels=(8, 8), layer_name="fake_data"
+            Tile.objects.all(),
+            zoom_levels=(8, 8),
+            geolevel="fake_model",
+            datatype="fake_layer",
         )
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
@@ -166,7 +169,10 @@ class MVTGeneratorTestCase(TestCase):
         tile2.srid = 2154
         TileFactory.create(geometry=tile2)
         mvt = MVTGenerator(
-            Tile.objects.all(), zoom_levels=(8, 8), layer_name="fake_data"
+            Tile.objects.all(),
+            zoom_levels=(8, 8),
+            geolevel="fake_model",
+            datatype="fake_layer",
         )
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
@@ -197,12 +203,17 @@ class MVTGeneratorTestCase(TestCase):
         request.META["SERVER_PORT"] = "8000"
         response = tile_view(
             request=request, model_type="fake_data", zoom=tile_zoom, x=tile_x, y=tile_y
+            request=request,
+            geolevel="fake_model",
+            datatype="fake_layer",
+            zoom=tile_zoom,
+            x=tile_x,
+            y=tile_y,
         )
         decoded_tile = mapbox_vector_tile.decode(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(decoded_tile.keys()), ["fake_data"])
-        received_tile = decoded_tile["fake_data"]["features"][0]
+        self.assertListEqual(list(decoded_tile.keys()), ["fake_model/fake_layer"])
+        received_tile = decoded_tile["fake_model/fake_layer"]["features"][0]
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
         # Clean media files before the reset_db does not trigger media delete signal

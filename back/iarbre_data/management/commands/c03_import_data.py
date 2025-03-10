@@ -18,7 +18,7 @@ from shapely import unary_union
 from shapely.geometry import box
 from tqdm import tqdm
 
-from iarbre_data.data_config import DATA_FILES, URL_FILES
+from iarbre_data.data_config import DATA_FILES, URL_FILES, FACTORS
 from iarbre_data.models import Data
 from iarbre_data.settings import DATA_DIR, TARGET_PROJ
 from iarbre_data.management.commands.utils import select_city
@@ -385,7 +385,6 @@ def split_factor_dataframe(
             except Exception as e:
                 print(f"Error processing polygon {polygon}: {e}")
     factor_df_split = gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
-
     flattened_geometries = []
     for idx, row in factor_df_split.iterrows():
         flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
@@ -399,12 +398,28 @@ def split_factor_dataframe(
     return factor_df_split
 
 
+def find_config(factor: str) -> dict:
+    """Find the data config that corresponds to a factor.
+
+    Args:
+        factor (str): The factor to find the configuration for.
+    Returns:
+        dict: The data configuration corresponding to the factor.
+    """
+    data_configs = DATA_FILES + URL_FILES
+    for data_config in data_configs:
+        if factor in data_config["factors"]:
+            return data_config
+    raise ValueError(f"No data config found for factor: {factor}")
+
+
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
 
     def handle(self, *args, **options):
         """Save all land occupancy data to the database."""
-        for data_config in DATA_FILES + URL_FILES:
+        for factor in FACTORS:
+            data_config = find_config(factor)
             if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
                 print(
                     f"Data with metadata {data_config['name']}"
