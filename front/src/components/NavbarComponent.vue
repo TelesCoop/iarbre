@@ -23,63 +23,34 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
 </script>
 
 <template>
-  <div class="navbar">
-    <div class="navbar-left">
+  <div
+    class="fixed top-0 w-full bg-[var(--color-off-white)] h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border"
+  >
+    <div class="pl-4 md:pl-0">
       <a href="/">
-        <img class="navbar-logo" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
+        <img class="h-10 w-auto" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
       </a>
     </div>
-    <nav class="navbar-right">
-      <ul>
+    <nav class="pr-4 md:pr-20">
+      <ul class="flex gap-4 list-none">
         <li>
-          <button class="navbar-link" @click.prevent="isVisible = true">
+          <button
+            class="font-[var(--font-accent)] text-[var(--color-brown)] text-base bg-[var(--color-off-white)] border-none outline-none transition duration-300 hover:text-[var(--color-light-green)] cursor-pointer"
+            @click.prevent="isVisible = true"
+          >
             ✉️ Nous envoyer votre retour
           </button>
         </li>
-        <li><a href="https://iarbre.fr" class="navbar-link">ⓘ En savoir plus</a></li>
+        <li>
+          <a
+            href="https://iarbre.fr"
+            class="font-[var(--font-accent)] text-[var(--color-brown)] text-base no-underline transition duration-300 hover:text-[var(--color-light-green)]"
+          >
+            ⓘ En savoir plus
+          </a>
+        </li>
       </ul>
     </nav>
   </div>
   <FeedbackPopin v-if="isVisible" @submit-feedback="sendFeedbackToAPI" @close="isVisible = false" />
 </template>
-
-<style scoped lang="sass">
-.navbar
-  background-color: $off-white
-  height: $header-height
-  position: fixed
-  width: 100%
-  top: 0
-  z-index: 2
-  box-sizing: border-box
-  overflow: hidden
-
-  display: flex
-  align-items: center
-  justify-content: space-between
-  padding: 10px 40px
-
-  .navbar-logo
-    height: 40px
-    width: auto
-
-  .navbar-right
-    ul
-      list-style: none
-      display: flex
-      gap: 1.1rem
-      flex-direction: horizontal
-
-  .navbar-link
-    font-family: $accent-font, Arial, sans-serif
-    color: $brown
-    text-decoration: none
-    font-size: 1rem
-    transition: color 0.3s ease
-    background-color: $off-white
-    border: none
-    outline: none
-
-    &:hover
-      color: $light-green
-</style>
