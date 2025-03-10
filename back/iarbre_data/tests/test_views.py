@@ -202,7 +202,6 @@ class MVTGeneratorTestCase(TestCase):
         request.META["SERVER_NAME"] = "localhost"
         request.META["SERVER_PORT"] = "8000"
         response = tile_view(
-            request=request, model_type="fake_data", zoom=tile_zoom, x=tile_x, y=tile_y
             request=request,
             geolevel="fake_model",
             datatype="fake_layer",
