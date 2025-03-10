@@ -84,7 +84,7 @@ class Command(BaseCommand):
             queryset=queryset,
             zoom_levels=zoom_levels,
             datatype=datatype,
-            geolevel=model.type,
+            geolevel=model.geolevel,
             number_of_thread=number_of_thread,
         )
 
