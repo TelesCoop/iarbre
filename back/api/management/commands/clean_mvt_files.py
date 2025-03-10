@@ -7,10 +7,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--model",
+            "--geolevel",
             type=str,
             required=True,
-            help="What model mvt to delete",
+            help="What geolevel mvt to delete",
         )
         parser.add_argument(
             "--datatype",
@@ -20,7 +20,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        model = options["model"]
-        layer = options["datatype"]
+        geolevel = options["geolevel"]
+        datatype = options["datatype"]
         print("Deleting existing MVTTile")
-        print(MVTTile.objects.filter(geolevel=model.lower(), datatype=layer).delete())
+        print(
+            MVTTile.objects.filter(
+                geolevel=geolevel.lower(), datatype=datatype
+            ).delete()
+        )
