@@ -3,19 +3,7 @@ import PlantabilityLegend from "@/components/map/PlantabilityLegend.vue"
 </script>
 
 <template>
-  <div class="map-plantability-legend">
+  <div class="z-3 absolute top-4 right-4 bg-white rounded-[10px] shadow-md py-3 px-10">
     <plantability-legend />
   </div>
 </template>
-
-<style lang="sass" scoped>
-.map-plantability-legend
-  z-index: 3
-  position: absolute
-  top: 1rem
-  right: 1rem
-  background-color: white
-  border-radius: 10px
-  box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.3)
-  padding: 0.75rem 2.5rem
-</style>

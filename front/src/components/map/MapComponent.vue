@@ -20,9 +20,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" data-cy="map-component" class="map-component"></div>
+  <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
   <map-plantability-legend />
-  <div :id="`popup-${mapId}`" style="{ 'hidden': true }">
+  <div :id="`popup-${mapId}`" :style="{ display: mapStore.popup ? 'block' : 'none' }">
     <map-score-popup
       v-if="mapStore.popup"
       :score="mapStore.popup.score"
@@ -31,9 +31,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style lang="sass" scoped>
-.map-component
-  height: 100%
-  width: 100%
-</style>

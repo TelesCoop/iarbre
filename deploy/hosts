@@ -1,5 +1,11 @@
 [prod]
-s00.tlscp.fr:42722 ansible_user=ubuntu
+carte.iarbre.fr:42722 ansible_user=ubuntu
 
 [geoserver]
-s00.tlscp.fr:42722 ansible_user=ubuntu
+geoserver.iarbre.fr:42722 ansible_user=ubuntu
+
+[preprod]
+preprod-carte.iarbre.fr:42722 ansible_user=ubuntu
+
+[feature]
+feature-carte.iarbre.fr:42722 ansible_user=ubuntu
