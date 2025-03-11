@@ -124,8 +124,6 @@ export const useMapStore = defineStore("map", () => {
       // zoom to a level where France is visible
       zoom: 16
     })
-    // @ts-ignore
-    window.map = mapInstancesByIds.value[mapId]
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
