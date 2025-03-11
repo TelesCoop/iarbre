@@ -273,19 +273,29 @@ hr.full-width {
   color: $brown;
 }
 
-.discord-section {
+.newsletter-section {
   width: 100%; /* Section pleine largeur */
   background-color: $white; /* Fond blanc */
   padding: 40px 20px; /* Espacement interne */
   text-align: center; /* Centre le contenu */
+
+  label {
+    text-align: left;
+  }
+
+  input[type="email"] {
+    padding: 5px;
+    font-family: $main-font, Arial, sans-serif;
+    margin: 5px 0px;
+  }
 }
 
-.discord-container {
+.newsletter-container {
   max-width: 800px; /* Limite la largeur du contenu */
   margin: 0 auto; /* Centre le conteneur */
 }
 
-.discord-section p {
+.newsletter-section p {
   font-family: $main-font, Arial, sans-serif; /* Police du texte */
   font-size: 1.2rem; /* Taille du texte */
   color: $brown; /* Couleur du texte */
@@ -293,7 +303,7 @@ hr.full-width {
   line-height: 1.6;
 }
 
-.discord-button {
+.newsletter-button {
   font-family: $accent-font, Arial, sans-serif; /* Police pour le bouton */
   background-color: $lightGreen; /* Couleur de fond du bouton */
   color: $white; /* Couleur du texte */
@@ -301,11 +311,13 @@ hr.full-width {
   text-decoration: none; /* Pas de soulignement */
   border-radius: 9999px; /* Coins arrondis */
   font-size: 1rem; /* Taille du texte */
+  margin: 10px 0px;
 
   transition: background-color 0.3s ease; /* Animation sur hover */
   display: inline-block; /* Maintient la taille */
   font-weight: normal; /* Texte non gras */
   box-shadow: none; /* Supprime l'ombre */
+  border: none;
 }
 
 /* Bandeau CDC */
@@ -327,7 +339,7 @@ hr.full-width {
   color: #32312d;
 }
 
-.discord-button:hover {
+.newsletter-button:hover {
   background-color: $darkGreen; /* Changement de couleur au survol */
   color: $white; /* Maintient le texte blanc */
   text-decoration: none; /* Pas de soulignement au survol */
@@ -555,4 +567,16 @@ footer a:hover {
   .partenaires h2 {
     font-size: 1.5rem;
   }
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
 }
