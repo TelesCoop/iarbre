@@ -118,6 +118,6 @@ class Command(BaseCommand):
             model=mdl,
             datatype=datatype,
             queryset=mdl.objects.all(),
-            zoom_levels=(12, 17),
+            zoom_levels=(12, 16),
             number_of_thread=number_of_thread,
         )

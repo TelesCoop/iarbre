@@ -8,8 +8,8 @@ import type { ScorePopupData } from "@/types"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popup = ref<ScorePopupData | undefined>(undefined)
-  const selectedDataType = ref<DataType>(DataType.LOCAL_CLIMATE_ZONES)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.LCZ)
+  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
     return `${datatype}-${geolevel}-source`
@@ -122,10 +122,10 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "map/map-style.json",
-      // center to France,
+      // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
-      // zoom to a level where France is visible
-      zoom: 16
+      // zoom to a level that shows the whole city
+      zoom: 14
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
