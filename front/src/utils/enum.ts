@@ -1,9 +1,9 @@
-export enum ModelType {
+export enum GeoLevel {
   TILE = "tile",
   LCZ = "lcz"
 }
 
-export enum LAYERS {
+export enum DataType {
   PLANTABILITY = "plantability",
-  LOCAL_CLIMATE_ZONES = "climate-zones"
+  LOCAL_CLIMATE_ZONES = "lcz"
 }

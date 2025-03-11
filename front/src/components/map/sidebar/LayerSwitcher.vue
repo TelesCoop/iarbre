@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { useMapStore } from "@/stores/map"
-import { LAYERS } from "@/utils/enum"
+import { DataType } from "@/utils/enum"
 import { computed } from "vue"
 
 const mapStore = useMapStore()
 
-const selectedLayerValue = computed({
-  get: () => mapStore.selectedLayer,
-  set: (value: LAYERS) => {
+const selectedDataType = computed({
+  get: () => mapStore.selectedDataType,
+  set: (value: DataType) => {
     console.log("changeLayer 0.0")
-    mapStore.changeLayer(value)
+    mapStore.changeDataType(value)
   }
 })
 </script>
@@ -19,7 +19,7 @@ const selectedLayerValue = computed({
     <label for="layer-select" class="font-accent">Choix du calque</label>
     <select
       id="layer-select"
-      v-model="selectedLayerValue"
+      v-model="selectedDataType"
       class="w-full p-2 rounded border border-gray-300 bg-white text-base"
     >
       <option value="plantability">Plantabilité</option>
