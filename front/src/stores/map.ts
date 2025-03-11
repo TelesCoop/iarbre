@@ -34,7 +34,7 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": geolevel,
+      "source-layer": sourceId,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
@@ -43,6 +43,7 @@ export const useMapStore = defineStore("map", () => {
     })
 
     map.on("click", layerId, (e) => {
+      console.log("### click")
       popup.value = {
         score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
         lng: e.lngLat.lng,
@@ -126,6 +127,8 @@ export const useMapStore = defineStore("map", () => {
       // zoom to a level where France is visible
       zoom: 16
     })
+    // @ts-ignore
+    window.map = mapInstancesByIds.value[mapId]
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
