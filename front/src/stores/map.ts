@@ -62,16 +62,13 @@ export const useMapStore = defineStore("map", () => {
     const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
 
-    console.log("### setupsource 0")
     map.addSource(sourceId, {
       type: "vector",
       tiles: [tileUrl],
       minzoom: MIN_ZOOM
     })
-    console.log("### setupsource 1")
 
     const source = map.getSource(sourceId)!
-    console.log("### setupsource 2")
     const checkIfLoaded = () => {
       if (source.loaded()) {
         // This text is tested by Cypress.
