@@ -124,7 +124,7 @@ class MVTGenerator:
                 mvt_data = mapbox_vector_tile.encode(
                     [
                         {
-                            "name": f"{self.geolevel}/{self.datatype}",
+                            "name": f"{self.geolevel}--{self.datatype}",
                             "features": features,
                         }
                     ]
