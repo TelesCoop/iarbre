@@ -23,7 +23,7 @@ const selectedDataType = computed({
       class="w-full p-2 rounded border border-gray-300 bg-white text-base"
     >
       <option value="plantability">Plantabilité</option>
-      <option value="climate-zones">Zones Climatiques Locales</option>
+      <option value="lcz">Zones Climatiques Locales</option>
     </select>
   </div>
 </template>
