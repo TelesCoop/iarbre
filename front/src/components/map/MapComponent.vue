@@ -24,12 +24,12 @@ onMounted(() => {
   <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
   <map-legend />
   <map-sidebar />
-  <div :id="`popup-${mapId}`" :style="{ display: mapStore.popup ? 'block' : 'none' }">
+  <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup
-      v-if="mapStore.popup"
-      :score="mapStore.popup.score"
-      :lat="mapStore.popup.lat"
-      :lng="mapStore.popup.lng"
+      v-if="mapStore.popupData"
+      :score="mapStore.popupData.score"
+      :lat="mapStore.popupData.lat"
+      :lng="mapStore.popupData.lng"
     />
   </div>
 </template>
