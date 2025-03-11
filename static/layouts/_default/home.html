@@ -87,17 +87,47 @@
   </div>
 </section>
 
-<section class="discord-section">
-  <div class="discord-container">
-    <p>
-      <strong
-        >Pour suivre l’évolution du projet et participer aux discussions,
-        inscrivez-vous aux actualités !</strong
-      >
-    </p>
-    <a href="#" target="_blank" class="discord-button"
-      >Je m’inscris par e-mail</a
-    >
+<section class="newsletter-section">
+  <div class="newsletter-container">
+    <form action="{{ .Site.Params.newsletter.formUrl }}" method="post">
+      <p>
+        <strong>
+          Pour suivre l’évolution du projet et participer aux discussions,
+          inscrivez-vous aux actualités !
+        </strong>
+      </p>
+      <div class="flex flex-col">
+        <label for="contact_email"> Mon e-mail </label>
+        <input
+          id="contact_email"
+          name="contact[email]"
+          placeholder="hello@email.fr"
+          type="email"
+        />
+      </div>
+      <input
+        aria-hidden="true"
+        autocomplete="off"
+        name="h[url]"
+        novalidate=""
+        style="display: none"
+      />
+      <div class="flex flex-col">
+        <div
+          class="h-captcha"
+          data-sitekey="{{ .Site.Params.newsletter.captchaKey }}"
+          data-theme="light"
+        ></div>
+        <script async="" defer="" src="https://hcaptcha.com/1/api.js"></script>
+      </div>
+      <div class="flex justify-center">
+        <input
+          type="submit"
+          class="newsletter-button"
+          value="Je m'inscris par e-mail"
+        />
+      </div>
+    </form>
   </div>
 </section>
 

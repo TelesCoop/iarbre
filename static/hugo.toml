@@ -11,3 +11,7 @@ defaultContentLanguageInSubdir = false
         title = "IA.rbre"
         weight = 1
 disableKinds = ['taxonomy', 'term', 'category']
+[params]
+    [params.newsletter]
+        formUrl = "https://app.keila.io/forms/nfrm_6b3DZDVg"
+        captchaKey = "a1c5fab7-71df-4ea4-af75-87a3d07c61de"
