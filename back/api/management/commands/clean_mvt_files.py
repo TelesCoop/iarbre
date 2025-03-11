@@ -9,22 +9,23 @@ class Command(BaseCommand):
         parser.add_argument(
             "--geolevel",
             type=str,
-            required=True,
-            help="What geolevel mvt to delete",
+            help="What geolevel MVT to delete (optional). If not provided delete all.",
         )
         parser.add_argument(
             "--datatype",
             type=str,
-            required=True,
-            help="What datatype mvt to delete.",
+            help="What datatype MVT to delete (optional). If not provided delete all.",
         )
 
     def handle(self, *args, **options):
-        geolevel = options["geolevel"]
-        datatype = options["datatype"]
-        print("Deleting existing MVTTile")
-        print(
-            MVTTile.objects.filter(
+        geolevel = options.get("geolevel")
+        datatype = options.get("datatype")
+
+        if geolevel and datatype:
+            deleted_count, _ = MVTTile.objects.filter(
                 geolevel=geolevel.lower(), datatype=datatype
             ).delete()
-        )
+        else:
+            deleted_count, _ = MVTTile.objects.all().delete()
+
+        print(f"Deleted {deleted_count} MVTTile objects.")

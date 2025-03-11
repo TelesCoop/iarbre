@@ -45,6 +45,10 @@
   --content-height: calc(100vh - var(--header-height) - 1px);
 }
 
+.card {
+  @apply bg-white shadow-md rounded-[0.75rem] p-5;
+}
+
 /* Base styles */
 body {
   @apply h-full m-0 font-[var(--font-main)];

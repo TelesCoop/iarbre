@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
-import MapPlantabilityLegend from "@/components/map/MapPlantabilityLegend.vue"
+import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/MapScorePopup.vue"
+import MapSidebar from "@/components/map/sidebar/MapSidebar.vue"
 
 const props = defineProps({
   mapId: {
@@ -21,7 +22,8 @@ onMounted(() => {
 
 <template>
   <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
-  <map-plantability-legend />
+  <map-legend />
+  <map-sidebar />
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popup ? 'block' : 'none' }">
     <map-score-popup
       v-if="mapStore.popup"

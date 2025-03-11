@@ -1,6 +1,7 @@
 """
 MVT Generator as django-media.
 """
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
 
