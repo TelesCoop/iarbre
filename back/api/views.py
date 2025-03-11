@@ -10,7 +10,12 @@ from api.map import load_tiles
 @require_GET
 @cache_page(60 * 60 * 24)
 def tile_view(
-    request, geolevel: str, datatype: str, zoom: int, x: int, y: int
+    request,
+    geolevel: GeoLevel.values,
+    datatype: DataType.values,
+    zoom: int,
+    x: int,
+    y: int,
 ) -> HttpResponse:
     """View to get tiles for a specific model type.
 
