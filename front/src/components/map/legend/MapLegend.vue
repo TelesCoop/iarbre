@@ -8,8 +8,8 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="map-legend card">
-    <div class="legend-title">
+  <div class="z-3 absolute top-4 right-4 flex flex-col items-center card">
+    <div class="font-accent text-base font-bold mb-2">
       <template v-if="mapStore.selectedLayer === LAYERS.PLANTABILITY"> Plantabilité </template>
       <template v-else-if="mapStore.selectedLayer === LAYERS.LOCAL_CLIMATE_ZONES">
         Zones Climatiques Locales
@@ -19,20 +19,3 @@ const mapStore = useMapStore()
     <climate-zones-legend v-else-if="mapStore.selectedLayer === LAYERS.LOCAL_CLIMATE_ZONES" />
   </div>
 </template>
-
-<style lang="sass" scoped>
-.map-legend
-  z-index: 3
-  position: absolute
-  top: 1rem
-  right: 1rem
-  display: flex
-  flex-direction: column
-  align-items: center
-
-  .legend-title
-    font-family: $accent-font
-    font-size: 1rem
-    font-weight: bold
-    margin-bottom: 0.5rem
-</style>

@@ -16,22 +16,14 @@ const selectedLayerValue = computed({
 
 <template>
   <div>
-    <label for="layer-select">Choix du calque</label>
-    <select id="layer-select" v-model="selectedLayerValue" class="layer-select">
+    <label for="layer-select" class="font-accent">Choix du calque</label>
+    <select
+      id="layer-select"
+      v-model="selectedLayerValue"
+      class="w-full p-2 rounded border border-gray-300 bg-white text-base"
+    >
       <option value="plantability">Plantabilité</option>
       <option value="climate-zones">Zones Climatiques Locales</option>
     </select>
   </div>
 </template>
-
-<style lang="sass" scoped>
-.layer-select
-  width: 100%
-  padding: 0.5rem
-  border-radius: 0.25rem
-  border: 0.0625rem solid #ccc
-  background-color: white
-  font-size: 1rem
-label
-  font-family: $accent-font
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="map-sidebar">
+  <div class="absolute top-0 left-0 max-w-[18.75rem] bg-transparent p-4">
     <div class="card">
       <layer-switcher />
     </div>
@@ -9,13 +9,3 @@
 <script setup lang="ts">
 import LayerSwitcher from "@/components/map/sidebar/LayerSwitcher.vue"
 </script>
-
-<style lang="sass" scoped>
-.map-sidebar
-  position: absolute
-  top: 0
-  left: 0
-  max-width: 18.75rem
-  background-color: transparent
-  padding: 1rem
-</style>

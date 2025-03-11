@@ -3,15 +3,18 @@ import ScoreLabel from "../ScoreLabel.vue"
 </script>
 
 <template>
-  <div class="climate-zones-legend" data-cy="climate-zones-legend">
-    <div class="is-flex">
+  <div
+    class="font-accent flex flex-col items-center justify-center text-xs leading-3 gap-2"
+    data-cy="climate-zones-legend"
+  >
+    <div class="flex p-2 flex-wrap justify-center gap-2">
       <div
         v-for="(zone, index) in ['A', 'B', 'C', 'D', 'E', 'F']"
         :key="index"
-        class="climate-zone-item"
+        class="flex items-center gap-1"
       >
-        <div class="zone-color" :style="{ backgroundColor: getZoneColor(zone) }"></div>
-        <span class="zone-label">{{ zone }}</span>
+        <div class="w-4 h-4 rounded" :style="{ backgroundColor: getZoneColor(zone) }"></div>
+        <span class="text-[0.9rem] leading-3">{{ zone }}</span>
       </div>
     </div>
   </div>
@@ -30,36 +33,3 @@ function getZoneColor(zone: string): string {
   return colors[zone] || "#CCCCCC"
 }
 </script>
-
-<style lang="sass" scoped>
-.climate-zones-legend
-  font-family: $accent-font
-  display: flex
-  flex-direction: column
-  align-items: center
-  justify-content: center
-  line-height: 0.75rem // 12px
-  font-size: 0.75rem // 12px
-  gap: 0.5rem
-
-  .is-flex
-    display: flex
-    padding: 0.5rem
-    flex-wrap: wrap
-    justify-content: center
-    gap: 0.5rem
-
-  .climate-zone-item
-    display: flex
-    align-items: center
-    gap: 0.25rem
-
-  .zone-color
-    width: 1rem
-    height: 1rem
-    border-radius: 0.25rem
-
-  .zone-label
-    font-size: 0.9rem
-    line-height: 0.75rem
-</style>

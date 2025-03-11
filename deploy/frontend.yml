@@ -1,5 +1,7 @@
 ---
 - hosts:
     - prod
+    - preprod
+    - feature
   roles:
     - frontend

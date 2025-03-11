@@ -1,69 +1,37 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="layout">
-    <header class="navbar">
-      <div class="navbar-left">
+  <div class="flex flex-col min-h-screen">
+    <header
+      class="navbar fixed w-full top-0 z-10 flex items-center justify-between px-10 py-2.5 bg-[var(--color-off-white)]"
+    >
+      <div>
         <a href="/">
-          <img class="navbar-logo" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
+          <img class="h-10 w-auto" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
         </a>
       </div>
-      <nav class="navbar-right">
-        <ul>
-          <li><a href="https://iarbre.fr" class="navbar-link">ⓘ En savoir plus</a></li>
+      <nav>
+        <ul class="flex">
+          <li>
+            <a
+              href="https://iarbre.fr"
+              class="font-[var(--font-accent)] text-[var(--color-brown)] no-underline hover:text-[var(--color-light-green)] transition-colors duration-300"
+              >ⓘ En savoir plus</a
+            >
+          </li>
         </ul>
       </nav>
     </header>
-    <main class="default-content">
+    <main class="flex-1 mt-20">
       <slot></slot>
     </main>
   </div>
 </template>
 
-<style scoped lang="sass">
-.navbar
-  background-color: $off-white
-  height: $header-height
-  position: fixed
-  width: 100%
-  top: 0
-  z-index: 2
-  box-sizing: border-box
-  overflow: hidden
-
-  display: flex
-  align-items: center
-  justify-content: space-between
-  padding: 10px 40px
-
-  .navbar-logo
-    height: 40px
-    width: auto
-
-  .navbar-right
-    ul
-      list-style: none
-      display: flex
-      flex-direction: horizontal
-
-  .navbar-link
-    font-family: $accent-font, Arial, sans-serif
-    color: $brown
-    text-decoration: none
-    font-size: 1rem
-    transition: color 0.3s ease
-
-    &:hover
-      color: $light-green
-
-
-.layout
-  display: flex
-  flex-direction: column
-  min-height: 100vh
-
-.default-content
-  min-height: $content-height
-  margin-top: $header-height
-  flex: 1
+<style scoped>
+.navbar {
+  height: var(--header-height);
+  box-sizing: border-box;
+  overflow: hidden;
+}
 </style>

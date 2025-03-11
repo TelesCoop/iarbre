@@ -21,7 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" data-cy="map-component" class="map-component"></div>
+  <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
   <map-legend />
   <map-sidebar />
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popup ? 'block' : 'none' }">
@@ -33,9 +33,3 @@ onMounted(() => {
     />
   </div>
 </template>
-
-<style lang="sass" scoped>
-.map-component
-  height: 100%
-  width: 100%
-</style>

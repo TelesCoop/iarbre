@@ -14,11 +14,7 @@ export default defineConfig({
     port: 3000
   },
   css: {
-    preprocessorOptions: {
-      sass: {
-        additionalData: `@import "@/assets/styles/shared.sass"\n`
-      }
-    }
+    postcss: "./postcss.config.mjs"
   },
   resolve: {
     alias: {

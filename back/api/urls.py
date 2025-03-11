@@ -4,7 +4,7 @@ from api import views
 
 urlpatterns = [
     path(
-        "tiles/<str:model_type>/<str:layer>/<int:zoom>/<int:x>/<int:y>.mvt",
+        "tiles/<str:geolevel>/<str:datatype>/<int:zoom>/<int:x>/<int:y>.mvt",
         views.tile_view,
     ),
 ]

@@ -17,6 +17,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.0.11",
     "maplibre-gl": "^5.2.0",
     "pinia": "^3.0.0",
     "vue": "^3.4.29",
@@ -43,9 +44,11 @@
     "eslint-plugin-vue": "^9.23.0",
     "jsdom": "^24.1.0",
     "npm-run-all2": "^6.2.0",
+    "postcss": "^8.5.3",
+    "postcss-for": "^2.1.1",
     "prettier": "^3.4.2",
-    "sass": "^1.79.4",
     "start-server-and-test": "^2.0.4",
+    "tailwindcss": "^4.0.11",
     "typescript": "5.6.3",
     "vite": "^5.3.1",
     "vite-plugin-vue-devtools": "^7.3.1",
