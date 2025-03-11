@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMapStore } from "@/stores/map"
-import { DataType } from "@/utils/enum"
+import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
 
 const mapStore = useMapStore()
@@ -22,8 +22,10 @@ const selectedDataType = computed({
       v-model="selectedDataType"
       class="w-full p-2 rounded border border-gray-300 bg-white text-base"
     >
-      <option value="plantability">Plantabilité</option>
-      <option value="lcz">Zones Climatiques Locales</option>
+      <option :value="DataType.PLANTABILITY">{{ DataTypeToLabel[DataType.PLANTABILITY] }}</option>
+      <option :value="DataType.LOCAL_CLIMATE_ZONES">
+        {{ DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES] }}
+      </option>
     </select>
   </div>
 </template>
