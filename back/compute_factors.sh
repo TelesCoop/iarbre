@@ -1,24 +1,28 @@
 #!/bin/bash
 
-# Configuration
-input_file="insee.txt"      # File containing the INSEE codes
-task_command="python manage.py c04_compute_factors --delete --insee_code_city" # Base task command
-num_parallel_tasks=4        # Number of parallel tasks
+input_file="insee.txt"
+task_command="python manage.py c04_compute_factors --delete --insee_code_city"
+num_parallel_tasks=7
 
-# Function to process INSEE codes
-process_insee_code() {
-    local insee_code=$1
-    $task_command "$insee_code"
-}
-
-# Export function for parallel execution
-export -f process_insee_code
-export task_command
 mkdir -p output
 
-# Run tasks with parallel, limiting concurrency
-parallel -j $num_parallel_tasks "$task_command {} > output/{}.log 2>&1" < "$input_file"
+run_job() {
+    local insee_code=$1
+    echo "Starting job for INSEE code: $insee_code"
+    $task_command "$insee_code" > "output/${insee_code}.log" 2>&1 &
+    echo "Job started with PID: $!"
+}
 
+job_count=0
+while IFS= read -r insee_code; do
+    run_job "$insee_code"
+    ((job_count++))
+    if [ $job_count -ge $num_parallel_tasks ]; then
+        wait -n
+        ((job_count--))
+    fi
+done < "$input_file"
 
-# Wait for all tasks to complete
+echo "Waiting for all remaining jobs to finish..."
 wait
+echo "All jobs completed."
