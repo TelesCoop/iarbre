@@ -35,7 +35,7 @@ export const useMapStore = defineStore("map", () => {
       type: "fill",
       source: sourceId,
       // source-layer must match the name of the encoded tile in mvt_generator.py
-      "source-layer": `${datatype}/${geolevel}`,
+      "source-layer": `${geolevel}/${datatype}`,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
