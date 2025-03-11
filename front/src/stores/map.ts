@@ -36,7 +36,8 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId, // ID of the tile source created above
-      "source-layer": modelType,
+      // source-layer must match the name of the encoded tile in mvt_generator.py
+      "source-layer": `${modelType}/plantability`,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
@@ -60,7 +61,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, modelType: ModelType) => {
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/{z}/{x}/{y}.mvt`
+    const tileUrl = `${FULL_BASE_API_URL}/tiles/${modelType}/plantability/{z}/{x}/{y}.mvt`
     const sourceId = getSourceIdByModelType(modelType)
 
     map.addSource(sourceId, {
