@@ -166,13 +166,6 @@
     chdir: "{{ backend_path }}"
   when: clonecode.changed or force_update is defined
 
-- name: Run migrations
-  command:
-    cmd: "{{ project_slug }}-ctl migrate"
-  become: true
-  become_user: "{{ main_user }}"
-  when: clonecode.changed or force_update is defined
-
 - name: Clear cache
   shell:
     cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
@@ -181,6 +174,13 @@
 - name: Load database and media
   shell:
     cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
+  when: clonecode.changed or force_update is defined
+
+- name: Run migrations
+  command:
+    cmd: "{{ project_slug }}-ctl migrate"
+  become: true
+  become_user: "{{ main_user }}"
   when: clonecode.changed or force_update is defined
 
 - name: Collect backend static files
