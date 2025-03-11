@@ -34,7 +34,7 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": sourceId,
+      "source-layer": `${datatype}/${geolevel}`,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
@@ -43,7 +43,6 @@ export const useMapStore = defineStore("map", () => {
     })
 
     map.on("click", layerId, (e) => {
-      console.log("### click")
       popup.value = {
         score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
         lng: e.lngLat.lng,
