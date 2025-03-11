@@ -1,4 +1,4 @@
-import MapPlantabilityLegend from "../../src/components/map/legend/PlantabilityLegend.vue"
+import MapPlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 
 describe("Component:MapPlantabilityLegend", () => {
   it("renders correctly", () => {
