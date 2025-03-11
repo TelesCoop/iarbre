@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue"
+import { ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
