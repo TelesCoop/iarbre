@@ -11,8 +11,8 @@ from api.map import load_tiles
 @cache_page(60 * 60 * 24)
 def tile_view(
     request,
-    geolevel: GeoLevel.values,
-    datatype: DataType.values,
+    geolevel: str,
+    datatype: str,
     zoom: int,
     x: int,
     y: int,

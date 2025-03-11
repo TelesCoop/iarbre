@@ -8,8 +8,8 @@ import type { ScorePopupData } from "@/types"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popup = ref<ScorePopupData | undefined>(undefined)
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+  const selectedDataType = ref<DataType>(DataType.LOCAL_CLIMATE_ZONES)
+  const currentGeoLevel = ref<GeoLevel>(GeoLevel.LCZ)
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
     return `${datatype}-${geolevel}-source`
@@ -35,7 +35,7 @@ export const useMapStore = defineStore("map", () => {
       type: "fill",
       source: sourceId,
       // source-layer must match the name of the encoded tile in mvt_generator.py
-      "source-layer": `${geolevel}/${datatype}`,
+      "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
@@ -96,13 +96,16 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value
     selectedDataType.value = datatype
 
+    const previousGeoLevel = currentGeoLevel.value
+    currentGeoLevel.value = datatype === DataType.PLANTABILITY ? GeoLevel.TILE : GeoLevel.LCZ
+
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
-      mapInstance.removeLayer(getLayerId(previousDataType, currentGeoLevel.value))
-      mapInstance.removeSource(getSourceId(previousDataType, currentGeoLevel.value))
+      mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
+      mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
 
       // Add the new layer
       setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
