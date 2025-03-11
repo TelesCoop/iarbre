@@ -125,7 +125,7 @@ class MVTTile(models.Model):
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
-    geolevel = models.CharField(max_length=50)
+    geolevel = models.CharField(max_length=50, default="tile")
     datatype = models.CharField(max_length=50, default="plantability")
     mvt_file = models.FileField(upload_to="mvt_files/")
 
