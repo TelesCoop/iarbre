@@ -59,7 +59,7 @@ class Command(BaseCommand):
         model: Type[Model],
         datatype: str,
         queryset: QuerySet,
-        zoom_levels: Tuple[int, int] = (8, 20),
+        zoom_levels: Tuple[int, int] = (12, 16),
         number_of_thread: int = 1,
     ) -> None:
         """

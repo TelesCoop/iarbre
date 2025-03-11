@@ -27,7 +27,7 @@ class MVTGenerator:
         queryset: QuerySet,
         geolevel: str = "tile",
         datatype: str = "plantability",
-        zoom_levels: tuple[int, int] = (0, 14),
+        zoom_levels: tuple[int, int] = (12, 16),
         number_of_thread: int = 1,
     ):
         """
