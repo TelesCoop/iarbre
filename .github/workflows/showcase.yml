@@ -1,0 +1,26 @@
+name: Deploy Showcase iarbre.fr website
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  deploy-prod:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deploy showcase
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: showcase.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l prod
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
