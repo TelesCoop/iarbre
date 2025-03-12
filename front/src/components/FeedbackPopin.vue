@@ -26,7 +26,7 @@ const sendFeedback = (event: Event) => {
 
 <template>
   <div class="my-popin" data-cy="feedback-popin">
-    <button class="my-popin-button" @click="emit('close')">x</button>
+    <button class="my-popin-close-button" @click="emit('close')">x</button>
     <h3 class="my-popin-heading">Votre avis compte !</h3>
     <p class="my-popin-text">Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
     <form class="my-popin-form" @submit="sendFeedback">

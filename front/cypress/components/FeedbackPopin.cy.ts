@@ -10,6 +10,6 @@ describe("Component: FeedbackPopin", () => {
     cy.get('input[type="email"]').should("exist")
     cy.get("textarea").should("exist")
     cy.get('button[type="submit"]').should("exist")
-    cy.get("button.text").should("exist")
+    cy.get("button.my-popin-close-button").should("exist")
   })
 })
