@@ -55,73 +55,13 @@ body {
 }
 
 /* Custom utility classes */
-.max-full-height {
-  max-height: var(--content-height);
-}
 
-.font-accent {
-  font-family: var(--font-accent);
-}
-
-/* General reusable styles */
-.btn,
-.my-link,
-.my-popin-button,
-.my-submit-button {
-  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base transition duration-300 cursor-pointer;
-}
-
-.text-primary {
-  @apply text-[var(--color-brown)];
-}
-
-.text-light {
-  @apply text-[var(--color-light-green)];
-}
-
-.text-dark {
-  @apply text-[var(--color-dark-green)];
-}
-
-.bg-primary {
-  @apply bg-[var(--color-off-white)];
-}
-
-.bg-light {
-  @apply bg-[var(--color-light-green)];
-}
-
-.bg-white {
-  @apply bg-[var(--color-white)];
-}
-
-.border-primary {
-  @apply border border-gray-300;
-}
-
-.rounded-full {
-  @apply rounded-full;
-}
-
-.rounded-lg {
-  @apply rounded-lg;
-}
-
-.text-center {
-  @apply text-center;
-}
-
-.container {
-  @apply flex items-center justify-between box-border;
-}
-
-/* Our classes */
 .button {
-  @apply btn bg-primary border-none outline-none hover:text-light;
+  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base bg-[var(--color-off-white)] border-none outline-none transition duration-300 hover:text-[var(--color-light-green)] cursor-pointer;
 }
 
 .my-header {
-  @apply fixed top-0 w-full bg-primary h-[var(--header-height)] z-10 container overflow-hidden;
+  @apply fixed top-0 w-full bg-[var(--color-off-white)] h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border;
 }
 
 .my-header-logo {
@@ -137,15 +77,15 @@ body {
 }
 
 .my-link {
-  @apply btn no-underline hover:text-light;
+  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base no-underline transition duration-300 hover:text-[var(--color-light-green)];
 }
 
 .my-popin {
-  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border-primary rounded-lg bg-white text-dark text-left flex flex-col text-sm;
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border border-gray-300 rounded-lg bg-[var(--color-white)] text-[var(--color-dark-green)] text-left flex flex-col text-sm box-border;
 }
 
 .my-popin-button {
-  @apply absolute top-2 right-2 text-lg text-dark cursor-pointer hover:text-[var(--color-red)] transition-colors;
+  @apply absolute top-2 right-2 text-lg text-[var(--color-dark-green)] cursor-pointer transition-colors duration-300 hover:text-[var(--color-red)];
 }
 
 .my-popin-heading {
@@ -161,17 +101,17 @@ body {
 }
 
 .my-input {
-  @apply w-full mt-2 p-2 rounded-full border-primary outline-none;
+  @apply w-full mt-2 p-2 rounded-full border border-gray-300 outline-none;
 }
 
 .my-textarea {
-  @apply w-full h-36 mt-2 p-2 rounded-3xl border-primary resize-none outline-none;
+  @apply w-full h-36 mt-2 p-2 rounded-3xl border border-gray-300 resize-none outline-none;
 }
 
 .my-submit-button {
-  @apply w-full mt-2 bg-light text-white font-bold rounded-full py-2 text-center hover:text-white;
+  @apply w-full mt-2 bg-[var(--color-light-green)] text-[var(--color-white)] font-bold cursor-pointer transition-colors duration-300 hover:text-[var(--color-white)] text-center rounded-full py-2;
 }
 
 .my-message {
-  @apply mt-2 text-dark;
+  @apply mt-2 text-[var(--color-dark-green)];
 }
