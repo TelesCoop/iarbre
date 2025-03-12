@@ -38,6 +38,7 @@ describe("Feedback Popin interactivity", () => {
     })
 
     cy.contains("button", "J'envoie mon avis").click()
+    cy.getBySel("feedback-popin").should("not.exist")
   })
 
   it("Validates required form fields", () => {
@@ -60,5 +61,6 @@ describe("Feedback Popin interactivity", () => {
     cy.get('input[type="email"]').clear()
     cy.get("textarea").type(testFeedback)
     cy.contains("button", "J'envoie mon avis").click()
+    cy.getBySel("feedback-popin").should("not.exist")
   })
 })
