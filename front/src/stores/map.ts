@@ -12,11 +12,11 @@ export const useMapStore = defineStore("map", () => {
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
-    return `${datatype}-${geolevel}-source`
+    return `${geolevel}-${datatype}-source`
   }
 
   const getLayerId = (datatype: DataType, geolevel: GeoLevel) => {
-    return `${datatype}-${geolevel}-layer`
+    return `${geolevel}-${datatype}-layer`
   }
 
   const extractFeatureIndice = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
