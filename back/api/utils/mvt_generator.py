@@ -17,6 +17,7 @@ from iarbre_data.models import MVTTile
 from tqdm import tqdm
 
 from iarbre_data.settings import TARGET_MAP_PROJ
+from api.constants import DEFAULT_ZOOM_LEVELS
 
 MVT_EXTENT = 4096
 
@@ -27,7 +28,7 @@ class MVTGenerator:
         queryset: QuerySet,
         geolevel: str = "tile",
         datatype: str = "plantability",
-        zoom_levels: tuple[int, int] = (0, 14),
+        zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
         number_of_thread: int = 1,
     ):
         """
@@ -125,7 +126,7 @@ class MVTGenerator:
                 mvt_data = mapbox_vector_tile.encode(
                     [
                         {
-                            "name": f"{self.geolevel}/{self.datatype}",
+                            "name": f"{self.geolevel}--{self.datatype}",
                             "features": features,
                         }
                     ]

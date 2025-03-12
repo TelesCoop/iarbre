@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
-from api.constants import GeoLevel, DataType
 from api.map import load_tiles
 
 
@@ -12,8 +11,8 @@ from api.map import load_tiles
 @cache_page(60 * 60 * 24)
 def tile_view(
     request,
-    geolevel: GeoLevel.values,
-    datatype: DataType.values,
+    geolevel: str,
+    datatype: str,
     zoom: int,
     x: int,
     y: int,

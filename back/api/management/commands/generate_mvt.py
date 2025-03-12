@@ -28,6 +28,7 @@ from django.core.management import BaseCommand
 from django.db.models import QuerySet, Model
 
 from api.utils.mvt_generator import MVTGenerator
+from api.constants import DEFAULT_ZOOM_LEVELS
 
 from iarbre_data.models import Tile, Lcz, MVTTile
 
@@ -59,7 +60,7 @@ class Command(BaseCommand):
         model: Type[Model],
         datatype: str,
         queryset: QuerySet,
-        zoom_levels: Tuple[int, int] = (8, 20),
+        zoom_levels: Tuple[int, int] = DEFAULT_ZOOM_LEVELS,
         number_of_thread: int = 1,
     ) -> None:
         """
@@ -118,6 +119,6 @@ class Command(BaseCommand):
             model=mdl,
             datatype=datatype,
             queryset=mdl.objects.all(),
-            zoom_levels=(10, 20),
+            zoom_levels=DEFAULT_ZOOM_LEVELS,
             number_of_thread=number_of_thread,
         )
