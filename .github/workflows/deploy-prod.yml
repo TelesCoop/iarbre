@@ -33,9 +33,8 @@ jobs:
           playbook: frontend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
-          # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod,preprod
+            -l ${{ env.ENVIRONMENT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy backend
         uses: dawidd6/action-ansible-playbook@v2
@@ -43,17 +42,6 @@ jobs:
           playbook: backend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
-          # -l ${{ env.ENVIRONMENT }}
           options: |
-            -l prod,preprod
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy static
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: showcase.yml
-          directory: deploy
-          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
-          # -l ${{ env.ENVIRONMENT }}
-          options: |
-            -l prod
+            -l ${{ env.ENVIRONMENT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
