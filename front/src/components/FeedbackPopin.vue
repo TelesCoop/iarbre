@@ -23,6 +23,7 @@ const sendFeedback = (event: Event) => {
 <template>
   <div
     class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border border-gray-300 rounded-lg bg-[var(--color-white)] text-[var(--color-dark-green)] text-left flex flex-col text-sm box-border"
+    data-cy="feedback-popin"
   >
     <button
       class="button text absolute top-2 right-2 text-lg text-[var(--color-dark-green)] cursor-pointer transition-colors duration-300 hover:text-[var(--color-red)]"
@@ -37,7 +38,6 @@ const sendFeedback = (event: Event) => {
         v-model="email"
         type="email"
         placeholder="Votre email"
-        required
         class="w-full mt-2 p-2 rounded-full border border-gray-300 outline-none"
       />
       <textarea
