@@ -63,19 +63,115 @@ body {
   font-family: var(--font-accent);
 }
 
-/* Button styles */
+/* General reusable styles */
+.btn,
+.my-link,
+.my-popin-button,
+.my-submit-button {
+  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base transition duration-300 cursor-pointer;
+}
+
+.text-primary {
+  @apply text-[var(--color-brown)];
+}
+
+.text-light {
+  @apply text-[var(--color-light-green)];
+}
+
+.text-dark {
+  @apply text-[var(--color-dark-green)];
+}
+
+.bg-primary {
+  @apply bg-[var(--color-off-white)];
+}
+
+.bg-light {
+  @apply bg-[var(--color-light-green)];
+}
+
+.bg-white {
+  @apply bg-[var(--color-white)];
+}
+
+.border-primary {
+  @apply border border-gray-300;
+}
+
+.rounded-full {
+  @apply rounded-full;
+}
+
+.rounded-lg {
+  @apply rounded-lg;
+}
+
+.text-center {
+  @apply text-center;
+}
+
+.container {
+  @apply flex items-center justify-between box-border;
+}
+
+/* Our classes */
 .button {
-  @apply font-[var(--font-accent)] no-underline border-none py-2.5 px-5 rounded-[50px];
+  @apply btn bg-primary border-none outline-none hover:text-light;
 }
 
-.button.primary {
-  @apply text-[var(--color-white)] bg-[var(--color-dark-green)];
+.my-header {
+  @apply fixed top-0 w-full bg-primary h-[var(--header-height)] z-10 container overflow-hidden;
 }
 
-.button.small {
-  @apply py-[7px] px-[10px] text-[0.8rem];
+.my-header-logo {
+  @apply pl-4 md:pl-0;
 }
 
-.button.text {
-  @apply bg-transparent rounded-none p-[3px];
+.my-header-nav {
+  @apply pr-4 md:pr-20;
+}
+
+.my-nav-list {
+  @apply flex gap-4 list-none;
+}
+
+.my-link {
+  @apply btn no-underline hover:text-light;
+}
+
+.my-popin {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border-primary rounded-lg bg-white text-dark text-left flex flex-col text-sm;
+}
+
+.my-popin-button {
+  @apply absolute top-2 right-2 text-lg text-dark cursor-pointer hover:text-[var(--color-red)] transition-colors;
+}
+
+.my-popin-heading {
+  @apply font-medium;
+}
+
+.my-popin-text {
+  @apply mb-2;
+}
+
+.my-popin-form {
+  @apply w-full;
+}
+
+.my-input {
+  @apply w-full mt-2 p-2 rounded-full border-primary outline-none;
+}
+
+.my-textarea {
+  @apply w-full h-36 mt-2 p-2 rounded-3xl border-primary resize-none outline-none;
+}
+
+.my-submit-button {
+  @apply w-full mt-2 bg-light text-white font-bold rounded-full py-2 text-center hover:text-white;
+}
+
+.my-message {
+  @apply mt-2 text-dark;
 }

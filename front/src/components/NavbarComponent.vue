@@ -23,31 +23,21 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
 </script>
 
 <template>
-  <div
-    class="fixed top-0 w-full bg-[var(--color-off-white)] h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border"
-  >
-    <div class="pl-4 md:pl-0">
+  <div class="my-header">
+    <div class="my-header-logo">
       <a href="/">
         <img class="h-10 w-auto" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
       </a>
     </div>
-    <nav class="pr-4 md:pr-20">
-      <ul class="flex gap-4 list-none">
+    <nav class="my-header-nav">
+      <ul class="my-nav-list">
         <li>
-          <button
-            class="font-[var(--font-accent)] text-[var(--color-brown)] text-base bg-[var(--color-off-white)] border-none outline-none transition duration-300 hover:text-[var(--color-light-green)] cursor-pointer"
-            @click.prevent="isVisible = true"
-          >
+          <button class="button" @click.prevent="isVisible = true">
             ✉️ Nous envoyer votre retour
           </button>
         </li>
         <li>
-          <a
-            href="https://iarbre.fr"
-            class="font-[var(--font-accent)] text-[var(--color-brown)] text-base no-underline transition duration-300 hover:text-[var(--color-light-green)]"
-          >
-            ⓘ En savoir plus
-          </a>
+          <a href="https://iarbre.fr" class="my-link"> ⓘ En savoir plus </a>
         </li>
       </ul>
     </nav>
