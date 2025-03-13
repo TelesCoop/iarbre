@@ -21,8 +21,3 @@
   file:
     path: "/usr/local/bin/{{ project_slug }}-ctl"
     state: absent
-
-- name: Remove {{ project_slug }}-backend supervisor
-  supervisorctl:
-    name: "{{ project_slug }}-backend"
-    state: absent
