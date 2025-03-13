@@ -24,12 +24,10 @@ Example:
 from typing import Tuple, Type
 
 from django.core.management import BaseCommand
-
 from django.db.models import QuerySet, Model
 
+from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel
 from api.utils.mvt_generator import MVTGenerator
-from api.constants import DEFAULT_ZOOM_LEVELS
-
 from iarbre_data.models import Tile, Lcz, MVTTile
 
 
@@ -47,7 +45,8 @@ class Command(BaseCommand):
             "--geolevel",
             type=str,
             required=True,
-            help="What geolevel to transform to MVT.",
+            choices=[choice for choice, _ in GeoLevel.choices],
+            help=f"What geolevel to transform to MVT. Choices: {', '.join([choice for choice, _ in GeoLevel.choices])}",
         )
         parser.add_argument(
             "--keep",
@@ -96,24 +95,20 @@ class Command(BaseCommand):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
         geolevel = options["geolevel"]
-        if geolevel == "Tile":
+        if geolevel == GeoLevel.TILE.value:
             mdl = Tile
-            datatype = Tile.datatype
-        elif geolevel == "Lcz":
+        elif geolevel == GeoLevel.LCZ.value:
             mdl = Lcz
-            datatype = Lcz.datatype
         else:
+            supported_levels = [GeoLevel.TILE.value, GeoLevel.LCZ.value]
             raise ValueError(
-                f"Unsupported model: {geolevel}. Should be either 'Tile' or 'Lcz'."
+                f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
             )
+        datatype = mdl.datatype
 
         if options["keep"] is False:
-            print(f"Deleting existing MVTTile for model : {geolevel}.")
-            print(
-                MVTTile.objects.filter(
-                    geolevel=geolevel.lower(), datatype=datatype
-                ).delete()
-            )
+            print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
+            print(MVTTile.objects.filter(geolevel=geolevel, datatype=datatype).delete())
         # Generate new tiles
         self.generate_tiles_for_model(
             model=mdl,

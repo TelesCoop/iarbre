@@ -210,7 +210,6 @@ class MVTGeneratorTestCase(TestCase):
             y=tile_y,
         )
         decoded_tile = mapbox_vector_tile.decode(response.content)
-
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(
             list(decoded_tile.keys()), ["fake_geolevel--fake_datatype"]

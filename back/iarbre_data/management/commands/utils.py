@@ -52,7 +52,7 @@ def remove_duplicates(Model) -> None:
     print(f"Removed duplicates for {duplicates.count()} entries.")
 
 
-def select_city(insee_code_city):
+def select_city(insee_code_city: str):
     """Select a list of city based on INSEE_CODE.
 
     Args:
