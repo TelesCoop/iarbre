@@ -24,6 +24,9 @@ class ReceiveFeedbackViewTest(TestCase):
                 feedback="Raise the floor not the ceiling."
             ).exists()
         )
+        self.assertTrue(
+            Feedback.objects.filter(email="molly.maguires@test.fr").exists()
+        )
 
     def test_missing_feedback_field(self):
         data = {"email": "molly.maguires@test.fr"}  # No feedback text
