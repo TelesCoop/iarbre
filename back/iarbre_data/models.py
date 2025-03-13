@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models import Avg
 
 from iarbre_data.settings import TARGET_MAP_PROJ
+from api.constants import GeoLevel, DataType
 
 
 class TileAggregateBase(models.Model):
@@ -57,8 +58,8 @@ class Tile(models.Model):
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
-    geolevel = "tile"
-    datatype = "plantability"
+    geolevel = GeoLevel.TILE.value
+    datatype = DataType.TILE.value
 
     iris = models.ForeignKey(
         Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
@@ -124,8 +125,10 @@ class MVTTile(models.Model):
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
-    geolevel = models.CharField(max_length=50)
-    datatype = models.CharField(max_length=50, default="plantability")
+    geolevel = models.CharField(max_length=50, choices=GeoLevel.choices)
+    datatype = models.CharField(
+        max_length=50, choices=DataType.choices, default=DataType.TILE.value
+    )
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
@@ -152,8 +155,8 @@ class Lcz(models.Model):
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
 
-    geolevel = "lcz"
-    datatype = "lcz"
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.LCZ.value
 
     @property
     def color(self):
