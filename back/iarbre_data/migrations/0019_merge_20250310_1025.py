@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("iarbre_data", "0014_feedback"),
-        ("iarbre_data", "0017_rename_layer_mvttile_datatype_and_more"),
+        ("iarbre_data", "0018_alter_mvttile_datatype_alter_mvttile_geolevel"),
     ]
 
     operations = []
