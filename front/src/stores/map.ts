@@ -7,7 +7,8 @@ import type { ScorePopupData } from "@/types"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
-  const popup = ref<ScorePopupData | undefined>(undefined)
+  const popupData = ref<ScorePopupData | undefined>(undefined)
+  const popupDomElement = ref<HTMLElement | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
@@ -30,6 +31,8 @@ export const useMapStore = defineStore("map", () => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
 
+    popupDomElement.value = document.getElementById(`popup-${mapId}`)
+
     map.addLayer({
       id: layerId,
       type: "fill",
@@ -44,7 +47,9 @@ export const useMapStore = defineStore("map", () => {
     })
 
     map.on("click", layerId, (e) => {
-      popup.value = {
+      if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
+
+      popupData.value = {
         score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
@@ -52,7 +57,7 @@ export const useMapStore = defineStore("map", () => {
 
       new Popup()
         .setLngLat(e.lngLat)
-        .setDOMContent(document.getElementById(`popup-${mapId}`)!)
+        .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
         .addTo(map)
     })
@@ -141,8 +146,8 @@ export const useMapStore = defineStore("map", () => {
   return {
     mapInstancesByIds,
     initMap,
-    popup,
-    selectedDataType: selectedDataType,
+    popupData,
+    selectedDataType,
     currentGeoLevel,
     changeDataType
   }

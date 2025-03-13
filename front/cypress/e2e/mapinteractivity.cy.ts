@@ -11,7 +11,19 @@ describe("Map interactivity", () => {
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it.skip("Opens popup on click", () => {
+  it.skip("Open popup on click", () => {
+    cy.getBySel("map-component").click("center")
+    cy.getBySel("score-popup").should("be.visible")
+  })
+
+  it.skip("Open, case and reopen popup. Resolve #92", () => {
+    cy.getBySel("map-component").click("center")
+    cy.getBySel("score-popup").should("be.visible")
+
+    // This might be behind the legend
+    cy.get(".maplibregl-popup-close-button").click({ force: true })
+    cy.getBySel("score-popup").should("not.exist")
+
     cy.getBySel("map-component").click("center")
     cy.getBySel("score-popup").should("be.visible")
   })
