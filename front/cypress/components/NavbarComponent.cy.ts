@@ -1,13 +1,14 @@
 import Navbar from "@/components/NavbarComponent.vue"
 
 describe("Component:Navbar", () => {
-  it("renders correctly", () => {
+  beforeEach(() => {
     cy.mount(Navbar)
+  })
+  it("renders correctly", () => {
     cy.getBySel("open-feedback-button").should("exist")
     cy.getBySel("open-savoir-href").should("exist")
   })
   it("Fill and submit the feedback form", () => {
-    cy.mount(Navbar)
     cy.getBySel("open-feedback-button").click()
 
     const testEmail = "molly.maguire@test.fr"
