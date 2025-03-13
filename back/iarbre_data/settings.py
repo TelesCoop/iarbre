@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "storages",
     "django_extensions",
     "telescoop_backup",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -218,3 +219,15 @@ BACKUP_HOST = config.getstr("backup.backup_host", None)
 
 BACKUP_COMPRESS = config.getbool("backup.backup_compress", False)
 BACKUP_RECOVER_N_WORKERS = config.getint("backup.backup_recovery_n_workers", 1)
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": (
+        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+        "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
+    ),
+    "DEFAULT_PARSER_CLASSES": (
+        "djangorestframework_camel_case.parser.CamelCaseFormParser",
+        "djangorestframework_camel_case.parse   r.CamelCaseMultiPartParser",
+        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
+    ),
+}
