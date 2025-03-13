@@ -24,19 +24,19 @@ jobs:
           elif [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
           fi
-      - name: Deploy frontend
+      - name: Deploy backend
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: frontend.yml
+          playbook: backend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
             -l feature -e branch=${{ env.BRANCH_NAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: Deploy backend
+      - name: Deploy frontend
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: backend.yml
+          playbook: frontend.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
