@@ -160,6 +160,13 @@
   become_user: "{{ main_user }}"
   register: clonecode
 
+- name: Create symbolic link from feature mvt_files to preprod mvt_files
+  file:
+    src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
+    dest: "{{ backend_path }}/mvt_files"
+    state: link
+  when: branch is defined
+
 - name: Install python dependencies
   command:
     cmd: "{{ venv.path }}/bin/pip install -r requirements.txt"

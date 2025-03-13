@@ -10,6 +10,9 @@ var_log_path: /var/log/{{ organization_slug }}/{{ project_slug }}
 project_base_dir: /{{ organization_slug }}/{{ base_project_slug }}
 supervisor_conf: /etc/supervisor/conf.d
 
+database_user: "{{ project_slug }}"
+database_name: "{{ project_slug }}"
+
 requests_timeout: 30
 # if using postgresql database, you will need to
 # - define the var `database_password`

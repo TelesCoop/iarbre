@@ -1,0 +1,5 @@
+---
+- hosts:
+    - feature
+  roles:
+    - cleanup

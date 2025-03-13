@@ -1,0 +1,28 @@
+- name: Remove directories for feature branch
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/{{ organization_slug }}/{{ project_slug }}"
+    - "/etc/{{ organization_slug }}/{{ project_slug }}"
+    - "{{ var_log_path }}"
+
+- name: Remove supervisor configuration
+  file:
+    path: "{{ supervisor_conf }}/{{ project_slug }}_backend.conf"
+    state: absent
+
+- name: Remove supervisor process
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: absent
+
+- name: Remove control script
+  file:
+    path: "/usr/local/bin/{{ project_slug }}-ctl"
+    state: absent
+
+- name: Remove {{ project_slug }}-backend supervisor
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: absent

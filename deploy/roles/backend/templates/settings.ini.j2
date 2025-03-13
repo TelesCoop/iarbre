@@ -28,8 +28,8 @@ static_root={{ backend_static_path }}
 
 [database]
 engine=postgresql
-user={{ project_slug }}
-name={{ project_slug }}
+user={{ database_user }}
+name={{ database_name }}
 password = {{ database_password|default('') }}
 
 [environment]
