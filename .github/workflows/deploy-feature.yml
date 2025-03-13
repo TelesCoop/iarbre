@@ -1,0 +1,44 @@
+name: Run deploy feature
+
+on:
+  push:
+    branches-ignore:
+      - dev
+      - main
+  pull_request:
+    branches-ignore:
+      - dev
+      - main
+
+jobs:
+  deploy-feature:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          fi
+      - name: Deploy backend
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: backend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l feature -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy frontend
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: frontend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l feature -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}

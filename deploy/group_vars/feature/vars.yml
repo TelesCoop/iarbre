@@ -1,9 +1,13 @@
-backend_application_port: 8033 # must be unique for each project on the same server
-frontend_application_port: 3003 # must be unique for each project on the same server
-environment_suffix: "_feature"
+# Generate a deterministic 3-digit number from the branch name
+branch_hash: "{{ branch | hash('md5') }}"
+unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
+
+backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
+frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
+environment_suffix: "-feature-{{ branch }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "feature-carte.iarbre.fr"
+main_hostname: "feature-{{ branch }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
@@ -11,15 +15,18 @@ redirect_hostnames: []
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
-certificate_hostname: "carte.iarbre.fr-0001"
+certificate_hostname: "iarbre.fr-0001"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
 https_enabled: true
-project_dir: "{{project_base_dir}}{{ environment_suffix }}"
+project_dir: "{{ project_base_dir }}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
-frontend_branch: layers2
-backend_branch: layers2
+frontend_branch: "{{ branch }}"
+backend_branch: "{{ branch }}"
 
-environment_name: feature
+environment_name: "feature-{{ branch }}"
+
+database_user: "{{ base_project_slug }}_preprod"
+database_name: "{{ base_project_slug }}_preprod"

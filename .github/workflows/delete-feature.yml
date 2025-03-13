@@ -1,0 +1,28 @@
+name: Clean up feature environment
+
+on:
+  pull_request:
+    branches-ignore:
+      - dev
+      - main
+    types:
+      - closed
+
+jobs:
+  cleanup-feature:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+      - name: Clean up feature environment
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: cleanup.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
