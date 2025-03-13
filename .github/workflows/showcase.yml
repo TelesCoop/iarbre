@@ -1,22 +1,24 @@
-name: Build Documentation
+name: Deploy Showcase iarbre.fr website
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
 jobs:
-  build:
-    if: "!contains(github.event.head_commit.message, '[no doc]')"
+  deploy-prod:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-22.04
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Build and deploy doc
+      - name: Deploy showcase
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: docs.yml
+          playbook: showcase.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |

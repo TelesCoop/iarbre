@@ -5,7 +5,6 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
-from api.constants import GeoLevel, DataType
 from iarbre_data.settings import TARGET_MAP_PROJ
 
 
@@ -58,8 +57,8 @@ class Tile(models.Model):
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
 
-    geolevel = GeoLevel.TILE.value
-    datatype = DataType.TILE.value
+    geolevel = "tile"
+    datatype = "plantability"
 
     iris = models.ForeignKey(
         Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
@@ -153,8 +152,8 @@ class Lcz(models.Model):
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
 
-    geolevel = GeoLevel.LCZ.value
-    datatype = DataType.LCZ.value
+    geolevel = "lcz"
+    datatype = "lcz"
 
     @property
     def color(self):

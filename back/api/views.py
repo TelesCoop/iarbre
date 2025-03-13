@@ -5,7 +5,6 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
-from api.constants import GeoLevel, DataType
 from api.map import load_tiles
 from typing import Any, Dict
 
@@ -17,8 +16,8 @@ from iarbre_data.models import Feedback
 @cache_page(60 * 60 * 24)
 def tile_view(
     request,
-    geolevel: GeoLevel.values,
-    datatype: DataType.values,
+    geolevel: str,
+    datatype: str,
     zoom: int,
     x: int,
     y: int,

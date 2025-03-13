@@ -7,16 +7,17 @@ import type { ScorePopupData } from "@/types"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
-  const popup = ref<ScorePopupData | undefined>(undefined)
+  const popupData = ref<ScorePopupData | undefined>(undefined)
+  const popupDomElement = ref<HTMLElement | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
-    return `${datatype}-${geolevel}-source`
+    return `${geolevel}-${datatype}-source`
   }
 
   const getLayerId = (datatype: DataType, geolevel: GeoLevel) => {
-    return `${datatype}-${geolevel}-layer`
+    return `${geolevel}-${datatype}-layer`
   }
 
   const extractFeatureIndice = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
@@ -30,12 +31,14 @@ export const useMapStore = defineStore("map", () => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
 
+    popupDomElement.value = document.getElementById(`popup-${mapId}`)
+
     map.addLayer({
       id: layerId,
       type: "fill",
       source: sourceId,
       // source-layer must match the name of the encoded tile in mvt_generator.py
-      "source-layer": `${geolevel}/${datatype}`,
+      "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
         "fill-color": ["get", "color"],
@@ -44,7 +47,9 @@ export const useMapStore = defineStore("map", () => {
     })
 
     map.on("click", layerId, (e) => {
-      popup.value = {
+      if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
+
+      popupData.value = {
         score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
@@ -52,7 +57,7 @@ export const useMapStore = defineStore("map", () => {
 
       new Popup()
         .setLngLat(e.lngLat)
-        .setDOMContent(document.getElementById(`popup-${mapId}`)!)
+        .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
         .addTo(map)
     })
@@ -96,13 +101,16 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value
     selectedDataType.value = datatype
 
+    const previousGeoLevel = currentGeoLevel.value
+    currentGeoLevel.value = datatype === DataType.PLANTABILITY ? GeoLevel.TILE : GeoLevel.LCZ
+
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
-      mapInstance.removeLayer(getLayerId(previousDataType, currentGeoLevel.value))
-      mapInstance.removeSource(getSourceId(previousDataType, currentGeoLevel.value))
+      mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
+      mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
 
       // Add the new layer
       setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
@@ -119,10 +127,10 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "map/map-style.json",
-      // center to France,
+      // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
-      // zoom to a level where France is visible
-      zoom: 16
+      // zoom to a level that shows the whole city
+      zoom: 14
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
@@ -138,8 +146,8 @@ export const useMapStore = defineStore("map", () => {
   return {
     mapInstancesByIds,
     initMap,
-    popup,
-    selectedDataType: selectedDataType,
+    popupData,
+    selectedDataType,
     currentGeoLevel,
     changeDataType
   }
