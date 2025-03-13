@@ -3,7 +3,27 @@ import Navbar from "@/components/NavbarComponent.vue"
 describe("Component:Navbar", () => {
   it("renders correctly", () => {
     cy.mount(Navbar)
-    cy.contains("✉️ Nous envoyer votre retour")
-    cy.contains("ⓘ En savoir plus")
+    cy.getBySel("open-feedback-button").should("exist")
+    cy.getBySel("open-savoir-href").should("exist")
+  })
+  it("Fill and submit the feedback form", () => {
+    cy.mount(Navbar)
+    cy.getBySel("open-feedback-button").click()
+
+    const testEmail = "molly.maguire@test.fr"
+    const testFeedback = "Raise the floor, not just the ceiling."
+
+    cy.intercept("POST", "**/feedback/", {
+      statusCode: 200,
+      body: { message: "Merci pour votre retour !" }
+    }).as("submitFeedback")
+
+    cy.get('input[type="email"]').type(testEmail)
+    cy.get("textarea").type(testFeedback)
+    cy.getBySel("submit-feedback-button").click()
+
+    cy.wait("@submitFeedback").its("response.statusCode").should("eq", 200)
+
+    cy.getBySel("feedback-popin").should("not.exist")
   })
 })

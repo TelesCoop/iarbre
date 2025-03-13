@@ -32,12 +32,14 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
     <nav class="my-header-nav">
       <ul class="my-nav-list">
         <li>
-          <button class="button" @click.prevent="isVisible = true">
+          <button class="button" data-cy="open-feedback-button" @click.prevent="isVisible = true">
             ✉️ Nous envoyer votre retour
           </button>
         </li>
         <li>
-          <a href="https://iarbre.fr" class="my-link"> ⓘ En savoir plus </a>
+          <a href="https://iarbre.fr" class="my-link" data-cy="open-savoir-href">
+            ⓘ En savoir plus
+          </a>
         </li>
       </ul>
     </nav>

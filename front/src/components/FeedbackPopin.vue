@@ -26,13 +26,17 @@ const sendFeedback = (event: Event) => {
 
 <template>
   <div class="my-popin" data-cy="feedback-popin">
-    <button class="my-popin-close-button" @click="emit('close')">x</button>
+    <button class="my-popin-close-button" data-cy="close-feedback-button" @click="emit('close')">
+      x
+    </button>
     <h3 class="my-popin-heading">Votre avis compte !</h3>
     <p class="my-popin-text">Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
     <form class="my-popin-form" @submit="sendFeedback">
       <input v-model="email" type="email" placeholder="Votre email" class="my-input" />
       <textarea v-model="feedback" placeholder="Votre message" class="my-textarea"></textarea>
-      <button class="my-submit-button" type="submit">J'envoie mon avis</button>
+      <button class="my-submit-button" type="submit" data-cy="submit-feedback-button">
+        J'envoie mon avis
+      </button>
       <p v-if="message" class="my-message">{{ message }}</p>
     </form>
   </div>
