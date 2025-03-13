@@ -21,3 +21,7 @@ database_provider: postgresql # sqlite or postgresql
 
 # can be SSR or static
 frontend_mode: static
+
+# can not be in backend role, as it's also need by cleanup role
+venv:
+  path: /usr/local/{{ organization_slug }}/{{ project_slug }}/backend/venv

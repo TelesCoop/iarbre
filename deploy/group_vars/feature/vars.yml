@@ -1,7 +1,9 @@
-unique_number: "{{ range(100, 1000) | random }}"
+# Generate a deterministic 3-digit number from the branch name
+branch_hash: "{{ branch | hash('md5') }}"
+unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
 
-backend_application_port: "8{{ unique_number }}" # must be unique for each project on the same server
-frontend_application_port: "8{{ unique_number }}" # must be unique for each project on the same server
+backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
+frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
 environment_suffix: "-feature-{{ branch }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
