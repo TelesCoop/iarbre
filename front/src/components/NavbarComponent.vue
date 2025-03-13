@@ -23,23 +23,21 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
 </script>
 
 <template>
-  <div class="my-header">
-    <div class="my-header-logo">
+  <div class="header">
+    <div class="header-logo">
       <a href="/">
         <img class="h-10 w-auto" src="/images/logo-iarbre.png" alt="Logo I-Arbre" />
       </a>
     </div>
-    <nav class="my-header-nav">
-      <ul class="my-nav-list">
+    <nav class="header-nav">
+      <ul class="nav-list">
         <li>
           <button class="button" data-cy="open-feedback-button" @click.prevent="isVisible = true">
             ✉️ Nous envoyer votre retour
           </button>
         </li>
         <li>
-          <a href="https://iarbre.fr" class="my-link" data-cy="open-savoir-href">
-            ⓘ En savoir plus
-          </a>
+          <a href="https://iarbre.fr" class="link" data-cy="open-savoir-href"> ⓘ En savoir plus </a>
         </li>
       </ul>
     </nav>

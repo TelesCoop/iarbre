@@ -20,7 +20,6 @@
     "@tailwindcss/postcss": "^4.0.11",
     "maplibre-gl": "^5.2.0",
     "pinia": "^3.0.0",
-    "tailwind": "^4.0.0",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },
