@@ -1,12 +1,6 @@
 # Scripts de mise en production et maintenance avec Ansible d'un site
 
-## Stack technique
-
-Principaux outils open-sources
-
-- frontend:
-  - Serveur nginx
-  - framework Vue 3
+- framework Vue 3
 - backend: framework Django, gunicorn pour le wsgi
 
 Outils externes potentiellement payants
