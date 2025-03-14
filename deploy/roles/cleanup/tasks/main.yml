@@ -18,6 +18,7 @@
   supervisorctl:
     name: "{{ project_slug }}-backend"
     state: stopped
+  ignore_errors: yes
 
 - name: Remove supervisor process
   supervisorctl:
