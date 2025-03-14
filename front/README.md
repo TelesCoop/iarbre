@@ -36,16 +36,6 @@ yarn build
 
 ### Exécuter des tests unitaires avec [Vitest](https://vitest.dev/)
 
-```sh
-yarn test:unit
-```
-
-### Exécuter des tests end to end avec [Cypress](https://www.cypress.io/)
-
-```sh
-yarn test:e2e:dev
-```
-
 Cela exécute les tests end to end avec le serveur de développement Vite.
 C'est beaucoup plus rapide que la version de production.
 
