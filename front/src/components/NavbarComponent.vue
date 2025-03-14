@@ -1,24 +1,20 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { FULL_BASE_API_URL } from "@/utils/constants"
+import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
+import type { Feedback } from "@/types"
 
 const isVisible = ref(false)
 
-const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
-  try {
-    const response = await fetch(`${FULL_BASE_API_URL}/feedback/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ feedback: data.feedback, email: data.email })
-    })
-    if (!response.ok) {
-      throw new Error("Erreur lors de l'envoi du feedback")
-    }
-    isVisible.value = false
-  } catch (error) {
-    console.error("Erreur lors de l'envoi du feedback:", error)
+const sendFeedbackToAPI = async (data: Feedback) => {
+  const { error } = await useApiPost<Feedback>("feedback", data)
+  if (error != null) {
+    console.log("l12 error")
+    return false
   }
+  console.log("l15")
+  isVisible.value = false
+  return true
 }
 </script>
 
@@ -33,7 +29,7 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
       <ul class="nav-list">
         <li>
           <button class="button" data-cy="open-feedback-button" @click.prevent="isVisible = true">
-            ✉️ Nous envoyer votre retour
+            ✉️ Nous envoyer votre retour {{ isVisible }}
           </button>
         </li>
         <li>

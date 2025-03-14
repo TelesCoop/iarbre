@@ -86,6 +86,7 @@ if IS_LOCAL_DEV:
         "POST",
         "PUT",
     ]
+    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
     INSTALLED_APPS.append("corsheaders")
     MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
 
@@ -227,7 +228,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PARSER_CLASSES": (
         "djangorestframework_camel_case.parser.CamelCaseFormParser",
-        "djangorestframework_camel_case.parse   r.CamelCaseMultiPartParser",
+        "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
 }
