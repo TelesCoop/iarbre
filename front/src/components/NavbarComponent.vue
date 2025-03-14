@@ -4,16 +4,26 @@ import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import type { Feedback } from "@/types"
 
-const isVisible = ref(false)
+const feedbackIsVisible = ref(false)
+const feedbackMessage = ref("")
 
 const sendFeedbackToAPI = async (data: Feedback) => {
+  if (!data.feedback) {
+    feedbackMessage.value = "Veuillez remplir un avis."
+    return
+  }
+
   const { error } = await useApiPost<Feedback>("feedback", data)
   if (error != null) {
-    console.log("l12 error")
+    feedbackMessage.value =
+      "Erreur lors de l'envoi de votre feedback, merci de réessayer plus tard."
     return false
   }
-  console.log("l15")
-  isVisible.value = false
+  feedbackIsVisible.value = false
+  feedbackMessage.value = "Merci pour votre retour !"
+  setTimeout(() => {
+    feedbackIsVisible.value = false
+  }, 1500)
   return true
 }
 </script>
@@ -28,8 +38,12 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     <nav class="header-nav">
       <ul class="nav-list">
         <li>
-          <button class="button" data-cy="open-feedback-button" @click.prevent="isVisible = true">
-            ✉️ Nous envoyer votre retour {{ isVisible }}
+          <button
+            class="button"
+            data-cy="open-feedback-button"
+            @click.prevent="feedbackIsVisible = true"
+          >
+            ✉️ Nous envoyer votre retour {{ feedbackIsVisible }}
           </button>
         </li>
         <li>
@@ -38,5 +52,10 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       </ul>
     </nav>
   </div>
-  <FeedbackPopin v-if="isVisible" @submit-feedback="sendFeedbackToAPI" @close="isVisible = false" />
+  <feedback-popin
+    v-if="feedbackIsVisible"
+    :message="feedbackMessage"
+    @submit-feedback="sendFeedbackToAPI"
+    @close="feedbackIsVisible = false"
+  />
 </template>
