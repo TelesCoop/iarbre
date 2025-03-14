@@ -7,4 +7,5 @@ urlpatterns = [
         "tiles/<str:geolevel>/<str:datatype>/<int:zoom>/<int:x>/<int:y>.mvt",
         views.tile_view,
     ),
+    path("feedback/", views.receive_feedback),
 ]

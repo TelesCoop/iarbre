@@ -197,3 +197,14 @@ def before_save_lcz(sender, instance, **kwargs):
     """Transform the geometry to the map geometry."""
     if instance.map_geometry is None:
         instance.map_geometry = instance.geometry.transform(3857, clone=True)
+
+
+class Feedback(models.Model):
+    """Store feedbacks from carte.iarbre.fr"""
+
+    email = models.EmailField(blank=True, null=True)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.email or 'Anonymous'}"
