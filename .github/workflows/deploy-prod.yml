@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }} # Fetch depth 2 for PRs, full history for pushes
       - name: Set environment
         id: set_env
         run: |
@@ -27,7 +29,61 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           fi
+      - name: Check for changes
+        id: check_changes
+        run: |
+          # Get changed files based on event type
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Processing pull request event"
+            CHANGED_FILES=$(git diff --name-only -r HEAD^1 HEAD || echo "")
+          else
+            echo "Processing push event"
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} || echo "")
+          fi
+
+          # Output the list of changed files for debugging
+          echo "Changed files:"
+          for file in $CHANGED_FILES; do
+            echo "  $file was changed"
+          done
+
+          # Initialize variables with default values
+          BACKEND_CHANGED="false"
+          FRONTEND_CHANGED="false"
+
+          # If no files were changed, assume all directories have changed to be safe
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files detected, assuming all directories have changed"
+            BACKEND_CHANGED="true"
+            FRONTEND_CHANGED="true"
+          else
+            # Check if any file in the back/ directory has changed
+            for file in $CHANGED_FILES; do
+              if [[ $file == back/* ]]; then
+                echo "Backend changes detected"
+                BACKEND_CHANGED="true"
+                break
+              fi
+            done
+
+            # Check if any file in the front/ directory has changed
+            for file in $CHANGED_FILES; do
+              if [[ $file == front/* ]]; then
+                echo "Frontend changes detected"
+                FRONTEND_CHANGED="true"
+                break
+              fi
+            done
+          fi
+
+          # Set the output variables
+          echo "Backend changed: $BACKEND_CHANGED"
+          echo "Frontend changed: $FRONTEND_CHANGED"
+          echo "backend_changed=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
+          echo "frontend_changed=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
+
       - name: Deploy backend
+        if: steps.check_changes.outputs.backend_changed == 'true'
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: backend.yml
@@ -37,6 +93,7 @@ jobs:
             -l ${{ env.ENVIRONMENT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy frontend
+        if: steps.check_changes.outputs.frontend_changed == 'true'
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: frontend.yml
