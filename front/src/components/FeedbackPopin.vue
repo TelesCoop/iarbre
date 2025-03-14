@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineEmits } from "vue"
+import { ref } from "vue"
 
 const props = defineProps({
   message: {
@@ -21,7 +21,15 @@ const emit = defineEmits(["submit-feedback", "close"])
     </button>
     <h3 class="popin-heading">Votre avis compte !</h3>
     <p class="popin-text">Partagez-nous vos impressions pour nous aider à améliorer le site :</p>
-    <form class="popin-form" @submit="emit('submit-feedback')">
+    <form
+      class="popin-form"
+      @submit="
+        (evt) => {
+          emit('submit-feedback', { feedback, email })
+          evt.preventDefault()
+        }
+      "
+    >
       <input v-model="email" type="email" placeholder="Votre email" class="feedback-input" />
       <textarea v-model="feedback" placeholder="Votre message" class="feedback-textarea"></textarea>
       <button class="feedback-submit-button" type="submit" data-cy="submit-feedback-button">

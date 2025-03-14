@@ -13,16 +13,16 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     return
   }
 
-  const { error } = await useApiPost<Feedback>("feedback", data)
+  const { error } = await useApiPost<Feedback>("feedback/", data)
   if (error != null) {
     feedbackMessage.value =
       "Erreur lors de l'envoi de votre feedback, merci de réessayer plus tard."
     return false
   }
-  feedbackIsVisible.value = false
   feedbackMessage.value = "Merci pour votre retour !"
   setTimeout(() => {
     feedbackIsVisible.value = false
+    feedbackMessage.value = ""
   }, 1500)
   return true
 }
@@ -43,7 +43,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
             data-cy="open-feedback-button"
             @click.prevent="feedbackIsVisible = true"
           >
-            ✉️ Nous envoyer votre retour {{ feedbackIsVisible }}
+            ✉️ Nous envoyer votre retour
           </button>
         </li>
         <li>
