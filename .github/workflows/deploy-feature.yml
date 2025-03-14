@@ -11,8 +11,22 @@ on:
       - main
 
 jobs:
+  check-open-pr:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-22.04
+    outputs:
+      has_open_pr: ${{ steps.check_pr.outputs.has_open_pr }}
+    steps:
+      - id: check_pr
+        uses: juliangruber/find-pull-request-action@v1
+        with:
+          branch: ${{ github.ref_name }}
+      - id: set_output
+        run: echo "has_open_pr=${{ steps.check_pr.outputs.number != '' }}" >> $GITHUB_OUTPUT
+
   deploy-feature:
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: check-open-pr
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && needs.check-open-pr.outputs.has_open_pr == 'true')
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

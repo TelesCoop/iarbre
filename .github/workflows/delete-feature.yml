@@ -2,15 +2,13 @@ name: Clean up feature environment
 
 on:
   pull_request:
-    branches-ignore:
-      - dev
-      - main
     types:
       - closed
 
 jobs:
   cleanup-feature:
     runs-on: ubuntu-22.04
+    if: github.event.pull_request.head.ref != 'dev' && github.event.pull_request.head.ref != 'main'
     steps:
       - uses: actions/checkout@v4
       - name: Extract branch name
