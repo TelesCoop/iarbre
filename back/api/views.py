@@ -9,7 +9,7 @@ from api.map import load_tiles
 from typing import Any, Dict
 
 from django.http import JsonResponse
-from iarbre_data.models import Feedback
+from api.models import Feedback
 
 
 @require_GET
