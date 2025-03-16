@@ -141,6 +141,7 @@ class MVTGenerator:
                     tile_x=tile.x,
                     tile_y=tile.y,
                 )
+                print(tile.x, tile.y)
                 mvt_tile.save_mvt(mvt_data, filename)
 
     @staticmethod

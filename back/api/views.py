@@ -13,7 +13,7 @@ from api.models import Feedback
 
 
 @require_GET
-@cache_page(60 * 60 * 24)
+# @cache_page(60 * 60 * 24)
 def tile_view(
     request,
     geolevel: str,
