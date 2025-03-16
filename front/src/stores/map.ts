@@ -20,6 +20,10 @@ export const useMapStore = defineStore("map", () => {
     return `${geolevel}-${datatype}-layer`
   }
 
+  const getMapInstance = (mapId: string): Map => {
+    return mapInstancesByIds.value[mapId]
+  }
+
   const extractFeatureIndice = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
     if (!features) return undefined
     const f = features.filter((feature: any) => feature.layer.id === getLayerId(datatype, geolevel))
@@ -126,7 +130,7 @@ export const useMapStore = defineStore("map", () => {
   const initMap = (mapId: string) => {
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
-      style: "map/map-style.json",
+      style: "/map/map-style.json",
       // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
       // zoom to a level that shows the whole city
@@ -135,20 +139,22 @@ export const useMapStore = defineStore("map", () => {
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
-      mapInstance.on("moveend", () => {
-        console.log(mapInstance.getCenter())
-        console.log(mapInstance.getZoom())
-      })
+      // mapInstance.on("moveend", () => {
+      //   console.log(mapInstance.getCenter())
+      //   console.log(mapInstance.getZoom())
+      // })
       initTiles(mapInstance, mapId)
       setupControls(mapInstance)
     })
   }
+
   return {
     mapInstancesByIds,
     initMap,
     popupData,
     selectedDataType,
     currentGeoLevel,
-    changeDataType
+    changeDataType,
+    getMapInstance
   }
 })
