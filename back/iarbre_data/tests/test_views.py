@@ -7,7 +7,7 @@ from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
 from api.utils.mvt_generator import MVTGenerator
-from api.views import tile_view
+from api.views.tile_views import retrieve_tiles
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Intersection
 
@@ -201,7 +201,7 @@ class MVTGeneratorTestCase(TestCase):
         request.method = "GET"
         request.META["SERVER_NAME"] = "localhost"
         request.META["SERVER_PORT"] = "8000"
-        response = tile_view(
+        response = retrieve_tiles(
             request=request,
             geolevel="fake_geolevel",
             datatype="fake_datatype",
