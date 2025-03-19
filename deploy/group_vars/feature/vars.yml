@@ -24,8 +24,8 @@ project_dir: "{{ project_base_dir }}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
 branch_slug: "{{ branch | replace('/','-') }}"
-frontend_branch: "{{ branch_slug }}"
-backend_branch: "{{ branch_slug }}"
+frontend_branch: "{{ branch }}"
+backend_branch: "{{ branch }}"
 
 environment_name: "feature-{{ branch_slug }}"
 
