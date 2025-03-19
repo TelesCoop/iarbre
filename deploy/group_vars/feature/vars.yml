@@ -7,7 +7,7 @@ frontend_application_port: "3{{ unique_number }}" # deterministic port based on 
 environment_suffix: "-feature-{{ branch_slug }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "feature-{{ branch_slug }}-carte.iarbre.fr"
+main_hostname: "feature-{{ branch_slug[:20] }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
