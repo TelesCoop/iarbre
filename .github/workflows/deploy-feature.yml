@@ -19,7 +19,7 @@ jobs:
         if: github.event_name == 'push'
         uses: juliangruber/find-pull-request-action@v1
         with:
-          branch: ${{ github.ref_name | replace("/","-") }}
+          branch: ${{ github.ref_name }}
       - id: set_output
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
