@@ -1,6 +1,6 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
-import { Map, Popup, NavigationControl } from "maplibre-gl"
+import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType } from "@/utils/enum"
 import type { ScorePopupData } from "@/types"
@@ -11,6 +11,21 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+  const attributionControl = ref(
+    new AttributionControl({
+      compact: true,
+      customAttribution:
+        '<a href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>'
+    })
+  )
+  const navControl = ref(
+    new NavigationControl({
+      visualizePitch: false,
+      visualizeRoll: false,
+      showZoom: true,
+      showCompass: false
+    })
+  )
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
     return `${geolevel}-${datatype}-source`
@@ -86,15 +101,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupControls = (map: Map) => {
-    map.addControl(
-      new NavigationControl({
-        visualizePitch: false,
-        visualizeRoll: false,
-        showZoom: true,
-        showCompass: false
-      }),
-      "bottom-right"
-    )
+    map.addControl(navControl.value, "bottom-right")
   }
 
   const changeDataType = (datatype: DataType) => {
@@ -107,14 +114,32 @@ export const useMapStore = defineStore("map", () => {
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
-
       // remove existing layers and sources
       mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
       mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+      mapInstance.removeControl(attributionControl.value)
+      mapInstance.removeControl(navControl.value)
 
       // Add the new layer
       setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
       setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value, mapId)
+
+      // Update the attribution control
+      const newAttribution =
+        selectedDataType.value === DataType.LOCAL_CLIMATE_ZONES
+          ? new AttributionControl({
+              compact: true,
+              customAttribution:
+                '<a href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA</a>'
+            })
+          : new AttributionControl({
+              compact: true,
+              customAttribution:
+                '<a href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>'
+            })
+      attributionControl.value = newAttribution
+      mapInstance.addControl(attributionControl.value, "bottom-right")
+      setupControls(mapInstance)
     })
   }
 
@@ -130,7 +155,8 @@ export const useMapStore = defineStore("map", () => {
       // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
       // zoom to a level that shows the whole city
-      zoom: 14
+      zoom: 14,
+      attributionControl: false
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
@@ -139,8 +165,10 @@ export const useMapStore = defineStore("map", () => {
         console.log(mapInstance.getCenter())
         console.log(mapInstance.getZoom())
       })
-      initTiles(mapInstance, mapId)
+
+      mapInstance.addControl(attributionControl.value, "bottom-right")
       setupControls(mapInstance)
+      initTiles(mapInstance, mapId)
     })
   }
   return {
