@@ -1,6 +1,6 @@
 # Journal de changements
 
-## 1.0.0 (2025-03-12) - Première version
+## 0.0.1 (2025-03-12) - Première version
 
 ### Commit correspondant:
 
