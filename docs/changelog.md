@@ -17,11 +17,11 @@ Le changement entre les calques se fait à l'aide
 
 ### Feat: Site vitrine
 
-Le [site](iarbre.fr) de présentation du projet est en ligne.
+Le [site](https://iarbre.fr) de présentation du projet est en ligne.
 
 ### Docs: MkDocs
 
-La doc est en [ligne](docs.iarbre.fr) et est générée à l'aide `MkDocs`.
+La doc est en [ligne](https://docs.iarbre.fr) et est générée à l'aide `MkDocs`.
 
 ### Feat: Popup au clique du score de plantabilité
 
