@@ -73,7 +73,7 @@ function getZoneColor(zone: string): string {
     B: "#00aa00",
     C: "#648525",
     D: "#b9db79",
-    E: "#fbf7ae",
+    E: "#000000",
     F: "#FBF7AE",
     G: "#6A6AFF"
   }
