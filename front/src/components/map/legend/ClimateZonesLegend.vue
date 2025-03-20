@@ -9,8 +9,11 @@
       </div>
     </div>
 
-    <button class="text-lg" @click="isExpanded = !isExpanded">
-      {{ isExpanded ? "▲" : "▼" }}
+    <button class="text-lg flex flex-col items-center" @click="isExpanded = !isExpanded">
+      <span class="text-sm">
+        {{ isExpanded ? "Masquer les détails" : "Afficher les détails" }}
+      </span>
+      <span class="text-lg"> {{ isExpanded ? "▲" : "▼" }} </span>
     </button>
 
     <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-1">
