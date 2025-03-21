@@ -1,9 +1,10 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
-import { FULL_BASE_API_URL, MIN_ZOOM } from "@/utils/constants"
+import { MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType } from "@/utils/enum"
 import type { ScorePopupData } from "@/types"
+import { FULL_BASE_API_URL } from "@/api"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})

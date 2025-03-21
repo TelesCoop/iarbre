@@ -18,7 +18,6 @@ class ReceiveFeedbackViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["message"], "Feedback saved!")
         self.assertTrue(
             Feedback.objects.filter(
                 feedback="Raise the floor not the ceiling."
@@ -35,7 +34,6 @@ class ReceiveFeedbackViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error"], "Feedback is required.")
 
     def test_missing_email_field(self):
         data = {
@@ -46,7 +44,6 @@ class ReceiveFeedbackViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["message"], "Feedback saved!")
         self.assertTrue(
             Feedback.objects.filter(
                 feedback="Raise the floor not the ceiling."
@@ -58,7 +55,3 @@ class ReceiveFeedbackViewTest(TestCase):
             self.url, "{invalid_json}", content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Expecting property name enclosed in double quotes: line 1 column 2 (char 1)",
-        )

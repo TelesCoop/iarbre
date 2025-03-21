@@ -1,13 +1,13 @@
 # Generate a deterministic 3-digit number from the branch name
-branch_hash: "{{ branch | hash('md5') }}"
+branch_hash: "{{ branch_slug | hash('md5') }}"
 unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
 
 backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
 frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
-environment_suffix: "-feature-{{ branch }}"
+environment_suffix: "-feature-{{ branch_slug }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 
-main_hostname: "feature-{{ branch }}-carte.iarbre.fr"
+main_hostname: "feature-{{ branch_slug[:20] }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
@@ -23,10 +23,11 @@ https_enabled: true
 project_dir: "{{ project_base_dir }}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
+branch_slug: "{{ branch | replace('/','-') }}"
 frontend_branch: "{{ branch }}"
 backend_branch: "{{ branch }}"
 
-environment_name: "feature-{{ branch }}"
+environment_name: "feature-{{ branch_slug }}"
 
 database_user: "{{ base_project_slug }}_preprod"
 database_name: "{{ base_project_slug }}_preprod"

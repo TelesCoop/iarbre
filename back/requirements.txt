@@ -4,6 +4,8 @@ Django==5.1.7
 django-cors-headers==4.4.0
 django-extensions==3.2.3
 django-storages[s3]==1.14.4
+djangorestframework==3.15.2
+djangorestframework_camel_case==1.4.2
 factory-boy==3.3.1
 geopandas==1.0.1
 getconf==1.11.0
