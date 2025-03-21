@@ -38,7 +38,10 @@ onMounted(() => {
   const mapInstance = mapStore.getMapInstance(props.mapId)
   if (route.name === "mapWithCoords") {
     const p = route.params
-    mapInstance.jumpTo({ center: [p.lng, p.lat], zoom: p.zoom })
+    mapInstance.jumpTo({
+      center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
+      zoom: parseFloat(p.zoom as string)
+    })
   }
 
   mapInstance.on("moveend", () => updateRouteCoords(mapInstance))
