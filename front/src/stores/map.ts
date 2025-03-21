@@ -35,7 +35,7 @@ export const useMapStore = defineStore("map", () => {
     return `${geolevel}-${datatype}-layer`
   }
 
-  const extractFeatureIndice = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
+  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
     if (!features) return undefined
     const f = features.filter((feature: any) => feature.layer.id === getLayerId(datatype, geolevel))
     if (f.length === 0) return undefined
@@ -63,9 +63,8 @@ export const useMapStore = defineStore("map", () => {
 
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
-
       popupData.value = {
-        score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
+        index: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
       }
