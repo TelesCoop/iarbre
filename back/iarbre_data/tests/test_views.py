@@ -7,9 +7,9 @@ from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
 from api.utils.mvt_generator import MVTGenerator
-from api.views.tile_views import retrieve_tiles
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.db.models.functions import Intersection
+from django.urls import reverse
 
 from iarbre_data.settings import BASE_DIR
 
@@ -201,14 +201,13 @@ class MVTGeneratorTestCase(TestCase):
         request.method = "GET"
         request.META["SERVER_NAME"] = "localhost"
         request.META["SERVER_PORT"] = "8000"
-        response = retrieve_tiles(
-            request=request,
-            geolevel="fake_geolevel",
-            datatype="fake_datatype",
-            zoom=tile_zoom,
-            x=tile_x,
-            y=tile_y,
+
+        url = reverse(
+            "retrieve-tile",
+            args=["fake_geolevel", "fake_datatype", tile_zoom, tile_x, tile_y],
         )
+        response = self.client.get(url)
+
         decoded_tile = mapbox_vector_tile.decode(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(
