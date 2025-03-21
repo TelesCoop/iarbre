@@ -1,7 +1,8 @@
 import time
 import json
 from django.http import HttpResponse
-from django.views.decorators.cache import cache_page
+
+# from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
@@ -9,11 +10,11 @@ from api.map import load_tiles
 from typing import Any, Dict
 
 from django.http import JsonResponse
-from iarbre_data.models import Feedback
+from api.models import Feedback
 
 
 @require_GET
-@cache_page(60 * 60 * 24)
+# @cache_page(60 * 60 * 24)
 def tile_view(
     request,
     geolevel: str,
