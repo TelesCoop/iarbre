@@ -1,5 +1,5 @@
 <template>
-  <div data-cy="lcz-score-popup" class="p-2.5 max-w-xs flex flex-wrap gap-2">
+  <div data-cy="lcz-score-popup">
     <div class="flex items-center gap-2 w-full">
       <div class="w-4 h-4 rounded" :style="{ backgroundColor: getZoneColor(index) }"></div>
       <span class="text-[0.9rem]">LCZ {{ index }}</span>
