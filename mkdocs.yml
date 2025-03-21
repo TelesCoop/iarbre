@@ -45,6 +45,7 @@ plugins:
 
 nav:
   - Documentation IA.rbre: index.md
+  - Changelog: changelog.md
   - Backend:
       - Instructions: back/backend.md
       - Sources de données: back/data.md
