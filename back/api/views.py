@@ -1,7 +1,8 @@
 import time
 import json
 from django.http import HttpResponse
-from django.views.decorators.cache import cache_page
+
+# from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
