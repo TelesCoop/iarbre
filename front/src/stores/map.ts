@@ -9,6 +9,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<ScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
+  const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const attributionControl = ref(
@@ -26,6 +27,13 @@ export const useMapStore = defineStore("map", () => {
       showCompass: false
     })
   )
+
+  const removeActivePopup = () => {
+    if (activePopup.value) {
+      activePopup.value.remove()
+      activePopup.value = null
+    }
+  }
 
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
     return `${geolevel}-${datatype}-source`
@@ -68,8 +76,9 @@ export const useMapStore = defineStore("map", () => {
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
       }
+      removeActivePopup()
 
-      new Popup()
+      activePopup.value = new Popup()
         .setLngLat(e.lngLat)
         .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
@@ -104,6 +113,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
+    removeActivePopup()
+
     const previousDataType = selectedDataType.value
     selectedDataType.value = datatype
 
