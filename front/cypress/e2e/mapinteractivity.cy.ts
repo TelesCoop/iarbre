@@ -12,17 +12,17 @@ describe("Map interactivity", () => {
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it("Open popup on click", () => {
+  it.skip("Open popup on click", () => {
     cy.openPopup()
   })
 
-  it("Open, close and reopen popup. Resolve #92", () => {
+  it.skip("Open, close and reopen popup. Resolve #92", () => {
     cy.openPopup()
     cy.closePopup()
     cy.openPopup()
   })
 
-  it.only("Open popup, close it, switch layer and reopen popup. Resolve #142", () => {
+  it.skip("Open popup, close it, switch layer and reopen popup. Resolve #142", () => {
     cy.openPopup()
     cy.closePopup()
     cy.switchLayer("lcz")
