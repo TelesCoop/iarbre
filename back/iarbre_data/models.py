@@ -98,6 +98,7 @@ class Tile(models.Model):
 @receiver(pre_save, sender=Tile)
 def before_save_tile(sender, instance, **kwargs):
     """Transform the geometry to the map geometry."""
+    print("hello")
     if instance.map_geometry is None:
         instance.map_geometry = instance.geometry.transform(3857, clone=True)
 

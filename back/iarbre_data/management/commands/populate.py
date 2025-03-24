@@ -13,22 +13,26 @@ import numpy as np
 import logging
 import random
 
+from iarbre_data.management.commands.c01_insert_cities_and_iris import (
+    Command as InsertIrisCommand,
+)
+
 
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
 
     def _create_city_or_ignore(self):
         if City.objects.filter(code="38250").exists():
-            # self.stdout.write("City already exists")
-            # return
-            City.objects.get(code="38250").delete()
+            self.stdout.write("City already exists")
+            return
+            # City.objects.get(code="38250").delete()
 
         self.stdout.write("Create Villard-de-Lans")
         # coords = { "lat": 45.06397, "lng": 5.55076}
-        x = 617907.7767156712
-        y = 5631597.881683022
+        x = 900733.8693696633
+        y = 6443766.2240856625
 
-        radius = 1000  # in m
+        radius = 5000  # in m
         city_geometry = Polygon(
             [
                 (x - radius, y - radius),
@@ -47,6 +51,10 @@ class Command(BaseCommand):
             geometry=city_geometry.wkt,
         )
         city.save()
+
+        city = City.objects.filter(code=38250)
+        InsertIrisCommand._insert_iris(city)
+
         self.stdout.write(self.style.SUCCESS("> City 'Villard-de-Lans' created"))
 
         # I am sure we can improve the readability of select_city
@@ -62,8 +70,10 @@ class Command(BaseCommand):
             side_length=50,
             height_ratio=np.sin(np.pi / 3),
         )
+        self.stdout.write(self.style.SUCCESS("> Tiles created"))
 
         self._generate_plantability_tiles()
+        self.stdout.write(self.style.SUCCESS("> Plantability tiles created"))
 
     def _generate_plantability_tiles(self):
         random.seed(38250)
@@ -71,17 +81,16 @@ class Command(BaseCommand):
         tiles = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
+        print("> 75 ok")
         Tile.objects.bulk_update(
             (
                 Tile(id=tile.id, plantability_normalized_indice=random.random())
                 for tile in tiles
             ),
             ["plantability_normalized_indice"],
+            batch_size=1000,
         )
-        tiles = Tile.objects.filter(
-            geometry__intersects=GEOSGeometry(city.geometry.wkt)
-        )
-        print(list(t.plantability_normalized_indice for t in tiles))
+        print("updated")
 
     def _generate_mvt(self):
         city = City.objects.get(code="38250")

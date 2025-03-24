@@ -65,7 +65,7 @@ class MVTGenerator:
                     truncate=True,
                 )
             )
-
+            print(tiles)
             with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
                 future_to_tiles = {
                     executor.submit(self._generate_tile_for_zoom, tile, zoom): tile
@@ -118,31 +118,33 @@ class MVTGenerator:
             map_geometry__intersects=tile_polygon
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if clipped_queryset.exists():
-            # Prepare MVT features
-            features = self._prepare_mvt_features(clipped_queryset, tile_polygon)
-            if features:
-                # Encode MVT
-                mvt_data = mapbox_vector_tile.encode(
-                    [
-                        {
-                            "name": f"{self.geolevel}--{self.datatype}",
-                            "features": features,
-                        }
-                    ]
-                )
-                filename = (
-                    f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
-                )
-                mvt_tile = MVTTile(
-                    geolevel=self.geolevel,
-                    datatype=self.datatype,
-                    zoom_level=zoom,
-                    tile_x=tile.x,
-                    tile_y=tile.y,
-                )
-                print(tile.x, tile.y)
-                mvt_tile.save_mvt(mvt_data, filename)
+        if not clipped_queryset.exists():
+            return
+
+        # Prepare MVT features
+        features = self._prepare_mvt_features(clipped_queryset, tile_polygon)
+        if not features:
+            return
+
+        # Encode MVT
+        mvt_data = mapbox_vector_tile.encode(
+            [
+                {
+                    "name": f"{self.geolevel}--{self.datatype}",
+                    "features": features,
+                }
+            ]
+        )
+        filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
+        mvt_tile = MVTTile(
+            geolevel=self.geolevel,
+            datatype=self.datatype,
+            zoom_level=zoom,
+            tile_x=tile.x,
+            tile_y=tile.y,
+        )
+        mvt_tile.save_mvt(mvt_data, filename)
+        print(tile.x, tile.y, mvt_tile.mvt_file.url)
 
     @staticmethod
     def _prepare_mvt_features(
