@@ -199,6 +199,45 @@ def before_save_lcz(sender, instance, **kwargs):
         instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
+class Vulnerability(models.Model):
+    """Elementary element on the map with the value of the vulnerability description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    vulnerability_index = models.CharField(max_length=4, null=True)
+    vulnerabilty_description = models.CharField(max_length=50, null=True)
+
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.VULNERABILITY.value
+
+    @property
+    def color(self):
+        """Color defined by Maurine Di Tomasso (see PDF presentation"""
+        color_map = {
+            None: "purple",
+            "basse": "#006837",
+            "moyenne": "#E0E0E0",
+            "haute": "#df092d",
+        }
+        return color_map.get(self.vulnerability_index, "#6A6AFF")
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice": self.vulnerability_index,
+            "description": self.vulnerabilty_description,
+            "color": self.color,
+        }
+
+
+@receiver(pre_save, sender=Vulnerability)
+def before_save_vulnerability(sender, instance, **kwargs):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(3857, clone=True)
+
+
 class Feedback(models.Model):
     """Store feedbacks from carte.iarbre.fr"""
 
