@@ -3,7 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import MapLegend from "@/components/map/legend/MapLegend.vue"
-import MapScorePopup from "@/components/map/MapScorePopup.vue"
+import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
 import MapSidebar from "@/components/map/sidebar/MapSidebar.vue"
 import { Map } from "maplibre-gl"
 
@@ -56,7 +56,7 @@ onMounted(() => {
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup
       v-if="mapStore.popupData"
-      :score="mapStore.popupData.score"
+      :index="mapStore.popupData.index"
       :lat="mapStore.popupData.lat"
       :lng="mapStore.popupData.lng"
     />

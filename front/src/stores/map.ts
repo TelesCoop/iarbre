@@ -9,6 +9,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<ScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
+  const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const attributionControl = ref(
@@ -27,6 +28,13 @@ export const useMapStore = defineStore("map", () => {
     })
   )
 
+  const removeActivePopup = () => {
+    if (activePopup.value) {
+      activePopup.value.remove()
+      activePopup.value = null
+    }
+  }
+
   const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
     return `${geolevel}-${datatype}-source`
   }
@@ -39,7 +47,7 @@ export const useMapStore = defineStore("map", () => {
     return mapInstancesByIds.value[mapId]
   }
 
-  const extractFeatureIndice = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
+  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
     if (!features) return undefined
     const f = features.filter((feature: any) => feature.layer.id === getLayerId(datatype, geolevel))
     if (f.length === 0) return undefined
@@ -65,14 +73,14 @@ export const useMapStore = defineStore("map", () => {
 
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
-
       popupData.value = {
-        score: Math.round(10 * extractFeatureIndice(e.features!, datatype, geolevel)),
+        index: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
       }
+      removeActivePopup()
 
-      new Popup()
+      activePopup.value = new Popup()
         .setLngLat(e.lngLat)
         .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
@@ -107,6 +115,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
+    removeActivePopup()
+
     const previousDataType = selectedDataType.value
     selectedDataType.value = datatype
 
