@@ -4,9 +4,7 @@ describe("Component:PlantabilityScorePopup", () => {
   it("renders correctly", () => {
     cy.mount(PlantabilityScorePopup, {
       props: {
-        index: 0.821,
-        lat: 45.75773479280862,
-        lng: 4.8537684279176645
+        index: 0.821
       }
     })
 

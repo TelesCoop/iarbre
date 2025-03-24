@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PlantabilityScorePopup from "@/components/map/popup/PlantabilityScorePopup.vue"
-import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopup.vue"
+import PlantabilityScorePopup from "@/components/map/popup/PlantabilityScorePopupContent.vue"
+import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopupContent.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 

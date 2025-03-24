@@ -1,4 +1,4 @@
-export const zoneDescriptions: Record<string, string> = {
+const zoneDescriptions: Record<string, string> = {
   "1": "Ensemble compact de tours",
   "2": "Ensemble compact d'immeubles",
   "3": "Ensemble compact de maisons",
@@ -17,7 +17,7 @@ export const zoneDescriptions: Record<string, string> = {
   G: "Surface en eau"
 }
 
-export const zoneColors: Record<string, string> = {
+const zoneColors: Record<string, string> = {
   "1": "#8C0000",
   "2": "#D10000",
   "3": "#FF0000",
@@ -37,9 +37,17 @@ export const zoneColors: Record<string, string> = {
 }
 
 export function getZoneDesc(zone: string): string {
-  return zoneDescriptions[zone] || "Description non disponible"
+  if (!(zone in zoneDescriptions)) {
+    console.error(`Zone inconnue : "${zone}"`)
+    return "Description non disponible"
+  }
+  return zoneDescriptions[zone]
 }
 
 export function getZoneColor(zone: string): string {
-  return zoneColors[zone] || "#CCCCCC"
+  if (!(zone in zoneColors)) {
+    console.error(`Zone inconnue : "${zone}"`)
+    return "#CCCCCC"
+  }
+  return zoneColors[zone]
 }
