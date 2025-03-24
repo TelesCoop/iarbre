@@ -28,6 +28,11 @@ def pixel2deg(xtile, ytile, zoom, xpixel, ypixel, extent=4096):
 
 
 class MVTGeneratorTestCase(TestCase):
+    def tearDown(self):
+        # Clean media files before the reset_db does not trigger media delete signal
+        MVTTile.objects.all().delete()
+        return super().tearDown()
+
     def test_queryset_bounds(self):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
@@ -151,11 +156,6 @@ class MVTGeneratorTestCase(TestCase):
                 )
         except Exception:
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
-        # Clean all tiles
-        MVTTile.objects.all().delete()
-
-        # Clean media files before the reset_db does not trigger media delete signal
-        MVTTile.objects.all().delete()
 
     def test_view(self):
         tile1 = Polygon.from_bbox(
@@ -216,5 +216,3 @@ class MVTGeneratorTestCase(TestCase):
         received_tile = decoded_tile["fake_geolevel--fake_datatype"]["features"][0]
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
-        # Clean media files before the reset_db does not trigger media delete signal
-        MVTTile.objects.all().delete()

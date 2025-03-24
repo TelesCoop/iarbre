@@ -7,7 +7,7 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path(
-        "tile/",
+        "tiles/<geolevel>/<datatype>/<zoom>/<x>/<y>.mvt",
         TileView.as_view(),
         name="retrieve-tile",
     ),
