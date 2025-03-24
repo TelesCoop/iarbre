@@ -43,11 +43,9 @@ export const useMapStore = defineStore("map", () => {
     return f[0].properties.indice
   }
 
-  const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel, mapId: string) => {
+  const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
-
-    popupDomElement.value = document.getElementById(`popup-${mapId}`)
 
     map.addLayer({
       id: layerId,
@@ -123,7 +121,7 @@ export const useMapStore = defineStore("map", () => {
 
       // Add the new layer
       setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-      setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value, mapId)
+      setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
 
       // Update the attribution control
       const newAttribution =
@@ -146,7 +144,8 @@ export const useMapStore = defineStore("map", () => {
 
   const initTiles = (mapInstance: Map, mapId: string) => {
     setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-    setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value, mapId)
+    setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
+    popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
   const initMap = (mapId: string) => {
