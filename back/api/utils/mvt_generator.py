@@ -137,7 +137,12 @@ class MVTGenerator:
                     continue
                 clipped_geom = lcz.clipped_geometry
                 transformed_geometries["features"].append(
-                    {"geometry": clipped_geom.wkt, "properties": properties}
+                    {
+                        "geometry": clipped_geom.simplify(
+                            pixel, preserve_topology=True
+                        ).wkt,
+                        "properties": properties,
+                    }
                 )
 
             mvt_data = mapbox_vector_tile.encode(
