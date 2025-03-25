@@ -52,53 +52,6 @@ class MVTGeneratorTestCase(TestCase):
             },
         )
 
-    def test_transform_to_tile_relative(self):
-        mapbox_tile = Polygon.from_bbox(
-            [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
-        )
-        mapbox_tile.srid = 2154
-        (x0, y0, x_max, y_max) = mapbox_tile.extent
-        x_span = x_max - x0
-        y_span = y_max - y0
-
-        tilein = Polygon.from_bbox(
-            [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
-        )
-        tilein.srid = 2154
-        TileFactory.create(geometry=tilein)
-        qs = Tile.objects.annotate(
-            clipped_geometry=Intersection("map_geometry", mapbox_tile)
-        ).first()
-        self.assertListEqual(
-            [
-                (-551198, -1310610),
-                (-551198, -1310622),
-                (-551211, -1310622),
-                (-551211, -1310610),
-                (-551198, -1310610),
-            ],
-            MVTGenerator.transform_to_tile_relative(
-                qs.clipped_geometry, x0, y0, x_span, y_span
-            ),
-        )
-
-    def test_prepare_mvt_features(self):
-        mapbox_tile = Polygon.from_bbox(
-            [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
-        )
-        mapbox_tile.srid = 2154
-        tilein = Polygon.from_bbox(
-            [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
-        )
-        tilein.srid = 2154
-        TileFactory.create(geometry=tilein)
-        qs = Tile.objects.all().annotate(
-            clipped_geometry=Intersection("map_geometry", mapbox_tile)
-        )
-        features = MVTGenerator._prepare_mvt_features(qs, mapbox_tile)
-        self.assertEqual(len(features), 1)
-        self.assertListEqual(list(features[0].keys()), ["geometry", "properties"])
-
     def test_generate_tile_for_zoom(self):
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]

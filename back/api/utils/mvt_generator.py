@@ -1,6 +1,7 @@
 """
 MVT Generator as django-media.
 """
+
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
@@ -124,22 +125,26 @@ class MVTGenerator:
         if clipped_queryset.exists():
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
-                "features": []
+                "features": [],
             }
 
-            for lcz in tqdm(clipped_queryset, desc=f"Processing LCZ features ({tile.x}, {tile.y}, {zoom})"):
+            for lcz in tqdm(
+                clipped_queryset,
+                desc=f"Processing LCZ features ({tile.x}, {tile.y}, {zoom})",
+            ):
                 properties = lcz.get_layer_properties()
+                if properties["indice"] == "F":
+                    continue
                 clipped_geom = lcz.clipped_geometry
-                transformed_geometries["features"].append({
-                    "geometry": clipped_geom.simplify(pixel, preserve_topology=True).wkt,
-                    "properties": properties
-                })
+                transformed_geometries["features"].append(
+                    {"geometry": clipped_geom.wkt, "properties": properties}
+                )
 
-            mvt_data = mapbox_vector_tile.encode(transformed_geometries, quantize_bounds=(west, south, east, north))
-
-            filename = (
-                f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
+            mvt_data = mapbox_vector_tile.encode(
+                transformed_geometries, quantize_bounds=(west, south, east, north)
             )
+
+            filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
             mvt_tile = MVTTile(
                 geolevel=self.geolevel,
                 datatype=self.datatype,
