@@ -69,6 +69,9 @@ def load_data():
     gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
     # Check and explode MultiPolygon geometries
+    # Clean geom nested polygons
+    gdf = gdf.explode(ignore_index=True)
+    gdf = gdf.dissolve(by="lcz").reset_index()
     gdf = gdf.explode(ignore_index=True)
     gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
     gdf["lcz"] = gdf["lcz"].astype(str)
@@ -106,6 +109,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Load LCZ from CEREMA and then save all LCZ data in the DB."""
+        print("Clean model")
+        print(Lcz.objects.all().delete())
+        print("Download data if needed")
         download_data()
+        print("Load data and pre-process them")
         lcz_data = load_data()
+        print("Save geometries")
         save_geometries(lcz_data)
