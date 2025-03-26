@@ -5,7 +5,7 @@ import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 
 const mapStore = useMapStore()
-const props = defineProps({
+defineProps({
   index: {
     required: true,
     type: String

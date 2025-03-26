@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ScoreLabel from "../ScoreLabel.vue"
+import { ScoreLabelSize } from "@/utils/enum"
 </script>
 
 <template>
@@ -15,7 +16,7 @@ import ScoreLabel from "../ScoreLabel.vue"
         class="flex items-center justify-center"
         :score="index"
         :label="`${index}`"
-        size="small"
+        :size="ScoreLabelSize.SMALL"
       />
     </div>
     <span class="text-[0.9rem] leading-3">Plantable</span>
