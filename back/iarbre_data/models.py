@@ -204,8 +204,14 @@ class Vulnerability(models.Model):
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    vulnerability_index = models.CharField(max_length=4, null=True)
-    vulnerabilty_description = models.CharField(max_length=50, null=True)
+    vulnerability_index_day = models.FloatField(null=True)
+    vulnerability_index_night = models.FloatField(null=True)
+    expo_index_day = models.FloatField(null=True)
+    expo_index_night = models.FloatField(null=True)
+    capaf_index_day = models.FloatField(null=True)
+    capaf_index_night = models.FloatField(null=True)
+    sensibilty_index_day = models.FloatField(null=True)
+    sensibilty_index_night = models.FloatField(null=True)
 
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.VULNERABILITY.value
