@@ -218,21 +218,28 @@ class Vulnerability(models.Model):
 
     @property
     def color(self):
-        """Color defined by Maurine Di Tomasso (see PDF presentation"""
-        color_map = {
-            None: "purple",
-            "basse": "#006837",
-            "moyenne": "#E0E0E0",
-            "haute": "#df092d",
-        }
-        return color_map.get(self.vulnerability_index, "#6A6AFF")
+        """Return the color of the ICU based on the vulnerability_index_day."""
+        if self.vulnerability_index_day is None:
+            return "purple"
+        elif self.vulnerability_index_day < 3:
+            return "#006837"
+        elif self.vulnerability_index_day < 6:
+            return "#E0E0E0"
+        else:
+            return "red"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
-            "indice": self.vulnerability_index,
-            "description": self.vulnerabilty_description,
+            "indice_day": self.vulnerability_index_day,
+            "indice_night": self.vulnerability_index_night,
+            "expo_index_day": self.expo_index_day,
+            "expo_index_night": self.expo_index_night,
+            "capaf_index_day": self.capaf_index_day,
+            "capaf_index_night": self.capaf_index_night,
+            "sensibilty_index_day": self.sensibilty_index_day,
+            "sensibilty_index_night": self.sensibilty_index_night,
             "color": self.color,
         }
 
