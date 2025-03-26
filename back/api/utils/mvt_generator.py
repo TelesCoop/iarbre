@@ -92,7 +92,7 @@ class MVTGenerator:
                         geolevel=self.geolevel,
                         datatype=self.datatype,
                     ).count()
-                    >= 1
+                    == 0
                 }
                 for future in as_completed(future_to_tiles):
                     future.result()

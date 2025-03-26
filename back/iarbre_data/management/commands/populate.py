@@ -9,7 +9,6 @@ from iarbre_data.management.commands.c02_init_grid import (
     HexTileShape,
 )
 from django.contrib.gis.geos import GEOSGeometry
-from iarbre_data.settings import TARGET_MAP_PROJ
 
 import numpy as np
 import logging
@@ -75,20 +74,18 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("> Tiles created"))
 
-        self._generate_plantability_tiles()
-        city = City.objects.get(code="38250")
-        tiles = Tile.objects.filter(
-            geometry__intersects=GEOSGeometry(city.geometry.wkt)
-        )
-
-        self._generate_mvt(tiles, Tile.datatype, Tile.geolevel)
-
     def _generate_plantability_tiles(self):
         random.seed(38250)
         city = City.objects.get(code="38250")
+
         tiles = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
+        # If all are generated, skip. Otherwise, regenerate all tiles
+        # as we want a reproductive plantability score
+        if tiles.filter(plantability_indice__isnull=True).count() == 0:
+            return
+
         Tile.objects.bulk_update(
             (
                 Tile(id=tile.id, plantability_normalized_indice=random.random())
@@ -160,14 +157,23 @@ class Command(BaseCommand):
                 lcz.save()
 
     def generate_lcz_mvt_tiles(self):
-        print("hello")
         city = City.objects.get(code="38250")
         lczs = Lcz.objects.filter(geometry__intersects=GEOSGeometry(city.geometry.wkt))
 
         self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel)
 
+    def generate_plantability_mvt_tiles(self):
+        city = City.objects.get(code="38250")
+        tiles = Tile.objects.filter(
+            geometry__intersects=GEOSGeometry(city.geometry.wkt)
+        )
+        self._generate_mvt(tiles, Tile.datatype, Tile.geolevel)
+
     def handle(self, *args, **options):
         self._create_city_and_iris()
+
+        self._generate_plantability_tiles()
+        self.generate_plantability_mvt_tiles()
 
         self._generate_lcz_zones()
         self.generate_lcz_mvt_tiles()
