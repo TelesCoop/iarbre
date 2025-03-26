@@ -34,7 +34,7 @@ class Command(BaseCommand):
         # coords = { "lat": 45.06397, "lng": 5.55076}
 
         (x, y) = self.city_center
-        radius = 5000  # in m
+        radius = 2500  # in m
         city_geometry = Polygon(
             [
                 (x - radius, y - radius),
@@ -113,7 +113,7 @@ class Command(BaseCommand):
         lczs.delete()
 
         (x0, y0) = self.city_center
-        city_length = 5000
+        city_length = 2500
         x0 -= city_length / 2
         y0 -= city_length / 2
 
