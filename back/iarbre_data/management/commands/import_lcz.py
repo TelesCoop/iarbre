@@ -67,11 +67,12 @@ def load_data():
 
     shp_path = os.path.join(lcz_path, shp_file)
     gdf = geopandas.read_file(shp_path)
-    gdf = gdf[["lcz", "geometry"]]
+    gdf = gdf.loc[:, ["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
     # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
     all_cities_boundary = select_city(None).unary_union
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
+    gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
 
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
