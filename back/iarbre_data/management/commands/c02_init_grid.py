@@ -7,7 +7,6 @@ import itertools
 from tqdm import tqdm
 from typing import Optional, Type
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from time import time
 from pyproj import Transformer
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
@@ -16,7 +15,6 @@ from django.core.management import BaseCommand
 from django.db import transaction
 from shapely.geometry import box
 
-TRANSFORMATION = Transformer.from_crs("EPSG:2154", "EPSG:3857")
 
 from iarbre_data.management.commands.utils import select_city
 from iarbre_data.models import Iris, Tile, City
@@ -26,6 +24,8 @@ from iarbre_data.management.commands.utils import (
     load_geodataframe_from_db,
     remove_duplicates,
 )
+
+TRANSFORMATION = Transformer.from_crs("EPSG:2154", "EPSG:3857")
 
 SIN_60 = np.sin(
     np.pi / 3
@@ -145,35 +145,20 @@ def create_tiles_for_city(
 
     tiles = []
     tile_count = 0
-    time_creating_polygon = 0
-    time_get_iris = 0
-    time_creating_tile = 0
-    time_creating_box = 0
-    nb_occs = 0
-    total_time = 0
-    time_for_transform = 0
-    time_for_transform_bis = 0
 
     previous_iris = None
 
     for x, (i, y) in tqdm(
         tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, side_length)
     ):
-        global_start = time()
-        start = time()
         tile = box(x, y * height_ratio, x - grid_size, y * height_ratio + grid_size)
-        time_creating_box += time() - start
 
         is_intersecting = city_geom.intersects(tile)
         if not is_intersecting:
-            total_time += time() - global_start
             continue
 
         tile_count += 1
-        start = time()
         polygon = tile_shape_cls.create_tile_polygon(x, y, grid_size, side_length, i)
-        time_creating_polygon += time() - start
-        start = time()
         if previous_iris is not None and previous_iris.geometry.intersects(polygon):
             iris_id = previous_iris.id
         else:
@@ -183,27 +168,22 @@ def create_tiles_for_city(
                 iris_id = previous_iris.id
             else:
                 iris_id = None
-        time_get_iris += time() - start
 
         # start = time()
         # transformed = polygon.transform(TARGET_MAP_PROJ, clone=True)
         # time_for_transform += time() - start
-        start = time()
-        ttransformed = []
+        transformed = []
         for c in polygon.coords[0]:
-            ttransformed.append(TRANSFORMATION.transform(*c))
-        time_for_transform_bis += time() - start
+            transformed.append(TRANSFORMATION.transform(*c))
 
-        start = time()
         tile = Tile(
             geometry=polygon,
-            map_geometry=Polygon(ttransformed, srid=TARGET_MAP_PROJ),
+            map_geometry=Polygon(transformed, srid=TARGET_MAP_PROJ),
             plantability_indice=0,
             plantability_normalized_indice=0.5,
             city_id=city_id,
             iris_id=iris_id,
         )
-        time_creating_tile += time() - start
         tiles.append(tile)
 
         # Avoid OOM errors
@@ -214,44 +194,7 @@ def create_tiles_for_city(
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()
             gc.collect()
-        nb_occs += 1
-        total_time += time() - global_start
 
-        if nb_occs % 100 == 0:
-            print("TIME")
-            print(" > Total time ", total_time, f"( { 1000*total_time / nb_occs }ms)")
-            print(
-                " > Creating box ",
-                time_creating_box,
-                f"( { 1000*time_creating_box / nb_occs }ms)",
-            )
-            print(
-                " > Creating polygon ",
-                time_creating_polygon,
-                f"( { 1000*time_creating_polygon / nb_occs }ms)",
-            )
-            print(
-                " > Get iris polygon ",
-                time_get_iris,
-                f"( { 1000*time_get_iris / nb_occs }ms)",
-            )
-            print(
-                " > Creating tile ",
-                time_creating_tile,
-                f"( { 1000*time_creating_tile / nb_occs }ms)",
-            )
-            print(
-                " > Transforming polygon ",
-                time_for_transform,
-                f"( { 1000*time_for_transform / nb_occs }ms)",
-            )
-            print(
-                " > Transforming polygon bis",
-                time_for_transform_bis,
-                f"( { 1000*time_for_transform_bis / nb_occs }ms)",
-            )
-
-    print("176")
     if tiles:  # Save last batch
         Tile.objects.bulk_create(tiles, batch_size=batch_size)
     City.objects.filter(id=city.id).update(tiles_generated=True)
