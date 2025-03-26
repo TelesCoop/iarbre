@@ -2,7 +2,7 @@
 
 describe("Map interactivity", () => {
   beforeEach(() => {
-    cy.visit("/")
+    cy.visit("/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
   })
@@ -12,17 +12,17 @@ describe("Map interactivity", () => {
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it.skip("Open popup on click", () => {
+  it("Open popup on click", () => {
     cy.openPopup()
   })
 
-  it.skip("Open, close and reopen popup. Resolve #92", () => {
+  it("Open, close and reopen popup. Resolve #92", () => {
     cy.openPopup()
     cy.closePopup()
     cy.openPopup()
   })
 
-  it.skip("Open popup, close it, switch layer and reopen popup. Resolve #142", () => {
+  it("Open popup, close it, switch layer and reopen popup. Resolve #142", () => {
     cy.openPopup()
     cy.closePopup()
     cy.switchLayer("lcz")
