@@ -136,14 +136,12 @@ class MVTGenerator:
                 desc=f"Processing LCZ features ({tile.x}, {tile.y}, {zoom})",
             ):
                 properties = lcz.get_layer_properties()
-                if properties["indice"] == "F":
-                    continue
                 clipped_geom = lcz.clipped_geometry
                 transformed_geometries["features"].append(
                     {
-                        "geometry": clipped_geom.simplify(
-                            pixel, preserve_topology=True
-                        ).wkt,
+                        "geometry": clipped_geom.make_valid()
+                        .simplify(pixel, preserve_topology=True)
+                        .wkt,
                         "properties": properties,
                     }
                 )

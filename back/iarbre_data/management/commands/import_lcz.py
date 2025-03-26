@@ -67,7 +67,7 @@ def load_data():
 
     shp_path = os.path.join(lcz_path, shp_file)
     gdf = geopandas.read_file(shp_path)
-    gdf = gdf.loc[:, ["lcz", "geometry"]]
+    gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
     # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
     all_cities_boundary = select_city(None).unary_union
@@ -77,11 +77,7 @@ def load_data():
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     # Check and explode MultiPolygon geometries
-    # Clean geom nested polygons
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
-    gdf_filtered = gdf_filtered.dissolve(by="lcz").reset_index()
-    gdf_filtered = gdf_filtered.explode(ignore_index=True)
-
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
