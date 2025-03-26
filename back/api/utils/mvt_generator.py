@@ -113,9 +113,12 @@ class MVTGenerator:
         tile_bounds = mercantile.xy_bounds(tile)
         west, south, east, north = tile_bounds
         pixel = self.pixel_length(zoom)
+        buffer = 4 * pixel
 
         # Create GeoDjango polygon for tile extent
-        tile_polygon = Polygon.from_bbox((west, south, east, north))
+        tile_polygon = Polygon.from_bbox(
+            (west - buffer, south - buffer, east + buffer, north + buffer)
+        )
         tile_polygon.srid = TARGET_MAP_PROJ
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
