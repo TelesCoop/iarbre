@@ -47,12 +47,27 @@ class MVTGenerator:
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_thread = number_of_thread
 
-    def generate_tiles(self):
+    def count_mvt_tiles(self):
+        count = 0
+        bounds = self._get_queryset_bounds()
+        for zoom in range(self.min_zoom, self.max_zoom + 1):
+            count += len(
+                mercantile.tiles(
+                    bounds["west"],
+                    bounds["south"],
+                    bounds["east"],
+                    bounds["north"],
+                    zoom,
+                    truncate=True,
+                )
+            )
+        return count
+
+    def generate_tiles(self, ignore_existing=False):
         """Generate MVT tiles for the entire geometry queryset."""
         # Get total bounds of the queryset
         bounds = self._get_queryset_bounds()
         for zoom in range(self.min_zoom, self.max_zoom + 1):
-            print(f"Generating tiles for zoom level {zoom}")
             # Get all tiles that cover the entire geometry bounds
             # bbox needs to be in 4326
             tiles = list(
@@ -65,11 +80,19 @@ class MVTGenerator:
                     truncate=True,
                 )
             )
-            print(tiles)
             with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
                 future_to_tiles = {
                     executor.submit(self._generate_tile_for_zoom, tile, zoom): tile
                     for tile in tiles
+                    if not ignore_existing
+                    or MVTTile.objects.filter(
+                        tile_x=tile.x,
+                        tile_y=tile.y,
+                        zoom_level=zoom,
+                        geolevel=self.geolevel,
+                        datatype=self.datatype,
+                    ).count()
+                    >= 1
                 }
                 for future in as_completed(future_to_tiles):
                     future.result()
@@ -144,7 +167,6 @@ class MVTGenerator:
             tile_y=tile.y,
         )
         mvt_tile.save_mvt(mvt_data, filename)
-        print(tile.x, tile.y, mvt_tile.mvt_file.url)
 
     @staticmethod
     def _prepare_mvt_features(
