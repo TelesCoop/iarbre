@@ -29,7 +29,7 @@ def pixel2deg(xtile, ytile, zoom, xpixel, ypixel, extent=4096):
 
 class MVTGeneratorTestCase(TestCase):
     def tearDown(self):
-        # Clean media files before the reset_db does not trigger media delete signal
+        # reset_db does not trigger media delete signal
         MVTTile.objects.all().delete()
         return super().tearDown()
 
