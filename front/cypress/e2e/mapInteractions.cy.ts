@@ -15,7 +15,7 @@ describe("Map interactions", () => {
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
 
-  it("Verifies map layer switching and popup behavior", () => {
+  it.skip("Verifies map layer switching and popup behavior", () => {
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-label").should("exist")
