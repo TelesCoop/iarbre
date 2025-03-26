@@ -21,6 +21,7 @@
   --color-light-green: #92a48d;
   --color-brown: #32312d;
   --color-white: #ffffff;
+  --color-red: red;
 
   /* Scale colors */
   --color-scale-0: #dfdfdf;
@@ -54,27 +55,63 @@ body {
 }
 
 /* Custom utility classes */
-.max-full-height {
-  max-height: var(--content-height);
-}
 
-.font-accent {
-  font-family: var(--font-accent);
-}
-
-/* Button styles */
 .button {
-  @apply font-[var(--font-accent)] no-underline border-none py-2.5 px-5 rounded-[50px];
+  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base bg-[var(--color-off-white)] border-none outline-none transition duration-300 hover:text-[var(--color-light-green)] cursor-pointer;
 }
 
-.button.primary {
-  @apply text-[var(--color-white)] bg-[var(--color-dark-green)];
+.header {
+  @apply fixed top-0 w-full bg-[var(--color-off-white)] h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border;
 }
 
-.button.small {
-  @apply py-[7px] px-[10px] text-[0.8rem];
+.header-logo {
+  @apply pl-4 md:pl-0;
 }
 
-.button.text {
-  @apply bg-transparent rounded-none p-[3px];
+.header-nav {
+  @apply pr-4 md:pr-20;
+}
+
+.nav-list {
+  @apply flex gap-4 list-none;
+}
+
+.link {
+  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base no-underline transition duration-300 hover:text-[var(--color-light-green)];
+}
+
+.popin {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border border-gray-300 rounded-lg bg-[var(--color-white)] text-[var(--color-dark-green)] text-left flex flex-col text-sm box-border;
+}
+
+.popin-close-button {
+  @apply absolute top-2 right-2 text-lg text-[var(--color-dark-green)] cursor-pointer transition-colors duration-300 hover:text-[var(--color-red)];
+}
+
+.popin-heading {
+  @apply font-medium;
+}
+
+.popin-text {
+  @apply mb-2;
+}
+
+.popin-form {
+  @apply w-full;
+}
+
+.feedback-input {
+  @apply w-full mt-2 p-2 rounded-full border border-gray-300 outline-none;
+}
+
+.feedback-textarea {
+  @apply w-full h-36 mt-2 p-2 rounded-3xl border border-gray-300 resize-none outline-none;
+}
+
+.feedback-submit-button {
+  @apply w-full mt-2 bg-[var(--color-light-green)] text-[var(--color-white)] font-bold cursor-pointer transition-colors duration-300 hover:text-[var(--color-white)] text-center rounded-full py-2;
+}
+
+.message {
+  @apply mt-2 text-[var(--color-dark-green)];
 }

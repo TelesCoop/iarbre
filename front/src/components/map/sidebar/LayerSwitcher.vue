@@ -15,7 +15,7 @@ const selectedDataType = computed({
 </script>
 
 <template>
-  <div>
+  <div data-cy="layer-switcher">
     <label for="layer-select" class="font-accent">Choix du calque</label>
     <select
       id="layer-select"

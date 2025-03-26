@@ -1,0 +1,58 @@
+name: Run deploy feature
+
+on:
+  pull_request:
+    branches-ignore:
+      - main
+
+jobs:
+  check-open-pr:
+    runs-on: ubuntu-22.04
+    outputs:
+      has_open_pr: ${{ steps.set_output.outputs.has_open_pr }}
+    steps:
+      - id: check_pr
+        if: github.event_name == 'push'
+        uses: juliangruber/find-pull-request-action@v1
+        with:
+          branch: ${{ github.ref_name }}
+      - id: set_output
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "has_open_pr=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_open_pr=${{ steps.check_pr.outputs.number != '' }}" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-feature:
+    needs: check-open-pr
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && needs.check-open-pr.outputs.has_open_pr == 'true')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          fi
+      - name: Deploy backend
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: backend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l feature -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy frontend
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: frontend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l feature -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}

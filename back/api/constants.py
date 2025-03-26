@@ -1,5 +1,7 @@
 from django.db.models import TextChoices
 
+DEFAULT_ZOOM_LEVELS = (12, 16)
+
 
 class GeoLevel(TextChoices):
     TILE = "tile", "Tile"

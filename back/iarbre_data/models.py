@@ -5,8 +5,8 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
-from api.constants import GeoLevel, DataType
 from iarbre_data.settings import TARGET_MAP_PROJ
+from api.constants import GeoLevel, DataType
 
 
 class TileAggregateBase(models.Model):
@@ -125,13 +125,16 @@ class MVTTile(models.Model):
     zoom_level = models.IntegerField()
     tile_x = models.IntegerField()
     tile_y = models.IntegerField()
-    geolevel = models.CharField(max_length=50)
-    datatype = models.CharField(max_length=50, default="plantability")
+    geolevel = models.CharField(max_length=50, choices=GeoLevel.choices)
+    datatype = models.CharField(
+        max_length=50, choices=DataType.choices, default=DataType.TILE.value
+    )
     mvt_file = models.FileField(upload_to="mvt_files/")
 
     def save_mvt(self, mvt_data, filename):
         """Save the MVT data into the FileField."""
         content = ContentFile(mvt_data)
+        print("fiename is ", filename)
         self.mvt_file.save(filename, content, save=False)
         self.save()
 
@@ -175,7 +178,7 @@ class Lcz(models.Model):
             "B": "#00aa00",
             "C": "#648525",
             "D": "#b9db79",
-            "E": "#fbf7ae",
+            "E": "#000000",
             "F": "#FBF7AE",
         }
         return color_map.get(self.lcz_index, "#6A6AFF")
@@ -195,3 +198,14 @@ def before_save_lcz(sender, instance, **kwargs):
     """Transform the geometry to the map geometry."""
     if instance.map_geometry is None:
         instance.map_geometry = instance.geometry.transform(3857, clone=True)
+
+
+class Feedback(models.Model):
+    """Store feedbacks from carte.iarbre.fr"""
+
+    email = models.EmailField(blank=True, null=True)
+    feedback = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.email or 'Anonymous'}"

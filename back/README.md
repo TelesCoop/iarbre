@@ -31,7 +31,7 @@ Consultez la documentation de [déploiement](https://docs.iarbre.fr/deploy/) pou
 
 ## Installation manuelle
 
-> **Note** : Ces instructions sont pour Ubuntu. Elles n'ont pas été testées sur Windows ou macOS.
+### Ubuntu
 
 Le backend nécessite [GDAL](https://gdal.org/en/stable/) et [PostGIS](https://postgis.net/).
 
@@ -42,6 +42,14 @@ Vous pouvez également essayer d'installer les packages requis via `apt`, bien q
 ```bash
 sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg2
 sudo apt install binutils libproj-dev gdal-bin  # Pour les requêtes géographiques
+```
+
+### macOS
+
+Pour macOS, vous pouvez utiliser [Homebrew](https://brew.sh/) pour installer les packages requis :
+
+```bash
+brew install postgresql postgis gdal
 ```
 
 _(Remplacez `x` par la version de PostgreSQL souhaitée.)_
@@ -91,7 +99,7 @@ git clone https://github.com/TelesCoop/iarbre-back.git
 pip install -r requirements.txt
 ```
 
-Créez un fichier `local_settings.ini` avec le contenu suivant :
+Créez un fichier `local_settings.ini`, à la racine du dossier `back`, avec le contenu suivant :
 
 ```
 [database]
@@ -109,11 +117,15 @@ pew workon <nom_projet>
 
 ## Génération de la base de données
 
+> **Rappel**
+> Avant de lancer les commandes suivantes, assurez-vous que les données nécessaires sont bien présentes dans le dossier `file_data`. Si vous n'avez pas ces données, veuillez envoyer un e-mail à
+> [contact@telescoop.fr](mailto:contact@telescoop.fr).
+
 Utilisation des données d'occupation des sols dans `file_data` et calcul de l'indice de plantabilité :
 
 ```bash
 python manage.py migrate
-python manage.py c01_insert_cities
+python manage.py c01_insert_cities_and_iris
 python manage.py c02_init_grid
 python manage.py c03_import_data
 python manage.py c04_compute_factors
