@@ -3,3 +3,8 @@ export interface ScorePopupData {
   lat: number
   index: string
 }
+
+export interface Feedback {
+  email: string
+  feedback: string
+}
