@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps({
+import { computed } from "vue"
+
+const props = defineProps({
   score: {
     required: true,
     type: Number
@@ -13,21 +15,33 @@ defineProps({
     type: String
   }
 })
+
+const scoreBg: Record<number, string> = {
+  0: "bg-scale-0",
+  1: "bg-scale-1",
+  2: "bg-scale-2",
+  3: "bg-scale-3",
+  4: "bg-scale-4",
+  5: "bg-scale-5",
+  6: "bg-scale-6",
+  7: "bg-scale-7",
+  8: "bg-scale-8",
+  9: "bg-scale-9",
+  10: "bg-scale-10"
+}
+
+const backgroundClass = computed(() => scoreBg[props.score])
+const sizeClass = computed(() => props.size)
 </script>
 
 <template>
-  <div
-    class="hexagon relative m-[5px] block text-center"
-    :class="{ [`scale-${score}`]: true, [size]: true }"
-  >
+  <div class="hexagon relative m-[5px] block text-center" :class="[backgroundClass, sizeClass]">
     <span>{{ label }}</span>
   </div>
 </template>
 
 <style scoped>
-/* Base hexagon styles */
 .hexagon {
-  font-family: var(--font-accent);
   position: relative;
 }
 
@@ -88,32 +102,5 @@ defineProps({
   border-left: calc(1.5 * 20px) solid transparent;
   border-right: calc(1.5 * 20px) solid transparent;
   border-top: calc(1.732 / 2 * 20px) solid transparent;
-}
-
-/* Scale colors - using postcss-for */
-@for $i from 0 to 7 {
-  .hexagon.scale-$(i) {
-    background-color: var(--color-scale-$(i));
-    color: var(--color-brown);
-  }
-  .hexagon.scale-$(i)::before {
-    border-bottom-color: var(--color-scale-$(i));
-  }
-  .hexagon.scale-$(i)::after {
-    border-top-color: var(--color-scale-$(i));
-  }
-}
-
-@for $i from 7 to 11 {
-  .hexagon.scale-$(i) {
-    background-color: var(--color-scale-$(i));
-    color: var(--color-white);
-  }
-  .hexagon.scale-$(i)::before {
-    border-bottom-color: var(--color-scale-$(i));
-  }
-  .hexagon.scale-$(i)::after {
-    border-top-color: var(--color-scale-$(i));
-  }
 }
 </style>

@@ -16,7 +16,7 @@ const selectedDataType = computed({
 
 <template>
   <div data-cy="layer-switcher">
-    <label for="layer-select" class="font-accent">Choix du calque</label>
+    <label for="layer-select" class="font-mono">Choix du calque</label>
     <select
       id="layer-select"
       v-model="selectedDataType"

@@ -59,3 +59,26 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     @close="feedbackIsVisible = false"
   />
 </template>
+
+<style scoped>
+@reference "../styles/main.css";
+.header {
+  @apply fixed top-0 w-full bg-off-white h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border;
+}
+
+.header-logo {
+  @apply pl-4 md:pl-0;
+}
+
+.header-nav {
+  @apply pr-4 md:pr-20;
+}
+
+.nav-list {
+  @apply flex gap-4 list-none;
+}
+
+.link {
+  @apply font-mono text-brown text-base no-underline transition duration-300 hover:text-light-green;
+}
+</style>

@@ -33,8 +33,6 @@ const props = defineProps({
         :index="index.toString()"
       />
     </div>
-    <div class="text-[var(--color-light-green)] text-right">
-      {{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E
-    </div>
+    <div class="text-light-green text-right">{{ lat.toFixed(2) }}° N, {{ lng.toFixed(2) }}° E</div>
   </div>
 </template>

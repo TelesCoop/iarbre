@@ -1,6 +1,3 @@
-/*@tailwind base;*/
-/*@tailwind components;*/
-/*@tailwind utilities;*/
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -14,16 +11,7 @@
   src: url("/fonts/Sligoil-Micro.otf") format("opentype");
 }
 
-:root {
-  /* Colors */
-  --color-off-white: #efefed;
-  --color-dark-green: #32412d;
-  --color-light-green: #92a48d;
-  --color-brown: #32312d;
-  --color-white: #ffffff;
-  --color-red: red;
-
-  /* Scale colors */
+@theme {
   --color-scale-0: #dfdfdf;
   --color-scale-1: #e7e7cf;
   --color-scale-2: #eff1bf;
@@ -36,10 +24,20 @@
   --color-scale-9: #3a9254;
   --color-scale-10: #026838;
 
-  /* Fonts */
-  --font-main: "Bricolage Grotesque";
-  --font-accent: "Sligoil";
+  --color-off-white: #efefed;
+  --color-dark-green: #32412d;
+  --color-light-green: #92a48d;
+  --color-brown: #32312d;
 
+  --font-sans: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "Sligoil", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --font-main: var(--font-sans);
+}
+
+:root {
   /* Dimensions */
   --header-height: 80px;
   --content-height: calc(100vh - var(--header-height) - 1px);
@@ -49,69 +47,6 @@
   @apply bg-white shadow-md rounded-[0.75rem] p-5;
 }
 
-/* Base styles */
-body {
-  @apply h-full m-0 font-[var(--font-main)];
-}
-
-/* Custom utility classes */
-
 .button {
-  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base bg-[var(--color-off-white)] border-none outline-none transition duration-300 hover:text-[var(--color-light-green)] cursor-pointer;
-}
-
-.header {
-  @apply fixed top-0 w-full bg-[var(--color-off-white)] h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border;
-}
-
-.header-logo {
-  @apply pl-4 md:pl-0;
-}
-
-.header-nav {
-  @apply pr-4 md:pr-20;
-}
-
-.nav-list {
-  @apply flex gap-4 list-none;
-}
-
-.link {
-  @apply font-[var(--font-accent)] text-[var(--color-brown)] text-base no-underline transition duration-300 hover:text-[var(--color-light-green)];
-}
-
-.popin {
-  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto p-5 border border-gray-300 rounded-lg bg-[var(--color-white)] text-[var(--color-dark-green)] text-left flex flex-col text-sm box-border;
-}
-
-.popin-close-button {
-  @apply absolute top-2 right-2 text-lg text-[var(--color-dark-green)] cursor-pointer transition-colors duration-300 hover:text-[var(--color-red)];
-}
-
-.popin-heading {
-  @apply font-medium;
-}
-
-.popin-text {
-  @apply mb-2;
-}
-
-.popin-form {
-  @apply w-full;
-}
-
-.feedback-input {
-  @apply w-full mt-2 p-2 rounded-full border border-gray-300 outline-none;
-}
-
-.feedback-textarea {
-  @apply w-full h-36 mt-2 p-2 rounded-3xl border border-gray-300 resize-none outline-none;
-}
-
-.feedback-submit-button {
-  @apply w-full mt-2 bg-[var(--color-light-green)] text-[var(--color-white)] font-bold cursor-pointer transition-colors duration-300 hover:text-[var(--color-white)] text-center rounded-full py-2;
-}
-
-.message {
-  @apply mt-2 text-[var(--color-dark-green)];
+  @apply font-mono text-brown text-base bg-off-white border-none outline-none transition duration-300 hover:text-light-green cursor-pointer;
 }
