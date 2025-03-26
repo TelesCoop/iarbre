@@ -7,10 +7,7 @@ const message = ref("")
 
 const sendFeedback = (event: Event) => {
   event.preventDefault()
-
   if (feedback.value) {
-    // Emit the feedback data to the parent component or handle it as needed
-    console.log("Feedback submitted:", { email: email.value, feedback: feedback.value })
     message.value = "Merci pour votre retour !"
     email.value = ""
     feedback.value = ""
