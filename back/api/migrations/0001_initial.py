@@ -24,7 +24,8 @@ class Migration(migrations.Migration):
                 ),
                 ("email", models.EmailField(blank=True, max_length=254, null=True)),
                 ("feedback", models.TextField()),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified",models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

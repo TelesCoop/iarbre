@@ -47,22 +47,6 @@ class MVTGenerator:
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_thread = number_of_thread
 
-    def count_mvt_tiles(self):
-        count = 0
-        bounds = self._get_queryset_bounds()
-        for zoom in range(self.min_zoom, self.max_zoom + 1):
-            count += len(
-                mercantile.tiles(
-                    bounds["west"],
-                    bounds["south"],
-                    bounds["east"],
-                    bounds["north"],
-                    zoom,
-                    truncate=True,
-                )
-            )
-        return count
-
     def generate_tiles(self, ignore_existing=False):
         """Generate MVT tiles for the entire geometry queryset."""
         # Get total bounds of the queryset

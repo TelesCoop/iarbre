@@ -169,9 +169,6 @@ def create_tiles_for_city(
             else:
                 iris_id = None
 
-        # start = time()
-        # transformed = polygon.transform(TARGET_MAP_PROJ, clone=True)
-        # time_for_transform += time() - start
         transformed = []
         for c in polygon.coords[0]:
             transformed.append(TRANSFORMATION.transform(*c))
@@ -189,7 +186,6 @@ def create_tiles_for_city(
         # Avoid OOM errors
         if tile_count % batch_size == 0:
             with transaction.atomic():
-                print("bulk create")
                 Tile.objects.bulk_create(tiles, batch_size=batch_size)
             logger.info(f"Got {len(tiles)} tiles")
             tiles.clear()

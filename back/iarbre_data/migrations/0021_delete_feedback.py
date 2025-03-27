@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("iarbre_data", "0019_merge_20250310_1025"),
+        ("iarbre_data", "0020_vulnerability_alter_mvttile_datatype"),
     ]
 
     operations = [

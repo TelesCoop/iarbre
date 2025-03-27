@@ -13,25 +13,27 @@ from django.contrib.gis.geos import GEOSGeometry
 import numpy as np
 import logging
 import random
-
+import itertools
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
+
+from api.constants import DEFAULT_ZOOM_LEVELS
 
 
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
 
+    # GPS coords  { "lat": 45.06397, "lng": 5.55076}
+    # Below in Lambert-93
     city_center = (900733.8693696633, 6443766.2240856625)
 
     def _create_city_and_iris(self):
         if City.objects.filter(code="38250").exists():
             self.stdout.write("City already exists")
             return
-            # City.objects.get(code="38250").delete()
 
         self.stdout.write("Create Villard-de-Lans")
-        # coords = { "lat": 45.06397, "lng": 5.55076}
 
         (x, y) = self.city_center
         radius = 2500  # in m
@@ -44,12 +46,10 @@ class Command(BaseCommand):
                 (x - radius, y - radius),
             ]
         )
-        # Ce n’est pas au bon endroit ^^
+
         city = City(
             name="Villard-de-Lans",
             code="38250",
-            tiles_generated=False,
-            tiles_computed=False,
             geometry=city_geometry.wkt,
         )
         city.save()
@@ -59,7 +59,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("> City 'Villard-de-Lans' created"))
 
-        # I am sure we can improve the readability of select_city
         selected_city = select_city("38250")
 
         # Create Hex tiles
@@ -82,7 +81,7 @@ class Command(BaseCommand):
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
         # If all are generated, skip. Otherwise, regenerate all tiles
-        # as we want a reproductive plantability score
+        # as we want a reproducible plantability score
         if tiles.filter(plantability_normalized_indice=0.5).count() == 0:
             self.stdout.write("Plantability indices already computed")
             return
@@ -100,7 +99,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=(12, 16),
+            zoom_levels=DEFAULT_ZOOM_LEVELS,
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=4,
@@ -139,24 +138,23 @@ class Command(BaseCommand):
         ]
 
         lcz_length = city_length / 4
-        for i in range(4):
-            for j in range(4):
-                x = x0 + i * lcz_length
-                y = y0 + j * lcz_length
-                geometry = Polygon(
-                    (
-                        (x, y),
-                        (x + lcz_length, y),
-                        (x + lcz_length, y + lcz_length),
-                        (x, y + lcz_length),
-                        (x, y),
-                    )
+        for i, j in itertools.product(range(4), repeat=2):
+            x = x0 + i * lcz_length
+            y = y0 + j * lcz_length
+            geometry = Polygon(
+                (
+                    (x, y),
+                    (x + lcz_length, y),
+                    (x + lcz_length, y + lcz_length),
+                    (x, y + lcz_length),
+                    (x, y),
                 )
-                lcz = Lcz(
-                    geometry=geometry.wkt,
-                    lcz_index=indices[i + j * 4],
-                )
-                lcz.save()
+            )
+            lcz = Lcz(
+                geometry=geometry.wkt,
+                lcz_index=indices[i + j * 4],
+            )
+            lcz.save()
         self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
     def generate_lcz_mvt_tiles(self):
