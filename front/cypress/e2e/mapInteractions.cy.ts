@@ -6,7 +6,6 @@ describe("Map interactions", () => {
   beforeEach(() => {
     cy.visit("/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
-    cy.wait(10000) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
   it("Map loading seems to be okay", () => {
@@ -16,17 +15,23 @@ describe("Map interactions", () => {
   })
 
   it("Verifies map layer switching and popup behavior", () => {
-    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
-    cy.mapOpenPopup()
-    cy.getBySel("plantability-score-label").should("exist")
+    // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.wait(2000).then(() => {
+      cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
+      cy.mapOpenPopup()
+      cy.getBySel("plantability-score-label").should("exist")
 
-    cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
-    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
-    cy.mapHasNoPopup()
-    cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
-    cy.mapOpenPopup()
-    cy.getBySel("lcz-score-popup-title").should("exist")
-    cy.mapClosePopup()
-    cy.mapOpenPopup() // cf. issue #92
+      cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
+      cy.getBySel("map-legend-title").should(
+        "contain",
+        DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES]
+      )
+      cy.mapHasNoPopup()
+      cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
+      cy.mapOpenPopup()
+      cy.getBySel("lcz-score-popup-title").should("exist")
+      cy.mapClosePopup()
+      cy.mapOpenPopup() // cf. issue #92
+    })
   })
 })
