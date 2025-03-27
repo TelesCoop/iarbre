@@ -179,6 +179,7 @@ jobs:
         working-directory: ./back
       - name: Check new files
         run: ls media/mvt_files
+        working-directory: ./back
       - name: Check new files
         run: ls media/mvt_files/tile/plantability/12/2110/
         working-directory: ./back
