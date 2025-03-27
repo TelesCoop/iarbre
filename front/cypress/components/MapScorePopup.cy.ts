@@ -22,5 +22,6 @@ describe("MapscorePopup Component", () => {
     })
     cy.contains("LCZ")
     cy.contains("Sol imperméable naturel ou artificiel")
+    cy.contains("12.34° N, 56.78° E")
   })
 })
