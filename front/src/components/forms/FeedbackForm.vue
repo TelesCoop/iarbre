@@ -1,22 +1,29 @@
 <script setup lang="ts">
 import { ref } from "vue"
 
-const email = ref("")
-const feedback = ref("")
-const message = ref("")
+const props = defineProps({
+  email: {
+    type: String,
+    default: ""
+  },
+  feedback: {
+    type: String,
+    default: ""
+  },
+  message: {
+    type: String,
+    default: ""
+  }
+})
+
+const email = ref(props.email)
+const feedback = ref(props.feedback)
+const emit = defineEmits(["submit-feedback"])
 
 const sendFeedback = (event: Event) => {
   event.preventDefault()
-  if (feedback.value) {
-    message.value = "Merci pour votre retour !"
-    email.value = ""
-    feedback.value = ""
-    setTimeout(() => {
-      message.value = ""
-    }, 1500)
-  } else {
-    message.value = "Veuillez remplir un avis."
-  }
+  console.log("sendFeedback", email.value, feedback.value)
+  emit("submit-feedback", { email: email.value, feedback: feedback.value })
 }
 </script>
 
