@@ -83,7 +83,8 @@ class Command(BaseCommand):
         )
         # If all are generated, skip. Otherwise, regenerate all tiles
         # as we want a reproductive plantability score
-        if tiles.filter(plantability_indice__isnull=True).count() == 0:
+        if tiles.filter(plantability_normalized_indice=0.5).count() == 0:
+            self.stdout.write("Plantability indices already computed")
             return
 
         Tile.objects.bulk_update(
@@ -94,6 +95,7 @@ class Command(BaseCommand):
             ["plantability_normalized_indice"],
             batch_size=1000,
         )
+        self.stdout.write(self.style.SUCCESS("> Plantability Score computed"))
 
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
@@ -155,12 +157,14 @@ class Command(BaseCommand):
                     lcz_index=indices[i + j * 4],
                 )
                 lcz.save()
+        self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
     def generate_lcz_mvt_tiles(self):
         city = City.objects.get(code="38250")
         lczs = Lcz.objects.filter(geometry__intersects=GEOSGeometry(city.geometry.wkt))
 
         self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel)
+        self.stdout.write(self.style.SUCCESS("> MVT Tiles for LCZ computed"))
 
     def generate_plantability_mvt_tiles(self):
         city = City.objects.get(code="38250")
@@ -168,6 +172,7 @@ class Command(BaseCommand):
             geometry__intersects=GEOSGeometry(city.geometry.wkt)
         )
         self._generate_mvt(tiles, Tile.datatype, Tile.geolevel)
+        self.stdout.write(self.style.SUCCESS("> MVT Tiles for plantability computed"))
 
     def handle(self, *args, **options):
         self._create_city_and_iris()
