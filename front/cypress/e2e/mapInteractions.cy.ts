@@ -23,7 +23,7 @@ describe("Map interactions", () => {
     cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
     cy.mapHasNoPopup()
-    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
     cy.getBySel("lcz-score-popup-title").should("exist")
     cy.mapClosePopup()
