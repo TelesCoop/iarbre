@@ -1,6 +1,6 @@
 # Journal de changements
 
-## 🔖 0.3.0 (20225-XX-XX) - XXX
+## 🔖 0.3.0 (2025-XX-XX) - XXX
 
 ### ✨ feat: Possibilité d'ouvrir la carte à des coordonnées spécifiques
 
