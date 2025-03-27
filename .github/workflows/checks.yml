@@ -176,7 +176,7 @@ jobs:
         working-directory: ./back
       - name: Populate the database
         run: python manage.py populate
-        workin-directory: ./back
+        working-directory: ./back
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
