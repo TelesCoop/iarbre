@@ -4,9 +4,9 @@ import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 
 describe("Map interactions", () => {
   beforeEach(() => {
-    cy.visit("/")
+    cy.visit("/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
-    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
   it("Map loading seems to be okay", () => {

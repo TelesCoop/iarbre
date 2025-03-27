@@ -33,19 +33,20 @@ const mapStore = useMapStore()
 
 onMounted(() => {
   mapStore.initMap(props.mapId)
-  console.log("initMap", props.mapId)
 
-  const mapInstance = mapStore.getMapInstance(props.mapId)
-  if (route.name === "mapWithCoords") {
-    const p = route.params
-    mapInstance.jumpTo({
-      center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
-      zoom: parseFloat(p.zoom as string)
-    })
+  if (route) {
+    const mapInstance = mapStore.getMapInstance(props.mapId)
+    if (route.name === "mapWithCoords") {
+      const p = route.params
+      mapInstance.jumpTo({
+        center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
+        zoom: parseFloat(p.zoom as string)
+      })
+    }
+
+    mapInstance.on("moveend", () => updateRouteCoords(mapInstance))
+    updateRouteCoords(mapInstance)
   }
-
-  mapInstance.on("moveend", () => updateRouteCoords(mapInstance))
-  updateRouteCoords(mapInstance)
 })
 </script>
 
