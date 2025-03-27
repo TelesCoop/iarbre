@@ -23,7 +23,7 @@ const label = computed(() => {
       <score-label :score="score" :label="`${score}/10`" size="huge" />
     </div>
     <div class="flex-grow ml-1.25">
-      <h3 class="font-accent text-lg">{{ label }}</h3>
+      <h3 class="font-accent text-lg" data-cy="plantability-score-label">{{ label }}</h3>
     </div>
   </div>
 </template>

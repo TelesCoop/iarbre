@@ -9,7 +9,7 @@ const mapStore = useMapStore()
 
 <template>
   <div class="z-3 absolute top-4 right-4 flex flex-col items-center card">
-    <div class="font-accent text-base font-bold mb-2">
+    <div class="font-accent text-base font-bold mb-2" data-cy="map-legend-title">
       {{ DataTypeToLabel[mapStore.selectedDataType] }}
     </div>
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
