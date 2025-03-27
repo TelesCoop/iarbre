@@ -14,7 +14,7 @@ from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
 
 
-def download_data():
+def download_data() -> None:
     """
     Downloads the Local Climate Zone data from the specified URL and extracts it to the 'file_data/' directory.
 
@@ -45,7 +45,7 @@ def download_data():
         raise ValueError(f"Failed to download file from {url}")
 
 
-def load_data():
+def load_data() -> geopandas.GeoDataFrame:
     """Open the shapefile for LCZ.
 
     Returns:

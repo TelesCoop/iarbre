@@ -1,24 +1,8 @@
-"""
-Generate MVT tiles for geographic model.
+"""Generate MVT tiles for geographic model.
 
 This script provides a Django management command to generate MVT (Mapbox Vector Tiles)
 for specified geographic models. It supports multi-threading for improved performance
 and allows for the deletion of existing tiles before generating new ones.
-
-Usage:
-    python manage.py generate_mvt_tiles --number_of_thread=<num> --model=<model> [--keep]
-
-Arguments:
-    --number_of_thread: Number of threads to use for generating tiles (default: 1).
-    --model: The model to transform to MVT (default: "Tile").
-    --keep: Keep already existing tiles, do not delete them (default: False).
-
-Models supported:
-    - Tile
-    - Lcz
-
-Example:
-    python manage.py generate_mvt_tiles --number_of_thread=4 --model=Tile --keep
 """
 
 from typing import Tuple, Type
@@ -78,7 +62,7 @@ class Command(BaseCommand):
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            datatype(str): The datatype to generate MVT tiles for.
+            datatype (str): The datatype to generate MVT tiles for.
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
