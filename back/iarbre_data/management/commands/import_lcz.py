@@ -1,3 +1,4 @@
+"""Import LCZ from CEREMA."""
 import geopandas
 import requests
 import zipfile

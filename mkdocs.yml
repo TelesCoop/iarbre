@@ -49,13 +49,18 @@ nav:
   - Backend:
       - Instructions: back/backend.md
       - Sources de données: back/data.md
+      - Atlas des vulnérabilitiés: back/vulnerability.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md
           - Import Data: api/c03_import_data.md
           - Compute Factors: api/c04_compute_factors.md
           - Compute Indices: api/c01_compute_indice.md
+          - Import LCZ: api/import_lcz.md
+          - Import heat vulnerability data: api/import_vulnerability.md
           - Utils: api/utils.md
+          - Generate MVT: api/generate_mvt.md
+          - Clean MVT: api/clean_mvt.md
   - Frontend: front.md
   - Déploiement: deploy.md
   - Documentation: docs.md
