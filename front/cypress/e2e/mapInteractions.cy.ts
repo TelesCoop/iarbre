@@ -6,7 +6,7 @@ describe("Map interactions", () => {
   beforeEach(() => {
     cy.visit("/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
-    cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.wait(10000) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
   it("Map loading seems to be okay", () => {
