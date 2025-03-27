@@ -182,6 +182,7 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
+          cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache from node-setup
         uses: actions/cache@v3
         with:
