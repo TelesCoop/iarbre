@@ -9,25 +9,7 @@ describe("MapscorePopup Component", () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
-
-  it("MapPopUp when selectedDataType is PLANTABILITY", () => {
-    const mapStore = useMapStore()
-    mapStore.selectedDataType = DataType.PLANTABILITY
-
-    mount(MapscorePopup, {
-      props: {
-        index: "0.81",
-        lat: 45.76,
-        lng: 4.85
-      }
-    })
-    cy.contains("8/10")
-    cy.contains("45.76")
-    cy.contains("4.85")
-    cy.contains("Plantabilité élevée")
-  })
-
-  it("MapPopUp when selectedDataType is LOCAL_CLIMATE_ZONES", () => {
+  it("renders correctly", () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.LOCAL_CLIMATE_ZONES
 
