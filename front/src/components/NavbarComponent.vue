@@ -80,6 +80,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 }
 
 .link {
-  @apply font-mono text-brown text-base no-underline transition duration-300 hover:text-light-green;
+  @apply font-accent text-brown text-base no-underline transition duration-300 hover:text-light-green;
 }
 </style>

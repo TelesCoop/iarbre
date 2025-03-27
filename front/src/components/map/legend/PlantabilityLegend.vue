@@ -5,7 +5,7 @@ import { ScoreLabelSize } from "@/utils/enum"
 
 <template>
   <div
-    class="font-mono flex items-center justify-center text-xs leading-3 gap-2"
+    class="font-accent flex items-center justify-center text-xs leading-3 gap-2"
     data-cy="plantability-legend"
   >
     <span class="text-[0.9rem] leading-3">Non plantable</span>
