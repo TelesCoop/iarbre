@@ -90,7 +90,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+    const tileUrl = `${FULL_BASE_API_URL}/tiles2/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
 
     map.addSource(sourceId, {

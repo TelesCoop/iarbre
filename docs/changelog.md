@@ -1,5 +1,15 @@
 # Journal de changements
 
+## 🔖 0.3.0 (20225-XX-XX) - XXX
+
+### ✨ Possibilité d'ouvrir la carte à des coordonnées spécifiques
+
+Les coordonnées GPS sont désormais codées dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà par ex. l'url centrée sur le Lac du Bourget : [carte.iarbre.fr/11/45.72454/5.88074](https://carte.iarbre.fr/11/45.72454/5.88074)
+
+### 👷 Génération de données fictives de tests
+
+Nous sommes désormais en mesure de générer en quelques secondes des données pour tester l'application. Cela signifie en particulier que les tests qui vérifient que la carte est correctement affichée vont désormais être exécutés automatiquement.
+
 ## 🔖 0.2.0 (2025-03-26) - Stabilisations des semaines précédentes
 
 ### 🐛 fix: MapPopUp
