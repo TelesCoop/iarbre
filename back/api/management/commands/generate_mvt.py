@@ -26,9 +26,9 @@ from typing import Tuple, Type
 from django.core.management import BaseCommand
 from django.db.models import QuerySet, Model
 
-from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel
+from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, MVTTile
+from iarbre_data.models import Tile, Lcz, Vulnerability, MVTTile
 
 
 class Command(BaseCommand):
@@ -47,6 +47,13 @@ class Command(BaseCommand):
             required=True,
             choices=[choice for choice, _ in GeoLevel.choices],
             help=f"What geolevel to transform to MVT. Choices: {', '.join([choice for choice, _ in GeoLevel.choices])}",
+        )
+        parser.add_argument(
+            "--datatype",
+            type=str,
+            required=True,
+            choices=[choice for choice, _ in DataType.choices],
+            help=f"What datatype to transform to MVT. Choices: {', '.join([choice for choice, _ in DataType.choices])}",
         )
         parser.add_argument(
             "--keep",
@@ -95,10 +102,15 @@ class Command(BaseCommand):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
         geolevel = options["geolevel"]
+        datatype = options["datatype"]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
-        elif geolevel == GeoLevel.LCZ.value:
+        elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
             mdl = Lcz
+        elif (
+            geolevel == GeoLevel.LCZ.value and datatype == DataType.VULNERABILITY.value
+        ):
+            mdl = Vulnerability
         else:
             supported_levels = [GeoLevel.TILE.value, GeoLevel.LCZ.value]
             raise ValueError(
