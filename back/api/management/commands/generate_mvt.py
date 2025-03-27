@@ -105,10 +105,10 @@ class Command(BaseCommand):
         datatype = options["datatype"]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
-        elif (geolevel == GeoLevel.LCZ.value) and (datatype == DataType.LCZ.value):
+        elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
             mdl = Lcz
-        elif (geolevel == GeoLevel.LCZ.value) and (
-            datatype == DataType.VULNERABILITY.value
+        elif (
+            geolevel == GeoLevel.LCZ.value and datatype == DataType.VULNERABILITY.value
         ):
             mdl = Vulnerability
         else:

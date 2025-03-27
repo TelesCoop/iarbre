@@ -9,6 +9,12 @@ from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
 
 
+def create_mapgeometry(instance):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(TARGET_MAP_PROJ, clone=True)
+
+
 class TileAggregateBase(models.Model):
     """Abstract base class for aggregating Tiles at IRIS and city level."""
 
@@ -93,13 +99,6 @@ class Tile(models.Model):
             "indice": self.plantability_normalized_indice,
             "color": self.color,
         }
-
-
-@receiver(pre_save, sender=Tile)
-def before_save_tile(sender, instance, **kwargs):
-    """Transform the geometry to the map geometry."""
-    if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
 class Data(models.Model):
@@ -192,13 +191,6 @@ class Lcz(models.Model):
         }
 
 
-@receiver(pre_save, sender=Lcz)
-def before_save_lcz(sender, instance, **kwargs):
-    """Transform the geometry to the map geometry."""
-    if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(3857, clone=True)
-
-
 class Vulnerability(models.Model):
     """Elementary element on the map with the value of the vulnerability description."""
 
@@ -244,11 +236,11 @@ class Vulnerability(models.Model):
         }
 
 
+@receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
-def before_save_vulnerability(sender, instance, **kwargs):
-    """Transform the geometry to the map geometry."""
-    if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(3857, clone=True)
+@receiver(pre_save, sender=Tile)
+def before_save(sender, instance, **kwargs):
+    create_mapgeometry(instance)
 
 
 class Feedback(models.Model):
