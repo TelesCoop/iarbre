@@ -134,6 +134,7 @@ class MVTTile(models.Model):
         """Save the MVT data into the FileField."""
         content = ContentFile(mvt_data)
         self.mvt_file.save(filename, content, save=False)
+        print("path is ", self.mvt_file.path)
         self.save()
 
     def __str__(self):
