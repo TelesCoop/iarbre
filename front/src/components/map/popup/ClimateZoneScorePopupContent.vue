@@ -1,3 +1,13 @@
+<script setup lang="ts">
+import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
+
+defineProps({
+  index: {
+    required: true,
+    type: String
+  }
+})
+</script>
 <template>
   <div data-cy="lcz-score-popup">
     <div class="flex items-center gap-2 w-full">
@@ -11,14 +21,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
-
-const props = defineProps({
-  index: {
-    required: true,
-    type: String
-  }
-})
-</script>
