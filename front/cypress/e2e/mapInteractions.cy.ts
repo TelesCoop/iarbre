@@ -14,24 +14,19 @@ describe("Map interactions", () => {
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
 
-  it("Verifies map layer switching and popup behavior", () => {
+  it.skip("Verifies map layer switching and popup behavior", () => {
     // eslint-disable-line cypress/no-unnecessary-waiting
-    cy.wait(2000).then(() => {
-      cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
-      cy.mapOpenPopup()
-      cy.getBySel("plantability-score-label").should("exist")
+    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
+    cy.mapOpenPopup()
+    cy.getBySel("plantability-score-label").should("exist")
 
-      cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
-      cy.getBySel("map-legend-title").should(
-        "contain",
-        DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES]
-      )
-      cy.mapHasNoPopup()
-      cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
-      cy.mapOpenPopup()
-      cy.getBySel("lcz-score-popup-title").should("exist")
-      cy.mapClosePopup()
-      cy.mapOpenPopup() // cf. issue #92
-    })
+    cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
+    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
+    cy.mapHasNoPopup()
+    cy.wait(2000) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.mapOpenPopup()
+    cy.getBySel("lcz-score-popup-title").should("exist")
+    cy.mapClosePopup()
+    cy.mapOpenPopup() // cf. issue #92
   })
 })

@@ -177,19 +177,9 @@ jobs:
       - name: Populate the database
         run: python manage.py populate
         working-directory: ./back
-      - name: Check new files
-        run: ls media/mvt_files
-        working-directory: ./back
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
-      - name: Check new files
-        run: ls media/mvt_files/tile/plantability/12/2110/
-        working-directory: ./back
-      - name: check mvt
-        run: curl http://localhost:8000/api/tiles/tile/plantability/14/8445/5888.mvt
-      - name: "check mvt"
-        run: ls
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
