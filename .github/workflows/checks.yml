@@ -203,7 +203,7 @@ jobs:
       - name: Run e2e tests
         uses: cypress-io/github-action@v6
         with:
-          start: npm run dev
+          start: npm run preview
           browser: chrome
           config-file: cypress.config.ts
           working-directory: ./front
