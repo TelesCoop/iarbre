@@ -176,6 +176,9 @@ jobs:
       - name: Migrate database
         run: python manage.py migrate
         working-directory: ./back
+      - name: Populate the database
+        run: python manage.py populate
+        working-directory: ./back
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back

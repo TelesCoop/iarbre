@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from iarbre_data.models import Feedback
+from api.models import Feedback
 
 
 class FeedbackSerializer(serializers.ModelSerializer):

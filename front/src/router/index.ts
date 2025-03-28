@@ -8,6 +8,11 @@ const router = createRouter({
       path: "/",
       name: "map",
       component: MapView
+    },
+    {
+      path: "/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
+      name: "mapWithCoords",
+      component: MapView
     }
   ]
 })
