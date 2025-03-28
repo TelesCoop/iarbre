@@ -14,7 +14,7 @@ describe("Map interactions", () => {
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
 
-  it.skip("Verifies map layer switching and popup behavior", () => {
+  it("Verifies map layer switching and popup behavior", () => {
     // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
     cy.mapOpenPopup()
