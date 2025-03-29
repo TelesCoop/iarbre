@@ -61,7 +61,6 @@ class Command(BaseCommand):
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            datatype (str): The datatype to generate MVT tiles for.
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
