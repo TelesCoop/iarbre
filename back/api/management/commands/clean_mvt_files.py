@@ -1,3 +1,4 @@
+"""Remove MVT Tile for a geolevel and datatype."""
 from django.core.management import BaseCommand
 from iarbre_data.models import MVTTile
 
