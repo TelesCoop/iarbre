@@ -50,6 +50,7 @@ nav:
       - Instructions: back/backend.md
       - Sources de données: back/data.md
       - Atlas des vulnérabilitiés: back/vulnerability.md
+      - Données de test: back/testing-data.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md

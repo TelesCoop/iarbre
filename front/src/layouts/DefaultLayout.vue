@@ -5,7 +5,7 @@ import Navbar from "@/components/NavbarComponent.vue"
 <template>
   <div class="flex flex-col min-h-screen">
     <header
-      class="navbar fixed w-full top-0 z-10 flex items-center justify-between px-10 py-2.5 bg-[var(--color-off-white)]"
+      class="navbar fixed w-full top-0 z-10 flex items-center justify-between px-10 py-2.5 bg-off-white"
       data-cy="navbar"
     >
       <Navbar />
