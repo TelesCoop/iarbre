@@ -133,7 +133,6 @@ class MVTTile(models.Model):
     def save_mvt(self, mvt_data, filename):
         """Save the MVT data into the FileField."""
         content = ContentFile(mvt_data)
-        print("fiename is ", filename)
         self.mvt_file.save(filename, content, save=False)
         self.save()
 
@@ -242,14 +241,3 @@ class Vulnerability(models.Model):
 @receiver(pre_save, sender=Tile)
 def before_save(sender, instance, **kwargs):
     create_mapgeometry(instance)
-
-
-class Feedback(models.Model):
-    """Store feedbacks from carte.iarbre.fr"""
-
-    email = models.EmailField(blank=True, null=True)
-    feedback = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Feedback from {self.email or 'Anonymous'}"

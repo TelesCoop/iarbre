@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
+    "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
+    "preview": "vite preview --port 4173",
     "test": "vitest tests",
     "test:unit": "vitest",
     "test:cypress": "start-server-and-test preview http://localhost:4173  'cypress run'",
