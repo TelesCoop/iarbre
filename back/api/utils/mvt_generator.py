@@ -142,12 +142,12 @@ class MVTGenerator:
             "features": [],
         }
 
-        for lcz in tqdm(
+        for django_tile in tqdm(
             clipped_queryset,
-            desc=f"Processing LCZ features ({tile.x}, {tile.y}, {zoom})",
+            desc=f"Processing tile features ({tile.x}, {tile.y}, {zoom})",
         ):
-            properties = lcz.get_layer_properties()
-            clipped_geom = lcz.clipped_geometry
+            properties = django_tile.get_layer_properties()
+            clipped_geom = django_tile.clipped_geometry
             transformed_geometries["features"].append(
                 {
                     "type": "Feature",

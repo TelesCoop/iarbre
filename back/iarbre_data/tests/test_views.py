@@ -8,7 +8,6 @@ from django.test import TestCase
 from django.http import HttpRequest
 from api.utils.mvt_generator import MVTGenerator
 from django.contrib.gis.geos import Polygon
-from django.contrib.gis.db.models.functions import Intersection
 from django.urls import reverse
 
 from iarbre_data.settings import BASE_DIR
