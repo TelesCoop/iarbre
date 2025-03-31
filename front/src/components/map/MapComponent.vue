@@ -55,11 +55,6 @@ onMounted(() => {
   <map-legend />
   <map-layer-switcher />
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
-    <map-score-popup
-      v-if="mapStore.popupData"
-      :index="mapStore.popupData.index"
-      :lat="mapStore.popupData.lat"
-      :lng="mapStore.popupData.lng"
-    />
+    <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
   </div>
 </template>
