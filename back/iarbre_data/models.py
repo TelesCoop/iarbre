@@ -131,8 +131,10 @@ class MVTTile(models.Model):
     )
     mvt_file = models.FileField(upload_to="mvt_files/")
 
-    def save_mvt(self, mvt_data, filename):
+    def save_mvt(self, filename):
         """Save the MVT data into the FileField."""
+        with open(filename, "rb") as mvt_file:
+            mvt_data = mvt_file.read()
         content = ContentFile(mvt_data)
         self.mvt_file.save(filename, content, save=False)
         self.save()

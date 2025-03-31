@@ -2,7 +2,10 @@
 MVT Generator as django-media.
 """
 
+import json
 import math
+import os
+import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
 
@@ -11,8 +14,8 @@ from django.contrib.gis.geos import Polygon
 from django.db.models import QuerySet
 from django.contrib.gis.db.models.functions import Intersection
 import mercantile
-import mapbox_vector_tile
 from typing import Dict
+
 from iarbre_data.models import MVTTile
 from tqdm import tqdm
 
@@ -124,7 +127,6 @@ class MVTGenerator:
         clipped_queryset = self.queryset.filter(
             map_geometry__intersects=tile_polygon
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
-
         if clipped_queryset.exists():
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
@@ -139,18 +141,39 @@ class MVTGenerator:
                 clipped_geom = lcz.clipped_geometry
                 transformed_geometries["features"].append(
                     {
-                        "geometry": clipped_geom.make_valid()
-                        .simplify(pixel, preserve_topology=True)
-                        .wkt,
+                        "type": "Feature",
+                        "geometry": json.loads(
+                            clipped_geom.geojson
+                        ),  # Convert to GeoJSON-like dict
                         "properties": properties,
                     }
                 )
-
-            mvt_data = mapbox_vector_tile.encode(
-                transformed_geometries, quantize_bounds=(west, south, east, north)
+            geojson_filename = f"temp_{tile.x}_{tile.y}.geojson"
+            with open(geojson_filename, "w") as geojson_file:
+                json.dump(transformed_geometries, geojson_file)
+            mvt_filename = (
+                f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
             )
+            tippecanoe_cmd = [
+                "tippecanoe",
+                "-o",
+                mvt_filename,
+                "-z",
+                str(zoom),
+                "-Z",
+                str(zoom),
+                "-l",
+                f"{self.geolevel}--{self.datatype}",
+                "--force",
+                "--projection=EPSG:3857",
+                "--no-tile-compression",  # Disable the default Gzip compression
+                "--quiet",
+                geojson_filename,
+            ]
+            subprocess.run(tippecanoe_cmd, check=True)
+            # Remove temp GeoJSON file
+            os.remove(geojson_filename)
 
-            filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
             mvt_tile = MVTTile(
                 geolevel=self.geolevel,
                 datatype=self.datatype,
@@ -158,7 +181,7 @@ class MVTGenerator:
                 tile_x=tile.x,
                 tile_y=tile.y,
             )
-            mvt_tile.save_mvt(mvt_data, filename)
+            mvt_tile.save_mvt(mvt_filename)
 
     @staticmethod
     def pixel_length(zoom):
