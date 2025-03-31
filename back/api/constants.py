@@ -13,3 +13,4 @@ class GeoLevel(TextChoices):
 class DataType(TextChoices):
     LCZ = "lcz", "LCZ"
     TILE = "plantability", "Plantability"
+    VULNERABILITY = "vulnerability", "Vulnerability"

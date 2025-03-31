@@ -1,11 +1,16 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
-from api import views
+from .views import FeedbackView, TileView
+
+router = routers.DefaultRouter()
 
 urlpatterns = [
     path(
-        "tiles/<str:geolevel>/<str:datatype>/<int:zoom>/<int:x>/<int:y>.mvt",
-        views.tile_view,
+        "tiles/<geolevel>/<datatype>/<zoom>/<x>/<y>.mvt",
+        TileView.as_view(),
+        name="retrieve-tile",
     ),
-    path("feedback/", views.receive_feedback),
+    path("feedback/", FeedbackView.as_view(), name="create-feedback"),
+    path("", include(router.urls)),
 ]

@@ -9,7 +9,7 @@ mvt_files/*
 *.log
 media/*
 back/site/*
-
+venv/
 .coverage
 
 *.csv

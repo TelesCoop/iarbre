@@ -1,24 +1,30 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { FULL_BASE_API_URL } from "@/utils/constants"
+import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
+import type { Feedback } from "@/types"
 
-const isVisible = ref(false)
+const feedbackIsVisible = ref(false)
+const feedbackMessage = ref("")
 
-const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
-  try {
-    const response = await fetch(`${FULL_BASE_API_URL}/feedback/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ feedback: data.feedback, email: data.email })
-    })
-    if (!response.ok) {
-      throw new Error("Erreur lors de l'envoi du feedback")
-    }
-    isVisible.value = false
-  } catch (error) {
-    console.error("Erreur lors de l'envoi du feedback:", error)
+const sendFeedbackToAPI = async (data: Feedback) => {
+  if (!data.feedback) {
+    feedbackMessage.value = "Veuillez remplir un avis."
+    return
   }
+
+  const { error } = await useApiPost<Feedback>("feedback/", data)
+  if (error != null) {
+    feedbackMessage.value =
+      "Erreur lors de l'envoi de votre feedback, merci de réessayer plus tard."
+    return false
+  }
+  feedbackMessage.value = "Merci pour votre retour !"
+  setTimeout(() => {
+    feedbackIsVisible.value = false
+    feedbackMessage.value = ""
+  }, 1500)
+  return true
 }
 </script>
 
@@ -32,7 +38,11 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
     <nav class="header-nav">
       <ul class="nav-list">
         <li>
-          <button class="button" data-cy="open-feedback-button" @click.prevent="isVisible = true">
+          <button
+            class="button"
+            data-cy="open-feedback-button"
+            @click.prevent="feedbackIsVisible = true"
+          >
             ✉️ Nous envoyer votre retour
           </button>
         </li>
@@ -42,5 +52,33 @@ const sendFeedbackToAPI = async (data: { email: string; feedback: string }) => {
       </ul>
     </nav>
   </div>
-  <FeedbackPopin v-if="isVisible" @submit-feedback="sendFeedbackToAPI" @close="isVisible = false" />
+  <feedback-popin
+    v-if="feedbackIsVisible"
+    :message="feedbackMessage"
+    @submit-feedback="sendFeedbackToAPI"
+    @close="feedbackIsVisible = false"
+  />
 </template>
+
+<style scoped>
+@reference "../styles/main.css";
+.header {
+  @apply fixed top-0 w-full bg-off-white h-[var(--header-height)] z-10 flex items-center justify-between overflow-hidden box-border;
+}
+
+.header-logo {
+  @apply pl-4 md:pl-0;
+}
+
+.header-nav {
+  @apply pr-4 md:pr-20;
+}
+
+.nav-list {
+  @apply flex gap-4 list-none;
+}
+
+.link {
+  @apply font-accent text-brown text-base no-underline transition duration-300 hover:text-light-green;
+}
+</style>

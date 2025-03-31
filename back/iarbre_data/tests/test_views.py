@@ -7,8 +7,9 @@ from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
 from api.utils.mvt_generator import MVTGenerator
-from api.views import tile_view
 from django.contrib.gis.geos import Polygon
+from django.contrib.gis.db.models.functions import Intersection
+from django.urls import reverse
 
 from iarbre_data.settings import BASE_DIR
 
@@ -27,6 +28,11 @@ def pixel2deg(xtile, ytile, zoom, xpixel, ypixel, extent=4096):
 
 
 class MVTGeneratorTestCase(TestCase):
+    def tearDown(self):
+        # reset_db does not trigger media delete signal
+        MVTTile.objects.all().delete()
+        return super().tearDown()
+
     def test_queryset_bounds(self):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
@@ -103,11 +109,6 @@ class MVTGeneratorTestCase(TestCase):
                 )
         except Exception:
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
-        # Clean all tiles
-        MVTTile.objects.all().delete()
-
-        # Clean media files before the reset_db does not trigger media delete signal
-        MVTTile.objects.all().delete()
 
     def test_view(self):
         tile1 = Polygon.from_bbox(
@@ -153,14 +154,13 @@ class MVTGeneratorTestCase(TestCase):
         request.method = "GET"
         request.META["SERVER_NAME"] = "localhost"
         request.META["SERVER_PORT"] = "8000"
-        response = tile_view(
-            request=request,
-            geolevel="fake_geolevel",
-            datatype="fake_datatype",
-            zoom=tile_zoom,
-            x=tile_x,
-            y=tile_y,
+
+        url = reverse(
+            "retrieve-tile",
+            args=["fake_geolevel", "fake_datatype", tile_zoom, tile_x, tile_y],
         )
+        response = self.client.get(url)
+
         decoded_tile = mapbox_vector_tile.decode(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(
@@ -169,5 +169,3 @@ class MVTGeneratorTestCase(TestCase):
         received_tile = decoded_tile["fake_geolevel--fake_datatype"]["features"][0]
         # https://stackoverflow.com/a/45736752
         self.assertTrue(set(received_tile).issuperset({"geometry", "properties"}))
-        # Clean media files before the reset_db does not trigger media delete signal
-        MVTTile.objects.all().delete()

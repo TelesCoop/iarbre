@@ -7,7 +7,7 @@ import itertools
 from tqdm import tqdm
 from typing import Optional, Type
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from pyproj import Transformer
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.contrib.gis.gdal import DataSource
@@ -24,6 +24,8 @@ from iarbre_data.management.commands.utils import (
     load_geodataframe_from_db,
     remove_duplicates,
 )
+
+TRANSFORMATION = Transformer.from_crs("EPSG:2154", "EPSG:3857")
 
 SIN_60 = np.sin(
     np.pi / 3
@@ -144,21 +146,36 @@ def create_tiles_for_city(
     tiles = []
     tile_count = 0
 
+    previous_iris = None
+
     for x, (i, y) in tqdm(
         tile_shape_cls.tile_positions(xmin, ymin, xmax, ymax, grid_size, side_length)
     ):
         tile = box(x, y * height_ratio, x - grid_size, y * height_ratio + grid_size)
-        if not city_geom.intersects(tile):
+
+        is_intersecting = city_geom.intersects(tile)
+        if not is_intersecting:
             continue
 
         tile_count += 1
         polygon = tile_shape_cls.create_tile_polygon(x, y, grid_size, side_length, i)
+        if previous_iris is not None and previous_iris.geometry.intersects(polygon):
+            iris_id = previous_iris.id
+        else:
+            qs = Iris.objects.filter(geometry__intersects=polygon)
+            if qs:
+                previous_iris = qs[0]
+                iris_id = previous_iris.id
+            else:
+                iris_id = None
 
-        iris_id = tile_shape_cls.get_iris_id(polygon)
+        transformed = []
+        for c in polygon.coords[0]:
+            transformed.append(TRANSFORMATION.transform(*c))
 
         tile = Tile(
             geometry=polygon,
-            map_geometry=polygon.transform(TARGET_MAP_PROJ, clone=True),
+            map_geometry=Polygon(transformed, srid=TARGET_MAP_PROJ),
             plantability_indice=0,
             plantability_normalized_indice=0.5,
             city_id=city_id,

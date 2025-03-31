@@ -10,7 +10,7 @@ describe("MapscorePopup Component", () => {
     setActivePinia(createPinia())
   })
 
-  it("MapPopUp when selectedDataType is PLANTABILITY", () => {
+  it(`renders correctly when the selected map data type is ${DataType.PLANTABILITY}`, () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.PLANTABILITY
 
@@ -27,7 +27,7 @@ describe("MapscorePopup Component", () => {
     cy.contains("Plantabilité élevée")
   })
 
-  it("MapPopUp when selectedDataType is LOCAL_CLIMATE_ZONES", () => {
+  it(`renders correctly when the selected map data type is ${DataType.LOCAL_CLIMATE_ZONES}`, () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.LOCAL_CLIMATE_ZONES
 
@@ -40,5 +40,6 @@ describe("MapscorePopup Component", () => {
     })
     cy.contains("LCZ")
     cy.contains("Sol imperméable naturel ou artificiel")
+    cy.contains("12.34° N, 56.78° E")
   })
 })
