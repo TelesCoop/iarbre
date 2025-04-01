@@ -28,5 +28,10 @@ describe("Map interactions", () => {
     cy.getBySel("lcz-score-popup-title").should("exist")
     cy.mapClosePopup()
     cy.mapOpenPopup() // cf. issue #92
+
+    cy.mapSwitchLayer(DataType.VULNERABILITY)
+    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
+    cy.mapHasNoPopup()
+    cy.mapOpenPopup()
   })
 })

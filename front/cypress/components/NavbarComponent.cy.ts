@@ -1,6 +1,6 @@
 import Navbar from "@/components/NavbarComponent.vue"
 
-describe("Component:Navbar", () => {
+describe("Navbar", () => {
   beforeEach(() => {
     cy.mount(Navbar)
   })

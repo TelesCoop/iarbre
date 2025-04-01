@@ -94,7 +94,6 @@ export const useMapStore = defineStore("map", () => {
 
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
-      console.log(e.features)
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
