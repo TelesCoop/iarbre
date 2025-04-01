@@ -54,25 +54,36 @@ export const useMapStore = defineStore("map", () => {
   }
   const extractFeatures = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
     if (!features) return undefined
-    const feature = features.filter(
+
+    const feature = features.find(
       (feature: any) => feature.layer.id === getLayerId(datatype, geolevel)
     )
-    if (feature.length === 0) return undefined
-    return feature[0]
+
+    return feature || undefined
   }
-  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
+
+  const extractFeatureProperty = <T>(
+    features: Array<any>,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    propertyName?: string
+  ) => {
     const feature = extractFeatures(features, datatype, geolevel)
     if (!feature) return undefined
-    return feature.properties.indice
+
+    return propertyName ? feature.properties[propertyName] : feature.properties
   }
+
+  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
+    return extractFeatureProperty(features, datatype, geolevel, "indice")
+  }
+
   const extractFeatureProperties = (
     features: Array<any>,
     datatype: DataType,
     geolevel: GeoLevel
   ) => {
-    const feature = extractFeatures(features, datatype, geolevel)
-    if (!feature) return undefined
-    return feature.properties
+    return extractFeatureProperty(features, datatype, geolevel)
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {

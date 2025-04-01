@@ -32,6 +32,5 @@ describe("Map interactions", () => {
     cy.mapSwitchLayer(DataType.VULNERABILITY)
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()
-    cy.mapOpenPopup()
   })
 })

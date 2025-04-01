@@ -8,7 +8,7 @@ describe("Navbar", () => {
     cy.getBySel("open-feedback-button").should("exist")
     cy.getBySel("open-savoir-href").should("exist")
   })
-  it("Fill and submit the feedback form", () => {
+  it("fill and submit the feedback form", () => {
     cy.getBySel("open-feedback-button").click()
 
     const testEmail = "molly.maguire@test.fr"
