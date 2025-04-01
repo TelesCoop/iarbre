@@ -189,9 +189,9 @@ def read_data(data_config: dict) -> gpd.GeoDataFrame:
         df = gpd.read_file(
             DATA_DIR / data_config["file"], layer=data_config.get("layer_name")
         )
-        df["geometry"] = df.geometry.force_2d()
     else:
         df = gpd.read_file(DATA_DIR / data_config["file"])
+    df["geometry"] = df.geometry.force_2d()
     df = df.to_crs(TARGET_PROJ)  # Re_proj if needed
     return df[df.geometry.notnull() & df.geometry.is_valid]  # Drop null or invalid geom
 
@@ -203,6 +203,8 @@ class Command(BaseCommand):
         """Save all land occupancy data to the database."""
         data_configs = DATA_FILES + URL_FILES
         for data_config in data_configs:
+            if data_config["name"] == "Local Climate Zone":
+                continue
             if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
                 log_progress(
                     f"Data with metadata {data_config['name']}"

@@ -71,6 +71,50 @@ DATA_FILES = [
     #     "output_type": "POLYGON",
     # },
     {
+        "name": "Espaces publics",
+        "file": "espacepublic.geojson",
+        "actions": [
+            {
+                "filter": {
+                    "name": "typeespacepublic",
+                    "value": "Parc / jardin public / square",
+                }
+            },
+            {
+                "filter": {
+                    "name": "typeespacepublic",
+                    "value": "Giratoire",
+                }
+            },
+            {
+                "filters": [
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Aire de jeux",
+                    },
+                    {
+                        "name": "typeespacepublic",
+                        "value": "Espace piétonnier",
+                    },
+                ]
+            },
+            {
+                "filter": {
+                    "name": "typeespacepublic",
+                    "value": "Délaissé / Ilot végétalisé",
+                }
+            },
+        ],
+        "scripts": ["parc.py", "giratoire.py", "jeux.py" "friche_nat.py"],
+        "factors": [
+            "Parcs et jardins publics",
+            "Giratoires",
+            "Espaces jeux et pietonnier",
+            "Friche naturelle",
+        ],
+        "output_type": "POLYGON",
+    },
+    {
         "name": "EVA 2015",
         "file": "new_all_eva.shp",
         "actions": [
@@ -459,9 +503,9 @@ FACTORS = {
 
 UPDATES = [
     {
-        "name": "Fibre GL",
+        "name": "Réseau Fibre",
         "file": "voirie.gpkg",
-        "layer_name": " 'pub_app_patrimoinevoirie.liengeniecivil',",
+        "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
         "actions": [
             {"buffer_size": 2, "union": False},
         ],
