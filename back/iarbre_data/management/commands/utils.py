@@ -79,12 +79,15 @@ def select_city(insee_code_city: str) -> gpd.GeoDataFrame:
     return selected_city
 
 
-def log_progress(step: str) -> None:
+def log_progress(step: str, star=False) -> None:
     """
     Log the progress of a step with a timestamp.
 
     Args:
         step (str): The description of the step being logged.
+        star (bool): Print or not the stars
     """
-    print("*" * 30)
     print(f"{datetime.now().strftime('%H:%M:%S')} - {step}")
+    if star:
+        print("*" * 30)
+        print()
