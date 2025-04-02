@@ -4,7 +4,7 @@ import MapscorePopup from "@/components/map/popup/MapScorePopup.vue"
 import { createPinia, setActivePinia } from "pinia"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { getVulnerabilityScoreLabel, VulnerabilityType } from "../../src/utils/vulnerability"
+import { getVulnerabilityScoreLabel, VulnerabilityType } from "@/utils/vulnerability"
 
 describe("MapScorePopup", () => {
   beforeEach(() => {
