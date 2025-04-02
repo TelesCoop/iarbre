@@ -211,3 +211,18 @@ def split_factor_dataframe(
     factor_df_split = factor_df_split.explode(index_parts=False)
     factor_df_split = factor_df_split[factor_df_split.geometry.type == "Polygon"]
     return factor_df_split
+
+
+def make_valid(
+    geometry: shapely.geometry.base.BaseGeometry,
+) -> shapely.geometry.base.BaseGeometry:
+    """
+    Fix minor topology errors in a geometry, such as a Polygon not being closed.
+    Args:
+        geometry (shapely.geometry.base.BaseGeometry): The geometry to be validated.
+    Returns:
+        shapely.geometry.base.BaseGeometry: The validated geometry.
+    """
+    if geometry and not geometry.is_valid:
+        return geometry.buffer(0)
+    return geometry
