@@ -17,7 +17,7 @@ export enum ScoreLabelSize {
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Plantabilité",
   [DataType.LOCAL_CLIMATE_ZONES]: "Zones climatiques locales",
-  [DataType.VULNERABILITY]: "Atlas des vulnérabilités"
+  [DataType.VULNERABILITY]: "Vulnérabilité chaleur"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -32,5 +32,5 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.PLANTABILITY]:
     '<a href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
   [DataType.VULNERABILITY]:
-    '<a href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">ERASME</a>'
+    '<a href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon</a>'
 }

@@ -62,7 +62,7 @@ export const useMapStore = defineStore("map", () => {
     return feature || undefined
   }
 
-  const extractFeatureProperty = <T>(
+  const extractFeatureProperty = (
     features: Array<any>,
     datatype: DataType,
     geolevel: GeoLevel,

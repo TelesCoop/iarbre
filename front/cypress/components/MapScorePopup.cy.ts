@@ -4,7 +4,7 @@ import MapscorePopup from "@/components/map/popup/MapScorePopup.vue"
 import { createPinia, setActivePinia } from "pinia"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { VulnerabilitySubScoreLabel } from "../../src/utils/vulnerability"
+import { getVulnerabilityScoreLabel, VulnerabilityType } from "../../src/utils/vulnerability"
 
 describe("MapScorePopup", () => {
   beforeEach(() => {
@@ -70,9 +70,9 @@ describe("MapScorePopup", () => {
       }
     })
     cy.contains("en journée")
-    cy.contains(VulnerabilitySubScoreLabel.EXPOSITION)
-    cy.contains(VulnerabilitySubScoreLabel.DIFFICULTY_TO_FACE)
-    cy.contains(VulnerabilitySubScoreLabel.SENSIBILITY)
+    cy.contains(getVulnerabilityScoreLabel[VulnerabilityType.EXPOSITION])
+    cy.contains(getVulnerabilityScoreLabel[VulnerabilityType.DIFFICULTY_TO_FACE])
+    cy.contains(getVulnerabilityScoreLabel[VulnerabilityType.SENSIBILITY])
 
     // Should display the vulnerability scores correctly
     cy.contains(1) // expo_index_day
