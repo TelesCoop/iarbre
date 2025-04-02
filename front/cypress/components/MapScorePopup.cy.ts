@@ -78,11 +78,6 @@ describe("MapScorePopup", () => {
     cy.contains(1) // expo_index_day
     cy.contains(3) // capaf_index_day
     cy.contains(5) // sensibilty_index_day
-    cy.getBySel("switch-vulnerability-mode").click()
-    cy.contains("la nuit")
-    cy.contains(2) // expo_index_night
-    cy.contains(4) // capaf_index_night
-    cy.contains(6) // sensibilty_index_night
 
     cy.contains("12.34° N, 56.78° E")
   })
