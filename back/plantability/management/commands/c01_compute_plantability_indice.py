@@ -12,6 +12,7 @@ from iarbre_data.models import Tile, TileFactor
 from iarbre_data.management.commands.utils import (
     load_geodataframe_from_db,
     select_city,
+    log_progress,
 )
 from tqdm import tqdm
 
@@ -32,10 +33,21 @@ def compute_indice(tiles_id) -> None:
         ),
         columns=["tile_id", "factor", "value"],
     )
-    factors = pd.Series(FACTORS)  # make all factors positive
+    factors = pd.Series(FACTORS)
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
+
+    df["cantplant"] = df["factor_coeff"] == -5
+    df = (
+        df.groupby("tile_id")
+        .apply(
+            lambda g: pd.Series(
+                {"value": -5 if (g["factor_coeff"] == -5).any() else g["value"].sum()}
+            )
+        )
+        .reset_index()
+    )
     with transaction.atomic():
         Tile.objects.bulk_update(
             [
@@ -65,7 +77,6 @@ def compute_normalized_indice() -> None:
     batch_size = int(1e6)
     last_processed_id = 0
     qs = Tile.objects.all()
-    print(f"Total tiles: {len(qs)} with a  batch size of {batch_size}.")
     total_batches = (len(qs) + batch_size - 1) // batch_size
     with tqdm(total=total_batches, desc="Processing Batches") as pbar:
         while True:
@@ -106,11 +117,11 @@ class Command(BaseCommand):
         selected_city = select_city(insee_code_city)
         nb_city = len(selected_city)
         for idx, city in enumerate(selected_city.itertuples()):
-            print(f"{city.name} ({idx+1} on {nb_city} city).")
+            log_progress(f"{city.name} ({idx+1} on {nb_city} city).")
             tiles_queryset = Tile.objects.filter(
                 geometry__intersects=GEOSGeometry(city.geometry.wkt)
             )
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             compute_indice(tiles_df["id"])
-        print("Computing normalized indice.")
+        log_progress("Computing normalized indice.")
         compute_normalized_indice()
