@@ -18,8 +18,6 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
 
-from api.constants import DEFAULT_ZOOM_LEVELS
-
 
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
@@ -68,7 +66,7 @@ class Command(BaseCommand):
             tile_shape_cls=HexTileShape,
             logger=logging.getLogger(__name__),
             batch_size=int(1e6),
-            side_length=50,
+            side_length=50 / 3,
             height_ratio=np.sin(np.pi / 3),
         )
         self.stdout.write(self.style.SUCCESS("> Tiles created"))
@@ -99,7 +97,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=DEFAULT_ZOOM_LEVELS,
+            zoom_levels=(14, 16),  # Make the tests shorter
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=4,
