@@ -3,7 +3,6 @@ import pandas as pd
 from django.db import transaction
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Min, Max
 from django.db.models import F
 
 
@@ -15,6 +14,8 @@ from iarbre_data.management.commands.utils import (
     log_progress,
 )
 from tqdm import tqdm
+
+SAMPLE_LIMIT = 2_500_000
 
 
 def compute_indice(tiles_id) -> None:
@@ -38,7 +39,6 @@ def compute_indice(tiles_id) -> None:
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
     df = df.groupby("tile_id", as_index=False)["value"].sum()
-    # df["value"] = df["value"].clip(lower=-5) # Set -5 as minimum
 
     with transaction.atomic():
         Tile.objects.bulk_update(
@@ -55,18 +55,36 @@ def compute_indice(tiles_id) -> None:
 
 
 def compute_normalized_indice() -> None:
-    """Normalized indice is a score between 0 and 1."""
-
-    # Calculate the min and max directly in the database
-    min_indice = Tile.objects.aggregate(Min("plantability_indice"))[
-        "plantability_indice__min"
-    ]
-    max_indice = Tile.objects.aggregate(Max("plantability_indice"))[
-        "plantability_indice__max"
-    ]
+    """Robust normalization."""
+    print("Computing Q1, Q3 and median")
+    total_count = Tile.objects.all().count()
+    if total_count > SAMPLE_LIMIT:
+        sampled_ids = list(
+            Tile.objects.order_by("?").values_list("id", flat=True)[:SAMPLE_LIMIT]
+        )
+        qs = (
+            Tile.objects.filter(id__in=sampled_ids)
+            .order_by("plantability_indice")
+            .values_list("plantability_indice", flat=True)
+        )
+        del sampled_ids
+    else:
+        qs = Tile.objects.order_by("plantability_indice").values_list(
+            "plantability_indice", flat=True
+        )
+    count = qs.count()
+    q1_index = int(round(0.25 * count))
+    q3_index = int(round(0.75 * count))
+    median_index = int(round(0.5 * count))
+    q1_value = qs[q1_index]
+    median_value = qs[median_index]
+    q3_value = qs[q3_index]
+    iqr = q3_value - q1_value
+    print(f"Q1: {q1_value}, Q3: {q3_value}, Median: {median_value}, IQR: {iqr}")
+    del qs  # Free memory
 
     # Fetch in batches to avoid OOM issues
-    batch_size = int(1e6)
+    batch_size = int(5e5)
     last_processed_id = 0
     qs = Tile.objects.all()
     total_batches = (len(qs) + batch_size - 1) // batch_size
@@ -82,9 +100,9 @@ def compute_normalized_indice() -> None:
             with transaction.atomic():
                 Tile.objects.filter(id__in=tiles_batch).update(
                     plantability_normalized_indice=(
-                        F("plantability_indice") - min_indice
+                        F("plantability_indice") - median_value
                     )
-                    / (max_indice - min_indice)
+                    / iqr
                 )
             last_processed_id = tiles_batch[-1]
             pbar.update(1)

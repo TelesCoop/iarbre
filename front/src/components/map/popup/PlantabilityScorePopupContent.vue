@@ -10,14 +10,21 @@ const props = defineProps({
   }
 })
 
-const score = computed(() => Math.round(10 * props.index))
+const score = computed(() => {
+  if (props.index < -3) return 0
+  if (props.index < -2) return 2
+  if (props.index < -0.5) return 4
+  if (props.index < 0.75) return 6
+  if (props.index < 1.5) return 8
+  return 10
+})
 
 const label = computed(() => {
-  if (score.value < 2.05) return "Plantation impossible"
-  if (score.value < 5.89) return "Plantation très contrainte"
-  if (score.value < 6.5) return "Plantation contrainte"
-  if (score.value < 7.5) return "Plantation neutre"
-  if (score.value < 8.26) return "Plantation favorisée"
+  if (score.value === 0) return "Plantation impossible"
+  if (score.value === 2) return "Plantation très contrainte"
+  if (score.value === 4) return "Plantation contrainte"
+  if (score.value === 6) return "Plantation neutre"
+  if (score.value === 8) return "Plantation favorisée"
   return "Plantation très favorisée"
 })
 </script>
