@@ -37,17 +37,9 @@ def compute_indice(tiles_id) -> None:
     factors.name = "factor_coeff"
     df = df.join(factors, on="factor")
     df["value"] = df["value"] * df["factor_coeff"]
+    df = df.groupby("tile_id", as_index=False)["value"].sum()
+    # df["value"] = df["value"].clip(lower=-5) # Set -5 as minimum
 
-    df["cantplant"] = df["factor_coeff"] == -5
-    df = (
-        df.groupby("tile_id")
-        .apply(
-            lambda g: pd.Series(
-                {"value": -5 if (g["factor_coeff"] == -5).any() else g["value"].sum()}
-            )
-        )
-        .reset_index()
-    )
     with transaction.atomic():
         Tile.objects.bulk_update(
             [

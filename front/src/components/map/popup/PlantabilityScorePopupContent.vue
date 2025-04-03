@@ -13,8 +13,12 @@ const props = defineProps({
 const score = computed(() => Math.round(10 * props.index))
 
 const label = computed(() => {
-  if (score.value >= 5) return "Plantabilité élevée"
-  return "Plantabilité faible"
+  if (score.value < 2.05) return "Plantation impossible"
+  if (score.value < 5.89) return "Plantation très contrainte"
+  if (score.value < 6.5) return "Plantation contrainte"
+  if (score.value < 7.5) return "Plantation neutre"
+  if (score.value < 8.26) return "Plantation favorisée"
+  return "Plantation très favorisée"
 })
 </script>
 

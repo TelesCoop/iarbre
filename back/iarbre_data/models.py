@@ -81,11 +81,11 @@ class Tile(models.Model):
             return "purple"
         elif self.plantability_normalized_indice < 0.205:
             return "#E0E0E0"
-        elif self.plantability_normalized_indice < 0.486:
-            return "#F0F1C0"
         elif self.plantability_normalized_indice < 0.589:
+            return "#F0F1C0"
+        elif self.plantability_normalized_indice < 0.65:
             return "#E5E09A"
-        elif self.plantability_normalized_indice < 0.682:
+        elif self.plantability_normalized_indice < 0.75:
             return "#B7D990"
         elif self.plantability_normalized_indice < 0.826:
             return "#71BB72"
