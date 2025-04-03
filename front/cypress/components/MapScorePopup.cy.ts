@@ -24,7 +24,7 @@ describe("MapscorePopup Component", () => {
     cy.contains("8/10")
     cy.contains("45.76")
     cy.contains("4.85")
-    cy.contains("Plantabilité élevée")
+    cy.contains("Plantabilité favorisée")
   })
 
   it(`renders correctly when the selected map data type is ${DataType.LOCAL_CLIMATE_ZONES}`, () => {
