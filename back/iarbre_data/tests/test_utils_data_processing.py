@@ -5,7 +5,6 @@ from iarbre_data.utils.data_processing import apply_actions, make_valid
 from shapely.geometry import Polygon, Point
 
 
-
 class UtilsDataProcessingTestCase(TestCase):
     def setUp(self):
         self.df = gpd.GeoDataFrame(
