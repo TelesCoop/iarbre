@@ -72,7 +72,7 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
     # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
-    all_cities_boundary = select_city(None).unary_union
+    all_cities_boundary = select_city(None).union_all()
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
     gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
 
