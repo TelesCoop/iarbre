@@ -54,7 +54,7 @@ def compute_indice(tiles_id) -> None:
         )
 
 
-def compute_normalized_indice() -> None:
+def compute_robust_normalized_indice() -> None:
     """Robust normalization."""
     print("Computing Q1, Q3 and median")
     total_count = Tile.objects.all().count()
@@ -134,4 +134,4 @@ class Command(BaseCommand):
             tiles_df = load_geodataframe_from_db(tiles_queryset, ["id"])
             compute_indice(tiles_df["id"])
         log_progress("Computing normalized indice.")
-        compute_normalized_indice()
+        compute_robust_normalized_indice()
