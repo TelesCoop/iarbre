@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
+import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 
@@ -14,5 +15,6 @@ const mapStore = useMapStore()
     </div>
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
     <climate-zones-legend v-else-if="mapStore.selectedDataType === DataType.LOCAL_CLIMATE_ZONES" />
+    <vulnerability-legend v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY" />
   </div>
 </template>

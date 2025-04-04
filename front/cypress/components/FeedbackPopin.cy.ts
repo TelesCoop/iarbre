@@ -1,6 +1,6 @@
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 
-describe("Component: FeedbackPopin", () => {
+describe("FeedbackPopin", () => {
   it("renders correctly", () => {
     cy.mount(FeedbackPopin)
     cy.getBySel("submit-feedback-button").should("exist")

@@ -5,24 +5,21 @@ import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import { computed, ref } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
+import type { MapScorePopupData } from "@/types"
+import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
 
 const mapStore = useMapStore()
 const props = defineProps({
-  index: {
+  popupData: {
     required: true,
-    type: String
-  },
-  lat: {
-    required: true,
-    type: Number
-  },
-  lng: {
-    required: true,
-    type: Number
+    type: Object as () => MapScorePopupData
   }
 })
 const message = ref("")
-const coords = computed(() => `${props.lat.toFixed(2)}° N, ${props.lng.toFixed(2)}° E`)
+
+const coords = computed(
+  () => `${props.popupData.lat.toFixed(2)}° N, ${props.popupData.lng.toFixed(2)}° E`
+)
 
 const copy = (text: string) => {
   message.value = "Copié !"
@@ -38,11 +35,15 @@ const copy = (text: string) => {
     <div class="flex justify-between">
       <plantability-score-popup
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
-        :index="Number(index)"
+        :popup-data="popupData"
       />
       <climate-zone-score-popup
         v-else-if="mapStore.selectedDataType === DataType.LOCAL_CLIMATE_ZONES"
-        :index="index.toString()"
+        :popup-data="popupData"
+      />
+      <vulnerability-score-popup
+        v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+        :popup-data="popupData"
       />
     </div>
     <div class="w-full flex flex-col">
