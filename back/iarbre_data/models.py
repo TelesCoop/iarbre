@@ -5,6 +5,7 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
+from iarbre_data.data_config import PLANTABILITY_THRESHOLDS
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
 
@@ -79,15 +80,17 @@ class Tile(models.Model):
         """Return the color of the tile based on the normalized indice."""
         if self.plantability_normalized_indice is None:
             return "purple"
-        elif self.plantability_normalized_indice < 0.205:
+        elif (
+            self.plantability_normalized_indice < PLANTABILITY_THRESHOLDS[0]
+        ):  # river indice is about -3, we want gray scale
             return "#E0E0E0"
-        elif self.plantability_normalized_indice < 0.486:
+        elif self.plantability_normalized_indice < PLANTABILITY_THRESHOLDS[1]:
             return "#F0F1C0"
-        elif self.plantability_normalized_indice < 0.589:
+        elif self.plantability_normalized_indice < PLANTABILITY_THRESHOLDS[2]:
             return "#E5E09A"
-        elif self.plantability_normalized_indice < 0.682:
+        elif self.plantability_normalized_indice < PLANTABILITY_THRESHOLDS[3]:
             return "#B7D990"
-        elif self.plantability_normalized_indice < 0.826:
+        elif self.plantability_normalized_indice < PLANTABILITY_THRESHOLDS[4]:
             return "#71BB72"
         else:
             return "#006837"

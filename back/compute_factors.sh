@@ -3,7 +3,7 @@
 # Configuration
 input_file="insee.txt"      # File containing the INSEE codes
 task_command="python manage.py c04_compute_factors --delete --insee_code_city" # Base task command
-num_parallel_tasks=4        # Number of parallel tasks
+num_parallel_tasks=4       # Number of parallel tasks
 
 # Function to process INSEE codes
 process_insee_code() {

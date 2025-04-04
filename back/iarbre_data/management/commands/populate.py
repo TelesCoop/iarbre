@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from shapely.geometry.polygon import Polygon
 from iarbre_data.models import City, Tile, Lcz
-from iarbre_data.management.commands.utils import select_city
+from iarbre_data.utils.database import select_city
 from api.utils.mvt_generator import MVTGenerator
 
 from iarbre_data.management.commands.c02_init_grid import (

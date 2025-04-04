@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from iarbre_data.data_config import FACTORS
 
-from iarbre_data.management.commands.utils import load_geodataframe_from_db, select_city
+from iarbre_data.utils.database import load_geodataframe_from_db, select_city
 from iarbre_data.models import Data, Tile, TileFactor, City
 
 TILE_BATCH_SIZE = 10_000

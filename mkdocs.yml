@@ -59,7 +59,9 @@ nav:
           - Compute Indices: api/c01_compute_indice.md
           - Import LCZ: api/import_lcz.md
           - Import heat vulnerability data: api/import_vulnerability.md
-          - Utils: api/utils.md
+
+          - Database utils: api/utils_db.md
+          - Data processing utils: api/utils_data_process.md
           - Generate MVT: api/generate_mvt.md
           - Clean MVT: api/clean_mvt.md
   - Frontend: front.md
