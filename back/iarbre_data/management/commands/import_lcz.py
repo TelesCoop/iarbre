@@ -10,10 +10,10 @@ from django.core.management import BaseCommand
 from tqdm import tqdm
 
 from iarbre_data.data_config import URL_FILES, LCZ
-from iarbre_data.management.commands.utils import select_city
+from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
-from iarbre_data.management.commands.utils_data import make_valid
+from iarbre_data.utils.data_processing import make_valid
 
 
 def download_data() -> None:
@@ -118,11 +118,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Load LCZ from CEREMA and then save all LCZ data in the DB."""
-        print("Clean model")
+        log_progress("Clean model")
         print(Lcz.objects.all().delete())
-        print("Download data if needed")
+        log_progress("Download data if needed")
         download_data()
-        print("Load data and pre-process them")
+        log_progress("Load data and pre-process them")
         lcz_data = load_data()
-        print("Save geometries")
+        log_progress("Save geometries")
         save_geometries(lcz_data)

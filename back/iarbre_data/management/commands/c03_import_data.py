@@ -12,8 +12,8 @@ from tqdm import tqdm
 from iarbre_data.data_config import DATA_FILES, URL_FILES
 from iarbre_data.models import Data
 from iarbre_data.settings import DATA_DIR, TARGET_PROJ
-from iarbre_data.management.commands.utils import select_city, log_progress
-from iarbre_data.management.commands.utils_data import (
+from iarbre_data.utils.database import select_city, log_progress
+from iarbre_data.utils.data_processing import (
     process_data,
     save_geometries,
 )

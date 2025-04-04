@@ -1,5 +1,5 @@
 from django.test import TestCase
-from iarbre_data.management.commands.utils import (
+from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     remove_duplicates,
     select_city,

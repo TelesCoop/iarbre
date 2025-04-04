@@ -85,9 +85,9 @@ def log_progress(step: str, star=False) -> None:
 
     Args:
         step (str): The description of the step being logged.
-        star (bool): Print or not the stars
+        star (bool): Print or not a line of stars
     """
     print(f"{datetime.now().strftime('%H:%M:%S')} - {step}")
     if star:
-        print("*" * 30)
+        print("*" * 30 + "\n")
         print()

@@ -8,7 +8,7 @@ from django.db.models import F
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import Tile, TileFactor
-from iarbre_data.management.commands.utils import (
+from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     select_city,
     log_progress,

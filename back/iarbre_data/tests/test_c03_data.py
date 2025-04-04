@@ -1,7 +1,7 @@
 from django.test import TestCase
 from iarbre_data.data_config import DATA_FILES, URL_FILES
 from iarbre_data.models import Data
-from iarbre_data.management.commands.utils_data import apply_actions
+from iarbre_data.utils.data_processing import apply_actions
 from iarbre_data.management.commands.c03_import_data import (
     download_from_url,
     read_data,

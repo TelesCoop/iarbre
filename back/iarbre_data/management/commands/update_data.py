@@ -8,8 +8,8 @@ from iarbre_data.data_config import UPDATES
 
 from iarbre_data.models import Data
 from iarbre_data.settings import DATA_DIR, TARGET_PROJ
-from iarbre_data.management.commands.utils import load_geodataframe_from_db
-from iarbre_data.management.commands.utils_data import process_data, save_geometries
+from iarbre_data.utils.database import load_geodataframe_from_db
+from iarbre_data.utils.data_processing import process_data, save_geometries
 
 
 class Command(BaseCommand):

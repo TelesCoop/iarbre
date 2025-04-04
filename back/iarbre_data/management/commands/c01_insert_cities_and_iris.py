@@ -9,7 +9,7 @@ from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 
 from iarbre_data.models import City, Iris
-from iarbre_data.management.commands.utils import (
+from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     remove_duplicates,
 )

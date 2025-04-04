@@ -1,10 +1,8 @@
 from itertools import islice
 
-import numpy as np
+
 from shapely import unary_union
-from shapely.geometry import box
 from functools import reduce
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.contrib.gis.geos import GEOSGeometry
 import shapely
 import geopandas as gpd
@@ -93,8 +91,6 @@ def process_data(df: gpd.GeoDataFrame, data_config: dict) -> list:
 
     for actions, factor in actions_factors:
         sub_df = apply_actions(df.copy(), actions)
-        # print(f"Breaking large geometries: {len(sub_df)}")
-        # sub_df = split_factor_dataframe(sub_df, grid_size=10000)
         if len(sub_df) == 0:
             print(f"Factor: {factor} only contained Points")
             continue
@@ -128,89 +124,6 @@ def save_geometries(datas: list[dict], data_config: dict) -> None:
                 for data in batch
             ]
         )
-
-
-def split_large_polygon(
-    geom: shapely.geometry.Polygon, grid_size: float
-) -> list[shapely.geometry.MultiPolygon]:
-    """
-    Split a large polygon into smaller chunks based on a grid.
-
-    Args:
-        geom (shapely.geometry.Polygon): Polygon to split.
-        grid_size (float): Size of the grid in meters.
-
-    Returns:
-        list[shapely.geometry.MultiPolygon]: MultiPolygon with the split parts.
-    """
-    if geom is None or geom.is_empty:
-        return None
-    # Create a grid covering the bounding box of the geometry
-    minx, miny, maxx, maxy = geom.bounds
-    if (maxx - minx > grid_size) or (maxy - miny > grid_size):
-        gridx = np.arange(minx, maxx, grid_size)
-        if gridx[-1] != maxx:
-            gridx = np.append(gridx, maxx)
-        gridy = np.arange(miny, maxy, grid_size)
-        if gridy[-1] != maxy:
-            gridy = np.append(gridy, maxy)
-
-        grid_cells = [
-            box(x, y, x + grid_size, y + grid_size) for x in gridx for y in gridy
-        ]
-
-        clipped_parts = [
-            geom.intersection(cell) for cell in grid_cells if geom.intersects(cell)
-        ]
-        result = [part for part in clipped_parts if not part.is_empty]
-    else:
-        result = [geom]
-    return result
-
-
-def split_factor_dataframe(
-    factor_df: gpd.GeoDataFrame, grid_size: float = 10000
-) -> gpd.GeoDataFrame:
-    """Split Polygons of each row into smaller ones, following a grid.
-
-    Args:
-        factor_df (geopandas.GeoDataFrame): DataFrame with geometries for a factor
-        grid_size (float): Size of the grid in meters that will be used to break geometries.
-
-    Returns:
-        factor_df (geopandas.GeoDataFrame): New dataframe with smaller geometries.
-    """
-    geometries = factor_df.geometry.values
-
-    def split_polygon_parallel(polygon):
-        """Utils"""
-        return split_large_polygon(polygon, grid_size=grid_size)
-
-    split_geom = []
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        future_to_polygon = {
-            executor.submit(split_polygon_parallel, polygon): polygon
-            for polygon in geometries
-        }
-        for future in as_completed(future_to_polygon):
-            polygon = future_to_polygon.pop(future)
-            try:
-                results = future.result()
-                split_geom.extend(results)
-            except Exception as e:
-                print(f"Error processing polygon {polygon}: {e}")
-    factor_df_split = gpd.GeoDataFrame({"geometry": split_geom}, crs=factor_df.crs)
-    flattened_geometries = []
-    for idx, row in factor_df_split.iterrows():
-        flattened_geometries.append({"geometry": row["geometry"], "original_id": idx})
-
-    factor_df_split = gpd.GeoDataFrame(
-        flattened_geometries, geometry="geometry", crs=factor_df.crs
-    )
-    # Some 'Point' may appear on edges of the grid, remove them
-    factor_df_split = factor_df_split.explode(index_parts=False)
-    factor_df_split = factor_df_split[factor_df_split.geometry.type == "Polygon"]
-    return factor_df_split
 
 
 def make_valid(
