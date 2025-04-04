@@ -2,22 +2,25 @@
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
 import { computed } from "vue"
 import { ScoreLabelSize } from "@/utils/enum"
+import type { MapScorePopupData } from "@/types"
 
 const props = defineProps({
-  index: {
+  popupData: {
     required: true,
-    type: Number
+    type: Object as () => MapScorePopupData
   }
 })
 
 const score = computed(() => {
-  if (props.index < -3) return 0
-  if (props.index < -2) return 2
-  if (props.index < -0.5) return 4
-  if (props.index < 0.75) return 6
-  if (props.index < 1.5) return 8
+  if (Number(props.popupData.id) < -3) return 0
+  if (Number(props.popupData.id) < -2) return 2
+  if (Number(props.popupData.id) < -0.5) return 4
+  if (Number(props.popupData.id) < 0.75) return 6
+  if (Number(props.popupData.id) < 1.5) return 8
   return 10
 })
+
+const score = computed(() => Math.round(10 * Number(props.popupData.id)))
 
 const label = computed(() => {
   if (score.value === 0) return "Plantation impossible"

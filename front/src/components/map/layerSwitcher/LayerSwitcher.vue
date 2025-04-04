@@ -26,6 +26,9 @@ const selectedDataType = computed({
       <option :value="DataType.LOCAL_CLIMATE_ZONES">
         {{ DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES] }}
       </option>
+      <option :value="DataType.VULNERABILITY">
+        {{ DataTypeToLabel[DataType.VULNERABILITY] }}
+      </option>
     </select>
   </div>
 </template>

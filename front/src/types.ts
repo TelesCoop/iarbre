@@ -1,7 +1,8 @@
-export interface ScorePopupData {
+export interface MapScorePopupData {
   lng: number
   lat: number
-  index: string
+  id: string
+  properties: any
 }
 
 export interface Feedback {
