@@ -3,10 +3,8 @@ import pandas as pd
 from django.db import transaction
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import F
 
-
-from iarbre_data.data_config import FACTORS
+from iarbre_data.data_config import FACTORS, PLANTABILITY_THRESHOLDS
 from iarbre_data.models import Tile, TileFactor
 from iarbre_data.utils.database import (
     load_geodataframe_from_db,
@@ -54,8 +52,16 @@ def compute_indice(tiles_id) -> None:
         )
 
 
+def score_thresholding(value):
+    """Function to determine the plantabilty normalize index based on thresholds."""
+    for i, threshold in enumerate(PLANTABILITY_THRESHOLDS):
+        if value < threshold:
+            return i * 2
+    return 10
+
+
 def compute_robust_normalized_indice() -> None:
-    """Robust normalization."""
+    """Robust normalization of the data and then thresholding to produce a normalized indice between 0 and 10."""
     print("Computing Q1, Q3 and median")
     total_count = Tile.objects.all().count()
     if total_count > SAMPLE_LIMIT:
@@ -97,12 +103,16 @@ def compute_robust_normalized_indice() -> None:
             )
             if not tiles_batch:
                 break
+            tiles_to_update = []
+            for i, tile_id in enumerate(tiles_batch):
+                tile = Tile.objects.get(id=tile_id)
+                robust_scaling = (tile.plantability_indice - median_value) / iqr
+                thresholded_index = score_thresholding(robust_scaling)
+                tile.plantability_normalized_indice = thresholded_index
+                tiles_to_update.append(tile)
             with transaction.atomic():
-                Tile.objects.filter(id__in=tiles_batch).update(
-                    plantability_normalized_indice=(
-                        F("plantability_indice") - median_value
-                    )
-                    / iqr
+                Tile.objects.bulk_update(
+                    tiles_to_update, ["plantability_normalized_indice"]
                 )
             last_processed_id = tiles_batch[-1]
             pbar.update(1)

@@ -18,7 +18,7 @@ describe("MapScorePopup", () => {
     mount(MapscorePopup, {
       props: {
         popupData: {
-          id: "0.81",
+          id: "8",
           lat: 45.76,
           lng: 4.85
         }

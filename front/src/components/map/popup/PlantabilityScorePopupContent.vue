@@ -2,6 +2,7 @@
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
 import { computed } from "vue"
 import { ScoreLabelSize } from "@/utils/enum"
+import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types"
 
 const props = defineProps({
@@ -11,25 +12,8 @@ const props = defineProps({
   }
 })
 
-const score = computed(() => {
-  if (Number(props.popupData.id) < -3) return 0
-  if (Number(props.popupData.id) < -2) return 2
-  if (Number(props.popupData.id) < -0.5) return 4
-  if (Number(props.popupData.id) < 0.75) return 6
-  if (Number(props.popupData.id) < 1.5) return 8
-  return 10
-})
-
-const score = computed(() => Math.round(10 * Number(props.popupData.id)))
-
-const label = computed(() => {
-  if (score.value === 0) return "Plantation impossible"
-  if (score.value === 2) return "Plantation très contrainte"
-  if (score.value === 4) return "Plantation contrainte"
-  if (score.value === 6) return "Plantation neutre"
-  if (score.value === 8) return "Plantation favorisée"
-  return "Plantation très favorisée"
-})
+const score = computed(() => Number(props.popupData.id))
+const label = computed(() => getPlantabilityScore(Number(props.popupData.id)))
 </script>
 
 <template>
