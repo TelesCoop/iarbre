@@ -4,6 +4,7 @@ import MapscorePopup from "@/components/map/popup/MapScorePopup.vue"
 import { createPinia, setActivePinia } from "pinia"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
+import { PlantabilityScore } from "@/utils/plantability"
 import { getVulnerabilityScoreLabel, VulnerabilityType } from "@/utils/vulnerability"
 
 describe("MapScorePopup", () => {
@@ -27,7 +28,7 @@ describe("MapScorePopup", () => {
     cy.contains("8/10")
     cy.contains("45.76")
     cy.contains("4.85")
-    cy.contains("Plantation favorisée")
+    cy.contains(PlantabilityScore.FAVORED)
   })
 
   it(`renders correctly when the selected map data type is ${DataType.LOCAL_CLIMATE_ZONES}`, () => {
