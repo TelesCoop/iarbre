@@ -1,5 +1,5 @@
+"""Utils to process GEOJSON and GeoPackage to add them in the DB."""
 from itertools import islice
-
 
 from shapely import unary_union
 from functools import reduce

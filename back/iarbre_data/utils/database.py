@@ -1,3 +1,5 @@
+"""Utils to interact with the DB using Django."""
+
 from datetime import datetime
 import shapely
 from django.db.models import Count
