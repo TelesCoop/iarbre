@@ -1,5 +1,7 @@
 """Compute and save indice data for the selected cities."""
 import pandas as pd
+import geopandas as gpd
+import shapely
 from django.db import transaction
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
@@ -90,31 +92,44 @@ def compute_robust_normalized_indice() -> None:
     del qs  # Free memory
 
     # Fetch in batches to avoid OOM issues
-    batch_size = int(5e5)
+    batch_size = int(1e4)
     last_processed_id = 0
     qs = Tile.objects.all()
     total_batches = (len(qs) + batch_size - 1) // batch_size
+    all_fields = [field.name for field in Tile._meta.get_fields() if field.concrete]
     with tqdm(total=total_batches, desc="Processing Batches") as pbar:
         while True:
-            tiles_batch = list(
-                qs.filter(id__gt=last_processed_id)
-                .order_by("id")
-                .values_list("id", flat=True)[:batch_size]
-            )
-            if not tiles_batch:
+            qs_batch = qs.filter(id__gt=last_processed_id).order_by("id")[:batch_size]
+
+            if len(qs_batch) == 0:
                 break
-            tiles_to_update = []
-            for i, tile_id in enumerate(tiles_batch):
-                tile = Tile.objects.get(id=tile_id)
-                robust_scaling = (tile.plantability_indice - median_value) / iqr
-                thresholded_index = score_thresholding(robust_scaling)
-                tile.plantability_normalized_indice = thresholded_index
-                tiles_to_update.append(tile)
+            df = gpd.GeoDataFrame(
+                [
+                    dict(
+                        **{field: getattr(data, field) for field in all_fields},
+                    )
+                    for data in qs_batch
+                ]
+            )
+            df.geometry = df["geometry"].apply(lambda el: shapely.wkt.loads(el.wkt))
+            df = df.set_geometry("geometry")
+            df["robust_scaling"] = (df.plantability_indice - median_value) / iqr
+            df["plantability_normalized_indice"] = df["robust_scaling"].apply(
+                score_thresholding
+            )
             with transaction.atomic():
                 Tile.objects.bulk_update(
-                    tiles_to_update, ["plantability_normalized_indice"]
+                    [
+                        Tile(
+                            id=row.id,
+                            plantability_normalized_indice=row.plantability_normalized_indice,
+                        )
+                        for row in df.itertuples()
+                    ],
+                    ["plantability_normalized_indice"],
+                    batch_size=10000,
                 )
-            last_processed_id = tiles_batch[-1]
+            last_processed_id = df.iloc[-1].id
             pbar.update(1)
 
 
