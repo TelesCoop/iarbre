@@ -531,5 +531,3 @@ LCZ = {
     "F": "Sol nu perméable",
     "G": "Surface en eau",
 }
-
-PLANTABILITY_THRESHOLDS = [-3, -2, -0.5, 0.75, 1.5]

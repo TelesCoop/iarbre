@@ -6,13 +6,14 @@ from django.db import transaction
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 
-from iarbre_data.data_config import FACTORS, PLANTABILITY_THRESHOLDS
+from iarbre_data.data_config import FACTORS
 from iarbre_data.models import Tile, TileFactor
 from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     select_city,
     log_progress,
 )
+from plantability.constants import PLANTABILITY_THRESHOLDS
 from tqdm import tqdm
 
 SAMPLE_LIMIT = 2_500_000
