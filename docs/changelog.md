@@ -2,11 +2,11 @@
 
 ## 🔖 0.3.0 (2025-09-04) - Mise à jour de données et ajout calque vulnérabilité à la chaleur
 
-### 🐛 fix: Données d'occupation des sols
+### 🛠️ enhance: Données d'occupation des sols
 
 - Ajout de nouvelles données : place PMR et d'autopartage.
 - Mise à jour des données de fibre et de signalisation lumineuse et tricolore.
-- Correction d'erreurs notamment sur les ponts pour lesquelles des tuiles apparaissaient comme plantables
+- Modifications sur certainnes OCS notamment sur les ponts pour lesquelles des tuiles apparaissaient comme plantables
 
 |                           Avant                            |                           Après                            |
 | :--------------------------------------------------------: | :--------------------------------------------------------: |
