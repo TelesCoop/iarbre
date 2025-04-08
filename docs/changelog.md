@@ -82,7 +82,7 @@ Mise à jour de la légende des ZCLs et ajout d'un lien vers la source des donn�
 
 Les routes d'API étaient définies à la main, maintenant nous utilisant une API REST à l'aide de DjangoRestFramework
 
-&rarr; Commit [4bfc05d](https://github.com/TelesCoop/iarbre/commit/4bfc05d0ebea7523501d9f2a49eac4284ac7bae2)
+&rarr; Ticket [#98](https://github.com/TelesCoop/iarbre/issues/98)
 
 ### 👷 devops: CI déploiement automatique des branches de développement
 
