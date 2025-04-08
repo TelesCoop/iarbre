@@ -16,14 +16,13 @@ from django.db import transaction
 from shapely.geometry import box
 
 
-from iarbre_data.management.commands.utils import select_city
-from iarbre_data.models import Iris, Tile, City
-from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
-
-from iarbre_data.management.commands.utils import (
+from iarbre_data.utils.database import (
+    select_city,
     load_geodataframe_from_db,
     remove_duplicates,
 )
+from iarbre_data.models import Iris, Tile, City
+from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 TRANSFORMATION = Transformer.from_crs("EPSG:2154", "EPSG:3857")
 

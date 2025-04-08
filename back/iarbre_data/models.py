@@ -79,15 +79,17 @@ class Tile(models.Model):
         """Return the color of the tile based on the normalized indice."""
         if self.plantability_normalized_indice is None:
             return "purple"
-        elif self.plantability_normalized_indice < 0.205:
+        elif (
+            self.plantability_normalized_indice < 2
+        ):  # river indice is about -3, we want gray scale
             return "#E0E0E0"
-        elif self.plantability_normalized_indice < 0.486:
+        elif self.plantability_normalized_indice < 4:
             return "#F0F1C0"
-        elif self.plantability_normalized_indice < 0.589:
+        elif self.plantability_normalized_indice < 6:
             return "#E5E09A"
-        elif self.plantability_normalized_indice < 0.682:
+        elif self.plantability_normalized_indice < 8:
             return "#B7D990"
-        elif self.plantability_normalized_indice < 0.826:
+        elif self.plantability_normalized_indice < 10:
             return "#71BB72"
         else:
             return "#006837"
