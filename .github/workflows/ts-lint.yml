@@ -2,7 +2,7 @@ name: TypeScript Lint
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
     
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: "./front/.nvmrc"
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: ./front/package-lock.json
 
       - name: Install dependencies
