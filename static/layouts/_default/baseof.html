@@ -53,7 +53,7 @@
   <body class="">
     {{ template "_internal/navbar.html" }}
 
-    <section class="main">
+    <section class="main {{.Layout}}">
       {{ .Params.robots }} {{ .Params.robots }}
       <!-- Code that all your templates share, like a header -->
       {{ block "main" . }}

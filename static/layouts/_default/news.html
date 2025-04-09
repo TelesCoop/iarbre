@@ -1,0 +1,5 @@
+{{ define "meta-extended" }} {{ $posts := sort (where site.RegularPages.ByTitle
+"Section" "actualites") ".PublishDate" }} {{ $last_post := index $posts 0 }}
+<meta http-equiv="refresh" content="0; url={{ $last_post.RelPermalink}}" />
+{{ end }} {{ define "main" }} Vous allez être redirigé·e vers notre dernier
+article. {{ end }}
