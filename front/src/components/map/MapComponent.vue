@@ -5,7 +5,8 @@ import { useRouter, useRoute } from "vue-router"
 import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
 import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
-import { Map } from "maplibre-gl"
+import { updateMapRoute } from "@/utils/route"
+import { DataType } from "@/utils/enum"
 
 const router = useRouter()
 const route = useRoute()
@@ -17,18 +18,6 @@ const props = defineProps({
   }
 })
 
-const updateRouteCoords = (map: Map) => {
-  const coords = map.getCenter()
-  router.replace({
-    name: "mapWithCoords",
-    params: {
-      zoom: Math.round(map.getZoom()),
-      lng: Math.round(100000 * coords.lng) / 100000,
-      lat: Math.round(100000 * coords.lat) / 100000
-    }
-  })
-}
-
 const mapStore = useMapStore()
 
 onMounted(() => {
@@ -36,16 +25,21 @@ onMounted(() => {
 
   if (route) {
     const mapInstance = mapStore.getMapInstance(props.mapId)
-    if (route.name === "mapWithCoords") {
+    if (route.name === "mapWithUrlParams") {
       const p = route.params
       mapInstance.jumpTo({
         center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
         zoom: parseFloat(p.zoom as string)
       })
+      mapInstance.on("load", () => {
+        mapStore.changeDataType(p.dataType as DataType)
+      })
     }
 
-    mapInstance.on("moveend", () => updateRouteCoords(mapInstance))
-    updateRouteCoords(mapInstance)
+    mapInstance.on("moveend", () => {
+      updateMapRoute(router, { map: mapInstance })
+    })
+    updateMapRoute(router, { map: mapInstance })
   }
 })
 </script>

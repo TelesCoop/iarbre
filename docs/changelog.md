@@ -2,6 +2,12 @@
 
 ## 🔖 0.3.0 (2025-09-04) - Mise à jour de données et ajout calque vulnérabilité à la chaleur
 
+### ✨ feat: Possibilité d'ouvrir la carte sur un calque spécifique
+
+Le nom du calque est désormais codé dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà par ex. l'url centrée sur Lyon centre avec les données de vulnérabilité à la chaleur : [carte.iarbre.fr/vulnerability/16/45.75773/4.85377](https://carte.iarbre.fr/vulnerability/16/45.75773/4.85377)
+
+&rarr; Ticket [#183](https://github.com/TelesCoop/iarbre/issues/183)
+
 ### 🛠️ enhance: Données d'occupation des sols
 
 - Ajout de nouvelles données : place PMR et d'autopartage.
