@@ -10,8 +10,8 @@ const router = createRouter({
       component: MapView
     },
     {
-      path: "/:dataType([a-zA-Z]+)/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
-      name: "mapWithCoords",
+      path: "/:dataType(plantability|lcz|vulnerability)/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
+      name: "mapWithUrlParams",
       component: MapView
     }
   ]

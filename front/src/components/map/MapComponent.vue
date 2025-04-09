@@ -6,6 +6,7 @@ import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
 import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
 import { updateMapRoute } from "@/utils/route"
+import { DataType } from "@/utils/enum"
 
 const router = useRouter()
 const route = useRoute()
@@ -24,12 +25,15 @@ onMounted(() => {
 
   if (route) {
     const mapInstance = mapStore.getMapInstance(props.mapId)
-    if (route.name === "mapWithCoords") {
+    if (route.name === "mapWithUrlParams") {
       const p = route.params
       mapInstance.jumpTo({
         center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
         zoom: parseFloat(p.zoom as string)
       })
+      console.log("before mapstore", mapStore.selectedDataType)
+      mapStore.changeDataType(p.dataType as DataType)
+      console.log("mapstore", mapStore.selectedDataType)
     }
 
     mapInstance.on("moveend", () => {

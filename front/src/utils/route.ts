@@ -1,11 +1,13 @@
 import { useRouter } from "vue-router"
 import { useMapStore } from "@/stores/map"
 import { Map } from "maplibre-gl"
+import type { DataType } from "./enum"
 
 export function updateMapRoute(
   router: ReturnType<typeof useRouter>,
   options: {
     map?: Map
+    dataType?: DataType
   }
 ) {
   const mapStore = useMapStore()
@@ -25,9 +27,9 @@ export function updateMapRoute(
       }
 
   router.replace({
-    name: "mapWithCoords",
+    name: "mapWithUrlParams",
     params: {
-      dataType: mapStore.selectedDataType,
+      dataType: options.dataType || mapStore.selectedDataType,
       zoom,
       lat,
       lng

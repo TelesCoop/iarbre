@@ -11,10 +11,8 @@ const router = useRouter()
 const selectedDataType = computed({
   get: () => mapStore.selectedDataType,
   set: (value: DataType) => {
-    console.log("changeLayer 0.0")
-    console.log("changeLayer 0.1", value)
     mapStore.changeDataType(value)
-    updateMapRoute(router, {})
+    updateMapRoute(router, { dataType: mapStore.selectedDataType })
   }
 })
 </script>
