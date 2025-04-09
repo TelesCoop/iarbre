@@ -31,9 +31,9 @@ onMounted(() => {
         center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
         zoom: parseFloat(p.zoom as string)
       })
-      console.log("before mapstore", mapStore.selectedDataType)
-      mapStore.changeDataType(p.dataType as DataType)
-      console.log("mapstore", mapStore.selectedDataType)
+      mapInstance.on("load", () => {
+        mapStore.changeDataType(p.dataType as DataType)
+      })
     }
 
     mapInstance.on("moveend", () => {
