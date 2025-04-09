@@ -1,3 +1,6 @@
+"""Utils to interact with the DB using Django."""
+
+from datetime import datetime
 import shapely
 from django.db.models import Count
 
@@ -52,8 +55,8 @@ def remove_duplicates(Model) -> None:
     print(f"Removed duplicates for {duplicates.count()} entries.")
 
 
-def select_city(insee_code_city: str):
-    """Select a list of city based on INSEE_CODE.
+def select_city(insee_code_city: str) -> gpd.GeoDataFrame:
+    """Select a list of cities based on INSEE_CODE.
 
     Args:
         insee_code_city (str): INSEE code of the city or cities to select.
@@ -76,3 +79,17 @@ def select_city(insee_code_city: str):
             ["id", "name", "code", "tiles_generated", "tiles_computed"],
         )
     return selected_city
+
+
+def log_progress(step: str, star=False) -> None:
+    """
+    Log the progress of a step with a timestamp.
+
+    Args:
+        step (str): The description of the step being logged.
+        star (bool): Print or not a line of stars
+    """
+    print(f"{datetime.now().strftime('%H:%M:%S')} - {step}")
+    if star:
+        print("*" * 30 + "\n")
+        print()

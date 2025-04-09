@@ -1,24 +1,8 @@
-"""
-Generate MVT tiles for geographic model.
+"""Generate MVT tiles for geographic model.
 
 This script provides a Django management command to generate MVT (Mapbox Vector Tiles)
 for specified geographic models. It supports multi-threading for improved performance
 and allows for the deletion of existing tiles before generating new ones.
-
-Usage:
-    python manage.py generate_mvt_tiles --number_of_thread=<num> --model=<model> [--keep]
-
-Arguments:
-    --number_of_thread: Number of threads to use for generating tiles (default: 1).
-    --model: The model to transform to MVT (default: "Tile").
-    --keep: Keep already existing tiles, do not delete them (default: False).
-
-Models supported:
-    - Tile
-    - Lcz
-
-Example:
-    python manage.py generate_mvt_tiles --number_of_thread=4 --model=Tile --keep
 """
 
 from typing import Tuple, Type
@@ -26,9 +10,9 @@ from typing import Tuple, Type
 from django.core.management import BaseCommand
 from django.db.models import QuerySet, Model
 
-from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel
+from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, MVTTile
+from iarbre_data.models import Tile, Lcz, Vulnerability, MVTTile
 
 
 class Command(BaseCommand):
@@ -49,6 +33,13 @@ class Command(BaseCommand):
             help=f"What geolevel to transform to MVT. Choices: {', '.join([choice for choice, _ in GeoLevel.choices])}",
         )
         parser.add_argument(
+            "--datatype",
+            type=str,
+            required=True,
+            choices=[choice for choice, _ in DataType.choices],
+            help=f"What datatype to transform to MVT. Choices: {', '.join([choice for choice, _ in DataType.choices])}",
+        )
+        parser.add_argument(
             "--keep",
             action="store_true",
             help="Keep already existing tiles, do not delete them.",
@@ -57,7 +48,6 @@ class Command(BaseCommand):
     def generate_tiles_for_model(
         self,
         model: Type[Model],
-        datatype: str,
         queryset: QuerySet,
         zoom_levels: Tuple[int, int] = DEFAULT_ZOOM_LEVELS,
         number_of_thread: int = 1,
@@ -71,7 +61,6 @@ class Command(BaseCommand):
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            datatype(str): The datatype to generate MVT tiles for.
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
@@ -83,7 +72,7 @@ class Command(BaseCommand):
         mvt_generator = MVTGenerator(
             queryset=queryset,
             zoom_levels=zoom_levels,
-            datatype=datatype,
+            datatype=model.datatype,
             geolevel=model.geolevel,
             number_of_thread=number_of_thread,
         )
@@ -95,24 +84,31 @@ class Command(BaseCommand):
         """Handle the command."""
         number_of_thread = options["number_of_thread"]
         geolevel = options["geolevel"]
+        datatype = options["datatype"]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
-        elif geolevel == GeoLevel.LCZ.value:
+        elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
             mdl = Lcz
+        elif (
+            geolevel == GeoLevel.LCZ.value and datatype == DataType.VULNERABILITY.value
+        ):
+            mdl = Vulnerability
         else:
             supported_levels = [GeoLevel.TILE.value, GeoLevel.LCZ.value]
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
             )
-        datatype = mdl.datatype
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
-            print(MVTTile.objects.filter(geolevel=geolevel, datatype=datatype).delete())
+            print(
+                MVTTile.objects.filter(
+                    geolevel=geolevel, datatype=mdl.datatype
+                ).delete()
+            )
         # Generate new tiles
         self.generate_tiles_for_model(
             model=mdl,
-            datatype=datatype,
             queryset=mdl.objects.all(),
             zoom_levels=DEFAULT_ZOOM_LEVELS,
             number_of_thread=number_of_thread,

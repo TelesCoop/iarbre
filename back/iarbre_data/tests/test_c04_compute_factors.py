@@ -21,7 +21,7 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
 )
 import numpy as np
 
-from iarbre_data.management.commands.utils import select_city, load_geodataframe_from_db
+from iarbre_data.utils.database import select_city, load_geodataframe_from_db
 from iarbre_data.models import Tile, Data, TileFactor, City
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.data_config import DATA_FILES

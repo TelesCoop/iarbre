@@ -8,10 +8,11 @@ DATA_FILES = [
     },
     {
         "name": "SLT",
-        "file": "sltmateriel.geojson",
+        "file": "voirie.gpkg",
         "scripts": ["slt.py"],
+        "layer_name": "pub_patrimoinevoirie.sltmateriel",
         "actions": [
-            {"buffer_size": 2, "union": True},
+            {"buffer_size": 2, "union": False},
         ],
         "factors": ["Signalisation tricolore et lumineuse matériel"],
         "output_type": "POINT",
@@ -20,10 +21,55 @@ DATA_FILES = [
         "name": "Assainissement",
         "file": "assainissement.geojson",
         "scripts": ["assainissement.py"],
-        "actions": [{"buffer_size": 1, "explode": True, "union": True}],
+        "actions": [{"buffer_size": 1, "explode": True, "union": False}],
         "factors": ["Assainissement"],
         "output_type": "MULTILINESTRING",
     },
+    # {
+    #     "name": "Espaces publics",
+    #     "file": "voirie.gpkg",
+    #     "layer_name": "pub_patrimoinevoirie.espacepublic",
+    #     "actions": [
+    #         {
+    #             "filter": {
+    #                 "name": "typeespacepublic",
+    #                 "value": "Parc / jardin public / square",
+    #             }
+    #         },
+    #         {
+    #             "filter": {
+    #                 "name": "typeespacepublic",
+    #                 "value": "Giratoire",
+    #             }
+    #         },
+    #         {
+    #             "filters": [
+    #                 {
+    #                     "name": "typeespacepublic",
+    #                     "value": "Aire de jeux",
+    #                 },
+    #                 {
+    #                     "name": "typeespacepublic",
+    #                     "value": "Espace piétonnier",
+    #                 },
+    #             ]
+    #         },
+    #         {
+    #             "filter": {
+    #                 "name": "typeespacepublic",
+    #                 "value": "Délaissé / Ilot végétalisé",
+    #             }
+    #         },
+    #     ],
+    #     "scripts": ["parc.py", "giratoire.py", "jeux.py" "friche_nat.py"],
+    #     "factors": [
+    #         "Parcs et jardins publics",
+    #         "Giratoires",
+    #         "Espaces jeux et pietonnier",
+    #         "Friche naturelle",
+    #     ],
+    #     "output_type": "POLYGON",
+    # },
     {
         "name": "Espaces publics",
         "file": "espacepublic.geojson",
@@ -152,7 +198,7 @@ DATA_FILES = [
     {
         "name": "Réseaux gaz",
         "file": "rsx_gaz.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": False}],
         "scripts": ["gaz.py"],
         "factors": ["Rsx gaz"],
         "output_type": "LINESTRING",
@@ -160,7 +206,7 @@ DATA_FILES = [
     {
         "name": "Réseaux souterrains Enedis",
         "file": "rsx_souterrain_enedis.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": False}],
         "scripts": ["souterrain_enedis.py"],
         "factors": ["Rsx souterrains ERDF"],
         "output_type": "LINESTRING",
@@ -168,10 +214,26 @@ DATA_FILES = [
     {
         "name": "Réseaux aériens Enedis",
         "file": "rsx_aerien_enedis.geojson",
-        "actions": [{"buffer_size": 1, "union": True}],
+        "actions": [{"buffer_size": 1, "union": False}],
         "scripts": ["aerien_enedis.py"],
         "factors": ["Rsx aériens ERDF"],
         "output_type": "LINESTRING",
+    },
+    {
+        "name": "Place PMR",
+        "file": "voirie.gpkg",
+        "layer_name": "pub_patrimoinevoirie.emplacementpmr",
+        "actions": [{"buffer_size": 3}],
+        "factors": ["PMR"],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "Autopartage",
+        "file": "voirie.gpkg",
+        "layer_name": "pub_patrimoinevoirie.stationautopartage",
+        "actions": [{"buffer_size": 3}],
+        "factors": ["Autopartage"],
+        "output_type": "POLYGON",
     },
 ]
 URL_FILES = [
@@ -183,7 +245,7 @@ URL_FILES = [
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "scripts": ["fibre.py"],
         "layer_name": "tel_telecom.telfibreripthd_1",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": False}],
         "factors": ["Réseau Fibre"],
         "output_type": "LINESTRING",
     },
@@ -420,7 +482,7 @@ FACTORS = {
     "Marchés forains": 1,
     "Pistes cyclable": -1,
     "Plan eau": -5,  # -3
-    "Ponts": -3,
+    "Ponts": -5,
     "Réseau de chaleur urbain": -3,
     "Voies ferrées": -5,  # -2
     "Strate arborée": 1,
@@ -434,8 +496,23 @@ FACTORS = {
     "Rsx gaz": -3,
     "Rsx souterrains ERDF": -1,
     "Rsx aériens ERDF": -2,
+    "PMR": -4,
+    "Auto-partage": -2,
     # "QPV": 1,
 }
+
+UPDATES = [
+    {
+        "name": "Réseau Fibre",
+        "file": "voirie.gpkg",
+        "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
+        "actions": [
+            {"buffer_size": 2, "union": False},
+        ],
+        "factors": ["Fibre"],
+        "output_type": "POINT",
+    },
+]
 
 LCZ = {
     "1": "Ensemble compact de tours",

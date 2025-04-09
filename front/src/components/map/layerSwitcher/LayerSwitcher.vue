@@ -2,14 +2,17 @@
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
+import { updateMapRoute } from "@/utils/route"
+import { useRouter } from "vue-router"
 
 const mapStore = useMapStore()
+const router = useRouter()
 
 const selectedDataType = computed({
   get: () => mapStore.selectedDataType,
   set: (value: DataType) => {
-    console.log("changeLayer 0.0")
     mapStore.changeDataType(value)
+    updateMapRoute(router, { dataType: mapStore.selectedDataType })
   }
 })
 </script>
@@ -25,6 +28,9 @@ const selectedDataType = computed({
       <option :value="DataType.PLANTABILITY">{{ DataTypeToLabel[DataType.PLANTABILITY] }}</option>
       <option :value="DataType.LOCAL_CLIMATE_ZONES">
         {{ DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES] }}
+      </option>
+      <option :value="DataType.VULNERABILITY">
+        {{ DataTypeToLabel[DataType.VULNERABILITY] }}
       </option>
     </select>
   </div>

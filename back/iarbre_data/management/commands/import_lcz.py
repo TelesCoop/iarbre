@@ -1,3 +1,4 @@
+"""Import LCZ from CEREMA."""
 import geopandas
 import requests
 import zipfile
@@ -9,11 +10,13 @@ from django.core.management import BaseCommand
 from tqdm import tqdm
 
 from iarbre_data.data_config import URL_FILES, LCZ
+from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
+from iarbre_data.utils.data_processing import make_valid
 
 
-def download_data():
+def download_data() -> None:
     """
     Downloads the Local Climate Zone data from the specified URL and extracts it to the 'file_data/' directory.
 
@@ -44,7 +47,7 @@ def download_data():
         raise ValueError(f"Failed to download file from {url}")
 
 
-def load_data():
+def load_data() -> geopandas.GeoDataFrame:
     """Open the shapefile for LCZ.
 
     Returns:
@@ -68,11 +71,20 @@ def load_data():
     gdf = geopandas.read_file(shp_path)
     gdf = gdf[["lcz", "geometry"]]
     gdf.to_crs(TARGET_PROJ, inplace=True)
+    # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
+    all_cities_boundary = select_city(None).union_all()
+    gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
+    gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
+
+    # Simple correction for invalid geometry
+    gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     # Check and explode MultiPolygon geometries
-    gdf = gdf.explode(ignore_index=True)
-    gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
-    gdf["lcz"] = gdf["lcz"].astype(str)
-    return gdf
+    gdf_filtered = gdf_filtered.explode(ignore_index=True)
+    gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
+    # After re-projecting, some invalid geometry appears
+    gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
+    gdf_filtered["lcz"] = gdf_filtered["lcz"].astype(str)
+    return gdf_filtered
 
 
 def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
@@ -106,6 +118,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Load LCZ from CEREMA and then save all LCZ data in the DB."""
+        log_progress("Clean model")
+        print(Lcz.objects.all().delete())
+        log_progress("Download data if needed")
         download_data()
+        log_progress("Load data and pre-process them")
         lcz_data = load_data()
+        log_progress("Save geometries")
         save_geometries(lcz_data)

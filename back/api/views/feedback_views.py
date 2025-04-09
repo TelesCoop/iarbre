@@ -2,7 +2,7 @@ from rest_framework import generics
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from iarbre_data.models import Feedback
+from api.models import Feedback
 from api.serializers import FeedbackSerializer
 
 

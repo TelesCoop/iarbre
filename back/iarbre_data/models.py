@@ -9,6 +9,12 @@ from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
 
 
+def create_mapgeometry(instance):
+    """Transform the geometry to the map geometry."""
+    if instance.map_geometry is None:
+        instance.map_geometry = instance.geometry.transform(TARGET_MAP_PROJ, clone=True)
+
+
 class TileAggregateBase(models.Model):
     """Abstract base class for aggregating Tiles at IRIS and city level."""
 
@@ -73,15 +79,17 @@ class Tile(models.Model):
         """Return the color of the tile based on the normalized indice."""
         if self.plantability_normalized_indice is None:
             return "purple"
-        elif self.plantability_normalized_indice < 0.205:
+        elif (
+            self.plantability_normalized_indice < 2
+        ):  # river indice is about -3, we want gray scale
             return "#E0E0E0"
-        elif self.plantability_normalized_indice < 0.486:
+        elif self.plantability_normalized_indice < 4:
             return "#F0F1C0"
-        elif self.plantability_normalized_indice < 0.589:
+        elif self.plantability_normalized_indice < 6:
             return "#E5E09A"
-        elif self.plantability_normalized_indice < 0.682:
+        elif self.plantability_normalized_indice < 8:
             return "#B7D990"
-        elif self.plantability_normalized_indice < 0.826:
+        elif self.plantability_normalized_indice < 10:
             return "#71BB72"
         else:
             return "#006837"
@@ -93,13 +101,6 @@ class Tile(models.Model):
             "indice": self.plantability_normalized_indice,
             "color": self.color,
         }
-
-
-@receiver(pre_save, sender=Tile)
-def before_save_tile(sender, instance, **kwargs):
-    """Transform the geometry to the map geometry."""
-    if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(3857, clone=True)
 
 
 class Data(models.Model):
@@ -134,7 +135,6 @@ class MVTTile(models.Model):
     def save_mvt(self, mvt_data, filename):
         """Save the MVT data into the FileField."""
         content = ContentFile(mvt_data)
-        print("fiename is ", filename)
         self.mvt_file.save(filename, content, save=False)
         self.save()
 
@@ -193,19 +193,53 @@ class Lcz(models.Model):
         }
 
 
+class Vulnerability(models.Model):
+    """Elementary element on the map with the value of the vulnerability description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    vulnerability_index_day = models.FloatField(null=True)
+    vulnerability_index_night = models.FloatField(null=True)
+    expo_index_day = models.FloatField(null=True)
+    expo_index_night = models.FloatField(null=True)
+    capaf_index_day = models.FloatField(null=True)
+    capaf_index_night = models.FloatField(null=True)
+    sensibilty_index_day = models.FloatField(null=True)
+    sensibilty_index_night = models.FloatField(null=True)
+
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.VULNERABILITY.value
+
+    @property
+    def color(self):
+        """Return the color of the ICU based on the vulnerability_index_day."""
+        if self.vulnerability_index_day is None:
+            return "purple"
+        elif self.vulnerability_index_day < 3:
+            return "#006837"
+        elif self.vulnerability_index_day < 6:
+            return "#E0E0E0"
+        else:
+            return "red"
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice_day": self.vulnerability_index_day,
+            "indice_night": self.vulnerability_index_night,
+            "expo_index_day": self.expo_index_day,
+            "expo_index_night": self.expo_index_night,
+            "capaf_index_day": self.capaf_index_day,
+            "capaf_index_night": self.capaf_index_night,
+            "sensibilty_index_day": self.sensibilty_index_day,
+            "sensibilty_index_night": self.sensibilty_index_night,
+            "color": self.color,
+        }
+
+
 @receiver(pre_save, sender=Lcz)
-def before_save_lcz(sender, instance, **kwargs):
-    """Transform the geometry to the map geometry."""
-    if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(3857, clone=True)
-
-
-class Feedback(models.Model):
-    """Store feedbacks from carte.iarbre.fr"""
-
-    email = models.EmailField(blank=True, null=True)
-    feedback = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Feedback from {self.email or 'Anonymous'}"
+@receiver(pre_save, sender=Vulnerability)
+@receiver(pre_save, sender=Tile)
+def before_save(sender, instance, **kwargs):
+    create_mapgeometry(instance)

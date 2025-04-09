@@ -103,6 +103,7 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
+          cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache
         uses: actions/cache@v3
         with:
@@ -123,6 +124,7 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
+          cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache
         uses: actions/cache@v3
         with:
@@ -174,6 +176,9 @@ jobs:
       - name: Migrate database
         run: python manage.py migrate
         working-directory: ./back
+      - name: Populate the database
+        run: python manage.py populate
+        working-directory: ./back
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
@@ -182,6 +187,7 @@ jobs:
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
+          cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache from node-setup
         uses: actions/cache@v3
         with:
