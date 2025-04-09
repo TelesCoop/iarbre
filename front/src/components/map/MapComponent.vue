@@ -5,7 +5,7 @@ import { useRouter, useRoute } from "vue-router"
 import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
 import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
-import { updateMapRoute } from "@/utils/routeUtils"
+import { updateMapRoute } from "@/utils/route"
 
 const router = useRouter()
 const route = useRoute()

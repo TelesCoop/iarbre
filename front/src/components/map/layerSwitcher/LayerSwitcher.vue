@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
-import { updateMapRoute } from "@/utils/routeUtils"
+import { updateMapRoute } from "@/utils/route"
 import { useRouter } from "vue-router"
 
 const mapStore = useMapStore()
