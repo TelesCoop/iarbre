@@ -21,6 +21,7 @@ describe("Map interactions", () => {
     cy.getBySel("plantability-score-label").should("exist")
 
     cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
+    cy.url().should("include", "/lcz/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
     cy.mapHasNoPopup()
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
@@ -30,7 +31,11 @@ describe("Map interactions", () => {
     cy.mapOpenPopup() // cf. issue #92
 
     cy.mapSwitchLayer(DataType.VULNERABILITY)
+    cy.url().should("include", "/vulnerability/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()
+
+    cy.visit("/lcz/13/45.07126/5.5543")
+    cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
   })
 })
