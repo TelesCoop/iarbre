@@ -10,7 +10,7 @@ const router = createRouter({
       component: MapView
     },
     {
-      path: "/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
+      path: "/:dataType([a-zA-Z]+)/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
       name: "mapWithCoords",
       component: MapView
     }
