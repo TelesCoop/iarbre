@@ -6,25 +6,45 @@ from rasterio.features import rasterize
 import numpy as np
 import os
 
+from scipy import ndimage
+
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Data
 from iarbre_data.utils.database import load_geodataframe_from_db, log_progress
 
 
 def rasterize_data_across_all_cities(
-    factor_name, height, width, transform, output_dir=None
-):
+    factor_name: str,
+    height: int,
+    width: int,
+    height_out: int,
+    width_out: int,
+    transform: rasterio.Affine,
+    transform_out: rasterio.Affine,
+    block_size: int = 5,
+    output_dir: str = None,
+) -> None:
     """
     Convert Data polygons to a single binary raster across all cities to avoid border effects.
 
+    This function rasterizes the geometries of a specified factor across all cities, applies a convolution
+    to aggregate the raster values into larger blocks, and saves the resulting raster to a file.
+
     Args:
-        factor_name (str): Name of the factor to transform to raster
-        output_dir (str): Directory to save the raster file
+        factor_name (str): Name of the factor to transform to raster.
+        height (int): Height of the output raster.
+        width (int): Width of the output raster.
+        height_out (int): Height of the output raster after convolution.
+        width_out (int): Width of the output raster after convolution.
+        transform (rasterio.Affine): Affine transformation for the factor transformation.
+        transform_out (rasterio.Affine): Affine transformation for the raster output.
+        block_size (int, optional): Size of the convolution kernel. Defaults to 5.
+        output_dir (str, optional): Directory to save the raster file. Defaults to None.
 
     Returns:
-        str: Path to the generated raster file
+        None
     """
-
+    max_count = block_size * block_size
     os.makedirs(output_dir, exist_ok=True)
     qs = Data.objects.filter(factor=factor_name)
     factor_df = load_geodataframe_from_db(qs, [])
@@ -38,6 +58,15 @@ def rasterize_data_across_all_cities(
         default_value=1,
         dtype=np.uint8,
     )
+    if len(raster[raster > 0]) == 0:
+        raise ValueError(f"{factor_name} is producing a blank tif.")
+    log_progress("Summing on 5x5")
+    kernel = np.ones((block_size, block_size))
+    coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
+        0 : height_out * block_size : block_size,
+        0 : width_out * block_size : block_size,
+    ]
+    coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
     # Save the raster to file
     output_path = os.path.join(output_dir, f"{factor_name}.tif")
     log_progress(f"Saving {factor_name}")
@@ -45,14 +74,14 @@ def rasterize_data_across_all_cities(
         output_path,
         "w",
         driver="GTiff",
-        height=height,
-        width=width,
+        height=height_out,
+        width=width_out,
         count=1,
         dtype=raster.dtype,
         crs="EPSG:2154",
-        transform=transform,
+        transform=transform_out,
     ) as dst:
-        dst.write(raster, 1)
+        dst.write(coarse_raster, 1)
 
 
 class Command(BaseCommand):
@@ -61,19 +90,28 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         output_dir = "/home/ludo/rasters"
         resolution = 1
+        block_size = 5
         all_cities_union = City.objects.aggregate(union=Union("geometry"))["union"]
-
-        # Get the bounds of the combined city geometries
         minx, miny, maxx, maxy = all_cities_union.extent
 
-        # Calculate raster dimensions
         width = int((maxx - minx) / resolution)
         height = int((maxy - miny) / resolution)
-
-        # Create transformation for the output raster
         transform = from_origin(minx, maxy, resolution, resolution)
+
+        width_out = int((maxx - minx) / block_size)
+        height_out = int((maxy - miny) / block_size)
+        transform_out = from_origin(minx, maxy, block_size, block_size)
+
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
             rasterize_data_across_all_cities(
-                factor_name, height, width, transform, output_dir=output_dir
+                factor_name,
+                height,
+                width,
+                height_out,
+                width_out,
+                transform,
+                transform_out,
+                block_size=block_size,
+                output_dir=output_dir,
             )

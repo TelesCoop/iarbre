@@ -228,11 +228,11 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "Autopartage",
+        "name": "Auto-partage",
         "file": "voirie.gpkg",
         "layer_name": "pub_patrimoinevoirie.stationautopartage",
         "actions": [{"buffer_size": 3}],
-        "factors": ["Autopartage"],
+        "factors": ["Auto-partage"],
         "output_type": "POLYGON",
     },
 ]
