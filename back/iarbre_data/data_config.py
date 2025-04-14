@@ -347,7 +347,7 @@ URL_FILES = [
         "SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "layer_name": "adr_voie_lieu.adraerodrome",
         "scripts": [""],
-        "actions": [],
+        "actions": [{}],
         "factors": ["Aerodrome"],
         "output_type": "POLYGON",
     },
