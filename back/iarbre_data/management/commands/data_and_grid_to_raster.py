@@ -5,6 +5,7 @@ from rasterio.transform import from_origin
 from rasterio.features import rasterize
 import numpy as np
 import os
+import geopandas as gpd
 
 from scipy import ndimage
 
@@ -21,6 +22,7 @@ def rasterize_data_across_all_cities(
     width_out: int,
     transform: rasterio.Affine,
     transform_out: rasterio.Affine,
+    all_cities_union: gpd.GeoDataFrame,
     block_size: int = 5,
     output_dir: str = None,
 ) -> None:
@@ -38,6 +40,7 @@ def rasterize_data_across_all_cities(
         width_out (int): Width of the output raster after convolution.
         transform (rasterio.Affine): Affine transformation for the factor transformation.
         transform_out (rasterio.Affine): Affine transformation for the raster output.
+        all_cities_union (gpd.GeoDataFrame): GeoDataFrame containing the union of all city geometries.
         block_size (int, optional): Size of the convolution kernel. Defaults to 5.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
 
@@ -46,7 +49,8 @@ def rasterize_data_across_all_cities(
     """
     max_count = block_size * block_size
     os.makedirs(output_dir, exist_ok=True)
-    qs = Data.objects.filter(factor=factor_name)
+
+    qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
     factor_df = load_geodataframe_from_db(qs, [])
     log_progress(f"Rasterizing {factor_name}")
     # Rasterize the shapes
@@ -112,6 +116,7 @@ class Command(BaseCommand):
                 width_out,
                 transform,
                 transform_out,
+                all_cities_union=all_cities_union,
                 block_size=block_size,
                 output_dir=output_dir,
             )

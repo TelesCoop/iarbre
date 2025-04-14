@@ -29,14 +29,16 @@ def compute_weighted_sum(
         None
     """
     factor_file = raster_directory + factor_name + ".tif"
-    log_progress(f"Processing: {factor_file} with weight {weight}")
+    log_progress(
+        f"Processing: {factor_file.split('/')[-1].split('.')[0]} with weight {weight}"
+    )
 
     with rasterio.open(factor_file) as src:
-        factor_data = src.read(1)
+        factor_data = src.read(1).astype(np.float32)
         result += weight * factor_data / 100
     del factor_data
 
-    meta.update(dtype=np.float32, count=1, compress="lzw", nodata=0)
+    meta.update(dtype=np.float32, count=1, compress="lzw")
     with rasterio.open(output_file, "w", **meta) as dst:
         dst.write(result.astype(np.float32), 1)
 
@@ -46,17 +48,10 @@ def compute_weighted_sum(
 class Command(BaseCommand):
     help = "Compute and save factors data."
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--delete",
-            action="store_true",
-            help="Delete already existing TileFactor.",
-        )
-
     def handle(self, *args, **options):
         """Compute and save factor data for the selected city."""
-        raster_directory = "/home/ludo/rasters/"  # Update this path
-        output_file = "/home/ludo/rasters/weighted_sum.tif"
+        raster_directory = "/home/ludo/rasters/"  # WIP: Update this path
+        output_file = "/home/ludo/rasters/plantability.tif"
 
         # Init raster
         file_path = raster_directory + list(FACTORS.keys())[0] + ".tif"
@@ -65,7 +60,6 @@ class Command(BaseCommand):
             meta = ref_src.meta.copy()
             shape = ref_src.shape
 
-        # Initialize results raster with zeros
         result = np.zeros(shape, dtype=np.float32)
 
         for factor_name, weight in FACTORS.items():
