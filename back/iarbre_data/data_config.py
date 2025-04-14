@@ -12,7 +12,7 @@ DATA_FILES = [
         "scripts": ["slt.py"],
         "layer_name": "pub_patrimoinevoirie.sltmateriel",
         "actions": [
-            {"buffer_size": 2, "union": False},
+            {"buffer_size": 2, "union": True},
         ],
         "factors": ["Signalisation tricolore et lumineuse matériel"],
         "output_type": "POINT",
@@ -21,7 +21,7 @@ DATA_FILES = [
         "name": "Assainissement",
         "file": "assainissement.geojson",
         "scripts": ["assainissement.py"],
-        "actions": [{"buffer_size": 1, "explode": True, "union": False}],
+        "actions": [{"buffer_size": 1, "explode": True, "union": True}],
         "factors": ["Assainissement"],
         "output_type": "MULTILINESTRING",
     },
@@ -198,7 +198,7 @@ DATA_FILES = [
     {
         "name": "Réseaux gaz",
         "file": "rsx_gaz.geojson",
-        "actions": [{"buffer_size": 2, "union": False}],
+        "actions": [{"buffer_size": 2, "union": True}],
         "scripts": ["gaz.py"],
         "factors": ["Rsx gaz"],
         "output_type": "LINESTRING",
@@ -206,7 +206,7 @@ DATA_FILES = [
     {
         "name": "Réseaux souterrains Enedis",
         "file": "rsx_souterrain_enedis.geojson",
-        "actions": [{"buffer_size": 2, "union": False}],
+        "actions": [{"buffer_size": 2, "union": True}],
         "scripts": ["souterrain_enedis.py"],
         "factors": ["Rsx souterrains ERDF"],
         "output_type": "LINESTRING",
@@ -214,7 +214,7 @@ DATA_FILES = [
     {
         "name": "Réseaux aériens Enedis",
         "file": "rsx_aerien_enedis.geojson",
-        "actions": [{"buffer_size": 1, "union": False}],
+        "actions": [{"buffer_size": 1, "union": True}],
         "scripts": ["aerien_enedis.py"],
         "factors": ["Rsx aériens ERDF"],
         "output_type": "LINESTRING",
@@ -245,7 +245,7 @@ URL_FILES = [
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "scripts": ["fibre.py"],
         "layer_name": "tel_telecom.telfibreripthd_1",
-        "actions": [{"buffer_size": 2, "union": False}],
+        "actions": [{"buffer_size": 2, "union": True}],
         "factors": ["Réseau Fibre"],
         "output_type": "LINESTRING",
     },
@@ -507,7 +507,7 @@ UPDATES = [
         "file": "voirie.gpkg",
         "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
         "actions": [
-            {"buffer_size": 2, "union": False},
+            {"buffer_size": 2, "union": True},
         ],
         "factors": ["Fibre"],
         "output_type": "POINT",
