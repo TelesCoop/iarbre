@@ -64,7 +64,6 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
-    "oauth2_provider",
     "corsheaders",
     "decapcms_auth",
 ]
