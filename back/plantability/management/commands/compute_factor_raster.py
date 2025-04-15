@@ -3,6 +3,7 @@ import rasterio
 from rasterio import features
 import numpy as np
 from iarbre_data.data_config import FACTORS
+from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
 from typing import Dict, Any
@@ -115,9 +116,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Compute and save factor data for the selected city."""
-        raster_directory = "/home/ludo/rasters/"  # WIP: Update this path
-        output_file = "/home/ludo/rasters/plantability.tif"
-        output_color_file = "/home/ludo/rasters/plantability_colors.tif"
+        raster_directory = str(BASE_DIR) + "/media/rasters/"
+        output_file = str(BASE_DIR) + "/media/rasters/plantability.tif"
+        output_color_file = str(BASE_DIR) + "/media/rasters/plantability_colors.tif"
 
         # Init raster
         file_path = raster_directory + list(FACTORS.keys())[0] + ".tif"

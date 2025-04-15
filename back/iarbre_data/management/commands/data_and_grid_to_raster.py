@@ -11,6 +11,7 @@ from scipy import ndimage
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Data
+from iarbre_data.settings import BASE_DIR
 from iarbre_data.utils.database import load_geodataframe_from_db, log_progress
 
 
@@ -23,7 +24,7 @@ def rasterize_data_across_all_cities(
     transform: rasterio.Affine,
     transform_out: rasterio.Affine,
     all_cities_union: gpd.GeoDataFrame,
-    block_size: int = 5,
+    grid_size: int = 5,
     output_dir: str = None,
 ) -> None:
     """
@@ -41,13 +42,13 @@ def rasterize_data_across_all_cities(
         transform (rasterio.Affine): Affine transformation for the factor transformation.
         transform_out (rasterio.Affine): Affine transformation for the raster output.
         all_cities_union (gpd.GeoDataFrame): GeoDataFrame containing the union of all city geometries.
-        block_size (int, optional): Size of the convolution kernel. Defaults to 5.
+        grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
 
     Returns:
         None
     """
-    max_count = block_size * block_size
+    max_count = grid_size * grid_size
     os.makedirs(output_dir, exist_ok=True)
 
     qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
@@ -65,10 +66,10 @@ def rasterize_data_across_all_cities(
     if len(raster[raster > 0]) == 0:
         raise ValueError(f"{factor_name} is producing a blank tif.")
     log_progress("Summing on 5x5")
-    kernel = np.ones((block_size, block_size))
+    kernel = np.ones((grid_size, grid_size))
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
-        0 : height_out * block_size : block_size,
-        0 : width_out * block_size : block_size,
+        0 : height_out * grid_size : grid_size,
+        0 : width_out * grid_size : grid_size,
     ]
     coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
     # Save the raster to file
@@ -91,10 +92,16 @@ def rasterize_data_across_all_cities(
 class Command(BaseCommand):
     help = "Convert Data polygons to raster."
 
+    def add_arguments(self, parser):
+        """Add arguments to the command."""
+        parser.add_argument(
+            "--grid-size", type=int, default=5, help="Grid size in meters"
+        )
+
     def handle(self, *args, **options):
-        output_dir = "/home/ludo/rasters"
+        output_dir = str(BASE_DIR) + "/media/rasters/"
         resolution = 1
-        block_size = 5
+        grid_size = options["grid_size"]
         all_cities_union = City.objects.aggregate(union=Union("geometry"))["union"]
         minx, miny, maxx, maxy = all_cities_union.extent
 
@@ -102,9 +109,9 @@ class Command(BaseCommand):
         height = int((maxy - miny) / resolution)
         transform = from_origin(minx, maxy, resolution, resolution)
 
-        width_out = int((maxx - minx) / block_size)
-        height_out = int((maxy - miny) / block_size)
-        transform_out = from_origin(minx, maxy, block_size, block_size)
+        width_out = int((maxx - minx) / grid_size)
+        height_out = int((maxy - miny) / grid_size)
+        transform_out = from_origin(minx, maxy, grid_size, grid_size)
 
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
@@ -117,6 +124,6 @@ class Command(BaseCommand):
                 transform,
                 transform_out,
                 all_cities_union=all_cities_union,
-                block_size=block_size,
+                grid_size=grid_size,
                 output_dir=output_dir,
             )
