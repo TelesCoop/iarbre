@@ -64,11 +64,15 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
+    "oauth2_provider",
+    "corsheaders",
+    "decapcms_auth",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -87,8 +91,8 @@ if IS_LOCAL_DEV:
         "PUT",
     ]
     CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
-    INSTALLED_APPS.append("corsheaders")
-    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+    # INSTALLED_APPS.append("corsheaders")
+    # MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
     CORS_ALLOW_CREDENTIALS = True
 
 else:
@@ -233,6 +237,13 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
 }
+
+DECAP_CMS_AUTH = {
+    "OAUTH_CLIENT_ID": config.getstr("github_oauth.client_id"),
+    "OAUTH_CLIENT_SECRET": config.getstr("github_oauth.client_secret"),
+    "SCOPE": "repo,user",
+}
+
 # For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
 if sys.platform == "darwin":
     GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
