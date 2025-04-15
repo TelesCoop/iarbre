@@ -1,26 +1,21 @@
-import itertools
-
 import rasterio
 from django.contrib.gis.geos import GEOSGeometry
-from tqdm import tqdm
 
 from django.core.management import BaseCommand
 from django.db import transaction
-from django.db.models import Model
-import pyproj
 from shapely.geometry import box
 from shapely.ops import transform
-from shapely.geometry.base import BaseGeometry
-from concurrent.futures import ProcessPoolExecutor
+import pyproj
+import itertools
+from tqdm import tqdm
 
 from iarbre_data.models import Tile, City, Iris
 from iarbre_data.settings import TARGET_MAP_PROJ, BASE_DIR
-from iarbre_data.utils.database import log_progress
+from typing import Optional, Tuple, Type
+from django.db.models import Model
+from shapely.geometry.base import BaseGeometry
 
-from typing import Optional, Tuple, Type, List
-
-
-BATCH_SIZE = 10_000
+BATCH_SIZE = 50_000
 
 
 def normalize_plantability(value: float) -> float:
@@ -91,101 +86,86 @@ def get_administrative_attachment(
     return attachment_id, previous
 
 
-def process_raster_chunk(args) -> List[dict]:
-    chunk_data, row_start, transform_raster, nodata, crs = args
+def raster_to_db_tiles(raster_path: str, batch_size: int = BATCH_SIZE) -> None:
+    """
+    Convert a raster file to Tile objects in the database.
+    Each pixel becomes a square polygon with plantability indices based on the pixel value.
 
-    tile_dicts = []
-    project = pyproj.Transformer.from_crs(
-        crs, TARGET_MAP_PROJ, always_xy=True
-    ).transform
-    previous_iris = None
-    previous_city = None
+    Parameters:
+    -----------
+    raster_path : str
+        Path to the input raster file.
+    batch_size : int, optional
+        Number of tiles to create before committing to the database. Default is BATCH_SIZE.
+    """
 
-    for row_idx, col_idx in itertools.product(
-        range(chunk_data.shape[0]), range(chunk_data.shape[1])
-    ):
-        value = chunk_data[row_idx, col_idx]
-        if value == nodata:
-            continue
-
-        x_min, y_max = transform_raster * (col_idx, row_start + row_idx)
-        x_max, y_min = transform_raster * (col_idx + 1, row_start + row_idx + 1)
-        polygon = box(x_min, y_min, x_max, y_max)
-        iris_id, previous_iris = get_administrative_attachment(
-            polygon, previous_iris, Iris
-        )
-        city_id, previous_city = get_administrative_attachment(
-            polygon, previous_city, City
-        )
-
-        tile_dicts.append(
-            {
-                "geometry": polygon,
-                "map_geometry": transform(project, polygon),
-                "plantability_indice": float(value),
-                "plantability_normalized_indice": normalize_plantability(value),
-                "city_id": city_id,
-                "iris_id": iris_id,
-            }
-        )
-
-    return tile_dicts
-
-
-def raster_to_db_tiles(
-    raster_path: str, batch_size: int = BATCH_SIZE, n_threads: int = 4
-) -> None:
     with rasterio.open(raster_path) as src:
         data = src.read(1)
+
         transform_raster = src.transform
         crs = src.crs
-        nodata = src.nodata
+        project = pyproj.Transformer.from_crs(
+            crs, TARGET_MAP_PROJ, always_xy=True
+        ).transform
 
-        height = data.shape[0]
-        chunk_size = height // n_threads or 1
-
-        chunks = [
-            (data[i : i + chunk_size], i, transform_raster, nodata, crs)
-            for i in range(0, height, chunk_size)
-        ]
-
-        buffer = []
+        tiles = []
+        tile_count = 0
         total_tiles = 0
-        with ProcessPoolExecutor(max_workers=n_threads) as executor:
-            for tile_dicts in tqdm(
-                executor.map(process_raster_chunk, chunks),
-                total=len(chunks),
-                desc="Processing raster chunks",
-            ):
-                for d in tile_dicts:
-                    buffer.append(Tile(**d))
-                    if len(buffer) >= batch_size:
-                        with transaction.atomic():
-                            Tile.objects.bulk_create(buffer, batch_size=batch_size)
-                        total_tiles += len(buffer)
-                        log_progress(f"Inserted {total_tiles} tiles")
-                        buffer.clear()
+        previous_iris = None
+        previous_city = None
+        total_pixels = data.shape[0] * data.shape[1]
+        for row_idx, col_idx in tqdm(
+            itertools.product(range(data.shape[0]), range(data.shape[1])),
+            total=total_pixels,
+            desc="Processing pixels",
+        ):
+            value = data[row_idx, col_idx]
+            # Outside the cities they are nodata
+            if value == src.nodata:
+                continue
 
-        if buffer:
-            with transaction.atomic():
-                Tile.objects.bulk_create(buffer, batch_size=batch_size)
-            total_tiles += len(buffer)
-            log_progress(f"Inserted final batch of {len(buffer)} tiles")
+            x_min, y_max = transform_raster * (col_idx, row_idx)
+            x_max, y_min = transform_raster * (col_idx + 1, row_idx + 1)
+            polygon = box(x_min, y_min, x_max, y_max)
+
+            # update or not admin attachment
+            iris_id, previous_iris = get_administrative_attachment(
+                polygon, previous_iris, Iris
+            )
+            city_id, previous_city = get_administrative_attachment(
+                polygon, previous_city, City
+            )
+
+            plantability_indice = float(value)
+            plantability_normalized_indice = normalize_plantability(plantability_indice)
+
+            # Create Tile object
+            tile = Tile(
+                geometry=GEOSGeometry(polygon.wkt),
+                map_geometry=GEOSGeometry(transform(project, polygon).wkt),
+                plantability_indice=plantability_indice,
+                plantability_normalized_indice=plantability_normalized_indice,
+                city_id=city_id,
+                iris_id=iris_id,
+            )
+            tiles.append(tile)
+            tile_count += 1
+            total_tiles += 1
+
+            # Avoid OOM errors by committing in batches
+            if tile_count % batch_size == 0:
+                with transaction.atomic():
+                    Tile.objects.bulk_create(tiles, batch_size=batch_size)
+                tiles.clear()
+                tile_count = 0
+        # Save last batch if any remain
+        if tiles:
+            Tile.objects.bulk_create(tiles, batch_size=batch_size)
 
 
 class Command(BaseCommand):
-    help = "Convert plantatility data and save them in DB."
-
-    def add_arguments(self, parser):
-        """Add arguments to the command."""
-        parser.add_argument(
-            "--n_threads",
-            type=int,
-            default=6,
-            help="Number of threads to use for generating tiles",
-        )
+    help = "Compute and save factors data."
 
     def handle(self, *args, **options):
-        n_threads = options["n_threads"]
         raster_file = str(BASE_DIR) + "/media/rasters/plantability.tif"
-        raster_to_db_tiles(raster_file, n_threads)
+        raster_to_db_tiles(raster_file)
