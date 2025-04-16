@@ -27,7 +27,12 @@ def callback(request):
             client_secret=CLIENT_SECRET,
             authorization_response=request.get_full_path(),
         )
+        # token = token.get("access_token", "")
         content = {"token": token.get("access_token", ""), "provider": "github"}
+        # post_message = f'authorization:github:success:{content}'9
+        # content = f"""{{ "token": "{token.get('access_token', '')}", "provider": "github"}}'"""
+        # print(post_message)
+        return render(request, "decapcms_auth/callback.html", {"content": content})
+
     except BaseException:
         return HttpResponseBadRequest()
-    return render(request, "decapcms_auth/callback.html", {"content": content})

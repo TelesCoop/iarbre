@@ -92,8 +92,8 @@ if IS_LOCAL_DEV:
         "PUT",
     ]
     CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
-    INSTALLED_APPS.append("corsheaders")
-    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+    # INSTALLED_APPS.append("corsheaders")
+    # MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
     CORS_ALLOW_CREDENTIALS = True
 
 else:

@@ -1,13 +1,14 @@
 <html>
   <body>
-    <span>{{ content }}</span>
     <script>
       (function () {
         function recieveMessage(e) {
           console.log("recieveMessage %o", e);
           // send message to main window with da app
+          const provider = "github"
+          const state = "success"
           window.opener.postMessage(
-            `authorization:github:success:${JSON.stringify("{{ content }}")}`,
+            `authorization:${provider}:${state}:${JSON.stringify({{content | safe}})}`,
             e.origin,
           );
         }
