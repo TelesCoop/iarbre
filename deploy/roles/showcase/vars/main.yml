@@ -2,12 +2,11 @@
 showcase_static_path: "{{ project_dir }}/showcase_static"
 showcase_path: "{{ project_dir }}/showcase/static"
 
-main_hostname: "iarbre.fr"
+main_hostname: "{{ showcase_hostname }}"
 public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
-redirect_hostnames:
-  - www.iarbre.fr
+redirect_hostnames: "{{ showcase_redirect_hostnames }}"
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
