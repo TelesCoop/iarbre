@@ -2,15 +2,21 @@
 MVT Generator as django-media.
 """
 
+import itertools
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
+import geopandas as gpd
+from django.contrib.gis.db.models.functions import Intersection
 
-from django.contrib.gis.db.models import Extent, Union
+from shapely import wkt
+from shapely.geometry import box, Polygon as ShapelyPolygon
+import numpy as np
+
+from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon
 from django.db.models import QuerySet
-from django.contrib.gis.db.models.functions import SnapToGrid
-from django.db.models import Avg
+
 import mercantile
 import mapbox_vector_tile
 from typing import Dict
@@ -19,6 +25,7 @@ from tqdm import tqdm
 
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import DEFAULT_ZOOM_LEVELS
+from iarbre_data.utils.database import load_geodataframe_from_db
 
 MVT_EXTENT = 4096
 
@@ -65,10 +72,13 @@ class MVTGenerator:
                     truncate=True,
                 )
             )
-
+            if self.datatype == "plantability":
+                funct = self._generate_tile_for_zoom_plantability
+            else:
+                funct = self._generate_tile_for_zoom
             with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
                 future_to_tiles = {
-                    executor.submit(self._generate_tile_for_zoom, tile, zoom): tile
+                    executor.submit(funct, tile, zoom): tile
                     for tile in tiles
                     if not ignore_existing
                     or MVTTile.objects.filter(
@@ -104,6 +114,183 @@ class MVTGenerator:
             "north": bbox_polygon.extent[3],
         }
 
+    @staticmethod
+    def create_grid(gdf, grid_size):
+        minx, miny, maxx, maxy = gdf.total_bounds
+
+        minx = np.floor(minx / grid_size) * grid_size
+        miny = np.floor(miny / grid_size) * grid_size
+        maxx = np.ceil(maxx / grid_size) * grid_size
+        maxy = np.ceil(maxy / grid_size) * grid_size
+
+        rows = np.arange(miny, maxy, grid_size)
+        cols = np.arange(minx, maxx, grid_size)
+
+        polygons = []
+        grid_ids = []
+        for (row_idx, y), (col_idx, x) in itertools.product(
+            enumerate(rows), enumerate(cols)
+        ):
+            polygons.append(box(x, y, x + grid_size, y + grid_size))
+            grid_ids.append(f"{col_idx}_{row_idx}")
+
+        grid_gdf = gpd.GeoDataFrame(
+            {"grid_id": grid_ids, "geometry": polygons}, crs=gdf.crs
+        )
+        return grid_gdf
+
+    def _generate_tile_common(
+        self, tile: mercantile.Tile, zoom: int
+    ) -> tuple[Polygon, tuple[float, float, float, float], float, str]:
+        """
+        Common setup for tile generation that's shared across different datatypes.
+
+        Args:
+            tile (mercantile.Tile): The tile to generate the MVT for.
+            zoom (int): The zoom level of the tile.
+
+        Returns:
+            tuple: Contains tile_polygon, tile bounds (west, south, east, north), pixel size, and filename
+        """
+        # Compute tile bounds
+        tile_bounds = mercantile.xy_bounds(tile)
+        west, south, east, north = tile_bounds
+        pixel = self.pixel_length(zoom)
+        buffer = 4 * pixel
+
+        # Create GeoDjango polygon for tile extent
+        tile_polygon = Polygon.from_bbox(
+            (west - buffer, south - buffer, east + buffer, north + buffer)
+        )
+        tile_polygon.srid = TARGET_MAP_PROJ
+
+        filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
+
+        return tile_polygon, (west, south, east, north), pixel, filename
+
+    def _save_mvt_data(
+        self,
+        transformed_geometries: Dict[str, list],
+        bounds: tuple[float, float, float, float],
+        filename: str,
+        tile: mercantile.Tile,
+        zoom: int,
+    ) -> None:
+        """
+        Encode and save MVT data.
+
+        Args:
+            transformed_geometries (Dict[str, list]): The geometries to encode
+            bounds (tuple[float, float, float, float]): The bounds to use for quantization (west, south, east, north)
+            filename (str): The filename to save the MVT to
+            tile (mercantile.Tile): The tile object
+            zoom (int): The zoom level
+
+        Returns:
+            None
+        """
+        west, south, east, north = bounds
+
+        mvt_data = mapbox_vector_tile.encode(
+            transformed_geometries, quantize_bounds=(west, south, east, north)
+        )
+
+        mvt_tile = MVTTile(
+            geolevel=self.geolevel,
+            datatype=self.datatype,
+            zoom_level=zoom,
+            tile_x=tile.x,
+            tile_y=tile.y,
+        )
+
+        mvt_tile.save_mvt(mvt_data, filename)
+
+    def _generate_tile_for_zoom_plantability(
+        self, tile: mercantile.Tile, zoom: int
+    ) -> None:
+        """
+        Generate an individual MVT tile for the given tile and zoom level, only for plantability.
+
+        Args:
+            tile (mercantile.Tile): The tile to generate the MVT for.
+            zoom (int): The zoom level of the tile.
+
+        Returns:
+            None
+        """
+        # Get common tile data
+        tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
+
+        # Determine grid size based on zoom level
+        if zoom in [11, 12]:
+            grid_size = 200
+        elif zoom == 13:
+            grid_size = 50
+        elif zoom == 14:
+            grid_size = 20
+        elif zoom == 15:
+            grid_size = 10
+
+        # Filter queryset to tile extent
+        base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
+
+        if base_queryset.exists():
+            df = load_geodataframe_from_db(
+                base_queryset, ["plantability_normalized_indice", "map_geometry"]
+            )
+            df.map_geometry = df["map_geometry"].apply(
+                lambda el: wkt.loads(el.wkt)
+            )  # Shapely used to transform string to geometry
+            df = df.set_geometry("map_geometry")
+            df.crs = TARGET_MAP_PROJ
+
+            if zoom <= 15:
+                grid = self.create_grid(df, grid_size)
+                spatial_join = gpd.sjoin(df, grid, how="left", predicate="intersects")
+                aggregated = (
+                    spatial_join.groupby("grid_id")["plantability_normalized_indice"]
+                    .mean()
+                    .reset_index()
+                )
+                df = grid.merge(aggregated, on="grid_id", how="left")
+
+            west, south, east, north = tile_polygon.extent
+            shapely_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
+            clip_poly_gdf = gpd.GeoDataFrame(
+                geometry=[shapely_polygon], crs=TARGET_MAP_PROJ
+            )
+
+            df_clipped = gpd.clip(df, clip_poly_gdf)
+            transformed_geometries = {
+                "name": f"{self.geolevel}--{self.datatype}",
+                "features": [],
+            }
+
+            for obj in tqdm(
+                df_clipped.itertuples(),
+                desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+            ):
+                # Determine color based on average indice
+                plantability_normalized_indice = obj.plantability_normalized_indice
+                color = self._get_color_for_indice(plantability_normalized_indice)
+
+                # Create properties for the aggregated geometry
+                properties = {
+                    "id": obj.grid_id,
+                    "indice": plantability_normalized_indice,
+                    "color": color,
+                }
+
+                transformed_geometries["features"].append(
+                    {
+                        "geometry": obj.geometry.wkt,
+                        "properties": properties,
+                    }
+                )
+
+            # Save the MVT data
+            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+
     def _generate_tile_for_zoom(self, tile: mercantile.Tile, zoom: int) -> None:
         """
         Generate an individual MVT tile for the given tile and zoom level.
@@ -118,67 +305,26 @@ class MVTGenerator:
         Reference:
         https://makina-corpus.com/django/generer-des-tuiles-vectorielles-sur-mesure-avec-django
         """
-        # Calculate tile bounds
-        tile_bounds = mercantile.xy_bounds(tile)
-        west, south, east, north = tile_bounds
-        pixel = self.pixel_length(zoom)
-        buffer = 4 * pixel
+        # Get common tile data
+        tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
 
-        # Create GeoDjango polygon for tile extent
-        tile_polygon = Polygon.from_bbox(
-            (west - buffer, south - buffer, east + buffer, north + buffer)
-        )
-        tile_polygon.srid = TARGET_MAP_PROJ
+        # Filter queryset to tile extent and then clip it
+        clipped_queryset = self.queryset.filter(
+            map_geometry__intersects=tile_polygon
+        ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if zoom in [11, 12]:
-            grid_size = 200
-        elif zoom == 13:
-            grid_size = 50
-        elif zoom == 14:
-            grid_size = 20
-        elif zoom == 15:
-            grid_size = 10
+        if clipped_queryset.exists():
+            transformed_geometries = {
+                "name": f"{self.geolevel}--{self.datatype}",
+                "features": [],
+            }
 
-        # Filter queryset to tile extent
-        base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
-
-        if base_queryset.exists():
-            # Use Django SnapGrid to create a bigger grid and aggregate geometries
-            aggregated_geometries = (
-                base_queryset.annotate(
-                    grid_cell=SnapToGrid("map_geometry", grid_size, grid_size)
-                )
-                .values("grid_cell")
-                .annotate(
-                    union_geom=Union("map_geometry"),
-                    # Compute average of plantability_normalized_indice
-                    avg_indice=Avg("plantability_normalized_indice"),
-                )
-            )
-            for agg in tqdm(
-                aggregated_geometries,
+            for obj in tqdm(
+                clipped_queryset,
                 desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
             ):
-                transformed_geometries = {
-                    "name": f"{self.geolevel}--{self.datatype}",
-                    "features": [],
-                }
-
-                union_geom = agg["union_geom"]
-                clipped_geom = union_geom.intersection(
-                    tile_polygon
-                ).envelope  # clip it to polygon extend
-                # Determine color based on average indice
-                avg_indice = agg["avg_indice"]
-                color = self._get_color_for_indice(avg_indice)
-
-                # Create properties for the aggregated geometry
-                properties = {
-                    "id": f"grid_{tile.x}_{tile.y}_{zoom}_{hash(str(agg['grid_cell']))}",
-                    "indice": avg_indice,
-                    "color": color,
-                }
-
+                properties = obj.get_layer_properties()
+                clipped_geom = obj.clipped_geometry
                 transformed_geometries["features"].append(
                     {
                         "geometry": clipped_geom.make_valid()
@@ -188,19 +334,8 @@ class MVTGenerator:
                     }
                 )
 
-            mvt_data = mapbox_vector_tile.encode(
-                transformed_geometries, quantize_bounds=(west, south, east, north)
-            )
-
-            filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
-            mvt_tile = MVTTile(
-                geolevel=self.geolevel,
-                datatype=self.datatype,
-                zoom_level=zoom,
-                tile_x=tile.x,
-                tile_y=tile.y,
-            )
-            mvt_tile.save_mvt(mvt_data, filename)
+            # Save the MVT data
+            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     @staticmethod
     def _get_color_for_indice(indice):
