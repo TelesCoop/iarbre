@@ -64,20 +64,22 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
-    "corsheaders",
     "decapcms_auth",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# Mandatory for Decap CMS Auth
+# https://docs.djangoproject.com/en/5.1/ref/middleware/#cross-origin-opener-policy
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 if IS_LOCAL_DEV:
     CORS_ALLOW_ALL_ORIGINS = True
@@ -90,8 +92,8 @@ if IS_LOCAL_DEV:
         "PUT",
     ]
     CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
-    # INSTALLED_APPS.append("corsheaders")
-    # MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+    INSTALLED_APPS.append("corsheaders")
+    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
     CORS_ALLOW_CREDENTIALS = True
 
 else:
