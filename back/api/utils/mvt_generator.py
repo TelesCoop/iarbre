@@ -6,10 +6,11 @@ import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
 
-from django.contrib.gis.db.models import Extent
+from django.contrib.gis.db.models import Extent, Union
 from django.contrib.gis.geos import Polygon
 from django.db.models import QuerySet
-from django.contrib.gis.db.models.functions import Intersection
+from django.contrib.gis.db.models.functions import SnapToGrid
+from django.db.models import Avg
 import mercantile
 import mapbox_vector_tile
 from typing import Dict
@@ -128,23 +129,56 @@ class MVTGenerator:
             (west - buffer, south - buffer, east + buffer, north + buffer)
         )
         tile_polygon.srid = TARGET_MAP_PROJ
-        # Filter queryset to tile extent and then clip it
-        clipped_queryset = self.queryset.filter(
-            map_geometry__intersects=tile_polygon
-        ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if clipped_queryset.exists():
-            transformed_geometries = {
-                "name": f"{self.geolevel}--{self.datatype}",
-                "features": [],
-            }
+        if zoom in [11, 12]:
+            grid_size = 200
+        elif zoom == 13:
+            grid_size = 50
+        elif zoom == 14:
+            grid_size = 20
+        elif zoom == 15:
+            grid_size = 10
 
-            for obj in tqdm(
-                clipped_queryset,
+        # Filter queryset to tile extent
+        base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
+
+        if base_queryset.exists():
+            # Use Django SnapGrid to create a bigger grid and aggregate geometries
+            aggregated_geometries = (
+                base_queryset.annotate(
+                    grid_cell=SnapToGrid("map_geometry", grid_size, grid_size)
+                )
+                .values("grid_cell")
+                .annotate(
+                    union_geom=Union("map_geometry"),
+                    # Compute average of plantability_normalized_indice
+                    avg_indice=Avg("plantability_normalized_indice"),
+                )
+            )
+            for agg in tqdm(
+                aggregated_geometries,
                 desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
             ):
-                properties = obj.get_layer_properties()
-                clipped_geom = obj.clipped_geometry
+                transformed_geometries = {
+                    "name": f"{self.geolevel}--{self.datatype}",
+                    "features": [],
+                }
+
+                union_geom = agg["union_geom"]
+                clipped_geom = union_geom.intersection(
+                    tile_polygon
+                ).envelope  # clip it to polygon extend
+                # Determine color based on average indice
+                avg_indice = agg["avg_indice"]
+                color = self._get_color_for_indice(avg_indice)
+
+                # Create properties for the aggregated geometry
+                properties = {
+                    "id": f"grid_{tile.x}_{tile.y}_{zoom}_{hash(str(agg['grid_cell']))}",
+                    "indice": avg_indice,
+                    "color": color,
+                }
+
                 transformed_geometries["features"].append(
                     {
                         "geometry": clipped_geom.make_valid()
@@ -167,6 +201,24 @@ class MVTGenerator:
                 tile_y=tile.y,
             )
             mvt_tile.save_mvt(mvt_data, filename)
+
+    @staticmethod
+    def _get_color_for_indice(indice):
+        """Return the color based on the normalized indice."""
+        if indice is None:
+            return "purple"
+        elif indice < 2:  # river indice is about -3, we want gray scale
+            return "#E0E0E0"
+        elif indice < 4:
+            return "#F0F1C0"
+        elif indice < 6:
+            return "#E5E09A"
+        elif indice < 8:
+            return "#B7D990"
+        elif indice < 10:
+            return "#71BB72"
+        else:
+            return "#006837"
 
     @staticmethod
     def pixel_length(zoom):
