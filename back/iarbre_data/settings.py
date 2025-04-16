@@ -16,6 +16,9 @@ from pathlib import Path
 import getconf
 from django.http import Http404
 
+# Required for decap auth
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "file_data"
