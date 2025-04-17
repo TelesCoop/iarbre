@@ -214,13 +214,25 @@ class Vulnerability(models.Model):
     def color(self):
         """Return the color of the ICU based on the vulnerability_index_day."""
         if self.vulnerability_index_day is None:
-            return "purple"
-        elif self.vulnerability_index_day < 3:
-            return "#006837"
-        elif self.vulnerability_index_day < 6:
-            return "#E0E0E0"
+            return "grey"
+        elif self.vulnerability_index_day == 1:
+            return "#467EF4"
+        elif self.vulnerability_index_day == 2:
+            return "#31AFF5"
+        elif self.vulnerability_index_day == 3:
+            return "#38F491"
+        elif self.vulnerability_index_day == 4:
+            return "#BDF534"
+        elif self.vulnerability_index_day == 5:
+            return "#FEAA33"
+        elif self.vulnerability_index_day == 6:
+            return "#F8721C"
+        elif self.vulnerability_index_day == 7:
+            return "#E03F08"
+        elif self.vulnerability_index_day == 8:
+            return "#B61C02"
         else:
-            return "red"
+            return "#7A0403"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
