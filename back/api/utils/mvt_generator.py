@@ -19,7 +19,7 @@ from django.db.models import QuerySet
 import mercantile
 import mapbox_vector_tile
 from typing import Dict
-from iarbre_data.models import MVTTile
+from iarbre_data.models import MVTTile, get_tile_color
 from tqdm import tqdm
 
 from iarbre_data.settings import TARGET_MAP_PROJ
@@ -261,15 +261,11 @@ class MVTGenerator:
                 df_clipped.itertuples(),
                 desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
             ):
-                # Determine color based on average indice
-                plantability_normalized_indice = obj.plantability_normalized_indice
-                color = self._get_color_for_indice(plantability_normalized_indice)
-
                 # Create properties for the aggregated geometry
                 properties = {
                     "id": obj.grid_id,
-                    "indice": plantability_normalized_indice,
-                    "color": color,
+                    "indice": obj.plantability_normalized_indice,
+                    "color": get_tile_color(obj.plantability_normalized_indice),
                 }
 
                 transformed_geometries["features"].append(
@@ -332,18 +328,18 @@ class MVTGenerator:
         """Return the color based on the normalized indice."""
         if indice is None:
             return "purple"
-        elif indice < 2:  # river indice is about -3, we want gray scale
-            return "#E0E0E0"
+        elif indice < 2:  # river indice is about -3, we want gray
+            return "#C4C4C4"
         elif indice < 4:
-            return "#F0F1C0"
+            return "#BF5A16"
         elif indice < 6:
-            return "#E5E09A"
+            return "#DDAD14"
         elif indice < 8:
-            return "#B7D990"
+            return " #A6CC4A"
         elif indice < 10:
-            return "#71BB72"
+            return "#55B250"
         else:
-            return "#006837"
+            return "#025400"
 
     @staticmethod
     def pixel_length(zoom):
