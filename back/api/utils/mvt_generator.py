@@ -324,24 +324,6 @@ class MVTGenerator:
             self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     @staticmethod
-    def _get_color_for_indice(indice):
-        """Return the color based on the normalized indice."""
-        if indice is None:
-            return "purple"
-        elif indice < 2:  # river indice is about -3, we want gray
-            return "#C4C4C4"
-        elif indice < 4:
-            return "#BF5A16"
-        elif indice < 6:
-            return "#DDAD14"
-        elif indice < 8:
-            return " #A6CC4A"
-        elif indice < 10:
-            return "#55B250"
-        else:
-            return "#025400"
-
-    @staticmethod
     def pixel_length(zoom):
         """Width of a pixel in Web Mercator"""
         RADIUS = 6378137
