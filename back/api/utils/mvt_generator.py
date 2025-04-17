@@ -252,6 +252,7 @@ class MVTGenerator:
                     .reset_index()
                 )
                 df_clipped = grid.merge(aggregated, on="grid_id", how="left")
+                df_clipped = df_clipped.rename(columns={"grid_id": "id"})
 
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
@@ -263,7 +264,7 @@ class MVTGenerator:
             ):
                 # Create properties for the aggregated geometry
                 properties = {
-                    "id": obj.grid_id,
+                    "id": obj.id,
                     "indice": obj.plantability_normalized_indice,
                     "color": get_tile_color(obj.plantability_normalized_indice),
                 }
