@@ -4,12 +4,12 @@ MVT Generator as django-media.
 
 import itertools
 import math
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
 import geopandas as gpd
 from django.contrib.gis.db.models.functions import Intersection
 
-from shapely import wkt
 from shapely.geometry import box, Polygon as ShapelyPolygon
 import numpy as np
 
@@ -219,8 +219,9 @@ class MVTGenerator:
             None
         """
         # Get common tile data
+        t = time.time()
         tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
-
+        print(f"Generate tile_poly {time.time() - t}")
         # Determine grid size based on zoom level
         if zoom in [11, 12]:
             grid_size = 200
@@ -232,40 +233,45 @@ class MVTGenerator:
             grid_size = 10
 
         # Filter queryset to tile extent
+        t = time.time()
         base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
-
+        print(f"Queryset time, {time.time() - t}")
+        t = time.time()
+        print(base_queryset.count())
+        print(f"Queryset count time: {time.time() - t}")
         if base_queryset.exists():
+            t = time.time()
             df = load_geodataframe_from_db(
                 base_queryset, ["plantability_normalized_indice", "map_geometry"]
             )
-            df.map_geometry = df["map_geometry"].apply(
-                lambda el: wkt.loads(el.wkt)
-            )  # Shapely used to transform string to geometry
-            df = df.set_geometry("map_geometry")
-            df.crs = TARGET_MAP_PROJ
-
-            if zoom <= 15:
-                grid = self.create_grid(df, grid_size)
-                spatial_join = gpd.sjoin(df, grid, how="left", predicate="intersects")
-                aggregated = (
-                    spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-                    .mean()
-                    .reset_index()
-                )
-                df = grid.merge(aggregated, on="grid_id", how="left")
-
+            print(f"Geodataframe loaded, {time.time()-t}")
+            t = time.time()
             west, south, east, north = tile_polygon.extent
             shapely_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
             clip_poly_gdf = gpd.GeoDataFrame(
                 geometry=[shapely_polygon], crs=TARGET_MAP_PROJ
             )
-
             df_clipped = gpd.clip(df, clip_poly_gdf)
+            print(f"Clipping, {time.time() - t}")
+            t = time.time()
+            if zoom <= 15:
+                grid = self.create_grid(df_clipped, grid_size)
+                spatial_join = gpd.sjoin(
+                    df_clipped, grid, how="left", predicate="intersects"
+                )
+                aggregated = (
+                    spatial_join.groupby("grid_id")["plantability_normalized_indice"]
+                    .mean()
+                    .reset_index()
+                )
+                df_clipped = grid.merge(aggregated, on="grid_id", how="left")
+            print(f"Aggregation, {time.time() - t}")
+            print(len(df_clipped))
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
                 "features": [],
             }
-
+            t = time.time()
             for obj in tqdm(
                 df_clipped.itertuples(),
                 desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
@@ -287,9 +293,11 @@ class MVTGenerator:
                         "properties": properties,
                     }
                 )
-
+            print(f"Creating dict with geom {time.time() - t}")
             # Save the MVT data
+            t = time.time()
             self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+            print(f"Saving data {time.time() - t}")
 
     def _generate_tile_for_zoom(self, tile: mercantile.Tile, zoom: int) -> None:
         """
