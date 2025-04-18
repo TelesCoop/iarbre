@@ -10,7 +10,7 @@ from iarbre_data.management.commands.c02_init_grid import (
     HexTileShape,
     clean_outside,
 )
-from iarbre_data.management.commands.utils import select_city, load_geodataframe_from_db
+from iarbre_data.utils.database import select_city, load_geodataframe_from_db
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.models import Tile, City
 import numpy as np

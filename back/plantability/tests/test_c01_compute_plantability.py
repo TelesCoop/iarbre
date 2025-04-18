@@ -6,7 +6,7 @@ from iarbre_data.models import Tile
 from iarbre_data.data_config import FACTORS
 from plantability.management.commands.c01_compute_plantability_indice import (
     compute_indice,
-    compute_normalized_indice,
+    compute_robust_normalized_indice,
 )
 
 
@@ -36,7 +36,7 @@ class C01ComputePlantabilityTestCase(TestCase):
         tiles_plantability = list(
             qs.values_list("plantability_normalized_indice", flat=True)
         )
-        compute_normalized_indice()
+        compute_robust_normalized_indice()
         self.assertNotEquals(
             list(
                 Tile.objects.all().values_list(

@@ -1,6 +1,6 @@
 from django.db.models import TextChoices
 
-DEFAULT_ZOOM_LEVELS = (12, 16)
+DEFAULT_ZOOM_LEVELS = (11, 18)
 
 
 class GeoLevel(TextChoices):
