@@ -2,7 +2,7 @@ backend:
   name: github
   branch: main
   repo: TelesCoop/iarbre-showcase-content
-  base_url: https://feature-feat-install-decap-carte.iarbre.fr
+  base_url: https://preprod-carte.iarbre.fr
   auth_endpoint: /cms/auth
   squash_merges: true
 media_folder: "assets/uploads"
