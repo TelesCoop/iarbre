@@ -216,23 +216,23 @@ class Vulnerability(models.Model):
         if self.vulnerability_index_day is None:
             return "grey"
         elif self.vulnerability_index_day == 1:
-            return "#467EF4"
-        elif self.vulnerability_index_day == 2:
             return "#31AFF5"
+        elif self.vulnerability_index_day == 2:
+            return "#7785A3"
         elif self.vulnerability_index_day == 3:
-            return "#38F491"
+            return "#E6E3D1"
         elif self.vulnerability_index_day == 4:
-            return "#BDF534"
+            return "#E0CF6E"
         elif self.vulnerability_index_day == 5:
-            return "#FEAA33"
-        elif self.vulnerability_index_day == 6:
             return "#F8721C"
-        elif self.vulnerability_index_day == 7:
+        elif self.vulnerability_index_day == 6:
             return "#E03F08"
-        elif self.vulnerability_index_day == 8:
+        elif self.vulnerability_index_day == 7:
             return "#B61C02"
-        else:
+        elif self.vulnerability_index_day == 8:
             return "#7A0403"
+        else:
+            return "#000000"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
