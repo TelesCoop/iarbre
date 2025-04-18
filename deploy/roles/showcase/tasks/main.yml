@@ -44,6 +44,7 @@
     track_submodules: true
     remote: origin
   become_user: "{{ main_user }}"
+  register: clonecode
 
 - name: Build showcase code for static rendering
   # yamllint disable-line rule:line-length
