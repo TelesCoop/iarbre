@@ -11,7 +11,8 @@
 
 $offWhite: #efefed;
 $darkGreen: #32412d;
-$lightGreen: #92a48d;
+$lightGreen: #8aa08c;
+$veryLightGreen: #c7d0c8;
 $brown: #32312d;
 $white: #ffffff;
 
@@ -25,15 +26,15 @@ $accent-font: "Sligoil";
 }
 
 a {
-  color: $darkGreen; /* Vert foncé */
-  text-decoration: underline; /* Soulignement par défaut */
-  font-weight: bold; /* Optionnel : met en valeur le lien */
+  color: $darkGreen;
+  text-decoration: underline;
+  font-weight: bold;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
-a:hover {
-  text-decoration: none; /* Supprime le soulignement au survol */
-  color: $darkGreen; /* Maintient la couleur verte au survol */
-}
 body {
   font-family: $main-font, Arial, sans-serif;
   color: $brown;
@@ -141,45 +142,45 @@ hr.full-width {
 
 /* Bandeau de navigation */
 .navbar {
-  position: relative;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
   height: 80px;
-  background-color: $offWhite; /* Même couleur que le background */
+  background-color: $offWhite;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-}
 
-.navbar-left {
-  display: flex;
-  align-items: center;
-}
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
 
-.navbar-logo {
-  height: 30px;
-  width: auto;
-}
+  .navbar-logo {
+    height: 30px;
+    width: auto;
+  }
 
-.navbar-right {
-  display: flex;
-  gap: 20px;
-}
+  .navbar-right {
+    display: flex;
+    gap: 20px;
+  }
 
-.navbar-link {
-  font-family: $accent-font, Arial, sans-serif;
-  color: $brown;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-.navbar-link:hover {
-  color: $lightGreen;
+  .navbar-link {
+    font-family: $accent-font, Arial, sans-serif;
+    color: $brown;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    line-height: 1.5;
+    &:hover {
+      color: $lightGreen;
+    }
+  }
 }
 
 .fullscreen {
@@ -579,4 +580,135 @@ footer a:hover {
 
 .justify-center {
   justify-content: center;
+}
+
+.main.post {
+  display: flex;
+
+  .tag {
+    border-radius: 78px;
+    background-color: $white;
+    color: $lightGreen;
+    padding: 7px 12px;
+    display: inline;
+    font-weight: bold;
+  }
+
+  .sidebar {
+    background-color: $veryLightGreen;
+    margin: 0;
+    padding: 0;
+    min-width: 400px;
+    max-width: 400px;
+    padding: 20px;
+
+    ul {
+      position: fixed;
+      width: 340px; // 400 - 30px *2
+      li.post-item {
+        &.selected,
+        &:hover {
+          .title {
+            text-decoration: underline;
+          }
+        }
+        padding: 30px 0px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        .title a {
+          font-family: $accent-font, Arial, sans-serif;
+          line-height: 135%;
+          font-size: 14px;
+          font-weight: 400;
+          text-decoration: none;
+        }
+      }
+      li:not(:first-child) {
+        border-top: 1px solid $brown;
+      }
+    }
+  }
+
+  .post {
+    flex-grow: 1;
+    .text-column {
+      max-width: 892px;
+      margin: 50px auto;
+      font-family: $main-font, Arial, sans-serif;
+      p,
+      ul {
+        line-height: 1.7em;
+      }
+
+      ul {
+        margin-left: 15px;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: $accent-font, Arial, sans-serif;
+        font-weight: 400;
+      }
+    }
+  }
+}
+
+h1 {
+  display: block;
+  font-size: 3em;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h3 {
+  display: block;
+  font-size: 1.17em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h4 {
+  display: block;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h5 {
+  display: block;
+  font-size: 0.83em;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h6 {
+  display: block;
+  font-size: 0.67em;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
 }
