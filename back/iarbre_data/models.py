@@ -222,9 +222,9 @@ class Vulnerability(models.Model):
         elif self.vulnerability_index_day == 3:
             return "#E6E3D1"
         elif self.vulnerability_index_day == 4:
-            return "#E0CF6E"
+            return "#D1BB3B"
         elif self.vulnerability_index_day == 5:
-            return "#F8721C"
+            return "#C06329"
         elif self.vulnerability_index_day == 6:
             return "#E03F08"
         elif self.vulnerability_index_day == 7:
@@ -232,7 +232,7 @@ class Vulnerability(models.Model):
         elif self.vulnerability_index_day == 8:
             return "#7A0403"
         else:
-            return "#000000"
+            return "#353A47"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
