@@ -6,6 +6,11 @@ project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 main_hostname: "preprod-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
+
+showcase_hostname: "preprod-showcase.iarbre.fr"
+showcase_redirect_hostnames: []
+showcase_certificate_hostname: "iarbre.fr-0001"
+
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
@@ -21,5 +26,7 @@ backend_static_path: "{{ project_dir }}/backend_static"
 
 frontend_branch: dev
 backend_branch: dev
+showcase_branch: dev
+docs_branch: dev
 
 environment_name: production
