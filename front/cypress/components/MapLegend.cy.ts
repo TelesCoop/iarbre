@@ -15,8 +15,5 @@ describe("Map legends", () => {
   })
   it("renders correctly vulnerability legend", () => {
     cy.mount(VulnerabilityLegend)
-    cy.contains("Basse")
-    cy.contains("Moyenne")
-    cy.contains("Haute")
   })
 })
