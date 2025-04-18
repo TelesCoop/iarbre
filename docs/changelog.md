@@ -2,6 +2,14 @@
 
 ## 🔖 0.4.0 (2025-xx-xx)
 
+### 🛠️ enhance: Calque de vulnérabilité à la chaleur
+
+Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise à jour.
+
+|                                 Avant                                  |                             Après                             |
+| :--------------------------------------------------------------------: | :-----------------------------------------------------------: |
+| ![Avant MAJ](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](assets/images/changelog/v0.4.0/chaleurapres.png) |
+
 ### ✨ feat: Intégration de [Sveltia CMS](https://github.com/sveltia/sveltia-cms) pour modifier le site statique
 
 Le contenu du site statique [iarbre.fr](https://iarbre.fr/) peut désormais être modifié sans coder en se connectant avec ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https://iarbre.fr/admin).
