@@ -33,7 +33,7 @@ def load_geodataframe_from_db(queryset, fields):
         crs = TARGET_MAP_PROJ
     # Get geometry data in GEOJSON to avoid conversion to WKT with shapely
     qs = queryset.annotate(geom_json=AsGeoJSON(geom_field)).values(*fields, "geom_json")
-    data = list(qs)
+    data = list(qs)  # Run query
 
     for row in data:
         row["geometry"] = shape(json.loads(row.pop("geom_json")))

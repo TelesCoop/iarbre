@@ -236,13 +236,12 @@ class MVTGenerator:
                 base_queryset, ["plantability_normalized_indice", "map_geometry"]
             )
             west, south, east, north = tile_polygon.extent
-            shapely_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
-            clip_poly_gdf = gpd.GeoDataFrame(
-                geometry=[shapely_polygon], crs=TARGET_MAP_PROJ
-            )
-            df_clipped = gpd.clip(df, clip_poly_gdf)
+            mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
+            clip_mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_tile], crs=TARGET_MAP_PROJ)
+            df_clipped = gpd.clip(df, clip_mvt_gdf)
             if zoom <= 15:
                 grid = self.create_grid(df_clipped, grid_size)
+                grid = gpd.clip(grid, df_clipped)
                 spatial_join = gpd.sjoin(
                     df_clipped, grid, how="left", predicate="intersects"
                 )
