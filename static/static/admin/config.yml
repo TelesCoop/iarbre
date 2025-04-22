@@ -18,33 +18,37 @@ media_libraries:
         svg:
           optimize: true
 collections:
-  # - name: "Actualités"
-  #   label: "Actualités"
-  #   folder: "actualites/"
-  #   create: True
-  #   path: "{{slug}}/index"
-  #   icon: news
-  #   fields:
-  #     - label: Titre
-  #       name: title
-  #       required: true
-  #       hint: Moins de 60 caractères
-  #     - label: Date de publication
-  #       name: "publishDate"
-  #       widget: "datetime"
-  #       default: "{{now}}"
-  #     - name: layout
-  #       widget: hidden
-  #       default: post
-  #     - label: Auteur
-  #       name: author
-  #     - label: Résumé
-  #       name: summary
-  #       hint: Moins de 300 caractères
-  #       widget: text
-  #     - label: Contenu de l'article
-  #       name: body
-  #       widget: markdown
+  - name: "Actualités"
+    label: "Actualités"
+    folder: "actualites/"
+    create: True
+    path: "{{slug}}/index"
+    icon: news
+    fields:
+      - label: Titre
+        name: title
+        required: true
+        hint: Moins de 60 caractères
+      - label: Brouillon (n'est pas publié sur iarbre.fr)
+        name: "draft"
+        widget: "boolean"
+        default: true
+      - label: Date de publication
+        name: "publishDate"
+        widget: "datetime"
+        default: "{{now}}"
+      - name: layout
+        widget: hidden
+        default: post
+      - label: Auteur
+        name: author
+      - label: Résumé
+        name: summary
+        hint: Moins de 300 caractères
+        widget: text
+      - label: Contenu de l'article
+        name: body
+        widget: markdown
   - name: "home"
     label: "Page d'accueil"
     files:
