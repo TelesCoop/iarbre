@@ -13,6 +13,11 @@ server {
     listen 80;
     {% endif %}
 
+    {% if use_password %}
+    auth_basic "Acces restreint";
+    auth_basic_user_file "{{ showcase_path }}/passwdfile";
+    {% endif %}
+
     server_name {{ " ".join(all_hostnames) }};
 
     access_log /var/log/nginx/access_{{ main_hostname.replace('.', '_') }}.log;

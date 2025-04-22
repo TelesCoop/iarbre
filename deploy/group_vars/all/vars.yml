@@ -2,6 +2,7 @@ organization_slug: telescoop
 base_project_slug: iarbre
 main_user: iarbre
 main_user_uid: 10045 # TODO must be unique for each project on the server
+use_password: false
 django_project_name: iarbre_data
 backend_repo: git@github.com:TelesCoop/iarbre.git
 frontend_repo: git@github.com:TelesCoop/iarbre.git
