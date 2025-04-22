@@ -56,3 +56,12 @@ jobs:
           options: |
             -l feature -e branch=${{ env.BRANCH_NAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy static
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: showcase.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l feature -e branch=${{ env.BRANCH_NAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}

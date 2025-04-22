@@ -6,3 +6,4 @@ server_uris_passed_to_backend:
   - api
   - backup
   - hijack
+  - cms

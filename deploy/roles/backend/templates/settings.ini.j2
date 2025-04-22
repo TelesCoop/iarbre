@@ -34,3 +34,7 @@ password = {{ database_password|default('') }}
 
 [environment]
 environment = {{ environment_name }}
+
+[github_oauth]
+client_id= {{ vault_github_oauth_client_id }}
+client_secret= {{ vault_github_oauth_client_secret }}

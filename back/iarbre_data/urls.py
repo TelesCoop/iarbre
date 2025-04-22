@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from decapcms_auth import urls as decapcmsauth_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("backup/", include("telescoop_backup.urls")),
+    path("cms/", include(decapcmsauth_urls)),
 ]
