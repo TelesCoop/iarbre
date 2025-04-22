@@ -8,10 +8,16 @@ public_hostnames:
   - "{{ main_hostname }}"
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
+
+showcase_hostname: "iarbre.fr"
+showcase_redirect_hostnames:
+  - "www.iarbre.fr"
+
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
 certificate_hostname: "iarbre.fr-0001"
+showcase_certificate_hostname: "iarbre.fr-0002"
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server
@@ -19,9 +25,9 @@ https_enabled: true
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
-frontend_branch: dev
-backend_branch: dev
-showcase_branch: dev
-docs_branch: dev
+frontend_branch: main
+backend_branch: main
+showcase_branch: main
+docs_branch: main
 
 environment_name: production
