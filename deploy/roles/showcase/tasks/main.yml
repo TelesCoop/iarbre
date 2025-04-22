@@ -40,6 +40,9 @@
     accept_hostkey: true
     force: true
     version: "{{ showcase_branch }}"
+    # git submodule should have master branch
+    track_submodules: true
+    remote: origin
   become_user: "{{ main_user }}"
   register: clonecode
 
@@ -51,9 +54,6 @@
     executable: /bin/bash
   when: clonecode.changed or force_update is defined
   register: build_code
-
-# - debug: msg="{{ build_code.stdout }}"
-#   when: clonecode.changed  or force_update is defined
 
 - name: Update showcase static folder
   file:

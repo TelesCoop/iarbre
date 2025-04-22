@@ -1,5 +1,25 @@
 # Journal de changements
 
+## 🔖 0.4.0 (2025-xx-xx)
+
+### 🛠️ enhance: Calque de vulnérabilité à la chaleur
+
+Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise à jour.
+
+|                                 Avant                                  |                             Après                             |
+| :--------------------------------------------------------------------: | :-----------------------------------------------------------: |
+| ![Avant MAJ](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](assets/images/changelog/v0.4.0/chaleurapres.png) |
+
+### ✨ feat: Intégration de [Sveltia CMS](https://github.com/sveltia/sveltia-cms) pour modifier le site statique
+
+Le contenu du site statique [iarbre.fr](https://iarbre.fr/) peut désormais être modifié sans coder en se connectant avec ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https://iarbre.fr/admin).
+
+Cette interface permettra à l’avenir de modifier et de publier des articles de blog.
+
+![Capture d’écran de Sveltia CMS](assets/images/changelog/v0.4.0/cms_screenshot.png)
+
+&rarr; Ticket [#43](https://github.com/TelesCoop/iarbre/issues/43)
+
 ## 🔖 0.3.0 (2025-09-04) - Mise à jour de données et ajout calque vulnérabilité à la chaleur
 
 ### ✨ feat: Possibilité d'ouvrir la carte sur un calque spécifique

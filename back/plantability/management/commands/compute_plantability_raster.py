@@ -36,7 +36,6 @@ def compute_weighted_sum(
     log_progress(
         f"Processing: {factor_file.split('/')[-1].split('.')[0]} with weight {weight}"
     )
-
     with rasterio.open(factor_file) as src:
         factor_data = src.read(1).astype(np.float32)
         result += weight * factor_data / 100

@@ -1,11 +1,11 @@
 from django.contrib.gis.db.models import Union
 import rasterio
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from rasterio.transform import from_origin
 from rasterio.features import rasterize
 import numpy as np
 import os
-import geopandas as gpd
 
 from scipy import ndimage
 
@@ -23,7 +23,7 @@ def rasterize_data_across_all_cities(
     width_out: int,
     transform: rasterio.Affine,
     transform_out: rasterio.Affine,
-    all_cities_union: gpd.GeoDataFrame,
+    all_cities_union: GEOSGeometry,
     grid_size: int = 5,
     output_dir: str = None,
 ) -> None:
@@ -41,7 +41,7 @@ def rasterize_data_across_all_cities(
         width_out (int): Width of the output raster after convolution.
         transform (rasterio.Affine): Affine transformation for the factor transformation.
         transform_out (rasterio.Affine): Affine transformation for the raster output.
-        all_cities_union (gpd.GeoDataFrame): GeoDataFrame containing the union of all city geometries.
+        all_cities_union (GEOSGeometry): GEOSGeometry containing the union of all city geometries.
         grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
 

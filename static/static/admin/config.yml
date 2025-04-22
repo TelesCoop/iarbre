@@ -1,0 +1,71 @@
+backend:
+  name: github
+  branch: main
+  repo: TelesCoop/iarbre-showcase-content
+  base_url: https://preprod-carte.iarbre.fr
+  auth_endpoint: /cms/auth
+  squash_merges: true
+media_folder: "assets/uploads"
+media_libraries:
+  default:
+    config:
+      transformations:
+        raster_images:
+          format: webp
+          quality: 85
+          width: 2048
+          height: 2048
+        svg:
+          optimize: true
+collections:
+  # - name: "Actualités"
+  #   label: "Actualités"
+  #   folder: "actualites/"
+  #   create: True
+  #   path: "{{slug}}/index"
+  #   icon: news
+  #   fields:
+  #     - label: Titre
+  #       name: title
+  #       required: true
+  #       hint: Moins de 60 caractères
+  #     - label: Date de publication
+  #       name: "publishDate"
+  #       widget: "datetime"
+  #       default: "{{now}}"
+  #     - name: layout
+  #       widget: hidden
+  #       default: post
+  #     - label: Auteur
+  #       name: author
+  #     - label: Résumé
+  #       name: summary
+  #       hint: Moins de 300 caractères
+  #       widget: text
+  #     - label: Contenu de l'article
+  #       name: body
+  #       widget: markdown
+  - name: "home"
+    label: "Page d'accueil"
+    files:
+      - name: "consortium"
+        label: "Présentation du consortium"
+        file: home/consortium.md
+        fields:
+          - label: "Présentation"
+            name: body
+            widget: markdown
+      - name: "iarbre"
+        label: "Présentation de IA·rbre"
+        file: home/iarbre.md
+        fields:
+          - label: "Présentation"
+            name: body
+            widget: markdown
+      - name: "telescoop"
+        label: "Présentation de telescoop"
+        file: home/telescoop.md
+        fields:
+          - label: "Présentation"
+            name: body
+            widget: markdown
