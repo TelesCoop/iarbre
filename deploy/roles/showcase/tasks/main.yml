@@ -48,7 +48,7 @@
 
 - name: Build showcase code for static rendering
   # yamllint disable-line rule:line-length
-  shell: "hugo build"
+  shell: "hugo build {{ hugo_build_flags }}"
   args:
     chdir: "{{ showcase_path }}"
     executable: /bin/bash

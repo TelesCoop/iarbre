@@ -10,6 +10,8 @@ project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 main_hostname: "feature-{{ branch_slug[:20] }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
+hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
+
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
 
