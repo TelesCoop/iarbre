@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from iarbre_data.models import Data
 from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.utils.database import log_progress
 
 
 def batched(iterable, n) -> None:
@@ -88,8 +89,8 @@ def process_data(df: gpd.GeoDataFrame, data_config: dict) -> list:
     actions_factors = zip(
         data_config.get("actions", [{}]), data_config["factors"]
     )  # Default actions to None
-
     for actions, factor in actions_factors:
+        log_progress(f"Start actions: {actions}")
         sub_df = apply_actions(df.copy(), actions)
         if len(sub_df) == 0:
             print(f"Factor: {factor} only contained Points")
