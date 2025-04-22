@@ -646,7 +646,9 @@ footer {
 
 .main.post {
   display: flex;
-
+  @media (min-width: 768px) {
+    display: none;
+  }
   #close-post-button {
     position: fixed;
     right: 0rem;
