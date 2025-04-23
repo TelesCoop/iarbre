@@ -13,12 +13,21 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
 import "./commands"
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
 
 Cypress.on("window:before:load", (win) => {
   cy.spy(win.console, "info").as("consoleInfo")
+  cy.stub(win.console, "warn")
+    .as("consolWarn")
+    .callsFake((message) => {
+      if (message.startsWith("[Vue warn]")) {
+        const allowedMessages = [
+          '[Vue warn]: Invalid event arguments: event validation failed for event "'
+        ]
+        for (const allowedMessage of allowedMessages) {
+          if (message.startsWith(allowedMessage)) return
+        }
+        throw new SyntaxError(message)
+      }
+    })
 })
