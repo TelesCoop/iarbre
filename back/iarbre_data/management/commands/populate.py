@@ -82,13 +82,15 @@ class Command(BaseCommand):
         )
         # If all are generated, skip. Otherwise, regenerate all tiles
         # as we want a reproducible plantability score
-        if tiles.filter(plantability_normalized_indice=0.5).count() == 0:
+        if tiles.filter(plantability_normalized_indice__isnull=True).count() == 0:
             self.stdout.write("Plantability indices already computed")
             return
 
         Tile.objects.bulk_update(
             (
-                Tile(id=tile.id, plantability_normalized_indice=random.random())
+                Tile(
+                    id=tile.id, plantability_normalized_indice=13 * random.random() - 3
+                )
                 for tile in tiles
             ),
             ["plantability_normalized_indice"],
