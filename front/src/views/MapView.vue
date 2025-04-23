@@ -12,6 +12,7 @@ import MapComponent from "@/components/map/MapComponent.vue"
       icon="pi pi-github"
       label="Code source"
       severity="primary"
+      target="_blank"
     >
     </Button>
   </div>
