@@ -237,7 +237,7 @@ class MVTGenerator:
             mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
             clip_mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_tile], crs=TARGET_MAP_PROJ)
 
-            batch_grid_size = grid_size * 10  # Larger grid for batching
+            batch_grid_size = grid_size * 100  # Larger grid for batching
             batch_grid = self.create_grid(clip_mvt_gdf, batch_grid_size)
             all_features = []
             # Process in batch to avoid OOM with zoom <11

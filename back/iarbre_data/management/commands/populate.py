@@ -20,6 +20,8 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
 
 from api.constants import DEFAULT_ZOOM_LEVELS
 
+ZOOM_LEVELS = (DEFAULT_ZOOM_LEVELS[0] + 2, DEFAULT_ZOOM_LEVELS[1] - 4)
+
 
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
@@ -99,7 +101,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=DEFAULT_ZOOM_LEVELS,
+            zoom_levels=ZOOM_LEVELS,
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=4,
