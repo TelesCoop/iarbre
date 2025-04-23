@@ -17,11 +17,10 @@
 import "./commands"
 
 import "@/styles/main.css"
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+import Primevue from "primevue/config"
 
 import { mount } from "cypress/vue"
+import { IArbrePreset } from "../../src/theme/iArbre"
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -35,7 +34,23 @@ declare global {
   }
 }
 
-Cypress.Commands.add("mount", mount)
+Cypress.Commands.add("mount", (component, options) => {
+  // Setup options object
+  options.global = options.global || {}
+  options.global.plugins = options.global.plugins || []
+
+  options.global.plugins.push({
+    install(app) {
+      app.use(Primevue, {
+        theme: {
+          preset: IArbrePreset
+        }
+      })
+    }
+  })
+
+  return mount(component, options)
+})
 
 // Example use:
 // cy.mount(MyComponent)
