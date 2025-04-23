@@ -15,6 +15,8 @@ from typing import Optional, Tuple, Type
 from django.db.models import Model
 from shapely.geometry.base import BaseGeometry
 
+from plantability.constants import PLANTABILITY_NORMALIZED
+
 BATCH_SIZE = 50_000
 
 
@@ -37,17 +39,17 @@ def normalize_plantability(value: float) -> float:
         The normalized plantability index.
     """
     if value < -5:
-        normalized_value = 0.0
+        normalized_value = PLANTABILITY_NORMALIZED[0]
     elif value < -2:
-        normalized_value = 2
+        normalized_value = PLANTABILITY_NORMALIZED[1]
     elif value < -0.75:
-        normalized_value = 4
+        normalized_value = PLANTABILITY_NORMALIZED[2]
     elif value < 0.15:
-        normalized_value = 6
+        normalized_value = PLANTABILITY_NORMALIZED[3]
     elif value < 2.5:
-        normalized_value = 8
+        normalized_value = PLANTABILITY_NORMALIZED[4]
     else:
-        normalized_value = 10
+        normalized_value = PLANTABILITY_NORMALIZED[5]
     return normalized_value
 
 

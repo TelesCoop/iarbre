@@ -7,6 +7,7 @@ from django.db.models import Avg
 
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
+from plantability.constants import PLANTABILITY_NORMALIZED
 
 
 def get_tile_color(normalized_indice: float) -> str:
@@ -21,15 +22,15 @@ def get_tile_color(normalized_indice: float) -> str:
     """
     if normalized_indice is None:
         return "purple"
-    elif normalized_indice < 2:
+    elif normalized_indice < PLANTABILITY_NORMALIZED[1]:
         return "#C4C4C4"
-    elif normalized_indice < 4:
+    elif normalized_indice < PLANTABILITY_NORMALIZED[2]:
         return "#BF5A16"
-    elif normalized_indice < 6:
+    elif normalized_indice < PLANTABILITY_NORMALIZED[3]:
         return "#DDAD14"
-    elif normalized_indice < 8:
+    elif normalized_indice < PLANTABILITY_NORMALIZED[4]:
         return "#A6CC4A"
-    elif normalized_indice < 10:
+    elif normalized_indice < PLANTABILITY_NORMALIZED[5]:
         return "#55B250"
     else:
         return "#025400"

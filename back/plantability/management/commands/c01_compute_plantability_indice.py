@@ -56,11 +56,10 @@ def compute_indice(tiles_id) -> None:
 
 
 def score_thresholding(value):
-    """Function to determine the plantabilty normalize index based on thresholds."""
+    """Function to compute the plantabilty normalize index based on thresholds."""
     for i, threshold in enumerate(PLANTABILITY_THRESHOLDS):
         if value < threshold:
             return i * 2
-    return 10
 
 
 def compute_robust_normalized_indice() -> None:

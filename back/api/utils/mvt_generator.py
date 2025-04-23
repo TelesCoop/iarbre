@@ -25,6 +25,7 @@ from tqdm import tqdm
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import DEFAULT_ZOOM_LEVELS
 from iarbre_data.utils.database import load_geodataframe_from_db
+from plantability.constants import PLANTABILITY_NORMALIZED
 
 MVT_EXTENT = 4096
 
@@ -250,6 +251,11 @@ class MVTGenerator:
                     .mean()
                     .reset_index()
                 )
+                # Map the mean values to PLANTABILITY_NORMALIZED set
+                aggregated["plantability_normalized_indice"] = aggregated[
+                    "plantability_normalized_indice"
+                ].apply(self.map_to_discrete_value)
+
                 df_clipped = grid.merge(aggregated, on="grid_id", how="left")
                 df_clipped = df_clipped.rename(columns={"grid_id": "id"})
 
@@ -330,3 +336,13 @@ class MVTGenerator:
         CIRCUM = 2 * math.pi * RADIUS
         SIZE = 512
         return CIRCUM / SIZE / 2 ** int(zoom)
+
+    @staticmethod
+    def map_to_discrete_value(x):
+        """Map average value of normalized plantability to normalized plantability set"""
+        if x is None:
+            return None
+        for i in range(1, len(PLANTABILITY_NORMALIZED)):
+            if x < PLANTABILITY_NORMALIZED[i]:
+                return PLANTABILITY_NORMALIZED[i - 1]
+        return PLANTABILITY_NORMALIZED[-1]
