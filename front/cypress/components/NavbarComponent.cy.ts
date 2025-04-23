@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar/NavbarComponent.vue"
-import Primevue from "primevue/config"
 
 describe("Navbar", () => {
   beforeEach(() => {

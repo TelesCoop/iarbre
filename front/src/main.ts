@@ -1,7 +1,5 @@
 import "./styles/main.css"
 import PrimeVue from "primevue/config"
-import Aura from "@primeuix/themes/aura"
-import { definePreset } from "@primeuix/themes"
 import { createApp } from "vue"
 import { createPinia } from "pinia"
 import ToastService from "primevue/toastservice"

@@ -18,5 +18,6 @@ Cypress.Commands.add("mapClosePopup", () => {
 })
 
 Cypress.Commands.add("mapSwitchLayer", (datatype: string) => {
-  cy.getBySel("layer-switcher").get("select").select(datatype)
+  cy.get(".p-select").click()
+  cy.get(".p-select-option-label").contains(datatype).click()
 })

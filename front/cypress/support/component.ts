@@ -21,6 +21,7 @@ import Primevue from "primevue/config"
 
 import { mount } from "cypress/vue"
 import { IArbrePreset } from "../../src/theme/iArbre"
+import ToastService from "primevue/toastservice"
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -36,9 +37,11 @@ declare global {
 
 Cypress.Commands.add("mount", (component, options) => {
   // Setup options object
+  if (!options) {
+    options = {}
+  }
   options.global = options.global || {}
-  options.global.plugins = options.global.plugins || []
-
+  options.global.plugins = options?.global.plugins || []
   options.global.plugins.push({
     install(app) {
       app.use(Primevue, {
@@ -46,11 +49,9 @@ Cypress.Commands.add("mount", (component, options) => {
           preset: IArbrePreset
         }
       })
+      app.use(ToastService)
     }
   })
 
   return mount(component, options)
 })
-
-// Example use:
-// cy.mount(MyComponent)

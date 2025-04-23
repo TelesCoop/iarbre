@@ -17,6 +17,7 @@ const emit = defineEmits(["submit-feedback", "close"])
     v-model:visible="visible"
     :draggable="false"
     :style="{ width: '25rem' }"
+    data-cy="feedback-popin"
     header="Votre avis compte !"
     modal
     @hide="emit('close')"
