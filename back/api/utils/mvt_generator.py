@@ -13,7 +13,7 @@ from shapely.geometry import box, Polygon as ShapelyPolygon
 import numpy as np
 
 from django.contrib.gis.db.models import Extent
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet
 
 import mercantile
@@ -221,7 +221,9 @@ class MVTGenerator:
         # Get common tile data
         tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
         # Determine grid size based on zoom level
-        if zoom in [11, 12]:
+        if zoom < 11:
+            grid_size = 100
+        elif zoom in [11, 12]:
             grid_size = 75
         elif zoom == 13:
             grid_size = 30
@@ -233,53 +235,75 @@ class MVTGenerator:
         # Filter queryset to tile extent
         base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
         if base_queryset.exists():
-            df = load_geodataframe_from_db(
-                base_queryset, ["plantability_normalized_indice", "map_geometry"]
-            )
             west, south, east, north = tile_polygon.extent
             mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
             clip_mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_tile], crs=TARGET_MAP_PROJ)
-            df_clipped = gpd.clip(df, clip_mvt_gdf)
-            if zoom <= 15:
-                grid = self.create_grid(df_clipped, grid_size)
-                grid = gpd.clip(grid, df_clipped)
-                spatial_join = gpd.sjoin(
-                    df_clipped, grid, how="left", predicate="intersects"
-                )
-                aggregated = (
-                    spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-                    .mean()
-                    .reset_index()
-                )
-                # Map the mean values to PLANTABILITY_NORMALIZED set
-                aggregated["plantability_normalized_indice"] = aggregated[
-                    "plantability_normalized_indice"
-                ].apply(self.map_to_discrete_value)
 
-                df_clipped = grid.merge(aggregated, on="grid_id", how="left")
-                df_clipped = df_clipped.rename(columns={"grid_id": "id"})
+            batch_grid_size = grid_size * 10  # Larger grid for batching
+            batch_grid = self.create_grid(clip_mvt_gdf, batch_grid_size)
+            all_features = []
+            # Process in batch to avoid OOM with zoom <11
+            for batch_cell in tqdm(
+                batch_grid.itertuples(),
+                desc=f"Processing batches for MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+            ):
+                batch_polygon = batch_cell.geometry
+                batch_queryset = base_queryset.filter(
+                    map_geometry__intersects=GEOSGeometry(batch_polygon.wkt)
+                )
+                if not batch_queryset.exists():
+                    continue
+                batch_df = load_geodataframe_from_db(
+                    batch_queryset, ["plantability_normalized_indice", "map_geometry"]
+                )
+                batch_clip_gdf = gpd.GeoDataFrame(
+                    geometry=[batch_polygon], crs=TARGET_MAP_PROJ
+                )
+                batch_df_clipped = gpd.clip(batch_df, batch_clip_gdf)
+
+                if len(batch_df_clipped) == 0:
+                    continue
+
+                if zoom <= 15:
+                    grid = self.create_grid(batch_df_clipped, grid_size)
+                    grid = gpd.clip(grid, batch_df_clipped)
+                    spatial_join = gpd.sjoin(
+                        batch_df_clipped, grid, how="left", predicate="intersects"
+                    )
+                    aggregated = (
+                        spatial_join.groupby("grid_id")[
+                            "plantability_normalized_indice"
+                        ]
+                        .mean()
+                        .reset_index()
+                    )
+                    # Map the mean values to PLANTABILITY_NORMALIZED set
+                    aggregated["plantability_normalized_indice"] = aggregated[
+                        "plantability_normalized_indice"
+                    ].apply(self.map_to_discrete_value)
+
+                    batch_df_clipped = grid.merge(aggregated, on="grid_id", how="left")
+                    batch_df_clipped = batch_df_clipped.rename(
+                        columns={"grid_id": "id"}
+                    )
+
+                    for obj in batch_df_clipped.itertuples():
+                        properties = {
+                            "id": obj.id,
+                            "indice": obj.plantability_normalized_indice,
+                            "color": get_tile_color(obj.plantability_normalized_indice),
+                        }
+                        all_features.append(
+                            {
+                                "geometry": obj.geometry.wkt,
+                                "properties": properties,
+                            }
+                        )
 
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
-                "features": [],
+                "features": all_features,
             }
-            for obj in tqdm(
-                df_clipped.itertuples(),
-                desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-            ):
-                # Create properties for the aggregated geometry
-                properties = {
-                    "id": obj.id,
-                    "indice": obj.plantability_normalized_indice,
-                    "color": get_tile_color(obj.plantability_normalized_indice),
-                }
-
-                transformed_geometries["features"].append(
-                    {
-                        "geometry": obj.geometry.wkt,
-                        "properties": properties,
-                    }
-                )
             # Save the MVT data
             self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
