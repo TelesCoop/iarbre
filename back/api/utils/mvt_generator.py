@@ -271,7 +271,8 @@ class MVTGenerator:
 
             else:  # Load directly all data for the MVT tile
                 df = load_geodataframe_from_db(
-                    base_queryset, ["plantability_normalized_indice", "map_geometry"]
+                    base_queryset,
+                    ["plantability_normalized_indice", "map_geometry", "id"],
                 )
                 df_clipped = gpd.clip(df, clip_mvt_gdf)
                 if zoom <= 15 and side_length < 10:
