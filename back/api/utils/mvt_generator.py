@@ -23,7 +23,7 @@ from iarbre_data.models import MVTTile, get_tile_color
 from tqdm import tqdm
 
 from iarbre_data.settings import TARGET_MAP_PROJ
-from api.constants import DEFAULT_ZOOM_LEVELS
+from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
 from plantability.constants import PLANTABILITY_NORMALIZED
 
@@ -220,18 +220,8 @@ class MVTGenerator:
         """
         # Get common tile data
         tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
-        # Determine grid size based on zoom level
-        if zoom < 11:
-            grid_size = 100
-        elif zoom in [11, 12]:
-            grid_size = 75
-        elif zoom == 13:
-            grid_size = 30
-        elif zoom == 14:
-            grid_size = 15
-        elif zoom == 15:
-            grid_size = 10
 
+        grid_size = ZOOM_TO_GRID_SIZE.get(zoom, 5)
         # Filter queryset to tile extent
         base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
         if base_queryset.exists():
