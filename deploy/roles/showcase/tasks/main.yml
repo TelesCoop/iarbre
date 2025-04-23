@@ -35,7 +35,7 @@
 - name: get latest showcase code
   git:
     repo: "{{ frontend_repo }}"
-    dest: "{{ showcase_path }}/.."
+    dest: "{{ showcase_path }}"
     key_file: "{{ backend_identity_file_path }}"
     accept_hostkey: true
     force: true
