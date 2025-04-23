@@ -12,6 +12,7 @@ redirect_hostnames: []
 showcase_hostname: "iarbre.fr"
 showcase_redirect_hostnames:
   - "www.iarbre.fr"
+hugo_build_flags: ""
 
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
