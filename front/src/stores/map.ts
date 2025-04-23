@@ -1,7 +1,7 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
-import { MAP_CONTROL_POSITION, MIN_ZOOM } from "@/utils/constants"
+import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
@@ -189,7 +189,8 @@ export const useMapStore = defineStore("map", () => {
       // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
       // zoom to a level that shows the whole city
-      zoom: 14,
+      maxZoom: MAX_ZOOM - 1,
+      minZoom: MIN_ZOOM,
       attributionControl: false
     })
 
