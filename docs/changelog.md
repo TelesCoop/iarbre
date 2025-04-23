@@ -1,6 +1,21 @@
 # Journal de changements
 
-## 🔖 0.4.0 (2025-xx-xx)
+## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
+
+### ✨ feat: Calcul de la plantabilité en raster
+
+Calcul de la plantabilité à l'aide de raster
+
+1. Convertir les données de Data pour tous les facteurs en raster haute résolution (1x1m)
+2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
+3. Somme pondérée des rasters d'OCS, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité
+4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+
+En BDD nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui correspondent à l'occupation des sols par chaque facteur.
+
+Les couleurs ont aussi évolué pour une meilleure lisibilité.
+
+![Capture d’écran Raster 5x5](assets/images/changelog/v0.4.0/raster55.png)
 
 ### 🛠️ enhance: Calque de vulnérabilité à la chaleur
 
@@ -9,6 +24,8 @@ Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise �
 |                                 Avant                                  |                             Après                             |
 | :--------------------------------------------------------------------: | :-----------------------------------------------------------: |
 | ![Avant MAJ](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](assets/images/changelog/v0.4.0/chaleurapres.png) |
+
+&rarr; Commit [ef60f56](https://github.com/TelesCoop/iarbre/commit/ef60f567880e742e32a55106beec5383f5b78863)
 
 ### ✨ feat: Intégration de [Sveltia CMS](https://github.com/sveltia/sveltia-cms) pour modifier le site statique
 
