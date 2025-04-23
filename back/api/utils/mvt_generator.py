@@ -220,8 +220,16 @@ class MVTGenerator:
         """
         # Get common tile data
         tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
-
-        grid_size = ZOOM_TO_GRID_SIZE.get(zoom, 5)
+        geom = self.queryset.first().geometry
+        coords = list(geom.coords[0])
+        point1 = coords[0]
+        point2 = coords[1]
+        # Euclidean distance in xy plan of the two first points
+        side_length = math.sqrt(
+            (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+        )
+        # Default to tile_size for large zoom
+        grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
         # Filter queryset to tile extent
         base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
         if base_queryset.exists():
