@@ -173,6 +173,9 @@ export const useMapStore = defineStore("map", () => {
       })
       mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
+
+      // MapComponent is listening to moveend event
+      mapInstance.fire("moveend")
     })
   }
 
@@ -186,10 +189,6 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "/map/map-style.json",
-      // center to Lyon Part-Dieu
-      center: [4.8537684279176645, 45.75773479280862],
-      // zoom to a level that shows the whole city
-      zoom: 14,
       attributionControl: false
     })
 

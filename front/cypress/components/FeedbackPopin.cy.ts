@@ -2,7 +2,7 @@ import FeedbackPopin from "@/components/FeedbackPopin.vue"
 
 describe("FeedbackPopin", () => {
   it("renders correctly", () => {
-    cy.mount(FeedbackPopin)
+    cy.mount(FeedbackPopin, { props: { message: "" } })
     cy.getBySel("submit-feedback-button").should("exist")
     cy.getBySel("close-feedback-button").should("exist")
   })
@@ -10,7 +10,7 @@ describe("FeedbackPopin", () => {
   it("correctly send feedback", () => {
     cy.mount(FeedbackPopin, {
       props: {
-        allowedExtensions: []
+        message: ""
       },
       emits: {
         "submit-feedback": cy.spy().as("submit-feedback")

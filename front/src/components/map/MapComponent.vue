@@ -1,15 +1,10 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { onMounted } from "vue"
-import { useRouter, useRoute } from "vue-router"
+import { onMounted, type PropType } from "vue"
 import MapLegend from "@/components/map/legend/MapLegend.vue"
 import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
 import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
-import { updateMapRoute } from "@/utils/route"
-import { DataType } from "@/utils/enum"
-
-const router = useRouter()
-const route = useRoute()
+import { type MapParams } from "@/types"
 
 const props = defineProps({
   mapId: {
@@ -18,29 +13,38 @@ const props = defineProps({
   }
 })
 
+const model = defineModel<MapParams>({
+  required: true,
+  type: Object as PropType<MapParams>
+})
+
+const emit = defineEmits<{
+  "update:modelValue": [value: MapParams]
+}>()
+
 const mapStore = useMapStore()
 
 onMounted(() => {
   mapStore.initMap(props.mapId)
 
-  if (route) {
-    const mapInstance = mapStore.getMapInstance(props.mapId)
-    if (route.name === "mapWithUrlParams") {
-      const p = route.params
-      mapInstance.jumpTo({
-        center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
-        zoom: parseFloat(p.zoom as string)
-      })
-      mapInstance.on("load", () => {
-        mapStore.changeDataType(p.dataType as DataType)
-      })
-    }
+  const mapInstance = mapStore.getMapInstance(props.mapId)
 
-    mapInstance.on("moveend", () => {
-      updateMapRoute(router, { map: mapInstance })
+  mapInstance.jumpTo({
+    center: [model.value.lng, model.value.lat],
+    zoom: model.value.zoom
+  })
+  mapInstance.on("load", () => {
+    mapStore.changeDataType(model.value.dataType)
+  })
+
+  mapInstance.on("moveend", () => {
+    emit("update:modelValue", {
+      zoom: Math.round(mapInstance.getZoom()),
+      lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
+      lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
+      dataType: mapStore.selectedDataType
     })
-    updateMapRoute(router, { map: mapInstance })
-  }
+  })
 })
 </script>
 

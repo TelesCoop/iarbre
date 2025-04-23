@@ -22,7 +22,6 @@ const emit = defineEmits(["submit-feedback"])
 
 const sendFeedback = (event: Event) => {
   event.preventDefault()
-  console.log("sendFeedback", email.value, feedback.value)
   emit("submit-feedback", { email: email.value, feedback: feedback.value })
 }
 </script>

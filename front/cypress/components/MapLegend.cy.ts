@@ -1,5 +1,6 @@
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
+import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
 
 describe("Map legends", () => {
   it("renders correctly plantability legend", () => {
@@ -15,5 +16,8 @@ describe("Map legends", () => {
   })
   it("renders correctly vulnerability legend", () => {
     cy.mount(VulnerabilityLegend)
+  })
+  it("renders correctly lcz legend", () => {
+    cy.mount(ClimateZonesLegend)
   })
 })
