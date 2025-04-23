@@ -32,14 +32,17 @@
     state: touch
   when: not hugo_installed.stat.exists
 
-- name: get latest showcase code
+- name: get or update latest showcase code
   git:
     repo: "{{ frontend_repo }}"
-    dest: "{{ showcase_path }}/.."
+    dest: "{{ showcase_path }}"
     key_file: "{{ backend_identity_file_path }}"
     accept_hostkey: true
     force: true
     version: "{{ showcase_branch }}"
+    track_submodules: true
+    remote: origin
+    update: yes
   become_user: "{{ main_user }}"
   register: clonecode
 
