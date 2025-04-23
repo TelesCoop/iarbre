@@ -16,6 +16,9 @@ from pathlib import Path
 import getconf
 from django.http import Http404
 
+# Required for decap auth
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "file_data"
@@ -64,6 +67,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
+    "decapcms_auth",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +79,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# Mandatory for Decap CMS Auth
+# https://docs.djangoproject.com/en/5.1/ref/middleware/#cross-origin-opener-policy
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 if IS_LOCAL_DEV:
     CORS_ALLOW_ALL_ORIGINS = True
@@ -233,6 +241,13 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
 }
+
+DECAP_CMS_AUTH = {
+    "OAUTH_CLIENT_ID": config.getstr("github_oauth.client_id"),
+    "OAUTH_CLIENT_SECRET": config.getstr("github_oauth.client_secret"),
+    "SCOPE": "repo,user",
+}
+
 # For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
 if sys.platform == "darwin":
     GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")

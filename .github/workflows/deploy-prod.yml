@@ -43,12 +43,14 @@ jobs:
           # Initialize variables with default values
           BACKEND_CHANGED="false"
           FRONTEND_CHANGED="false"
+          SHOWCASE_CHANGED="false"
 
           # If no files were changed, assume all directories have changed to be safe
           if [ -z "$CHANGED_FILES" ]; then
             echo "No changed files detected, assuming all directories have changed"
             BACKEND_CHANGED="true"
             FRONTEND_CHANGED="true"
+            SHOWCASE_CHANGED="true"
           else
             # Check if any file in the back/ directory has changed
             for file in $CHANGED_FILES; do
@@ -67,6 +69,15 @@ jobs:
                 break
               fi
             done
+
+            # Check if any file in the static/ directory has changed
+            for file in $CHANGED_FILES; do
+              if [[ $file == static/* ]]; then
+                echo "Showcase changes detected"
+                SHOWCASE_CHANGED="true"
+                break
+              fi
+            done
           fi
 
           # Set the output variables
@@ -74,6 +85,7 @@ jobs:
           echo "Frontend changed: $FRONTEND_CHANGED"
           echo "backend_changed=$BACKEND_CHANGED" >> $GITHUB_OUTPUT
           echo "frontend_changed=$FRONTEND_CHANGED" >> $GITHUB_OUTPUT
+          echo "showcase_changed=$SHOWCASE_CHANGED" >> $GITHUB_OUTPUT
 
       - name: Deploy backend
         if: steps.check_changes.outputs.backend_changed == 'true'
@@ -90,6 +102,16 @@ jobs:
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: frontend.yml
+          directory: deploy
+          vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
+          options: |
+            -l ${{ env.ENVIRONMENT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy showcase
+        if: steps.check_changes.outputs.showcase_changed == 'true'
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: showcase.yml
           directory: deploy
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |

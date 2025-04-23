@@ -1,3 +1,17 @@
+- name: Install passlib python package, required by community.general.htpasswd
+  ansible.builtin.pip:
+    name: passlib
+  when: use_password == true
+
+- name: Add a user to a password file and ensure permissions are set
+  community.general.htpasswd:
+    path: "{{ showcase_path }}/passwdfile"
+    name: "iarbre"
+    password: "iarbre"
+    group: www-data
+    mode: 0640
+  when: use_password == true
+
 - name: Copy nginx config
   template:
     src: nginx.conf.j2
@@ -40,20 +54,20 @@
     accept_hostkey: true
     force: true
     version: "{{ showcase_branch }}"
+    # git submodule should have master branch
+    track_submodules: true
+    remote: origin
   become_user: "{{ main_user }}"
   register: clonecode
 
 - name: Build showcase code for static rendering
   # yamllint disable-line rule:line-length
-  shell: "hugo build"
+  shell: "hugo build {{ hugo_build_flags }}"
   args:
     chdir: "{{ showcase_path }}"
     executable: /bin/bash
   when: clonecode.changed or force_update is defined
   register: build_code
-
-# - debug: msg="{{ build_code.stdout }}"
-#   when: clonecode.changed  or force_update is defined
 
 - name: Update showcase static folder
   file:

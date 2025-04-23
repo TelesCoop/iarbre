@@ -1,0 +1,29 @@
+{{ define "main" }} {{ $currentPermalink := .RelPermalink }}
+<section class="sidebar">
+  <ul class="posts-list">
+    {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
+    ".PublishDate" }} {{ range $posts.Reverse }}
+    <li
+      class="post-item{{ if eq .RelPermalink $currentPermalink }} selected{{end}}"
+    >
+      <div>
+        <span class="tag"
+          >{{ .PublishDate | time.Format "01 January 2006" }}</span
+        >
+      </div>
+      <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
+    </li>
+    {{ end }}
+  </ul>
+</section>
+<section class="post">
+  <a id="close-post-button" class="cta-button" href="/actualites"> X </a>
+  <div class="text-column">
+    <div class="tag">
+      Publié le {{ .PublishDate | time.Format "01 January 2006" }} − Par {{
+      .Params.Author }}
+    </div>
+    {{ .Content }}
+  </div>
+</section>
+{{ end }}

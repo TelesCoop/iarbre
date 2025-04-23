@@ -11,7 +11,8 @@
 
 $offWhite: #efefed;
 $darkGreen: #32412d;
-$lightGreen: #92a48d;
+$lightGreen: #8aa08c;
+$veryLightGreen: #c7d0c8;
 $brown: #32312d;
 $white: #ffffff;
 
@@ -25,15 +26,15 @@ $accent-font: "Sligoil";
 }
 
 a {
-  color: $darkGreen; /* Vert foncé */
-  text-decoration: underline; /* Soulignement par défaut */
-  font-weight: bold; /* Optionnel : met en valeur le lien */
+  color: $darkGreen;
+  text-decoration: underline;
+  font-weight: bold;
+
+  &:hover {
+    text-decoration: none;
+  }
 }
 
-a:hover {
-  text-decoration: none; /* Supprime le soulignement au survol */
-  color: $darkGreen; /* Maintient la couleur verte au survol */
-}
 body {
   font-family: $main-font, Arial, sans-serif;
   color: $brown;
@@ -141,45 +142,45 @@ hr.full-width {
 
 /* Bandeau de navigation */
 .navbar {
-  position: relative;
+  position: sticky;
   top: 0;
   left: 0;
   width: 100%;
   height: 80px;
-  background-color: $offWhite; /* Même couleur que le background */
+  background-color: $offWhite;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-}
 
-.navbar-left {
-  display: flex;
-  align-items: center;
-}
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
 
-.navbar-logo {
-  height: 30px;
-  width: auto;
-}
+  .navbar-logo {
+    height: 30px;
+    width: auto;
+  }
 
-.navbar-right {
-  display: flex;
-  gap: 20px;
-}
+  .navbar-right {
+    display: flex;
+    gap: 20px;
+  }
 
-.navbar-link {
-  font-family: $accent-font, Arial, sans-serif;
-  color: $brown;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-.navbar-link:hover {
-  color: $lightGreen;
+  .navbar-link {
+    font-family: $accent-font, Arial, sans-serif;
+    color: $brown;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+    line-height: 1.5;
+    &:hover {
+      color: $lightGreen;
+    }
+  }
 }
 
 .fullscreen {
@@ -421,6 +422,7 @@ hr.full-width {
   border-radius: 9999px;
   position: relative;
   right: 0;
+  text-decoration: none;
 }
 
 .cta-button:hover {
@@ -474,24 +476,36 @@ footer {
   font-size: 0.9rem;
   font-family: $accent-font, Arial, sans-serif;
   text-transform: uppercase;
-}
+  p {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    a {
+      padding: 0 15px;
+    }
+    a:not(:first-child) {
+      border-left: 1px solid $white;
+    }
+    @media (max-width: 768px) {
+      flex-direction: column;
+      a {
+        padding: 10px 0px;
+      }
+      a:not(:first-child) {
+        border-left: unset;
+      }
+    }
+  }
 
-footer p {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-}
-
-footer a {
-  color: $white; /* Couleur blanche par défaut */
-  text-decoration: none; /* Pas de soulignement par défaut */
-  font-weight: bold; /* Optionnel : met en valeur les liens */
-}
-
-footer a:hover {
-  color: $white; /* Reste blanc au survol */
-  text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+  a {
+    color: $white;
+    text-decoration: none;
+    font-weight: bold;
+    &:hover {
+      color: $white; /* Reste blanc au survol */
+      text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+    }
+  }
 }
 
 /* Responsive adjustments */
@@ -554,7 +568,6 @@ footer a:hover {
   }
 
   .cta-button {
-    align-self: flex-end;
     position: static;
   }
 
@@ -579,4 +592,178 @@ footer a:hover {
 
 .justify-center {
   justify-content: center;
+}
+
+.posts-list {
+  li.post-item {
+    &.selected,
+    &:hover {
+      .title {
+        text-decoration: underline;
+      }
+    }
+    padding: 30px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .title a {
+      font-family: $accent-font, Arial, sans-serif;
+      line-height: 135%;
+      font-size: 20px;
+      font-weight: 400;
+      text-decoration: none;
+    }
+
+    .cta-button {
+      align-self: flex-end;
+    }
+  }
+  li:not(:first-child) {
+    border-top: 1px solid $brown;
+  }
+}
+
+.tag {
+  border-radius: 78px;
+  background-color: $white;
+  color: $lightGreen;
+  padding: 7px 12px;
+  display: inline-block;
+  font-weight: bold;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.text-column {
+  max-width: 892px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.main.post {
+  display: flex;
+  #close-post-button {
+    @media (min-width: 768px) {
+      display: none;
+    }
+    position: fixed;
+    right: 0rem;
+    top: 0rem;
+    z-index: 1001;
+    border-radius: 100%;
+    padding: 10px 17px;
+    text-decoration: none;
+    font-size: 1.4rem;
+    margin-top: 15px;
+    margin-right: 15px;
+  }
+
+  .sidebar {
+    @media (max-width: 768px) {
+      display: none;
+    }
+
+    background-color: $veryLightGreen;
+    margin: 0;
+    padding: 0;
+    min-width: 400px;
+    max-width: 400px;
+    padding: 20px;
+
+    .posts-list {
+      position: fixed;
+      width: 340px; // 400 - 30px *2
+
+      .title a {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .post {
+    flex-grow: 1;
+    .text-column {
+      font-family: $main-font, Arial, sans-serif;
+      p,
+      ul {
+        line-height: 1.7em;
+      }
+
+      ul {
+        margin-left: 15px;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: $accent-font, Arial, sans-serif;
+        font-weight: 400;
+      }
+    }
+  }
+}
+
+h1 {
+  display: block;
+  font-size: 3em;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+
+  @media (max-width: 768px) {
+    font-size: 2.2em;
+  }
+}
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h3 {
+  display: block;
+  font-size: 1.17em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h4 {
+  display: block;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h5 {
+  display: block;
+  font-size: 0.83em;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+h6 {
+  display: block;
+  font-size: 0.67em;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
 }

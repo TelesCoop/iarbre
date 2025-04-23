@@ -1,5 +1,42 @@
 # Journal de changements
 
+## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
+
+### ✨ feat: Calcul de la plantabilité en raster
+
+Calcul de la plantabilité à l'aide de raster
+
+1. Convertir les données de Data pour tous les facteurs en raster haute résolution (1x1m)
+2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
+3. Somme pondérée des rasters d'OCS, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité
+4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+
+En BDD nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui correspondent à l'occupation des sols par chaque facteur.
+
+Les couleurs ont aussi évolué pour une meilleure lisibilité.
+
+![Capture d’écran Raster 5x5](assets/images/changelog/v0.4.0/raster55.png)
+
+### 🛠️ enhance: Calque de vulnérabilité à la chaleur
+
+Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise à jour.
+
+|                                 Avant                                  |                             Après                             |
+| :--------------------------------------------------------------------: | :-----------------------------------------------------------: |
+| ![Avant MAJ](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](assets/images/changelog/v0.4.0/chaleurapres.png) |
+
+&rarr; Commit [ef60f56](https://github.com/TelesCoop/iarbre/commit/ef60f567880e742e32a55106beec5383f5b78863)
+
+### ✨ feat: Intégration de [Sveltia CMS](https://github.com/sveltia/sveltia-cms) pour modifier le site statique
+
+Le contenu du site statique [iarbre.fr](https://iarbre.fr/) peut désormais être modifié sans coder en se connectant avec ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https://iarbre.fr/admin).
+
+Cette interface permettra à l’avenir de modifier et de publier des articles de blog.
+
+![Capture d’écran de Sveltia CMS](assets/images/changelog/v0.4.0/cms_screenshot.png)
+
+&rarr; Ticket [#43](https://github.com/TelesCoop/iarbre/issues/43)
+
 ## 🔖 0.3.0 (2025-09-04) - Mise à jour de données et ajout calque vulnérabilité à la chaleur
 
 ### ✨ feat: Possibilité d'ouvrir la carte sur un calque spécifique

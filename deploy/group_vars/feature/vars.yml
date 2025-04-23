@@ -10,8 +10,16 @@ project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 main_hostname: "feature-{{ branch_slug[:20] }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
+hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
+use_password: true
+
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
+
+showcase_hostname: "feature-{{ branch_slug[:20] }}-showcase.iarbre.fr"
+showcase_redirect_hostnames: []
+showcase_certificate_hostname: "iarbre.fr-0001"
+
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
@@ -26,6 +34,7 @@ backend_static_path: "{{ project_dir }}/backend_static"
 branch_slug: "{{ branch | replace('/','-') }}"
 frontend_branch: "{{ branch }}"
 backend_branch: "{{ branch }}"
+showcase_branch: "{{ branch }}"
 
 environment_name: "feature-{{ branch_slug }}"
 
