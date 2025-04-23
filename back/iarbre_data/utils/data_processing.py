@@ -120,7 +120,6 @@ def save_geometries(datas: list[dict], data_config: dict) -> None:
                         **data,
                         "geometry": GEOSGeometry(data["geometry"].wkt),
                         "metadata": data_config["name"],
-                        "factor": data["factor"],
                     }
                 )
                 for data in batch

@@ -1,30 +1,25 @@
 """
 MVT Generator as django-media.
 """
-
+from typing import Dict
 import itertools
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import gc
 import geopandas as gpd
-from django.contrib.gis.db.models.functions import Intersection
-
-from shapely.geometry import box, Polygon as ShapelyPolygon
 import numpy as np
-
+from shapely.geometry import box, Polygon as ShapelyPolygon
+from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet
-
+from tqdm import tqdm
 import mercantile
 import mapbox_vector_tile
-from typing import Dict
-from iarbre_data.models import MVTTile, get_tile_color
-from tqdm import tqdm
-
-from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
+from iarbre_data.models import MVTTile, get_tile_color
+from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
 MVT_EXTENT = 4096
