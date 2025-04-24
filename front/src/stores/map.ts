@@ -6,11 +6,101 @@ import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } f
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
 
+// reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+const FILL_COLOR_MAP = {
+  [DataType.PLANTABILITY]: [
+    "match",
+    ["floor", ["get", "indice"]],
+    0,
+    "#E0E0E0",
+    1,
+    "#E0E0E0",
+    2,
+    "#F0F1C0",
+    3,
+    "#F0F1C0",
+    4,
+    "#E5E09A",
+    5,
+    "#E5E09A",
+    6,
+    "#B7D990",
+    7,
+    "#B7D990",
+    8,
+    "#71BB72",
+    9,
+    "#71BB72",
+    10,
+    "#006837",
+    "#E0E0E0"
+  ],
+  [DataType.VULNERABILITY]: [
+    "match",
+    ["get", "indice_day"],
+    1,
+    "#31AFF5",
+    2,
+    "#7785A3",
+    3,
+    "#E6E3D1",
+    4,
+    "#D1BB3B",
+    5,
+    "#C06329",
+    6,
+    "#E03F08",
+    7,
+    "#B61C02",
+    8,
+    "#7A0403",
+    "#353A47"
+  ],
+  // Color defined by CEREMA in
+  // https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75
+  [DataType.LOCAL_CLIMATE_ZONES]: [
+    "match",
+    ["get", "indice"],
+    "1",
+    "#8C0000",
+    "2",
+    "#D10000",
+    "3",
+    "#FF0000",
+    "4",
+    "#BF4D00",
+    "5",
+    "#fa6600",
+    "6",
+    "#ff9955",
+    "7",
+    "#faee05",
+    "8",
+    "#bcbcbc",
+    "9",
+    "#ffccaa",
+    "A",
+    "#006a00",
+    "B",
+    "#00aa00",
+    "C",
+    "#648525",
+    "D",
+    "#b9db79",
+    "E",
+    "#000000",
+    "F",
+    "#FBF7AE",
+    "#6A6AFF"
+  ]
+}
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<MapScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
+  const activeFeatureId = ref<number>(-1)
+
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const getAttributionSource = () => {
@@ -98,11 +188,11 @@ export const useMapStore = defineStore("map", () => {
       "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
-        "fill-color": ["get", "color"],
+        "fill-color": FILL_COLOR_MAP[datatype],
+        "fill-outline-color": "#00000000",
         "fill-opacity": 0.6
       }
     })
-
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       popupData.value = {
@@ -111,6 +201,16 @@ export const useMapStore = defineStore("map", () => {
         lat: e.lngLat.lat,
         properties: extractFeatureProperties(e.features!, datatype, geolevel)
       }
+
+      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+      map.setPaintProperty(layerId, "fill-outline-color", [
+        "match",
+        ["get", "id"],
+        featureId,
+        "#000000",
+        "#00000000"
+      ])
+
       removeActivePopup()
 
       activePopup.value = new Popup()
@@ -118,6 +218,12 @@ export const useMapStore = defineStore("map", () => {
         .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
         .addTo(map)
+
+      document
+        .getElementsByClassName("maplibregl-popup-close-button")[0]
+        .addEventListener("click", () =>
+          map.setPaintProperty(layerId, "fill-outline-color", "#00000000")
+        )
     })
   }
 
