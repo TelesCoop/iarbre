@@ -25,7 +25,7 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 
 onMounted(() => {
-  mapStore.initMap(props.mapId)
+  mapStore.initMap(props.mapId, model.value.dataType)
 
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
@@ -33,18 +33,18 @@ onMounted(() => {
     center: [model.value.lng, model.value.lat],
     zoom: model.value.zoom
   })
-  mapInstance.on("load", () => {
-    mapStore.changeDataType(model.value.dataType)
-  })
 
-  mapInstance.on("moveend", () => {
+  const updateParams = () => {
     emit("update:modelValue", {
       zoom: Math.round(mapInstance.getZoom()),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
       dataType: mapStore.selectedDataType
     })
-  })
+  }
+
+  mapInstance.on("moveend", updateParams)
+  updateParams()
 })
 </script>
 

@@ -99,15 +99,14 @@ export const useMapStore = defineStore("map", () => {
   const popupData = ref<MapScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
-  const activeFeatureId = ref<number>(-1)
 
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+  const selectedDataType = ref<DataType | null>(null)
+
   const getAttributionSource = () => {
-    return DataTypeToAttributionSource[selectedDataType.value] || ""
+    return DataTypeToAttributionSource[selectedDataType.value!]
   }
   const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value] || GeoLevel.LCZ
+    return DataTypeToGeolevel[selectedDataType.value!]
   }
   const attributionControl = ref(
     new AttributionControl({
@@ -252,13 +251,13 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
+    if (selectedDataType.value == datatype) return
     removeActivePopup()
 
-    const previousDataType = selectedDataType.value
-    selectedDataType.value = datatype
+    const previousDataType = selectedDataType.value!
+    const previousGeoLevel = getGeoLevelFromDataType()
 
-    const previousGeoLevel = currentGeoLevel.value
-    currentGeoLevel.value = getGeoLevelFromDataType()
+    selectedDataType.value = datatype
 
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -271,8 +270,9 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.removeControl(navControl.value)
 
       // Add the new layer
-      setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-      setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
+      const currentGeoLevel = getGeoLevelFromDataType()
+      setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+      setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
       attributionControl.value = new AttributionControl({
         compact: true,
         customAttribution: getAttributionSource()
@@ -286,12 +286,16 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initTiles = (mapInstance: Map, mapId: string) => {
-    setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-    setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
+    const currentGeoLevel = getGeoLevelFromDataType()
+
+    setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+    setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
     popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
-  const initMap = (mapId: string) => {
+  const initMap = (mapId: string, initialDatatype: DataType) => {
+    console.log("init selected ", initialDatatype)
+    selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "/map/map-style.json",
@@ -311,7 +315,6 @@ export const useMapStore = defineStore("map", () => {
     initMap,
     popupData,
     selectedDataType,
-    currentGeoLevel,
     changeDataType,
     getMapInstance
   }
