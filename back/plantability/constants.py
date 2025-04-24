@@ -14,3 +14,11 @@ rgb_colors = {
     k: tuple(int(v.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
     for k, v in colors.items()
 }
+
+
+def score_thresholding(value):
+    """Function to compute the plantabilty normalize index based on thresholds."""
+    for i, threshold in enumerate(PLANTABILITY_THRESHOLDS[:-1]):
+        if value <= threshold:
+            return i * 2
+    return PLANTABILITY_THRESHOLDS[-1]

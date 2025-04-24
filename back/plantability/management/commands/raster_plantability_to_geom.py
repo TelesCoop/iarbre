@@ -15,42 +15,9 @@ from typing import Optional, Tuple, Type
 from django.db.models import Model
 from shapely.geometry.base import BaseGeometry
 
-from plantability.constants import PLANTABILITY_NORMALIZED
+from plantability.constants import score_thresholding
 
 BATCH_SIZE = 50_000
-
-
-def normalize_plantability(value: float) -> float:
-    """
-    Convert raw plantability value to normalized index based on thresholds.
-
-    This function takes a raw plantability value and normalizes it to a predefined index
-    based on specific thresholds. The normalization is done using a series of conditional
-    checks to map the raw value to a normalized index.
-
-    Parameters:
-    -----------
-    value : float
-        The raw plantability value to be normalized.
-
-    Returns:
-    --------
-    float
-        The normalized plantability index.
-    """
-    if value < -5:
-        normalized_value = PLANTABILITY_NORMALIZED[0]
-    elif value < -2:
-        normalized_value = PLANTABILITY_NORMALIZED[1]
-    elif value < -0.75:
-        normalized_value = PLANTABILITY_NORMALIZED[2]
-    elif value < 0.15:
-        normalized_value = PLANTABILITY_NORMALIZED[3]
-    elif value < 2.5:
-        normalized_value = PLANTABILITY_NORMALIZED[4]
-    else:
-        normalized_value = PLANTABILITY_NORMALIZED[5]
-    return normalized_value
 
 
 def get_administrative_attachment(
@@ -139,7 +106,7 @@ def raster_to_db_tiles(raster_path: str, batch_size: int = BATCH_SIZE) -> None:
             )
 
             plantability_indice = float(value)
-            plantability_normalized_indice = normalize_plantability(plantability_indice)
+            plantability_normalized_indice = score_thresholding(plantability_indice)
 
             # Create Tile object
             tile = Tile(

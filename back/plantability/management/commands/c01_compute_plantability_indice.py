@@ -13,7 +13,7 @@ from iarbre_data.utils.database import (
     select_city,
     log_progress,
 )
-from plantability.constants import PLANTABILITY_THRESHOLDS
+from plantability.constants import score_thresholding
 from tqdm import tqdm
 
 SAMPLE_LIMIT = 2_500_000
@@ -53,13 +53,6 @@ def compute_indice(tiles_id) -> None:
             ["plantability_indice"],
             batch_size=10000,
         )
-
-
-def score_thresholding(value):
-    """Function to compute the plantabilty normalize index based on thresholds."""
-    for i, threshold in enumerate(PLANTABILITY_THRESHOLDS):
-        if value < threshold:
-            return i * 2
 
 
 def compute_robust_normalized_indice() -> None:

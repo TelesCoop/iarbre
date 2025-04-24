@@ -17,10 +17,9 @@ import itertools
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
-from api.constants import DEFAULT_ZOOM_LEVELS
 
 # Only zoom level 13 is tested by e2e
-ZOOM_LEVELS = (DEFAULT_ZOOM_LEVELS[0] + 2, DEFAULT_ZOOM_LEVELS[1] - 4)
+ZOOM_LEVELS = (13, 13)
 
 
 class Command(BaseCommand):
