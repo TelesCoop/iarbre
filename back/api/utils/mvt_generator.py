@@ -238,7 +238,9 @@ class MVTGenerator:
             if (
                 zoom < 13 and side_length < 10
             ):  # Process in batch to avoid OOM with zoom <13
-                batch_grid_size = grid_size * 100
+                batch_grid_size = (
+                    grid_size * 100
+                )  # *100 for a balance between mem and speed
                 batch_grid = self.create_grid(clip_mvt_gdf, batch_grid_size)
                 for batch_cell in tqdm(
                     batch_grid.itertuples(),
@@ -291,7 +293,19 @@ class MVTGenerator:
             # Save the MVT data
             self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
-    def _make_grid_aggregate(self, df_clipped, grid_size):
+    def _make_grid_aggregate(
+        self, df_clipped: gpd.GeoDataFrame, grid_size: float
+    ) -> gpd.GeoDataFrame:
+        """
+        Aggregate the plantability indices within a grid.
+
+        Args:
+            df_clipped (gpd.GeoDataFrame): The GeoDataFrame containing the clipped geometries.
+            grid_size (float): The size of the grid cells.
+
+        Returns:
+            gpd.GeoDataFrame: The GeoDataFrame with aggregated plantability indices.
+        """
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
         spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
@@ -300,7 +314,7 @@ class MVTGenerator:
             .mean()
             .reset_index()
         )
-        # Map the mean values to PLANTABILITY_NORMALIZED set
+        # Map the mean values to PLANTABILITY_NORMALIZED set of values
         aggregated["plantability_normalized_indice"] = aggregated[
             "plantability_normalized_indice"
         ].apply(self.map_to_discrete_value)
@@ -311,7 +325,24 @@ class MVTGenerator:
         return df_clipped
 
     @staticmethod
-    def _create_mvt_features(df_grid_clipped, all_features, tile, zoom):
+    def _create_mvt_features(
+        df_grid_clipped: gpd.GeoDataFrame,
+        all_features: list,
+        tile: mercantile.Tile,
+        zoom: int,
+    ) -> list:
+        """
+        Create MVT features from the clipped grid data.
+
+        Args:
+            df_grid_clipped (gpd.GeoDataFrame): The GeoDataFrame containing the clipped geometries.
+            all_features (list): The list to append the new features to.
+            tile (mercantile.Tile): The tile to generate the MVT for.
+            zoom (int): The zoom level of the tile.
+
+        Returns:
+            list: The updated list of features with the new MVT features appended.
+        """
         for obj in tqdm(
             df_grid_clipped.itertuples(),
             desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
