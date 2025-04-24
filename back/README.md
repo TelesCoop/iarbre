@@ -121,24 +121,56 @@ pew workon <nom_projet>
 > Avant de lancer les commandes suivantes, assurez-vous que les données nécessaires sont bien présentes dans le dossier `file_data`. Si vous n'avez pas ces données, veuillez envoyer un e-mail à
 > [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
-Utilisation des données d'occupation des sols dans `file_data` et calcul de l'indice de plantabilité :
+Il existe 2 méthodes permettant de calculer l'indice de plantabilité, soit à l'aide d'images rasters soit à l'aide de géométries. Pour ces deux méthodes il faut au préalables lancer ces commandes :
 
 ```bash
 python manage.py migrate
 python manage.py c01_insert_cities_and_iris
-python manage.py c02_init_grid
 python manage.py c03_import_data
-python manage.py c04_compute_factors
-python manage.py c01_compute_plantability_indice
-python manage.py generate_mvt_files
 ```
 
 Pour plus de détails sur les données d'occupation des sols et leur traitement, consultez [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
 
-La dernière commande, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),
+### Génération à l'aide de géométries
+
+```bash
+python manage.py c02_init_grid --grid-size 20 --grid-type 2
+python manage.py c04_compute_factors
+python manage.py c01_compute_plantability_indice
+```
+
+> En taille 5x5m il faut faut compter de l'ordre de 3j pour le calcul au total et 1/2 journée en 15x15m.
+> La partie la plus longue est `c04_compute_factors`.
+
+### Genération à l'aide de raster
+
+En utilisant le process en raster :
+
+1. Convertion des données de `Data` pour tous les facteurs en raster haute résolution (1x1m)
+2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
+3. Somme pondérée des rasters d'OCS, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité
+4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+
+En base nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui correspondent à l'occupation des sols par chaque facteur.
+
+> Le calcul est beaucoup plus rapide, de l'ordre de 3h pour du 5x5m.
+
+```bash
+python manage.py data_to_raster
+python manage.py compute_plantability_raster
+python manage.py raster_plantability_to_geom
+```
+
+### Génération des tuiles MVT
+
+Pour les deux méthodes de calcul, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),
 génère des tuiles vectorielles Mapbox ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) pour différents niveaux de zoom.
 Ces tuiles sont accessibles via l'[API](https://github.com/TelesCoop/iarbre/blob/main/back/api/views.py) et peuvent être
 affichées avec [MapLibre](https://maplibre.org/).
+
+```bash
+python manage.py generate_mvt_files --geolevel tile --datatype plantability --number_of_threads 4
+```
 
 ## Démarrage du service backend
 

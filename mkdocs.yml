@@ -55,8 +55,12 @@ nav:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Initialize Grid: api/c02_init_grid.md
           - Import Data: api/c03_import_data.md
-          - Compute Factors: api/c04_compute_factors.md
-          - Compute Indices: api/c01_compute_indice.md
+          - Update Data: api/update_data.md
+          - Compute Factors (geometry): api/c04_compute_factors.md
+          - Compute Factors (raster): api/data_to_raster.md
+          - Compute Plantability Indices (geometry): api/c01_compute_indice.md
+          - Compute Plantability Indices (raster): api/compute_plantability_raster.md
+          - Raster plantability to geometry: api/raster_plantability_to_geom.md
           - Import LCZ: api/import_lcz.md
           - Import heat vulnerability data: api/import_vulnerability.md
 
