@@ -1,11 +1,15 @@
 """Utils to interact with the DB using Django."""
 
 from datetime import datetime
-import shapely
 from django.db.models import Count
+from django.contrib.gis.db.models.functions import AsGeoJSON
+from shapely.geometry import shape
+import json
 
 from iarbre_data.models import City
 import geopandas as gpd
+
+from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
 
 
 def load_geodataframe_from_db(queryset, fields):
@@ -19,22 +23,25 @@ def load_geodataframe_from_db(queryset, fields):
     Returns:
         df (GeoDataFrame): GeoDataFrame with data from the queryset.
     """
-    if len(queryset) == 0:
-        df = gpd.GeoDataFrame([], columns=["id", "geometry"])
-    else:
-        df = gpd.GeoDataFrame(
-            [
-                dict(
-                    geometry=data.geometry,
-                    **{field: getattr(data, field) for field in fields},
-                )
-                for data in queryset
-            ]
-        )
-        df.geometry = df["geometry"].apply(
-            lambda el: shapely.wkt.loads(el.wkt)
-        )  # Shapely used to transform string to geometry
-    return df.set_geometry("geometry")
+    if not queryset.exists():
+        return gpd.GeoDataFrame(columns=fields + ["geometry"])
+    geom_field = "geometry"
+    crs = TARGET_PROJ
+    if "map_geometry" in fields:
+        fields.remove("map_geometry")
+        geom_field = "map_geometry"
+        crs = TARGET_MAP_PROJ
+    # Get geometry data in GEOJSON to avoid conversion to WKT with shapely
+    qs = queryset.annotate(geom_json=AsGeoJSON(geom_field)).values(*fields, "geom_json")
+    data = list(qs)  # Run query
+
+    for row in data:
+        row["geometry"] = shape(json.loads(row.pop("geom_json")))
+
+    df = gpd.GeoDataFrame(data)
+    df.set_geometry("geometry", inplace=True)
+    df.crs = crs
+    return df
 
 
 def remove_duplicates(Model) -> None:

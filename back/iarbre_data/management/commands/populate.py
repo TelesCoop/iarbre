@@ -18,7 +18,8 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
 
-from api.constants import DEFAULT_ZOOM_LEVELS
+# Only zoom level 13 is tested by e2e
+ZOOM_LEVELS = (13, 13)
 
 
 class Command(BaseCommand):
@@ -99,7 +100,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=DEFAULT_ZOOM_LEVELS,
+            zoom_levels=ZOOM_LEVELS,
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=4,

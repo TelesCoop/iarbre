@@ -7,6 +7,33 @@ from django.db.models import Avg
 
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
+from plantability.constants import PLANTABILITY_NORMALIZED
+
+
+def get_tile_color(normalized_indice: float) -> str:
+    """
+    Determine the color of a tile based on a normalized index.
+
+    Args:
+        normalized_indice (float): The normalized index value used to determine the tile color.
+
+    Returns:
+        str: The color code corresponding to the normalized index.
+    """
+    if normalized_indice is None:
+        return "purple"
+    elif normalized_indice < PLANTABILITY_NORMALIZED[1]:
+        return "#C4C4C4"
+    elif normalized_indice < PLANTABILITY_NORMALIZED[2]:
+        return "#BF5A16"
+    elif normalized_indice < PLANTABILITY_NORMALIZED[3]:
+        return "#DDAD14"
+    elif normalized_indice < PLANTABILITY_NORMALIZED[4]:
+        return "#A6CC4A"
+    elif normalized_indice < PLANTABILITY_NORMALIZED[5]:
+        return "#55B250"
+    else:
+        return "#025400"
 
 
 def create_mapgeometry(instance):
@@ -77,22 +104,7 @@ class Tile(models.Model):
     @property
     def color(self):
         """Return the color of the tile based on the normalized indice."""
-        if self.plantability_normalized_indice is None:
-            return "purple"
-        elif (
-            self.plantability_normalized_indice < 2
-        ):  # river indice is about -3, we want gray scale
-            return "#E0E0E0"
-        elif self.plantability_normalized_indice < 4:
-            return "#F0F1C0"
-        elif self.plantability_normalized_indice < 6:
-            return "#E5E09A"
-        elif self.plantability_normalized_indice < 8:
-            return "#B7D990"
-        elif self.plantability_normalized_indice < 10:
-            return "#71BB72"
-        else:
-            return "#006837"
+        return get_tile_color(self.plantability_normalized_indice)
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
