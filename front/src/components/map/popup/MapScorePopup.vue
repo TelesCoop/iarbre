@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import PlantabilityScorePopup from "@/components/map/popup/PlantabilityScorePopupContent.vue"
 import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopupContent.vue"
 import { useMapStore } from "@/stores/map"
@@ -31,7 +31,7 @@ const copy = (text: string) => {
 </script>
 
 <template>
-  <div class="p-2.5 max-w-xs" data-cy="score-popup">
+  <div class="max-w-xs" data-cy="score-popup">
     <div class="flex justify-between">
       <plantability-score-popup
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
@@ -49,16 +49,16 @@ const copy = (text: string) => {
     <div class="w-full flex flex-col">
       <div class="w-full flex justify-end">
         <button
-          class="text-light-green text-md cursor-pointer flex items-center"
+          class="text-md cursor-pointer flex items-center"
           data-cy="copy-coords-button"
           @click="copy(coords)"
         >
           {{ coords }}
           <svg
-            width="32"
+            fill="none"
             height="34"
             viewBox="0 0 32 34"
-            fill="none"
+            width="32"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path

@@ -1,9 +1,10 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
 import { updateMapRoute } from "@/utils/route"
 import { useRouter } from "vue-router"
+import Select from "primevue/select"
 
 const mapStore = useMapStore()
 const router = useRouter()
@@ -15,23 +16,32 @@ const selectedDataType = computed({
     updateMapRoute(router, { dataType: mapStore.selectedDataType })
   }
 })
+
+const options = [
+  {
+    label: DataTypeToLabel[DataType.PLANTABILITY],
+    value: DataType.PLANTABILITY
+  },
+  {
+    label: DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES],
+    value: DataType.LOCAL_CLIMATE_ZONES
+  },
+  {
+    label: DataTypeToLabel[DataType.VULNERABILITY],
+    value: DataType.VULNERABILITY
+  }
+]
 </script>
 
 <template>
-  <div data-cy="layer-switcher">
-    <label for="layer-select" class="font-accent">Choix du calque</label>
-    <select
-      id="layer-select"
-      v-model="selectedDataType"
-      class="w-full p-2 rounded border border-gray-300 bg-white text-base"
-    >
-      <option :value="DataType.PLANTABILITY">{{ DataTypeToLabel[DataType.PLANTABILITY] }}</option>
-      <option :value="DataType.LOCAL_CLIMATE_ZONES">
-        {{ DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES] }}
-      </option>
-      <option :value="DataType.VULNERABILITY">
-        {{ DataTypeToLabel[DataType.VULNERABILITY] }}
-      </option>
-    </select>
-  </div>
+  <Select
+    v-model="selectedDataType"
+    :options="options"
+    class="w-full"
+    data-cy="layer-switcher"
+    option-label="label"
+    option-value="value"
+    placeholder="Sélection de calque"
+    show-clear
+  />
 </template>

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
 import type { MapScorePopupData } from "@/types"
 
@@ -12,14 +12,14 @@ defineProps({
 <template>
   <div data-cy="lcz-score-popup">
     <div class="flex items-center gap-2 w-full">
-      <div class="w-4 h-4 rounded" :style="{ backgroundColor: getZoneColor(popupData.id) }"></div>
-      <span class="text-[0.9rem]" data-cy="lcz-score-popup-title">LCZ {{ popupData.id }}</span>
+      <div :style="{ backgroundColor: getZoneColor(popupData.id) }" class="w-4 h-6 rounded"></div>
+      <span class="font-accent text-xl" data-cy="lcz-score-popup-title"
+        >LCZ {{ popupData.id }}</span
+      >
     </div>
     <div class="w-full">
       {{ popupData.id }}
-      <span class="text-[0.9rem]" data-cy="lcz-score-popup-description">{{
-        getZoneDesc(popupData.id)
-      }}</span>
+      <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.id) }}</span>
     </div>
   </div>
 </template>

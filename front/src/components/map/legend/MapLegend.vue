@@ -9,8 +9,10 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="z-3 absolute top-4 right-4 flex flex-col items-center card">
-    <div class="font-accent text-base font-bold mb-2" data-cy="map-legend-title">
+  <div
+    class="z-3 absolute top-4 right-4 flex flex-col items-center bg-white p-3 rounded-md border-gray-300 border-1"
+  >
+    <div class="mb-2 text-lg font-semibold font-accent text-primary-900" data-cy="map-legend-title">
       {{ DataTypeToLabel[mapStore.selectedDataType] }}
     </div>
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />

@@ -1,17 +1,21 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import MapComponent from "@/components/map/MapComponent.vue"
 </script>
 
 <template>
   <div class="map-container max-w-screen overflow-hidden relative">
-    <map-component map-id="default" class="h-full" />
-    <a
+    <map-component class="h-full" map-id="default" />
+    <Button
+      as="a"
+      class="absolute bottom-[7%] left-[1%] z-10 underline"
       href="https://github.com/TelesCoop/iarbre"
+      icon="pi-github"
+      icon-class="text-primary-500"
+      label="Code source"
+      severity="primary"
       target="_blank"
-      class="absolute bottom-[0.38rem] left-[1.1rem] text-brown bg-off-white px-2 py-1 rounded-[10px] underline text-[0.8rem]"
     >
-      code source</a
-    >
+    </Button>
   </div>
 </template>
 

@@ -1,4 +1,4 @@
-import Navbar from "@/components/NavbarComponent.vue"
+import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 describe("Navbar", () => {
   beforeEach(() => {

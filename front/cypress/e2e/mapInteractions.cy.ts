@@ -20,7 +20,7 @@ describe("Map interactions", () => {
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-label").should("exist")
 
-    cy.mapSwitchLayer(DataType.LOCAL_CLIMATE_ZONES) // cf. issue #142
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES]) // cf. issue #142
     cy.url().should("include", "/lcz/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
     cy.mapHasNoPopup()
@@ -30,7 +30,7 @@ describe("Map interactions", () => {
     cy.mapClosePopup()
     cy.mapOpenPopup() // cf. issue #92
 
-    cy.mapSwitchLayer(DataType.VULNERABILITY)
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.url().should("include", "/vulnerability/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()

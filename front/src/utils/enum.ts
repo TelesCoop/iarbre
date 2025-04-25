@@ -15,7 +15,7 @@ export enum ScoreLabelSize {
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {
-  [DataType.PLANTABILITY]: "Plantabilité",
+  [DataType.PLANTABILITY]: "Score de plantabilité",
   [DataType.LOCAL_CLIMATE_ZONES]: "Zones climatiques locales",
   [DataType.VULNERABILITY]: "Vulnérabilité chaleur"
 }

@@ -1,9 +1,13 @@
+@import "tailwindcss-primeui";
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
+@import "@/styles/maplibre.css";
 
 @font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/fonts/BricolageGrotesque-Regular.otf") format("opentype");
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {
@@ -25,11 +29,10 @@
   --color-scale-10: #025400;
 
   --color-off-white: #efefed;
-  --color-dark-green: #32412d;
   --color-light-green: #92a48d;
   --color-brown: #32312d;
 
-  --font-sans: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+  --font-sans: "IBM Plex Mono", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
@@ -45,8 +48,4 @@
 
 .card {
   @apply bg-white shadow-md rounded-[0.75rem] p-5;
-}
-
-.button {
-  @apply font-accent text-brown text-base bg-off-white border-none outline-none transition duration-300 hover:text-light-green cursor-pointer;
 }
