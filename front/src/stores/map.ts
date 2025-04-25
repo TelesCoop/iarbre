@@ -188,7 +188,6 @@ export const useMapStore = defineStore("map", () => {
       style: "/map/map-style.json",
       // center to Lyon Part-Dieu
       center: [4.8537684279176645, 45.75773479280862],
-      // zoom to a level that shows the whole city
       maxZoom: MAX_ZOOM - 1,
       minZoom: MIN_ZOOM,
       attributionControl: false
