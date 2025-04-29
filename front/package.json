@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.0.17",
-    "maplibre-gl": "^5.2.0",
+    "maplibre-gl": "^5.4.0",
     "pinia": "^3.0.0",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
