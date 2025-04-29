@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
+    Checkbox: typeof import('primevue/checkbox')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
     ClimateZonesLegend: typeof import('./src/components/map/legend/ClimateZonesLegend.vue')['default']
     Divider: typeof import('primevue/divider')['default']
@@ -17,21 +18,26 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     LayerSwitcher: typeof import('./src/components/map/layerSwitcher/LayerSwitcher.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
+    MapContextTools: typeof import('./src/components/map/contextTools/MapContextTools.vue')['default']
     MapLayerSwitcher: typeof import('./src/components/map/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
-    Message: typeof import("primevue/message")["default"]
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
     PlantabilityScorePopupContent: typeof import('./src/components/map/popup/PlantabilityScorePopupContent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScoreLabel: typeof import('./src/components/map/ScoreLabel.vue')['default']
+    SelectButton: typeof import('primevue/selectbutton')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
+    VulnerabilityContextTool: typeof import('./src/components/map/contextTools/VulnerabilityContextTool.vue')['default']
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
     VulnerabilityScorePopupContent: typeof import('./src/components/map/popup/VulnerabilityScorePopupContent.vue')['default']
     VulnerabilityScorePopupItem: typeof import('./src/components/map/popup/VulnerabilityScorePopupItem.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

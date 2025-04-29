@@ -1,3 +1,7 @@
+.maplibregl-popup {
+  @apply z-50;
+}
+
 .maplibregl-popup-content {
   border-radius: 10px;
   padding: 10px;

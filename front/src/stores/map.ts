@@ -5,6 +5,7 @@ import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
+import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -12,6 +13,7 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const getAttributionSource = () => {
     const sourceCode =
@@ -210,6 +212,7 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType,
     currentGeoLevel,
     changeDataType,
-    getMapInstance
+    getMapInstance,
+    vulnerabilityMode
   }
 })

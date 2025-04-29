@@ -2,9 +2,6 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import MapLegend from "@/components/map/legend/MapLegend.vue"
-import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
-import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
 import { updateMapRoute } from "@/utils/route"
 import { DataType } from "@/utils/enum"
 
@@ -47,7 +44,10 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <map-layer-switcher />
+  <div class="absolute top-5 left-5 flex gap-2 flex-col z-1">
+    <map-layer-switcher />
+    <map-context-tools />
+  </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
   </div>

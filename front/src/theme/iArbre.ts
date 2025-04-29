@@ -119,6 +119,32 @@ export const IArbrePreset = definePreset(Aura, {
           }
         }
       }
+    },
+    togglebutton: {
+      padding: defaultPadding,
+      border: defaultBorder,
+      color: "{primary.500}",
+      colorScheme: {
+        light: {
+          // @ts-ignore
+          background: "white",
+          color: "{primary.500}",
+          hoverColor: "white",
+          hoverBackground: "{primary.500}",
+          icon: {
+            color: "{primary.500}",
+            hoverColor: "white",
+            checkedColor: "white"
+          },
+          checked: {
+            color: "white",
+            background: "{primary.500}"
+          },
+          content: {
+            checkedBackground: "{primary.500}"
+          }
+        }
+      }
     }
   }
 })
