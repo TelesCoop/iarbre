@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ScoreLabelSize } from "@/utils/enum"
 
 interface ScoreLabelProps {
   score: number

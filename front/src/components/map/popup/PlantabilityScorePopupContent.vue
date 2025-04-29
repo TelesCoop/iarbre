@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
 import { computed } from "vue"
-import { ScoreLabelSize } from "@/utils/enum"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types"
 

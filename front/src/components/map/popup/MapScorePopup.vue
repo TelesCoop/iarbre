@@ -3,7 +3,7 @@ import PlantabilityScorePopup from "@/components/map/popup/PlantabilityScorePopu
 import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopupContent.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { computed, ref } from "vue"
+import { computed } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
 import type { MapScorePopupData } from "@/types"
 import { useToast } from "primevue/usetoast"

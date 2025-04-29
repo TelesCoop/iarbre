@@ -15,8 +15,8 @@ describe("Map interactions", () => {
   })
 
   it("Verifies map layer switching and popup behavior", () => {
-    // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
+    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-label").should("exist")
 
