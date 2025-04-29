@@ -5,94 +5,23 @@ import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
+import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
+import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 
 // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
 const FILL_COLOR_MAP = {
   [DataType.PLANTABILITY]: [
     "match",
     ["floor", ["get", "indice"]],
-    0,
-    "#C4C4C4",
-    1,
-    "#C4C4C4",
-    2,
-    "#BF5A16",
-    3,
-    "#BF5A16",
-    4,
-    "#DDAD14",
-    5,
-    "#DDAD14",
-    6,
-    "#A6CC4A",
-    7,
-    "#A6CC4A",
-    8,
-    "#55B250",
-    9,
-    "#55B250",
-    10,
-    "#025400",
-    "purple"
+    ...PLANTABILITY_COLOR_MAP
   ],
   [DataType.VULNERABILITY]: [
     "match",
     ["get", "indice_day"],
-    1,
-    "#31AFF5",
-    2,
-    "#7785A3",
-    3,
-    "#E6E3D1",
-    4,
-    "#D1BB3B",
-    5,
-    "#C06329",
-    6,
-    "#E03F08",
-    7,
-    "#B61C02",
-    8,
-    "#7A0403",
-    "#353A47"
+    ...VULNERABILITY_COLOR_MAP
   ],
-  // Color defined by CEREMA in
-  // https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75
-  [DataType.LOCAL_CLIMATE_ZONES]: [
-    "match",
-    ["get", "indice"],
-    "1",
-    "#8C0000",
-    "2",
-    "#D10000",
-    "3",
-    "#FF0000",
-    "4",
-    "#BF4D00",
-    "5",
-    "#fa6600",
-    "6",
-    "#ff9955",
-    "7",
-    "#faee05",
-    "8",
-    "#bcbcbc",
-    "9",
-    "#ffccaa",
-    "A",
-    "#006a00",
-    "B",
-    "#00aa00",
-    "C",
-    "#648525",
-    "D",
-    "#b9db79",
-    "E",
-    "#000000",
-    "F",
-    "#FBF7AE",
-    "#6A6AFF"
-  ]
+  [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
 }
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
