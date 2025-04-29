@@ -1,5 +1,4 @@
 /// <reference types="cypress" />
-import { mount } from "cypress/vue"
 import MapscorePopup from "@/components/map/popup/MapScorePopup.vue"
 import { createPinia, setActivePinia } from "pinia"
 import { useMapStore } from "@/stores/map"
@@ -16,7 +15,7 @@ describe("MapScorePopup", () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.PLANTABILITY
 
-    mount(MapscorePopup, {
+    cy.mount(MapscorePopup, {
       props: {
         popupData: {
           id: "8",
@@ -35,7 +34,7 @@ describe("MapScorePopup", () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.LOCAL_CLIMATE_ZONES
 
-    mount(MapscorePopup, {
+    cy.mount(MapscorePopup, {
       props: {
         popupData: {
           id: "E",
@@ -51,7 +50,7 @@ describe("MapScorePopup", () => {
   it(`renders correctly when the selected map data type is ${DataType.VULNERABILITY}`, () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.VULNERABILITY
-    mount(MapscorePopup, {
+    cy.mount(MapscorePopup, {
       props: {
         popupData: {
           id: "E",
