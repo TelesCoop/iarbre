@@ -62,7 +62,13 @@ export const IArbrePreset = definePreset(Aura, {
       border: defaultBorder,
       placeholder: defaultPlaceholder,
       dropdown: defaultDropdown,
-      color: "{primary.500}"
+      color: "{primary.500}",
+      option: {
+        // @ts-ignore
+        focus: {
+          background: "{primary.100}"
+        }
+      }
     },
     inputtext: {
       // @ts-ignore

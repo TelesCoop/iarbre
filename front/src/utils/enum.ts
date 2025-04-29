@@ -10,8 +10,7 @@ export enum DataType {
 }
 
 export enum ScoreLabelSize {
-  SMALL = "small",
-  HUGE = "huge"
+  SMALL = "small"
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {

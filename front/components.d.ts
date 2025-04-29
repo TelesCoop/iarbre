@@ -11,6 +11,7 @@ declare module 'vue' {
     Button: typeof import('primevue/button')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
     ClimateZonesLegend: typeof import('./src/components/map/legend/ClimateZonesLegend.vue')['default']
+    Divider: typeof import('primevue/divider')['default']
     FeedbackForm: typeof import('./src/components/forms/FeedbackForm.vue')['default']
     FeedbackPopin: typeof import('./src/components/FeedbackPopin.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']

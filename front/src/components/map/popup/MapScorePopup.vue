@@ -6,27 +6,30 @@ import { DataType } from "@/utils/enum"
 import { computed, ref } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
 import type { MapScorePopupData } from "@/types"
+import { useToast } from "primevue/usetoast"
 import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
 
 const mapStore = useMapStore()
+const toast = useToast()
 const props = defineProps({
   popupData: {
     required: true,
     type: Object as () => MapScorePopupData
   }
 })
-const message = ref("")
 
 const coords = computed(
   () => `${props.popupData.lat.toFixed(2)}° N, ${props.popupData.lng.toFixed(2)}° E`
 )
 
 const copy = (text: string) => {
-  message.value = "Copié !"
   copyToClipboard(text)
-  setTimeout(() => {
-    message.value = ""
-  }, 2000)
+  toast.add({
+    severity: "success",
+    summary: "Coordonnées copiées",
+    life: 3000,
+    group: "br"
+  })
 }
 </script>
 
@@ -68,9 +71,6 @@ const copy = (text: string) => {
           </svg>
         </button>
       </div>
-      <span v-if="message" class="font-accent flex w-full justify-end">
-        {{ message }}
-      </span>
     </div>
   </div>
 </template>

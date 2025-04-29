@@ -9,7 +9,7 @@ import { ScoreLabelSize } from "@/utils/enum"
     data-cy="plantability-legend"
   >
     <span class="text-[0.9rem] leading-3">Non plantable</span>
-    <div class="flex p-2">
+    <div class="flex gap-2">
       <score-label
         v-for="index in [0, 2, 4, 6, 8, 10]"
         :key="index"

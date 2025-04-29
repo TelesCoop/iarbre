@@ -4,13 +4,10 @@ import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 <template>
   <div class="flex flex-col min-h-screen">
-    <header
-      class="navbar fixed w-full top-0 z-10 flex items-center justify-between px-10 py-2.5"
-      data-cy="navbar"
-    >
+    <header class="navbar shadow-lg" data-cy="navbar">
       <Navbar />
     </header>
-    <main class="flex-1 mt-20">
+    <main class="flex-1">
       <slot></slot>
     </main>
   </div>
@@ -18,8 +15,8 @@ import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 <style scoped>
 .navbar {
-  height: var(--header-height);
-  box-sizing: border-box;
-  overflow: hidden;
+  @apply flex items-center justify-between;
+  height: calc(var(--header-height));
+  padding: 30px 15px 30px 30px;
 }
 </style>
