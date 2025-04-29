@@ -22,7 +22,7 @@ const router = createRouter({
         return {
           name: "mapWithUrlParams",
           params: {
-            dataType: DataType.VULNERABILITY,
+            dataType: DataType.PLANTABILITY,
             zoom,
             lat,
             lng
