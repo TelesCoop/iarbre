@@ -103,10 +103,10 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType | null>(null)
 
   const getAttributionSource = () => {
-    return DataTypeToAttributionSource[selectedDataType.value!]
+    return DataTypeToAttributionSource[selectedDataType.value] || ""
   }
   const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value!]
+    return DataTypeToGeolevel[selectedDataType.value] || ""
   }
   const attributionControl = ref(
     new AttributionControl({

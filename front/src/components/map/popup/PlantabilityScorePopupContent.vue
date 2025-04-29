@@ -12,7 +12,7 @@ const props = defineProps({
   }
 })
 
-const score = computed(() => Math.round(Number(props.popupData.id)))
+const score = computed(() => Number(props.popupData.id))
 const label = computed(() => getPlantabilityScore(score.value))
 </script>
 
