@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from "vue"
 
 const props = defineProps({
@@ -7,10 +7,6 @@ const props = defineProps({
     default: ""
   },
   feedback: {
-    type: String,
-    default: ""
-  },
-  message: {
     type: String,
     default: ""
   }
@@ -28,12 +24,25 @@ const sendFeedback = (event: Event) => {
 
 <template>
   <form class="popin-form" @submit="sendFeedback">
-    <input v-model="email" type="email" placeholder="Votre email" class="feedback-input" />
-    <textarea v-model="feedback" placeholder="Votre message" class="feedback-textarea"></textarea>
-    <button class="feedback-submit-button" type="submit" data-cy="submit-feedback-button">
-      J'envoie mon avis
-    </button>
-    <p v-if="message" class="message">{{ message }}</p>
+    <span class="popin-text"
+      >Partagez-nous vos impressions pour nous aider à améliorer le site :</span
+    >
+    <InputText v-model="email" class="w-full" placeholder="Votre email" required type="email" />
+    <Textarea
+      v-model="feedback"
+      class="w-full"
+      cols="30"
+      placeholder="Votre message"
+      required
+      rows="5"
+    />
+    <Button
+      class="w-full"
+      data-cy="submit-feedback-button"
+      label="J'envoie mon avis"
+      severity="secondary"
+      type="submit"
+    />
   </form>
 </template>
 
@@ -42,21 +51,6 @@ const sendFeedback = (event: Event) => {
 
 .popin-form {
   @apply w-full;
-}
-
-.feedback-input {
-  @apply w-full mt-2 p-2 rounded-full border border-gray-300 outline-none;
-}
-
-.feedback-textarea {
-  @apply w-full h-36 mt-2 p-2 rounded-3xl border border-gray-300 resize-none outline-none;
-}
-
-.feedback-submit-button {
-  @apply w-full mt-2 bg-light-green text-white font-bold cursor-pointer transition-colors duration-300 hover:text-white text-center rounded-full py-2;
-}
-
-.message {
-  @apply mt-2 text-dark-green;
+  @apply flex flex-col gap-4;
 }
 </style>

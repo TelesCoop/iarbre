@@ -17,11 +17,11 @@
 import "./commands"
 
 import "@/styles/main.css"
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+import Primevue from "primevue/config"
 
 import { mount } from "cypress/vue"
+import { IArbrePreset } from "../../src/theme/iArbre"
+import ToastService from "primevue/toastservice"
 
 beforeEach(() => {
   cy.window()
@@ -59,7 +59,23 @@ declare global {
   }
 }
 
-Cypress.Commands.add("mount", mount)
+Cypress.Commands.add("mount", (component, options) => {
+  // Setup options object
+  if (!options) {
+    options = {}
+  }
+  options.global = options.global || {}
+  options.global.plugins = options?.global.plugins || []
+  options.global.plugins.push({
+    install(app) {
+      app.use(Primevue, {
+        theme: {
+          preset: IArbrePreset
+        }
+      })
+      app.use(ToastService)
+    }
+  })
 
-// Example use:
-// cy.mount(MyComponent)
+  return mount(component, options)
+})

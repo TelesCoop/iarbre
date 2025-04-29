@@ -18,6 +18,7 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
 
+CITY_CODE = "38250"
 
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
@@ -27,9 +28,9 @@ class Command(BaseCommand):
     city_center = (900733.8693696633, 6443766.2240856625)
 
     def _create_city_and_iris(self):
-        if City.objects.filter(code="38250").exists():
+        if City.objects.filter(code=CITY_CODE).exists():
             self.stdout.write("City already exists")
-            return
+            return City.objects.get(code=CITY_CODE)
 
         self.stdout.write("Create Villard-de-Lans")
 
@@ -47,17 +48,17 @@ class Command(BaseCommand):
 
         city = City(
             name="Villard-de-Lans",
-            code="38250",
+            code=CITY_CODE,
             geometry=city_geometry.wkt,
         )
         city.save()
 
-        city = City.objects.filter(code=38250)
+        city = City.objects.filter(code=CITY_CODE)
         InsertIrisCommand._insert_iris(city)
 
         self.stdout.write(self.style.SUCCESS("> City 'Villard-de-Lans' created"))
 
-        selected_city = select_city("38250")
+        selected_city = select_city(CITY_CODE)
 
         # Create Hex tiles
         create_tiles_for_city(
@@ -70,9 +71,10 @@ class Command(BaseCommand):
             height_ratio=np.sin(np.pi / 3),
         )
         self.stdout.write(self.style.SUCCESS("> Tiles created"))
+        return city
 
     def _generate_plantability_tiles(self):
-        random.seed(38250)
+        random.seed(0)
 
         tiles = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
@@ -86,7 +88,7 @@ class Command(BaseCommand):
         Tile.objects.bulk_update(
             (
                 Tile(
-                    id=tile.id, plantability_normalized_indice=13 * random.random() - 3
+                    id=tile.id, plantability_normalized_indice=random.randint(0, 10)
                 )
                 for tile in tiles
             ),
@@ -220,12 +222,8 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
-    @property
-    def city(self):
-        return City.objects.get(code="38250")
-
     def handle(self, *args, **options):
-        self._create_city_and_iris()
+        self.city = self._create_city_and_iris()
 
         self._generate_plantability_tiles()
         self.generate_plantability_mvt_tiles()

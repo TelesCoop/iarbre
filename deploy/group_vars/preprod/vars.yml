@@ -10,6 +10,8 @@ public_hostnames:
 showcase_hostname: "preprod-showcase.iarbre.fr"
 showcase_redirect_hostnames: []
 showcase_certificate_hostname: "iarbre.fr-0001"
+hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
+use_password: true
 
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []

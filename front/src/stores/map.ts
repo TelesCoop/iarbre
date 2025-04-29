@@ -1,7 +1,7 @@
 import { ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
-import { MAP_CONTROL_POSITION, MIN_ZOOM } from "@/utils/constants"
+import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
@@ -12,28 +12,28 @@ const FILL_COLOR_MAP = {
     "match",
     ["floor", ["get", "indice"]],
     0,
-    "#E0E0E0",
+    "#C4C4C4",
     1,
-    "#E0E0E0",
+    "#C4C4C4",
     2,
-    "#F0F1C0",
+    "#BF5A16",
     3,
-    "#F0F1C0",
+    "#BF5A16",
     4,
-    "#E5E09A",
+    "#DDAD14",
     5,
-    "#E5E09A",
+    "#DDAD14",
     6,
-    "#B7D990",
+    "#A6CC4A",
     7,
-    "#B7D990",
+    "#A6CC4A",
     8,
-    "#71BB72",
+    "#55B250",
     9,
-    "#71BB72",
+    "#55B250",
     10,
-    "#006837",
-    "#E0E0E0"
+    "#025400",
+    "purple"
   ],
   [DataType.VULNERABILITY]: [
     "match",
@@ -294,11 +294,12 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
-    console.log("init selected ", initialDatatype)
     selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "/map/map-style.json",
+      maxZoom: MAX_ZOOM - 1,
+      minZoom: MIN_ZOOM,
       attributionControl: false
     })
 

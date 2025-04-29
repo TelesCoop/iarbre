@@ -1,20 +1,21 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import MapComponent from "@/components/map/MapComponent.vue"
 import { useRouter, useRoute } from "vue-router"
 import { ref } from "vue"
 import type { MapParams } from "@/types"
 import { DataType } from "@/utils/enum"
+import { DEFAULT_MAP_CENTER } from "@/utils/constants"
 
 const router = useRouter()
 const route = useRoute()
 
 const mapParams = ref<MapParams>({
   dataType: DataType.PLANTABILITY,
-  // Center to lyon Part-Dieu
-  lng: 4.8537684279176645,
-  lat: 45.75773479280862,
+  lng: DEFAULT_MAP_CENTER.lng,
+  lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14
 })
+
 if (route.name === "mapWithUrlParams") {
   mapParams.value = {
     lng: parseFloat(route.params.lng as string),
@@ -34,13 +35,17 @@ if (route.name === "mapWithUrlParams") {
         (params) => router.replace({ name: 'mapWithUrlParams', params: params as any })
       "
     />
-    <a
+    <Button
+      as="a"
+      class="absolute bottom-[7%] left-[1%] z-10 underline"
       href="https://github.com/TelesCoop/iarbre"
+      icon="pi-github"
+      icon-class="text-primary-500"
+      label="Code source"
+      severity="primary"
       target="_blank"
-      class="absolute bottom-[0.38rem] left-[1.1rem] text-brown bg-off-white px-2 py-1 rounded-[10px] underline text-[0.8rem]"
     >
-      code source</a
-    >
+    </Button>
   </div>
 </template>
 

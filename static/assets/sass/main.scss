@@ -422,6 +422,7 @@ hr.full-width {
   border-radius: 9999px;
   position: relative;
   right: 0;
+  text-decoration: none;
 }
 
 .cta-button:hover {
@@ -475,24 +476,36 @@ footer {
   font-size: 0.9rem;
   font-family: $accent-font, Arial, sans-serif;
   text-transform: uppercase;
-}
+  p {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    a {
+      padding: 0 15px;
+    }
+    a:not(:first-child) {
+      border-left: 1px solid $white;
+    }
+    @media (max-width: 768px) {
+      flex-direction: column;
+      a {
+        padding: 10px 0px;
+      }
+      a:not(:first-child) {
+        border-left: unset;
+      }
+    }
+  }
 
-footer p {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-}
-
-footer a {
-  color: $white; /* Couleur blanche par défaut */
-  text-decoration: none; /* Pas de soulignement par défaut */
-  font-weight: bold; /* Optionnel : met en valeur les liens */
-}
-
-footer a:hover {
-  color: $white; /* Reste blanc au survol */
-  text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+  a {
+    color: $white;
+    text-decoration: none;
+    font-weight: bold;
+    &:hover {
+      color: $white; /* Reste blanc au survol */
+      text-decoration: underline; /* Ajoute un soulignement au survol (optionnel) */
+    }
+  }
 }
 
 /* Responsive adjustments */
@@ -555,7 +568,6 @@ footer a:hover {
   }
 
   .cta-button {
-    align-self: flex-end;
     position: static;
   }
 
@@ -582,19 +594,79 @@ footer a:hover {
   justify-content: center;
 }
 
+.posts-list {
+  li.post-item {
+    &.selected,
+    &:hover {
+      .title {
+        text-decoration: underline;
+      }
+    }
+    padding: 30px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .title a {
+      font-family: $accent-font, Arial, sans-serif;
+      line-height: 135%;
+      font-size: 20px;
+      font-weight: 400;
+      text-decoration: none;
+    }
+
+    .cta-button {
+      align-self: flex-end;
+    }
+  }
+  li:not(:first-child) {
+    border-top: 1px solid $brown;
+  }
+}
+
+.tag {
+  border-radius: 78px;
+  background-color: $white;
+  color: $lightGreen;
+  padding: 7px 12px;
+  display: inline-block;
+  font-weight: bold;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.text-column {
+  max-width: 892px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
 .main.post {
   display: flex;
-
-  .tag {
-    border-radius: 78px;
-    background-color: $white;
-    color: $lightGreen;
-    padding: 7px 12px;
-    display: inline;
-    font-weight: bold;
+  #close-post-button {
+    @media (min-width: 768px) {
+      display: none;
+    }
+    position: fixed;
+    right: 0rem;
+    top: 0rem;
+    z-index: 1001;
+    border-radius: 100%;
+    padding: 10px 17px;
+    text-decoration: none;
+    font-size: 1.4rem;
+    margin-top: 15px;
+    margin-right: 15px;
   }
 
   .sidebar {
+    @media (max-width: 768px) {
+      display: none;
+    }
+
     background-color: $veryLightGreen;
     margin: 0;
     padding: 0;
@@ -602,31 +674,12 @@ footer a:hover {
     max-width: 400px;
     padding: 20px;
 
-    ul {
+    .posts-list {
       position: fixed;
       width: 340px; // 400 - 30px *2
-      li.post-item {
-        &.selected,
-        &:hover {
-          .title {
-            text-decoration: underline;
-          }
-        }
-        padding: 30px 0px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
 
-        .title a {
-          font-family: $accent-font, Arial, sans-serif;
-          line-height: 135%;
-          font-size: 14px;
-          font-weight: 400;
-          text-decoration: none;
-        }
-      }
-      li:not(:first-child) {
-        border-top: 1px solid $brown;
+      .title a {
+        font-size: 14px;
       }
     }
   }
@@ -634,8 +687,6 @@ footer a:hover {
   .post {
     flex-grow: 1;
     .text-column {
-      max-width: 892px;
-      margin: 50px auto;
       font-family: $main-font, Arial, sans-serif;
       p,
       ul {
@@ -667,6 +718,10 @@ h1 {
   margin-left: 0;
   margin-right: 0;
   font-weight: bold;
+
+  @media (max-width: 768px) {
+    font-size: 2.2em;
+  }
 }
 h2 {
   display: block;

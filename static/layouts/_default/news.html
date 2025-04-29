@@ -1,5 +1,22 @@
-{{ define "meta-extended" }} {{ $posts := sort (where site.RegularPages.ByTitle
-"Section" "actualites") ".PublishDate" }} {{ $last_post := index $posts 0 }}
-<meta http-equiv="refresh" content="0; url={{ $last_post.RelPermalink}}" />
-{{ end }} {{ define "main" }} Vous allez être redirigé·e vers notre dernier
-article. {{ end }}
+{{ define "main" }}
+
+<div class="text-column">
+  <ul class="posts-list">
+    {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
+    ".PublishDate" }} {{ range $posts.Reverse }}
+    <li class="post-item">
+      <div>
+        <span class="tag"
+          >Publié le {{ .PublishDate | time.Format "01 January 2006" }} par {{
+          .Params.author }}</span
+        >
+      </div>
+      <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
+      <p>{{ .Summary }}</p>
+      <a href="{{.RelPermalink}}" class="cta-button">Lire l'article ➜</a>
+    </li>
+    {{ end }}
+  </ul>
+</div>
+
+{{ end }}

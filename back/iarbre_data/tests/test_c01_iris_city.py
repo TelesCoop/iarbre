@@ -17,7 +17,7 @@ class C01CityIrisTestCase(TestCase):
         self.assertTrue(len(qs) > 0)
 
     def test_iris_insertion(self):
-        qs = City.objects.first()
-        self.command._insert_iris([qs])
+        qs = City.objects.filter(id=City.objects.first().id)
+        self.command._insert_iris(qs)
         qs_iris = Iris.objects.all()
-        self.assertNotEquals(len(qs_iris), 0)
+        self.assertNotEquals(qs_iris.count(), 0)

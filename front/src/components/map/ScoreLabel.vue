@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from "vue"
 import type { ScoreLabelSize } from "@/utils/enum"
 
@@ -7,6 +7,7 @@ interface ScoreLabelProps {
   label: string
   size: ScoreLabelSize
 }
+
 const SCORE_BG_CLASSES: Record<number, string> = {
   0: "bg-scale-0 border-scale-0",
   1: "bg-scale-1 border-scale-1",
@@ -29,8 +30,8 @@ const sizeClass = computed(() => props.size)
 
 <template>
   <div
-    class="hexagon relative m-[5px] block text-center flex justify-center items-center"
     :class="[backgroundClass, sizeClass]"
+    class="hexagon relative m-[5px] block text-center flex justify-center items-center"
   >
     <span>{{ label }}</span>
   </div>
@@ -38,7 +39,7 @@ const sizeClass = computed(() => props.size)
 
 <style scoped>
 .hexagon {
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 
 .hexagon.small {
