@@ -1,7 +1,4 @@
-<script lang="ts" setup>
-import ScoreLabel from "../ScoreLabel.vue"
-import { ScoreLabelSize } from "@/utils/enum"
-</script>
+<script lang="ts" setup></script>
 
 <template>
   <div

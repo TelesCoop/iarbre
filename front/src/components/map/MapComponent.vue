@@ -44,7 +44,7 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <div class="absolute top-5 left-5 flex gap-2 flex-col z-1">
+  <div class="absolute top-0 left-0 pl-[30px] pt-[30px] flex gap-2 flex-col z-1">
     <map-layer-switcher />
     <map-context-tools />
   </div>

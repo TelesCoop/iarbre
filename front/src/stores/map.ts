@@ -74,7 +74,6 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const feature = extractFeatures(features, datatype, geolevel)
     if (!feature) return undefined
-
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
 
@@ -93,7 +92,6 @@ export const useMapStore = defineStore("map", () => {
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
-
     map.addLayer({
       id: layerId,
       type: "fill",

@@ -9,10 +9,6 @@ export enum DataType {
   VULNERABILITY = "vulnerability"
 }
 
-export enum ScoreLabelSize {
-  SMALL = "small"
-}
-
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Score de plantabilité",
   [DataType.LOCAL_CLIMATE_ZONES]: "Zones climatiques locales",
