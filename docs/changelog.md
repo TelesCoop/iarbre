@@ -16,6 +16,14 @@ Pour des raisons esthétiques, on n'affiche plus le quadrillage « inter-tuiles 
 
 &rarr; Ticket [#207](https://github.com/TelesCoop/iarbre/issues/207)
 
+### ✨ feat: Affichage d'une bordure autour de la zone sélectionnée
+
+La zone sélectionnée est mise en valeur par un léger surlignage noir (à améliorer), ce qui permet de facilement facilement où est-ce qu'on a cliqué.
+
+![La zone sélectionnée a un liseré noir](assets/images/changelog/v0.5.0/tile_border.png)
+
+&rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
+
 ### ✅ test: Nouveaux tests pour le calque de vulnérabilité et améliorations diverses
 
 - On ne génère plus que les tuiles avec un niveau de zoom 13 dans les tests automatiques, pour gagner du temps (ticket [#186](https://github.com/TelesCoop/iarbre/issues/186))
