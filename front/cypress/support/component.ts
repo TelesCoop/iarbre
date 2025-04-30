@@ -23,6 +23,30 @@ import { mount } from "cypress/vue"
 import { IArbrePreset } from "../../src/theme/iArbre"
 import ToastService from "primevue/toastservice"
 
+beforeEach(() => {
+  cy.window()
+    .its("console")
+    .then((console) => {
+      cy.stub(console, "warn")
+        .as("onConsoleWarn")
+        .callsFake((message) => {
+          if (message.startsWith("[Vue warn]")) {
+            const allowedMessages = [
+              '[Vue warn]: Invalid event arguments: event validation failed for event "',
+              "[Vue warn]: Wrong type passed as event handler to"
+            ]
+            for (const allowedMessage of allowedMessages) {
+              if (message.startsWith(allowedMessage)) return
+            }
+            throw new SyntaxError(message)
+          }
+        })
+    })
+})
+afterEach(() => {
+  cy.get("@onConsoleWarn").should("have.have.not.thrown", SyntaxError)
+})
+
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
 // Alternatively, can be defined in cypress/support/component.d.ts

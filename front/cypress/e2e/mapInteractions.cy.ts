@@ -28,12 +28,16 @@ describe("Map interactions", () => {
     cy.mapOpenPopup()
     cy.getBySel("lcz-score-popup-title").should("exist")
     cy.mapClosePopup()
+    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup() // cf. issue #92
 
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.url().should("include", "/vulnerability/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()
+    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.mapOpenPopup()
+    cy.getBySel("vulnerability-score-popup-title").should("exist")
 
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])

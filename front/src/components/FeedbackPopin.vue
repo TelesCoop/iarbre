@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, defineModel } from "vue"
+import { ref } from "vue"
 import FeedbackForm from "@/components/forms/FeedbackForm.vue"
 import Dialog from "primevue/dialog"
 

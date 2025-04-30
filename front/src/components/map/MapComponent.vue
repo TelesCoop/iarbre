@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { onMounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { updateMapRoute } from "@/utils/route"
-import { DataType } from "@/utils/enum"
+import { onMounted, type PropType } from "vue"
+import { type MapParams } from "@/types"
 
 const router = useRouter()
 const route = useRoute()
@@ -15,29 +14,37 @@ const props = defineProps({
   }
 })
 
+const model = defineModel<MapParams>({
+  required: true,
+  type: Object as PropType<MapParams>
+})
+
+const emit = defineEmits<{
+  "update:modelValue": [value: MapParams]
+}>()
+
 const mapStore = useMapStore()
 
 onMounted(() => {
-  mapStore.initMap(props.mapId)
+  mapStore.initMap(props.mapId, model.value.dataType!)
+  const mapInstance = mapStore.getMapInstance(props.mapId)
 
-  if (route) {
-    const mapInstance = mapStore.getMapInstance(props.mapId)
-    if (route.name === "mapWithUrlParams") {
-      const p = route.params
-      mapInstance.jumpTo({
-        center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
-        zoom: parseFloat(p.zoom as string)
-      })
-      mapInstance.on("load", () => {
-        mapStore.changeDataType(p.dataType as DataType)
-      })
-    }
+  mapInstance.jumpTo({
+    center: [model.value.lng, model.value.lat],
+    zoom: model.value.zoom
+  })
 
-    mapInstance.on("moveend", () => {
-      updateMapRoute(router, { map: mapInstance })
+  const updateParams = () => {
+    emit("update:modelValue", {
+      zoom: Math.round(mapInstance.getZoom()),
+      lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
+      lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
+      dataType: mapStore.selectedDataType
     })
-    updateMapRoute(router, { map: mapInstance })
   }
+
+  mapInstance.on("moveend", updateParams)
+  updateParams()
 })
 </script>
 

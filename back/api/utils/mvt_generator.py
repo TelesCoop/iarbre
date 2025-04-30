@@ -19,7 +19,7 @@ import mercantile
 import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
-from iarbre_data.models import MVTTile, get_tile_color
+from iarbre_data.models import MVTTile
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
@@ -369,7 +369,6 @@ class MVTGenerator:
             properties = {
                 "id": obj.id,
                 "indice": obj.plantability_normalized_indice,
-                "color": get_tile_color(obj.plantability_normalized_indice),
             }
             all_features.append(
                 {

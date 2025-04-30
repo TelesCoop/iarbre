@@ -7,33 +7,6 @@ from django.db.models import Avg
 
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
-from plantability.constants import PLANTABILITY_NORMALIZED
-
-
-def get_tile_color(normalized_indice: float) -> str:
-    """
-    Determine the color of a tile based on a normalized index.
-
-    Args:
-        normalized_indice (float): The normalized index value used to determine the tile color.
-
-    Returns:
-        str: The color code corresponding to the normalized index.
-    """
-    if normalized_indice is None:
-        return "purple"
-    elif normalized_indice < PLANTABILITY_NORMALIZED[1]:
-        return "#C4C4C4"
-    elif normalized_indice < PLANTABILITY_NORMALIZED[2]:
-        return "#BF5A16"
-    elif normalized_indice < PLANTABILITY_NORMALIZED[3]:
-        return "#DDAD14"
-    elif normalized_indice < PLANTABILITY_NORMALIZED[4]:
-        return "#A6CC4A"
-    elif normalized_indice < PLANTABILITY_NORMALIZED[5]:
-        return "#55B250"
-    else:
-        return "#025400"
 
 
 def create_mapgeometry(instance):
@@ -101,17 +74,11 @@ class Tile(models.Model):
         City, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
     )
 
-    @property
-    def color(self):
-        """Return the color of the tile based on the normalized indice."""
-        return get_tile_color(self.plantability_normalized_indice)
-
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.plantability_normalized_indice,
-            "color": self.color,
         }
 
 
@@ -171,37 +138,12 @@ class Lcz(models.Model):
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.LCZ.value
 
-    @property
-    def color(self):
-        """Color defined by CEREMA in
-        https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75"""
-        color_map = {
-            None: "purple",
-            "1": "#8C0000",
-            "2": "#D10000",
-            "3": "#FF0000",
-            "4": "#BF4D00",
-            "5": "#fa6600",
-            "6": "#ff9955",
-            "7": "#faee05",
-            "8": "#bcbcbc",
-            "9": "#ffccaa",
-            "A": "#006a00",
-            "B": "#00aa00",
-            "C": "#648525",
-            "D": "#b9db79",
-            "E": "#000000",
-            "F": "#FBF7AE",
-        }
-        return color_map.get(self.lcz_index, "#6A6AFF")
-
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.lcz_index,
             "description": self.lcz_description,
-            "color": self.color,
         }
 
 
@@ -222,30 +164,6 @@ class Vulnerability(models.Model):
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.VULNERABILITY.value
 
-    @property
-    def color(self):
-        """Return the color of the ICU based on the vulnerability_index_day."""
-        if self.vulnerability_index_day is None:
-            return "grey"
-        elif self.vulnerability_index_day == 1:
-            return "#31AFF5"
-        elif self.vulnerability_index_day == 2:
-            return "#7785A3"
-        elif self.vulnerability_index_day == 3:
-            return "#E6E3D1"
-        elif self.vulnerability_index_day == 4:
-            return "#D1BB3B"
-        elif self.vulnerability_index_day == 5:
-            return "#C06329"
-        elif self.vulnerability_index_day == 6:
-            return "#E03F08"
-        elif self.vulnerability_index_day == 7:
-            return "#B61C02"
-        elif self.vulnerability_index_day == 8:
-            return "#7A0403"
-        else:
-            return "#353A47"
-
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
         return {
@@ -258,7 +176,6 @@ class Vulnerability(models.Model):
             "capaf_index_night": self.capaf_index_night,
             "sensibilty_index_day": self.sensibilty_index_day,
             "sensibilty_index_night": self.sensibilty_index_night,
-            "color": self.color,
         }
 
 
