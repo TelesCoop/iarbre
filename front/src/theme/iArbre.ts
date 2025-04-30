@@ -51,8 +51,7 @@ export const IArbrePreset = definePreset(Aura, {
       light: {
         primary: lightPrimaryColors,
         secondary: lightSecondaryColors
-      },
-      dark: {}
+      }
     }
   },
   components: {
@@ -62,7 +61,13 @@ export const IArbrePreset = definePreset(Aura, {
       border: defaultBorder,
       placeholder: defaultPlaceholder,
       dropdown: defaultDropdown,
-      color: "{primary.500}"
+      color: "{primary.500}",
+      option: {
+        // @ts-ignore
+        focus: {
+          background: "{primary.100}"
+        }
+      }
     },
     inputtext: {
       // @ts-ignore
@@ -100,6 +105,17 @@ export const IArbrePreset = definePreset(Aura, {
             color: "white",
             hoverColor: "white",
             activeColor: "white"
+          }
+        }
+      }
+    },
+    toast: {
+      colorScheme: {
+        light: {
+          success: {
+            borderColor: "{primary.500}",
+            background: "color-mix(in srgb, {primary.50}, transparent 5%)",
+            color: "{primary.500}"
           }
         }
       }

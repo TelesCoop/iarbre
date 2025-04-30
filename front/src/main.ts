@@ -14,7 +14,10 @@ app.use(router)
 
 app.use(PrimeVue, {
   theme: {
-    preset: IArbrePreset
+    preset: IArbrePreset,
+    options: {
+      darkModeSelector: false
+    }
   }
 })
 app.use(ToastService)

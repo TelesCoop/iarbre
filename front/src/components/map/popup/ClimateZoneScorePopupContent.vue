@@ -17,7 +17,7 @@ defineProps({
         >LCZ {{ popupData.id }}</span
       >
     </div>
-    <div class="w-full">
+    <div class="w-full text-md">
       {{ popupData.id }}
       <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.id) }}</span>
     </div>

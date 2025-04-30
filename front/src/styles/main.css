@@ -2,6 +2,7 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "@/styles/maplibre.css";
+@import "@/styles/utility.css";
 
 @font-face {
   font-family: "IBM Plex Mono";
@@ -27,11 +28,10 @@
   --color-scale-8: #55b250;
   --color-scale-9: #2d8328;
   --color-scale-10: #025400;
-
   --color-off-white: #efefed;
   --color-light-green: #92a48d;
   --color-brown: #32312d;
-
+  --color-green-500: #78c679;
   --font-sans: "IBM Plex Mono", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
@@ -42,7 +42,7 @@
 
 :root {
   /* Dimensions */
-  --header-height: 80px;
+  --header-height: 110px;
   --content-height: calc(100vh - var(--header-height) - 1px);
 }
 

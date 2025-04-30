@@ -23,7 +23,8 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     severity: "success",
     summary: "Merci !",
     detail: "Votre retour a bien été envoyé",
-    life: 5000
+    life: 5000,
+    group: "br"
   })
   feedbackIsVisible.value = false
   return true
@@ -31,56 +32,57 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 </script>
 
 <template>
-  <div class="header">
-    <div class="header-logo">
-      <a href="#">
-        <img alt="Logo I-Arbre" class="h-10 w-auto" src="/images/logo-iarbre.png" />
-      </a>
-    </div>
-    <nav class="header-nav">
-      <ul class="nav-list">
-        <li>
-          <Button
-            data-cy="open-feedback-button"
-            severity="primary"
-            type="button"
-            @click="feedbackIsVisible = true"
-            >✉️ Nous envoyer votre retour
-          </Button>
-        </li>
-        <li>
-          <a class="link" data-cy="open-savoir-href" href="https://iarbre.fr" target="_blank">
-            ⓘ En savoir plus
-          </a>
-        </li>
-      </ul>
-    </nav>
+  <div class="header-logo">
+    <a href="#">
+      <img alt="Logo I-Arbre" class="h-10 w-auto" src="/images/logo-iarbre.png" />
+    </a>
   </div>
+  <nav class="header-nav">
+    <ul class="nav-list">
+      <li class="border-r-primary-500 border-r-[1px] border-solid pr-2">
+        <Button
+          data-cy="open-feedback-button"
+          severity="primary"
+          size="small"
+          type="button"
+          variant="text"
+          @click="feedbackIsVisible = true"
+          >Envoyer votre avis
+        </Button>
+      </li>
+      <li class="pl-2">
+        <Button
+          as="a"
+          data-cy="open-savoir-href"
+          href="https://iarbre.fr"
+          severity="primary"
+          size="small"
+          target="_blank"
+          variant="text"
+          >À propos
+        </Button>
+      </li>
+    </ul>
+  </nav>
+
   <feedback-popin
     :model-value="feedbackIsVisible"
     @close="feedbackIsVisible = false"
     @submit-feedback="sendFeedbackToAPI"
   />
-  <Toast />
+  <Toast group="tl" position="top-left" />
+  <Toast group="tr" position="top-right" />
+  <Toast group="bl" position="bottom-left" />
+  <Toast group="br" position="bottom-right" />
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
-.header {
-  @apply fixed top-0 w-full h-[var(--header-height)] z-10;
-  @apply flex items-center justify-between;
-  @apply overflow-hidden box-border;
-}
-
 .header-logo {
   @apply pl-4 md:pl-0;
 }
 
-.header-nav {
-  @apply pr-4 md:pr-20;
-}
-
 .nav-list {
-  @apply flex items-center gap-4 list-none;
+  @apply flex items-center list-none;
 }
 </style>
