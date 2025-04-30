@@ -20,6 +20,7 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
 
 CITY_CODE = "38250"
 
+
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
 
@@ -30,7 +31,7 @@ class Command(BaseCommand):
     def _create_city_and_iris(self):
         if City.objects.filter(code=CITY_CODE).exists():
             self.stdout.write("City already exists")
-            return City.objects.get(code=CITY_CODE)
+            return
 
         self.stdout.write("Create Villard-de-Lans")
 
@@ -71,7 +72,6 @@ class Command(BaseCommand):
             height_ratio=np.sin(np.pi / 3),
         )
         self.stdout.write(self.style.SUCCESS("> Tiles created"))
-        return city
 
     def _generate_plantability_tiles(self):
         random.seed(0)
@@ -87,9 +87,7 @@ class Command(BaseCommand):
 
         Tile.objects.bulk_update(
             (
-                Tile(
-                    id=tile.id, plantability_normalized_indice=random.randint(0, 10)
-                )
+                Tile(id=tile.id, plantability_normalized_indice=random.randint(0, 10))
                 for tile in tiles
             ),
             ["plantability_normalized_indice"],
@@ -223,7 +221,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
     def handle(self, *args, **options):
-        self.city = self._create_city_and_iris()
+        self._create_city_and_iris()
+
+        self.city = City.objects.get(code=CITY_CODE)
 
         self._generate_plantability_tiles()
         self.generate_plantability_mvt_tiles()

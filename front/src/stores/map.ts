@@ -11,16 +11,8 @@ import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 
 // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
 const FILL_COLOR_MAP = {
-  [DataType.PLANTABILITY]: [
-    "match",
-    ["floor", ["get", "indice"]],
-    ...PLANTABILITY_COLOR_MAP
-  ],
-  [DataType.VULNERABILITY]: [
-    "match",
-    ["get", "indice_day"],
-    ...VULNERABILITY_COLOR_MAP
-  ],
+  [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+  [DataType.VULNERABILITY]: ["match", ["get", "indice_day"], ...VULNERABILITY_COLOR_MAP],
   [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
 }
 export const useMapStore = defineStore("map", () => {
@@ -29,13 +21,14 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
 
-  const selectedDataType = ref<DataType | null>(null)
+  const selectedDataType = ref<DataType | undefined>(undefined)
 
   const getAttributionSource = () => {
+    if (!selectedDataType.value) return ""
     return DataTypeToAttributionSource[selectedDataType.value] || ""
   }
   const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value] || ""
+    return DataTypeToGeolevel[selectedDataType.value!]
   }
   const attributionControl = ref(
     new AttributionControl({
@@ -116,7 +109,7 @@ export const useMapStore = defineStore("map", () => {
       "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
-        "fill-color": FILL_COLOR_MAP[datatype],
+        "fill-color": FILL_COLOR_MAP[datatype] as any,
         "fill-outline-color": "#00000000",
         "fill-opacity": 0.6
       }
@@ -222,7 +215,7 @@ export const useMapStore = defineStore("map", () => {
     popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
-  const initMap = (mapId: string, initialDatatype: DataType) => {
+  const initMap = (mapId: string, initialDatatype: DataType | undefined) => {
     selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
