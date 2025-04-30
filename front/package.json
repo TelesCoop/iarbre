@@ -21,6 +21,7 @@
     "@tailwindcss/vite": "^4.0.17",
     "maplibre-gl": "^5.4.0",
     "pinia": "^3.0.0",
+    "primeicons": "^7.0.0",
     "primevue": "^4.3.3",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.4.29",

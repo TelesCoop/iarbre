@@ -16,6 +16,7 @@ import Navbar from "@/components/navbar/NavbarComponent.vue"
 <style scoped>
 .navbar {
   @apply flex items-center justify-between;
+  @apply z-1;
   height: calc(var(--header-height));
   padding: 30px 15px 30px 30px;
 }

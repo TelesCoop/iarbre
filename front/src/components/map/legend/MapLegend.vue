@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
-import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
-import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 
@@ -24,8 +21,9 @@ const mapStore = useMapStore()
 .map-legend {
   @apply bg-white;
   @apply p-3;
+  @apply lg:mt-[30px] lg:mr-[30px];
   @apply absolute z-3;
-  @apply max-lg:bottom-[48px] max-lg:left-[30px] lg:top-4 lg:right-4;
+  @apply max-lg:bottom-[24px] max-lg:left-[30px] lg:top-0 lg:right-0;
   @apply flex flex-col items-center;
   @apply rounded-md border-primary-500 border-0.5;
   @apply shadow-lg;

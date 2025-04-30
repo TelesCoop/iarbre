@@ -1,9 +1,6 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
-import MapLegend from "@/components/map/legend/MapLegend.vue"
-import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
-import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
 import { type MapParams } from "@/types"
 
 const props = defineProps({
@@ -25,8 +22,7 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType)
-
+  mapStore.initMap(props.mapId, model.value.dataType!)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({
@@ -51,7 +47,10 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <map-layer-switcher />
+  <div class="absolute top-0 left-0 pl-[30px] pt-[30px] flex gap-2 flex-col z-1">
+    <map-layer-switcher />
+    <map-context-tools />
+  </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
   </div>

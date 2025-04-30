@@ -2,7 +2,6 @@
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
-import Select from "primevue/select"
 
 const mapStore = useMapStore()
 

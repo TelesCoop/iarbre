@@ -1,27 +1,36 @@
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
+import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 
-// reference https://docs.mapbox.com/style-spec/reference/expressions/#round
-const FILL_COLOR_MAP = {
-  [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
-  [DataType.VULNERABILITY]: ["match", ["get", "indice_day"], ...VULNERABILITY_COLOR_MAP],
-  [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
-}
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<MapScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
+  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
-  const selectedDataType = ref<DataType | null>(null)
+  // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+  const FILL_COLOR_MAP = computed(() => {
+    return {
+      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.VULNERABILITY]: [
+        "match",
+        ["get", `indice_${vulnerabilityMode.value}`],
+        ...VULNERABILITY_COLOR_MAP
+      ],
+      [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+    }
+  })
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -84,7 +93,6 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const feature = extractFeatures(features, datatype, geolevel)
     if (!feature) return undefined
-
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
 
@@ -101,11 +109,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (datatype === null) return
-
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
-
     map.addLayer({
       id: layerId,
       type: "fill",
@@ -114,7 +119,7 @@ export const useMapStore = defineStore("map", () => {
       "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
-        "fill-color": FILL_COLOR_MAP[datatype] as any,
+        "fill-color": FILL_COLOR_MAP.value[datatype] as any,
         "fill-outline-color": "#00000000",
         "fill-opacity": 0.6
       }
@@ -178,7 +183,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
-    if (selectedDataType.value == datatype) return
     removeActivePopup()
 
     const previousDataType = selectedDataType.value!
@@ -222,7 +226,7 @@ export const useMapStore = defineStore("map", () => {
     popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
-  const initMap = (mapId: string, initialDatatype: DataType | null) => {
+  const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
@@ -246,6 +250,7 @@ export const useMapStore = defineStore("map", () => {
     popupData,
     selectedDataType,
     changeDataType,
-    getMapInstance
+    getMapInstance,
+    vulnerabilityMode
   }
 })

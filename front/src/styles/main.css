@@ -3,6 +3,7 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
+@import "primeicons/primeicons.css";
 
 @font-face {
   font-family: "IBM Plex Mono";

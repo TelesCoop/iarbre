@@ -1,10 +1,8 @@
-<script lang="ts" setup>
-import LayerSwitcher from "@/components/map/layerSwitcher/LayerSwitcher.vue"
-</script>
+<script lang="ts" setup></script>
 
 <template>
   <div
-    class="absolute top-5 left-[30px] rounded-md w-[24.75rem] bg-white p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4"
+    class="bg-white rounded-md p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4 w-[24.75rem]"
     data-cy="map-layer-switcher"
   >
     <layer-switcher />
