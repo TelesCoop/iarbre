@@ -13,7 +13,7 @@ const show = computed(() => {
 <template>
   <div
     v-if="show"
-    class="rounded-md w-[23.75rem] bg-white p-4 border-primary-500 border-1 shadow-lg z-10 flex items-center gap-4"
+    class="rounded-md w-[23.75rem] bg-white p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4"
     data-cy="map-context-tools"
   >
     <vulnerability-context-tool />

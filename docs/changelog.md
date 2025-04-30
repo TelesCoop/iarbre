@@ -5,7 +5,7 @@
 ### ✨feat : Ajout de la possibilité de visualiser les données diurnes/nocturnes pour le calque de vulnérabilité
 
 Ajout de la visualisation des données diurnes et nocturnes pour le calque de vulnérabilité à la chaleur. Ces
-informations sont accessibles dans la pop-up, avec un changement entre les modes disponible via le menu contextuel des
+informations sont accessibles dans la pop-up, avec un changement entre les modes disponible via le panel contextuel des
 outils.
 
 ### 🛠️ enhance : ajoute le style de la maquette
