@@ -14,7 +14,9 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const getAttributionSource = () => {
-    return DataTypeToAttributionSource[selectedDataType.value] || ""
+    const sourceCode =
+      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a>"
+    return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}` || sourceCode
   }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value] || GeoLevel.LCZ

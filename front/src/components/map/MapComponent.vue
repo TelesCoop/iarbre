@@ -45,7 +45,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
+  <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
   <map-layer-switcher />
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
