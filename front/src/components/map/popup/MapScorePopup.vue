@@ -35,7 +35,7 @@ const copy = (text: string) => {
 
 <template>
   <div class="max-w-xs" data-cy="score-popup">
-    <div class="flex justify-between">
+    <div v-if="popupData" class="flex justify-between">
       <plantability-score-popup
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
         :popup-data="popupData"

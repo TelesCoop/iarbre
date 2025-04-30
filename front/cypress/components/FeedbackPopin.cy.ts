@@ -4,7 +4,7 @@ describe("FeedbackPopin", () => {
   it("correctly send feedback", () => {
     cy.mount(FeedbackPopin, {
       props: {
-        visible: true
+        modelValue: true
       },
       emits: {
         "submit-feedback": cy.spy().as("submit-feedback")
