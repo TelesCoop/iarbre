@@ -10,12 +10,6 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 
-// reference https://docs.mapbox.com/style-spec/reference/expressions/#round
-const FILL_COLOR_MAP = {
-  [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
-  [DataType.VULNERABILITY]: ["match", ["get", "indice_day"], ...VULNERABILITY_COLOR_MAP],
-  [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
-}
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<MapScorePopupData | undefined>(undefined)
@@ -24,6 +18,17 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+
+  // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+  const FILL_COLOR_MAP = {
+    [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+    [DataType.VULNERABILITY]: [
+      "match",
+      ["get", `indice_${vulnerabilityMode.value}`],
+      ...VULNERABILITY_COLOR_MAP
+    ],
+    [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -178,7 +183,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
-    if (selectedDataType.value == datatype) return
     removeActivePopup()
 
     const previousDataType = selectedDataType.value!
