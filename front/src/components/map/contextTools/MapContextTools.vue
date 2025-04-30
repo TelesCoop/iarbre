@@ -22,6 +22,10 @@ const show = computed(() => {
 
 <style>
 @reference "@/styles/main.css";
+.context-menu-tools {
+  @apply flex flex-col gap-2 w-full;
+}
+
 .context-menu-tool {
   @apply flex items-center gap-2;
 }
