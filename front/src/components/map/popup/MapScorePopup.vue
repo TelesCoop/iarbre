@@ -52,7 +52,7 @@ const copy = (text: string) => {
     <div class="w-full flex flex-col">
       <div class="w-full flex justify-end">
         <button
-          class="text-md cursor-pointer flex items-center"
+          class="text-md cursor-pointer flex items-center text-green-500 font-accent"
           data-cy="copy-coords-button"
           @click="copy(coords)"
         >

@@ -21,9 +21,19 @@ const SCORE_BG_CLASSES: Record<number, string> = {
   10: "fill-scale-10"
 }
 
+const TEXT_SCORE_CLASSES: Record<number, string> = {
+  0: "text-black",
+  2: "text-white",
+  4: "text-black",
+  6: "text-black",
+  8: "text-black",
+  10: "text-white"
+}
+
 const props = defineProps<ScoreLabelProps>()
 
 const backgroundClass = computed(() => SCORE_BG_CLASSES[props.score] || SCORE_BG_CLASSES[0])
+const textClass = computed(() => TEXT_SCORE_CLASSES[props.score] || TEXT_SCORE_CLASSES[0])
 const isSelected = computed(() => props.isSelected || false)
 </script>
 
@@ -38,6 +48,7 @@ const isSelected = computed(() => props.isSelected || false)
       />
     </svg>
     <span
+      :class="textClass"
       class="absolute font-accent inset-0 text-sm flex items-center justify-center text-center"
       >{{ label }}</span
     >

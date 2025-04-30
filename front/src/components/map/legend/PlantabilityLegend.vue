@@ -15,7 +15,6 @@ import { ScoreLabelSize } from "@/utils/enum"
         :key="index"
         :label="`${index}`"
         :score="index"
-        :size="ScoreLabelSize.SMALL"
         class="flex items-center justify-center"
       />
     </div>

@@ -27,7 +27,7 @@ const mapStore = useMapStore()
   @apply absolute z-3;
   @apply max-lg:bottom-18 max-lg:left-4 lg:top-4 lg:right-4;
   @apply flex flex-col items-center;
-  @apply rounded-md border-primary-500 border-1;
+  @apply rounded-md border-primary-500 border-0.5;
   @apply shadow-lg;
 }
 </style>
