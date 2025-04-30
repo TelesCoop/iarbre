@@ -1,4 +1,4 @@
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
@@ -20,15 +20,17 @@ export const useMapStore = defineStore("map", () => {
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
-  const FILL_COLOR_MAP = {
-    [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
-    [DataType.VULNERABILITY]: [
-      "match",
-      ["get", `indice_${vulnerabilityMode.value}`],
-      ...VULNERABILITY_COLOR_MAP
-    ],
-    [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
-  }
+  const FILL_COLOR_MAP = computed(() => {
+    return {
+      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.VULNERABILITY]: [
+        "match",
+        ["get", `indice_${vulnerabilityMode.value}`],
+        ...VULNERABILITY_COLOR_MAP
+      ],
+      [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+    }
+  })
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -107,8 +109,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (datatype === null) return
-
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
     map.addLayer({
@@ -119,7 +119,7 @@ export const useMapStore = defineStore("map", () => {
       "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
-        "fill-color": FILL_COLOR_MAP[datatype] as any,
+        "fill-color": FILL_COLOR_MAP.value[datatype] as any,
         "fill-outline-color": "#00000000",
         "fill-opacity": 0.6
       }
