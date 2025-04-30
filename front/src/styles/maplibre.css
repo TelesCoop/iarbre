@@ -12,3 +12,15 @@
   width: 20px;
   @apply text-gray-400;
 }
+
+.maplibregl-ctrl-attrib-inner,
+.maplibregl-ctrl-attrib a {
+  @apply text-sm;
+  @apply text-primary-500;
+  @apply font-accent;
+}
+
+.maplibregl-ctrl-attrib-button {
+  @apply bg-white!;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' class='fill-primary-500' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
+}
