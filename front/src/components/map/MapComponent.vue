@@ -1,11 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { useRouter, useRoute } from "vue-router"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types"
-
-const router = useRouter()
-const route = useRoute()
 
 const props = defineProps({
   mapId: {
