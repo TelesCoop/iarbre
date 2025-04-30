@@ -21,7 +21,7 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
 
-  const selectedDataType = ref<DataType | undefined>(undefined)
+  const selectedDataType = ref<DataType | null>(null)
 
   const getAttributionSource = () => {
     if (!selectedDataType.value) return ""
@@ -49,6 +49,7 @@ export const useMapStore = defineStore("map", () => {
     if (activePopup.value) {
       activePopup.value.remove()
       activePopup.value = null
+      popupData.value = undefined
     }
   }
 
@@ -98,6 +99,9 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    console.log("setup tile", datatype)
+    if (datatype === null) return
+
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
 
@@ -116,6 +120,8 @@ export const useMapStore = defineStore("map", () => {
     })
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
+      removeActivePopup()
+
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
@@ -131,8 +137,6 @@ export const useMapStore = defineStore("map", () => {
         "#000000",
         "#00000000"
       ])
-
-      removeActivePopup()
 
       activePopup.value = new Popup()
         .setLngLat(e.lngLat)
@@ -186,8 +190,10 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
-      mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
-      mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+      if (previousDataType !== null) {
+        mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
+        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+      }
       mapInstance.removeControl(attributionControl.value)
       mapInstance.removeControl(navControl.value)
 
@@ -215,7 +221,7 @@ export const useMapStore = defineStore("map", () => {
     popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
-  const initMap = (mapId: string, initialDatatype: DataType | undefined) => {
+  const initMap = (mapId: string, initialDatatype: DataType | null) => {
     selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id

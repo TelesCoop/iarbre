@@ -37,7 +37,7 @@ describe("Map interactions", () => {
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()
     cy.mapOpenPopup()
-    cy.getBySel("vulnerability-score-label").should("exist")
+    cy.getBySel("vulnerability-score-popup-title").should("exist")
 
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])

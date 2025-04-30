@@ -11,7 +11,7 @@ export interface MapParams {
   lng: number
   lat: number
   zoom: number
-  dataType?: DataType
+  dataType: DataType | null
 }
 
 export interface Feedback {
