@@ -4,7 +4,7 @@ import LayerSwitcher from "@/components/map/layerSwitcher/LayerSwitcher.vue"
 
 <template>
   <div
-    class="bg-white rounded-md p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4"
+    class="bg-white rounded-md p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4 w-[24.75rem]"
     data-cy="map-layer-switcher"
   >
     <layer-switcher />
