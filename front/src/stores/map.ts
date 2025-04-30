@@ -24,8 +24,10 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType | null>(null)
 
   const getAttributionSource = () => {
-    if (!selectedDataType.value) return ""
-    return DataTypeToAttributionSource[selectedDataType.value] || ""
+    const sourceCode =
+      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a>"
+    if (!selectedDataType.value) return sourceCode
+    return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
   }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]

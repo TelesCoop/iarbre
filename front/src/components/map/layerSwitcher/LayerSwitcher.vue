@@ -31,6 +31,10 @@ const options = [
   <Select
     v-model="selectedDataType"
     :options="options"
+    :pt="{
+      root: 'text-sm',
+      optionLabel: 'text-xs'
+    }"
     class="w-full"
     data-cy="layer-switcher"
     option-label="label"
