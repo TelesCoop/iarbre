@@ -99,7 +99,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    console.log("setup tile", datatype)
     if (datatype === null) return
 
     const sourceId = getSourceId(datatype, geolevel)

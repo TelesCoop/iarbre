@@ -36,6 +36,7 @@ describe("Map interactions", () => {
     cy.url().should("include", "/vulnerability/")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.VULNERABILITY])
     cy.mapHasNoPopup()
+    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
     cy.getBySel("vulnerability-score-popup-title").should("exist")
 

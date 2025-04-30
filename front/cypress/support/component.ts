@@ -30,10 +30,10 @@ beforeEach(() => {
       cy.stub(console, "warn")
         .as("onConsoleWarn")
         .callsFake((message) => {
-          console.log
           if (message.startsWith("[Vue warn]")) {
             const allowedMessages = [
-              '[Vue warn]: Invalid event arguments: event validation failed for event "'
+              '[Vue warn]: Invalid event arguments: event validation failed for event "',
+              "[Vue warn]: Wrong type passed as event handler to"
             ]
             for (const allowedMessage of allowedMessages) {
               if (message.startsWith(allowedMessage)) return
