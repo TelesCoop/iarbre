@@ -1,7 +1,4 @@
 <script lang="ts" setup>
-import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
-import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
-import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 

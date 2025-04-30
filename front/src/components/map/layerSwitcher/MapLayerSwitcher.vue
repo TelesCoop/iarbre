@@ -1,6 +1,4 @@
-<script lang="ts" setup>
-import LayerSwitcher from "@/components/map/layerSwitcher/LayerSwitcher.vue"
-</script>
+<script lang="ts" setup></script>
 
 <template>
   <div
