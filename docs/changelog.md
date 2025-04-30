@@ -1,5 +1,33 @@
 # Journal de changements
 
+## 🔖 0.5.0 (2025-xx-xx):
+
+### ✨ feat: Gestion des couleurs de la carte directement dans le front
+
+Auparavant, la couleur des tuiles était codée directement dans les `.mvt` et n'était en particulier par modifiable à la volée. Un changement dans les couleurs nécessitait également de générer à nouveau les tuiles.
+
+&rarr; Ticket [#199](https://github.com/TelesCoop/iarbre/issues/199)
+
+### ✨ feat: Suppression des bordures sur le calque de plantabilité
+
+Pour des raisons esthétiques, on n'affiche plus le quadrillage « inter-tuiles » sur le calque de plantabilité
+
+![Vue cartographie sans les bordures](assets/images/changelog/v0.5.0/without_border_207.png)
+
+&rarr; Ticket [#207](https://github.com/TelesCoop/iarbre/issues/207)
+
+### ✅ test: Nouveaux tests pour le calque de vulnérabilité et améliorations diverses
+
+- On ne génère plus que les tuiles avec un niveau de zoom 13 dans les tests automatiques, pour gagner du temps (ticket [#186](https://github.com/TelesCoop/iarbre/issues/186))
+- Les tests d’intégration sont plus strictes et cassent désormais au moindre warning côté Vue ;
+- Génération de données de tests pour le « Calque de vulnérabilité » (ticket [#181](https://github.com/TelesCoop/iarbre/issues/181))
+
+### 🐛 fix: Suppression d'un _clignotement_ au chargement de la page
+
+Suivant la configuration, le calque était chargé puis déchargé puis chargé à nouveau. Cela conduisait à un clignotement côté utilisateur·ice.
+
+&rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
+
 ## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
 
 ### ✨ feat: Calcul de la plantabilité en raster
