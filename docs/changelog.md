@@ -1,5 +1,7 @@
 # Journal de changements
 
+### 🛠️ enhance : ajoute le style de la maquette
+
 ## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
 
 ### ✨ feat: Calcul de la plantabilité en raster
