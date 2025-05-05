@@ -63,6 +63,7 @@ class Tile(models.Model):
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.TILE.value
@@ -134,6 +135,7 @@ class Lcz(models.Model):
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.LCZ.value
@@ -160,6 +162,7 @@ class Vulnerability(models.Model):
     capaf_index_night = models.FloatField(null=True)
     sensibilty_index_day = models.FloatField(null=True)
     sensibilty_index_night = models.FloatField(null=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.VULNERABILITY.value
