@@ -5,7 +5,7 @@
 
 - name: Add a user to a password file and ensure permissions are set
   community.general.htpasswd:
-    path: "{{ showcase_path }}/passwdfile"
+    path: "{{ project_dir }}/passwdfile"
     name: "iarbre"
     password: "iarbre"
     group: www-data
