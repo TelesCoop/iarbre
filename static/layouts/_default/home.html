@@ -16,8 +16,6 @@
     <div class="right">
       <div class="text">
         {{ with .Resources.GetMatch "iarbre.md" }} {{ .Content }} {{ end }}
-
-        <button class="cta-button">En savoir plus ➜</button>
       </div>
     </div>
   </div>
@@ -55,33 +53,7 @@
     </div>
     <div class="right">
       <div class="text">
-        <p>
-          — Le <strong>consortium IA.rbre</strong> vise à développer des outils
-          pour la <strong>végétalisation</strong> et l’<strong
-            >adaptation au changement climatique</strong
-          >, en collaboration avec la
-          <a href="https://www.grandlyon.com" target="_blank"
-            ><strong>Métropole de Lyon</strong></a
-          >, le
-          <a href="https://liris.cnrs.fr" target="_blank"
-            ><strong>laboratoire LIRIS</strong></a
-          >
-          et d'autres partenaires. Le laboratoire
-          <a href="https://www.erasme.org" target="_blank"
-            ><strong>Erasme</strong></a
-          >
-          joue un rôle clé en coordonnant des projets de
-          <strong>co-développement</strong> pour pérenniser et généraliser les
-          innovations publiques.
-        </p>
-
-        <p>
-          Ces outils permettent une meilleure <strong>analyse</strong> et
-          <strong>visualisation des données</strong>, répondant aux enjeux de
-          <strong>résilience urbaine</strong>. Le projet reflète une dynamique
-          collective d'<strong>innovation ouverte</strong> et d’adaptation aux
-          politiques publiques complexes.
-        </p>
+        {{ with .Resources.GetMatch "consortium.md" }} {{ .Content }} {{ end }}
       </div>
     </div>
   </div>
