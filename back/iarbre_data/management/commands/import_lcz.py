@@ -69,7 +69,9 @@ def load_data() -> geopandas.GeoDataFrame:
 
     shp_path = os.path.join(lcz_path, shp_file)
     gdf = geopandas.read_file(shp_path)
-    gdf = gdf[["lcz", "geometry"]]
+    gdf = gdf[
+        ["lcz", "geometry", "hre", "are", "bur", "ror", "bsr", "war", "ver", "vhr"]
+    ]
     gdf.to_crs(TARGET_PROJ, inplace=True)
     # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
     all_cities_boundary = select_city(None).union_all()
@@ -99,7 +101,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     batch_size = 10000
     for start in tqdm(range(0, len(lcz_datas), batch_size)):
         end = start + batch_size
-        batch = lcz_datas.iloc[start:end]
+        batch = lcz_datas.loc[start:end]
         Lcz.objects.bulk_create(
             [
                 Lcz(
@@ -107,6 +109,16 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
                     map_geometry=GEOSGeometry(data["map_geometry"].wkt),
                     lcz_index=data["lcz"],
                     lcz_description=LCZ[data["lcz"]],
+                    details={
+                        "hre": data["hre"],
+                        "are": data["are"],
+                        "bur": data["bur"],
+                        "ror": data["ror"],
+                        "bsr": data["bsr"],
+                        "war": data["war"],
+                        "ver": data["ver"],
+                        "vhr": data["vhr"],
+                    },
                 )
                 for _, data in batch.iterrows()
             ]

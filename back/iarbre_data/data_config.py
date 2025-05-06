@@ -25,54 +25,9 @@ DATA_FILES = [
         "factors": ["Assainissement"],
         "output_type": "MULTILINESTRING",
     },
-    # {
-    #     "name": "Espaces publics",
-    #     "file": "voirie.gpkg",
-    #     "layer_name": "pub_patrimoinevoirie.espacepublic",
-    #     "actions": [
-    #         {
-    #             "filter": {
-    #                 "name": "typeespacepublic",
-    #                 "value": "Parc / jardin public / square",
-    #             }
-    #         },
-    #         {
-    #             "filter": {
-    #                 "name": "typeespacepublic",
-    #                 "value": "Giratoire",
-    #             }
-    #         },
-    #         {
-    #             "filters": [
-    #                 {
-    #                     "name": "typeespacepublic",
-    #                     "value": "Aire de jeux",
-    #                 },
-    #                 {
-    #                     "name": "typeespacepublic",
-    #                     "value": "Espace piétonnier",
-    #                 },
-    #             ]
-    #         },
-    #         {
-    #             "filter": {
-    #                 "name": "typeespacepublic",
-    #                 "value": "Délaissé / Ilot végétalisé",
-    #             }
-    #         },
-    #     ],
-    #     "scripts": ["parc.py", "giratoire.py", "jeux.py" "friche_nat.py"],
-    #     "factors": [
-    #         "Parcs et jardins publics",
-    #         "Giratoires",
-    #         "Espaces jeux et pietonnier",
-    #         "Friche naturelle",
-    #     ],
-    #     "output_type": "POLYGON",
-    # },
     {
         "name": "Espaces publics",
-        "file": "espacepublic.geojson",
+        "file": "espacepublic2025.geojson",
         "actions": [
             {
                 "filter": {
