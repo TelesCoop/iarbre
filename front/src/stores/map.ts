@@ -2,7 +2,13 @@ import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
-import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
+import {
+  GeoLevel,
+  DataType,
+  MapType,
+  DataTypeToGeolevel,
+  DataTypeToAttributionSource
+} from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -16,10 +22,11 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const selectedMapType = ref<MapType>(MapType.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
-  // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+  // reference https://docs.mapbox.com/style-spec/reference/expressions/#floor
   const FILL_COLOR_MAP = computed(() => {
     return {
       [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
@@ -121,7 +128,7 @@ export const useMapStore = defineStore("map", () => {
       paint: {
         "fill-color": FILL_COLOR_MAP.value[datatype] as any,
         "fill-outline-color": "#00000000",
-        "fill-opacity": 0.6
+        "fill-opacity": 0.5
       }
     })
     map.on("click", layerId, (e) => {
@@ -218,6 +225,69 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const changeMapType = (maptype: MapType) => {
+    removeActivePopup()
+    selectedMapType.value = maptype
+
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      const currentGeoLevel = getGeoLevelFromDataType()
+      const currentDataType = selectedDataType.value!
+      const sourceId = getSourceId(currentDataType, currentGeoLevel)
+      console.log("sourceId", sourceId)
+      mapInstance.removeLayer(getLayerId(currentDataType, currentGeoLevel))
+      mapInstance.removeSource(sourceId)
+      mapInstance.removeControl(attributionControl.value)
+      mapInstance.removeControl(navControl.value)
+      // Set new style based on maptype
+      // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+      const newStyle =
+        maptype === MapType.SATELLITE
+          ? ({
+              version: 8,
+              sources: {
+                satellite: {
+                  type: "raster",
+                  tiles: [
+                    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  ],
+                  tileSize: 256,
+                  attribution: "Imagery © Esri"
+                }
+              },
+              layers: [
+                {
+                  id: "satellite-layer",
+                  type: "raster",
+                  source: "satellite",
+                  minzoom: MIN_ZOOM,
+                  maxzoom: MAX_ZOOM - 1
+                }
+              ]
+            } as maplibregl.StyleSpecification)
+          : "/map/map-style.json"
+
+      console.log("map type changed to", maptype)
+      console.log("new style", newStyle)
+      mapInstance.setStyle(newStyle)
+      console.log("Style set successfully")
+      console.log("data type", currentDataType)
+      console.log("geo level", currentGeoLevel)
+
+      console.log("Style load event fired for map:", mapId)
+      attributionControl.value = new AttributionControl({
+        compact: true,
+        customAttribution: getAttributionSource()
+      })
+      mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
+      setupControls(mapInstance)
+      initTiles(mapInstance, mapId)
+      console.log("Tiles initialized successfully")
+      // MapComponent is listening to moveend event
+      mapInstance.fire("moveend")
+    })
+  }
+
   const initTiles = (mapInstance: Map, mapId: string) => {
     const currentGeoLevel = getGeoLevelFromDataType()
 
@@ -249,6 +319,8 @@ export const useMapStore = defineStore("map", () => {
     initMap,
     popupData,
     selectedDataType,
+    selectedMapType,
+    changeMapType,
     changeDataType,
     getMapInstance,
     vulnerabilityMode
