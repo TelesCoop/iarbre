@@ -235,12 +235,14 @@ export const useMapStore = defineStore("map", () => {
       const currentDataType = selectedDataType.value!
       const sourceId = getSourceId(currentDataType, currentGeoLevel)
       console.log("sourceId", sourceId)
+      // remove existing layers and sources
       mapInstance.removeLayer(getLayerId(currentDataType, currentGeoLevel))
       mapInstance.removeSource(sourceId)
       mapInstance.removeControl(attributionControl.value)
       mapInstance.removeControl(navControl.value)
       // Set new style based on maptype
       // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+      // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
       const newStyle =
         maptype === MapType.SATELLITE
           ? ({
@@ -270,11 +272,9 @@ export const useMapStore = defineStore("map", () => {
       console.log("map type changed to", maptype)
       console.log("new style", newStyle)
       mapInstance.setStyle(newStyle)
-      console.log("Style set successfully")
       console.log("data type", currentDataType)
       console.log("geo level", currentGeoLevel)
-
-      console.log("Style load event fired for map:", mapId)
+      // Add the new layer
       attributionControl.value = new AttributionControl({
         compact: true,
         customAttribution: getAttributionSource()
