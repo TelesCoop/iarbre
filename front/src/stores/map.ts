@@ -2,7 +2,14 @@ import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
-import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
+import {
+  GeoLevel,
+  DataType,
+  MapType,
+  DataTypeToGeolevel,
+  DataTypeToAttributionSource
+} from "@/utils/enum"
+import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -16,10 +23,11 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const selectedMapType = ref<MapType>(MapType.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
-  // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+  // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     return {
       [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
@@ -121,9 +129,10 @@ export const useMapStore = defineStore("map", () => {
       paint: {
         "fill-color": FILL_COLOR_MAP.value[datatype] as any,
         "fill-outline-color": "#00000000",
-        "fill-opacity": 0.6
+        "fill-opacity": 0.5
       }
     })
+    console.info(`cypress: layer :${layerId} and source: ${sourceId} loaded.`)
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
@@ -218,6 +227,52 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const changeMapType = (maptype: MapType) => {
+    removeActivePopup()
+    selectedMapType.value = maptype
+
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      const currentGeoLevel = getGeoLevelFromDataType()
+      const currentDataType = selectedDataType.value!
+
+      mapInstance.removeControl(attributionControl.value)
+      mapInstance.removeControl(navControl.value)
+      // Set new style based on maptype
+      // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+      // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
+      const newStyle =
+        maptype === MapType.SATELLITE
+          ? (mapStyles.SATELLITE as maplibregl.StyleSpecification)
+          : (mapStyles.OSM as maplibregl.StyleSpecification)
+      for (const layer of newStyle.layers) {
+        layer.minzoom = MIN_ZOOM
+        layer.maxzoom = MAX_ZOOM
+      }
+      // Add the new layer
+      attributionControl.value = new AttributionControl({
+        compact: true,
+        customAttribution: getAttributionSource()
+      })
+      mapInstance.setStyle(newStyle)
+
+      // It's ugly and only a hack because `setStyle` is async and does
+      // not handle `style.load` event as one would expect...
+      // Probably can be improved: https://github.com/maplibre/maplibre-gl-js/discussions/2716
+      const checkIfLoaded = () => {
+        if (
+          mapInstance.isStyleLoaded() &&
+          !mapInstance.getSource(getSourceId(currentDataType, currentGeoLevel))
+        ) {
+          mapInstance.fire("style.load")
+          return
+        }
+        setTimeout(checkIfLoaded, 100)
+      }
+      checkIfLoaded()
+    })
+  }
+
   const initTiles = (mapInstance: Map, mapId: string) => {
     const currentGeoLevel = getGeoLevelFromDataType()
 
@@ -228,10 +283,11 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
-      style: "/map/map-style.json",
-      maxZoom: MAX_ZOOM - 1,
+      style: mapStyles.OSM as maplibregl.StyleSpecification,
+      maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
       attributionControl: false
     })
@@ -249,6 +305,8 @@ export const useMapStore = defineStore("map", () => {
     initMap,
     popupData,
     selectedDataType,
+    selectedMapType,
+    changeMapType,
     changeDataType,
     getMapInstance,
     vulnerabilityMode

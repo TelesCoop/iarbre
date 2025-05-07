@@ -19,7 +19,7 @@ const props = defineProps({
 })
 
 const coords = computed(
-  () => `${props.popupData.lat.toFixed(2)}° N, ${props.popupData.lng.toFixed(2)}° E`
+  () => `${props.popupData.lat.toFixed(5)}° N, ${props.popupData.lng.toFixed(5)}° E`
 )
 
 const copy = (text: string) => {
