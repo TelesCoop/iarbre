@@ -26,7 +26,7 @@ export const useMapStore = defineStore("map", () => {
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
-  // reference https://docs.mapbox.com/style-spec/reference/expressions/#floor
+  // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     return {
       [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
@@ -131,6 +131,8 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.5
       }
     })
+    console.log("layerId", layerId)
+    console.log("sourceId", sourceId)
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
@@ -202,6 +204,7 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
+      console.log("Je remove depuis changeDataType")
       if (previousDataType !== null) {
         mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
@@ -233,11 +236,7 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
       const currentGeoLevel = getGeoLevelFromDataType()
       const currentDataType = selectedDataType.value!
-      const sourceId = getSourceId(currentDataType, currentGeoLevel)
-      console.log("sourceId", sourceId)
-      // remove existing layers and sources
-      mapInstance.removeLayer(getLayerId(currentDataType, currentGeoLevel))
-      mapInstance.removeSource(sourceId)
+
       mapInstance.removeControl(attributionControl.value)
       mapInstance.removeControl(navControl.value)
       // Set new style based on maptype
@@ -269,22 +268,23 @@ export const useMapStore = defineStore("map", () => {
             } as maplibregl.StyleSpecification)
           : "/map/map-style.json"
 
-      console.log("map type changed to", maptype)
-      console.log("new style", newStyle)
-      mapInstance.setStyle(newStyle)
-      console.log("data type", currentDataType)
-      console.log("geo level", currentGeoLevel)
       // Add the new layer
       attributionControl.value = new AttributionControl({
         compact: true,
         customAttribution: getAttributionSource()
       })
-      mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
-      setupControls(mapInstance)
-      initTiles(mapInstance, mapId)
-      console.log("Tiles initialized successfully")
-      // MapComponent is listening to moveend event
-      mapInstance.fire("moveend")
+      mapInstance.setStyle(newStyle)
+      const checkIfLoaded = () => {
+        if (
+          mapInstance.isStyleLoaded() &&
+          !mapInstance.getSource(getSourceId(currentDataType, currentGeoLevel))
+        ) {
+          mapInstance.fire("style.load")
+          return
+        }
+        setTimeout(checkIfLoaded, 100)
+      }
+      checkIfLoaded()
     })
   }
 
@@ -298,6 +298,7 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "/map/map-style.json",
@@ -308,6 +309,7 @@ export const useMapStore = defineStore("map", () => {
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
+      console.log("style loaded")
       mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
       initTiles(mapInstance, mapId)
