@@ -63,6 +63,7 @@ class Tile(models.Model):
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.TILE.value
@@ -74,32 +75,11 @@ class Tile(models.Model):
         City, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
     )
 
-    @property
-    def color(self):
-        """Return the color of the tile based on the normalized indice."""
-        if self.plantability_normalized_indice is None:
-            return "purple"
-        elif (
-            self.plantability_normalized_indice < 2
-        ):  # river indice is about -3, we want gray scale
-            return "#E0E0E0"
-        elif self.plantability_normalized_indice < 4:
-            return "#F0F1C0"
-        elif self.plantability_normalized_indice < 6:
-            return "#E5E09A"
-        elif self.plantability_normalized_indice < 8:
-            return "#B7D990"
-        elif self.plantability_normalized_indice < 10:
-            return "#71BB72"
-        else:
-            return "#006837"
-
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
         return {
             "id": self.id,
             "indice": self.plantability_normalized_indice,
-            "color": self.color,
         }
 
 
@@ -155,33 +135,10 @@ class Lcz(models.Model):
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.LCZ.value
-
-    @property
-    def color(self):
-        """Color defined by CEREMA in
-        https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75"""
-        color_map = {
-            None: "purple",
-            "1": "#8C0000",
-            "2": "#D10000",
-            "3": "#FF0000",
-            "4": "#BF4D00",
-            "5": "#fa6600",
-            "6": "#ff9955",
-            "7": "#faee05",
-            "8": "#bcbcbc",
-            "9": "#ffccaa",
-            "A": "#006a00",
-            "B": "#00aa00",
-            "C": "#648525",
-            "D": "#b9db79",
-            "E": "#000000",
-            "F": "#FBF7AE",
-        }
-        return color_map.get(self.lcz_index, "#6A6AFF")
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
@@ -189,7 +146,6 @@ class Lcz(models.Model):
             "id": self.id,
             "indice": self.lcz_index,
             "description": self.lcz_description,
-            "color": self.color,
         }
 
 
@@ -206,33 +162,10 @@ class Vulnerability(models.Model):
     capaf_index_night = models.FloatField(null=True)
     sensibilty_index_day = models.FloatField(null=True)
     sensibilty_index_night = models.FloatField(null=True)
+    details = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.LCZ.value
     datatype = DataType.VULNERABILITY.value
-
-    @property
-    def color(self):
-        """Return the color of the ICU based on the vulnerability_index_day."""
-        if self.vulnerability_index_day is None:
-            return "grey"
-        elif self.vulnerability_index_day == 1:
-            return "#31AFF5"
-        elif self.vulnerability_index_day == 2:
-            return "#7785A3"
-        elif self.vulnerability_index_day == 3:
-            return "#E6E3D1"
-        elif self.vulnerability_index_day == 4:
-            return "#D1BB3B"
-        elif self.vulnerability_index_day == 5:
-            return "#C06329"
-        elif self.vulnerability_index_day == 6:
-            return "#E03F08"
-        elif self.vulnerability_index_day == 7:
-            return "#B61C02"
-        elif self.vulnerability_index_day == 8:
-            return "#7A0403"
-        else:
-            return "#353A47"
 
     def get_layer_properties(self):
         """Return the properties of the tile for the MVT datatype."""
@@ -246,7 +179,6 @@ class Vulnerability(models.Model):
             "capaf_index_night": self.capaf_index_night,
             "sensibilty_index_day": self.sensibilty_index_day,
             "sensibilty_index_night": self.sensibilty_index_night,
-            "color": self.color,
         }
 
 

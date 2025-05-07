@@ -15,7 +15,7 @@ server {
 
     {% if use_password %}
     auth_basic "Acces restreint";
-    auth_basic_user_file "{{ showcase_path }}/passwdfile";
+    auth_basic_user_file "{{ project_dir }}/passwdfile";
     {% endif %}
 
     server_name {{ " ".join(all_hostnames) }};

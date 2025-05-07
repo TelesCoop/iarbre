@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from shapely.geometry.polygon import Polygon
-from iarbre_data.models import City, Tile, Lcz
+from iarbre_data.models import City, Tile, Lcz, Vulnerability
 from iarbre_data.utils.database import select_city
 from api.utils.mvt_generator import MVTGenerator
 
@@ -18,7 +18,7 @@ from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
 
-from api.constants import DEFAULT_ZOOM_LEVELS
+CITY_CODE = "38250"
 
 
 class Command(BaseCommand):
@@ -29,7 +29,7 @@ class Command(BaseCommand):
     city_center = (900733.8693696633, 6443766.2240856625)
 
     def _create_city_and_iris(self):
-        if City.objects.filter(code="38250").exists():
+        if City.objects.filter(code=CITY_CODE).exists():
             self.stdout.write("City already exists")
             return
 
@@ -49,17 +49,17 @@ class Command(BaseCommand):
 
         city = City(
             name="Villard-de-Lans",
-            code="38250",
+            code=CITY_CODE,
             geometry=city_geometry.wkt,
         )
         city.save()
 
-        city = City.objects.filter(code=38250)
+        city = City.objects.filter(code=CITY_CODE)
         InsertIrisCommand._insert_iris(city)
 
         self.stdout.write(self.style.SUCCESS("> City 'Villard-de-Lans' created"))
 
-        selected_city = select_city("38250")
+        selected_city = select_city(CITY_CODE)
 
         # Create Hex tiles
         create_tiles_for_city(
@@ -74,21 +74,20 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> Tiles created"))
 
     def _generate_plantability_tiles(self):
-        random.seed(38250)
-        city = City.objects.get(code="38250")
+        random.seed(0)
 
         tiles = Tile.objects.filter(
-            geometry__intersects=GEOSGeometry(city.geometry.wkt)
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         # If all are generated, skip. Otherwise, regenerate all tiles
         # as we want a reproducible plantability score
-        if tiles.filter(plantability_normalized_indice=0.5).count() == 0:
+        if tiles.filter(plantability_normalized_indice__isnull=True).count() == 0:
             self.stdout.write("Plantability indices already computed")
             return
 
         Tile.objects.bulk_update(
             (
-                Tile(id=tile.id, plantability_normalized_indice=random.random())
+                Tile(id=tile.id, plantability_normalized_indice=random.randint(0, 10))
                 for tile in tiles
             ),
             ["plantability_normalized_indice"],
@@ -99,7 +98,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=DEFAULT_ZOOM_LEVELS,
+            zoom_levels=(13, 13),
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=4,
@@ -107,8 +106,9 @@ class Command(BaseCommand):
         mvt_generator.generate_tiles(ignore_existing=True)
 
     def _generate_lcz_zones(self):
-        city = City.objects.get(code="38250")
-        lczs = Lcz.objects.filter(geometry__intersects=GEOSGeometry(city.geometry.wkt))
+        lczs = Lcz.objects.filter(
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
+        )
         if lczs.count() == 16:
             return
         lczs.delete()
@@ -157,27 +157,80 @@ class Command(BaseCommand):
             lcz.save()
         self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
+    def generate_vulnerability_zones(self):
+        vulnerabilities = Lcz.objects.filter(
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
+        )
+        if vulnerabilities.count() == 81:
+            return
+        vulnerabilities.delete()
+
+        (x0, y0) = self.city_center
+        city_length = 2500
+        x0 -= city_length / 2
+        y0 -= city_length / 2
+
+        lcz_length = city_length / 9
+        for i, j in itertools.product(range(9), repeat=2):
+            x = x0 + i * lcz_length
+            y = y0 + j * lcz_length
+            geometry = Polygon(
+                (
+                    (x, y),
+                    (x + lcz_length, y),
+                    (x + lcz_length, y + lcz_length),
+                    (x, y + lcz_length),
+                    (x, y),
+                )
+            )
+            vul = Vulnerability(
+                geometry=geometry.wkt,
+                vulnerability_index_day=i,
+                vulnerability_index_night=j,
+                expo_index_day=(i + j + 1) % 4,
+                expo_index_night=(i + j + 2) % 4,
+                capaf_index_day=(i + j + 3) % 4,
+                capaf_index_night=(i + j + 4) % 4,
+                sensibilty_index_day=(i + j + 5) % 4,
+                sensibilty_index_night=(i + j + 6) % 4,
+            )
+            vul.save()
+
     def generate_lcz_mvt_tiles(self):
-        city = City.objects.get(code="38250")
-        lczs = Lcz.objects.filter(geometry__intersects=GEOSGeometry(city.geometry.wkt))
+        lczs = Lcz.objects.filter(
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
+        )
 
         self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for LCZ computed"))
 
     def generate_plantability_mvt_tiles(self):
-        city = City.objects.get(code="38250")
         tiles = Tile.objects.filter(
-            geometry__intersects=GEOSGeometry(city.geometry.wkt)
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         self._generate_mvt(tiles, Tile.datatype, Tile.geolevel)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for plantability computed"))
 
+    def generate_vulnerability_mvt_tiles(self):
+        vulnerabilities = Vulnerability.objects.filter(
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
+        )
+        self._generate_mvt(
+            vulnerabilities, Vulnerability.datatype, Vulnerability.geolevel
+        )
+        self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
+
     def handle(self, *args, **options):
         self._create_city_and_iris()
+
+        self.city = City.objects.get(code=CITY_CODE)
 
         self._generate_plantability_tiles()
         self.generate_plantability_mvt_tiles()
 
         self._generate_lcz_zones()
         self.generate_lcz_mvt_tiles()
+
+        self.generate_vulnerability_zones()
+        self.generate_vulnerability_mvt_tiles()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))

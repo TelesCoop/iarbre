@@ -175,8 +175,8 @@ def create_tiles_for_city(
         tile = Tile(
             geometry=polygon,
             map_geometry=Polygon(transformed, srid=TARGET_MAP_PROJ),
-            plantability_indice=0,
-            plantability_normalized_indice=0.5,
+            plantability_indice=None,
+            plantability_normalized_indice=None,
             city_id=city_id,
             iris_id=iris_id,
         )

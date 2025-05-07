@@ -102,6 +102,12 @@ class Command(BaseCommand):
         output_dir = str(BASE_DIR) + "/media/rasters/"
         resolution = 1
         grid_size = options["grid_size"]
+        kernel_size = grid_size / resolution
+        if not kernel_size.is_integer():
+            raise ValueError(
+                f"Grid size should be a multiple of the resolution: {resolution}m"
+            )
+        kernel_size = int(kernel_size)
         all_cities_union = City.objects.aggregate(union=Union("geometry"))["union"]
         minx, miny, maxx, maxy = all_cities_union.extent
 
@@ -124,6 +130,6 @@ class Command(BaseCommand):
                 transform,
                 transform_out,
                 all_cities_union=all_cities_union,
-                grid_size=grid_size,
+                grid_size=kernel_size,
                 output_dir=output_dir,
             )

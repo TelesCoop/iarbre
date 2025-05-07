@@ -1,9 +1,15 @@
+@import "tailwindcss-primeui";
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
+@import "@/styles/maplibre.css";
+@import "@/styles/utility.css";
+@import "primeicons/primeicons.css";
 
 @font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/fonts/BricolageGrotesque-Regular.otf") format("opentype");
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {
@@ -12,24 +18,22 @@
 }
 
 @theme {
-  --color-scale-0: #dfdfdf;
-  --color-scale-1: #e7e7cf;
-  --color-scale-2: #eff1bf;
-  --color-scale-3: #dcdaa2;
-  --color-scale-4: #ccc688;
-  --color-scale-5: #c2cf8b;
-  --color-scale-6: #b7d98f;
-  --color-scale-7: #95cb80;
-  --color-scale-8: #72bc71;
-  --color-scale-9: #3a9254;
-  --color-scale-10: #026838;
-
+  --color-scale-0: #c4c4c4;
+  --color-scale-1: #d1a99d;
+  --color-scale-2: #bf5a16;
+  --color-scale-3: #ce8315;
+  --color-scale-4: #ddad14;
+  --color-scale-5: #c4bd2f;
+  --color-scale-6: #a6cc4a;
+  --color-scale-7: #7ecb4d;
+  --color-scale-8: #55b250;
+  --color-scale-9: #2d8328;
+  --color-scale-10: #025400;
   --color-off-white: #efefed;
-  --color-dark-green: #32412d;
   --color-light-green: #92a48d;
   --color-brown: #32312d;
-
-  --font-sans: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+  --color-green-500: #78c679;
+  --font-sans: "IBM Plex Mono", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
@@ -39,14 +43,10 @@
 
 :root {
   /* Dimensions */
-  --header-height: 80px;
+  --header-height: 110px;
   --content-height: calc(100vh - var(--header-height) - 1px);
 }
 
 .card {
   @apply bg-white shadow-md rounded-[0.75rem] p-5;
-}
-
-.button {
-  @apply font-accent text-brown text-base bg-off-white border-none outline-none transition duration-300 hover:text-light-green cursor-pointer;
 }

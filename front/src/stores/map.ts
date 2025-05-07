@@ -1,10 +1,14 @@
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
-import { MAP_CONTROL_POSITION, MIN_ZOOM } from "@/utils/constants"
+import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
+import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
+import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
+import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -12,12 +16,30 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+
+  // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
+  const FILL_COLOR_MAP = computed(() => {
+    return {
+      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.VULNERABILITY]: [
+        "match",
+        ["get", `indice_${vulnerabilityMode.value}`],
+        ...VULNERABILITY_COLOR_MAP
+      ],
+      [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+    }
+  })
+
   const getAttributionSource = () => {
-    return DataTypeToAttributionSource[selectedDataType.value] || ""
+    const sourceCode =
+      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a>"
+    if (!selectedDataType.value) return sourceCode
+    return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
   }
   const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value] || GeoLevel.LCZ
+    return DataTypeToGeolevel[selectedDataType.value!]
   }
   const attributionControl = ref(
     new AttributionControl({
@@ -38,6 +60,7 @@ export const useMapStore = defineStore("map", () => {
     if (activePopup.value) {
       activePopup.value.remove()
       activePopup.value = null
+      popupData.value = undefined
     }
   }
 
@@ -70,7 +93,6 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const feature = extractFeatures(features, datatype, geolevel)
     if (!feature) return undefined
-
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
 
@@ -89,7 +111,6 @@ export const useMapStore = defineStore("map", () => {
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
-
     map.addLayer({
       id: layerId,
       type: "fill",
@@ -98,26 +119,42 @@ export const useMapStore = defineStore("map", () => {
       "source-layer": `${geolevel}--${datatype}`,
       layout: {},
       paint: {
-        "fill-color": ["get", "color"],
+        "fill-color": FILL_COLOR_MAP.value[datatype] as any,
+        "fill-outline-color": "#00000000",
         "fill-opacity": 0.6
       }
     })
-
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
+      removeActivePopup()
+
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat,
         properties: extractFeatureProperties(e.features!, datatype, geolevel)
       }
-      removeActivePopup()
+
+      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+      map.setPaintProperty(layerId, "fill-outline-color", [
+        "match",
+        ["get", "id"],
+        featureId,
+        "#000000",
+        "#00000000"
+      ])
 
       activePopup.value = new Popup()
         .setLngLat(e.lngLat)
         .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
         .addTo(map)
+
+      document
+        .getElementsByClassName("maplibregl-popup-close-button")[0]
+        .addEventListener("click", () =>
+          map.setPaintProperty(layerId, "fill-outline-color", "#00000000")
+        )
     })
   }
 
@@ -148,48 +185,54 @@ export const useMapStore = defineStore("map", () => {
   const changeDataType = (datatype: DataType) => {
     removeActivePopup()
 
-    const previousDataType = selectedDataType.value
-    selectedDataType.value = datatype
+    const previousDataType = selectedDataType.value!
+    const previousGeoLevel = getGeoLevelFromDataType()
 
-    const previousGeoLevel = currentGeoLevel.value
-    currentGeoLevel.value = getGeoLevelFromDataType()
+    selectedDataType.value = datatype
 
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
-      mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
-      mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+      if (previousDataType !== null) {
+        mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
+        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+      }
       mapInstance.removeControl(attributionControl.value)
       mapInstance.removeControl(navControl.value)
 
       // Add the new layer
-      setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-      setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
+      const currentGeoLevel = getGeoLevelFromDataType()
+      setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+      setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
       attributionControl.value = new AttributionControl({
         compact: true,
         customAttribution: getAttributionSource()
       })
       mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
+
+      // MapComponent is listening to moveend event
+      mapInstance.fire("moveend")
     })
   }
 
   const initTiles = (mapInstance: Map, mapId: string) => {
-    setupSource(mapInstance, selectedDataType.value, currentGeoLevel.value)
-    setupTile(mapInstance, selectedDataType.value, currentGeoLevel.value)
+    const currentGeoLevel = getGeoLevelFromDataType()
+
+    setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+    setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
     popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
-  const initMap = (mapId: string) => {
+  const initMap = (mapId: string, initialDatatype: DataType) => {
+    selectedDataType.value = initialDatatype
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
       style: "/map/map-style.json",
-      // center to Lyon Part-Dieu
-      center: [4.8537684279176645, 45.75773479280862],
-      // zoom to a level that shows the whole city
-      zoom: 14,
+      maxZoom: MAX_ZOOM - 1,
+      minZoom: MIN_ZOOM,
       attributionControl: false
     })
 
@@ -206,8 +249,8 @@ export const useMapStore = defineStore("map", () => {
     initMap,
     popupData,
     selectedDataType,
-    currentGeoLevel,
     changeDataType,
-    getMapInstance
+    getMapInstance,
+    vulnerabilityMode
   }
 })

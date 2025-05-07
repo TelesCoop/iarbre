@@ -1,15 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { onMounted } from "vue"
-import { useRouter, useRoute } from "vue-router"
-import MapLegend from "@/components/map/legend/MapLegend.vue"
-import MapScorePopup from "@/components/map/popup/MapScorePopup.vue"
-import MapLayerSwitcher from "@/components/map/layerSwitcher/MapLayerSwitcher.vue"
-import { updateMapRoute } from "@/utils/route"
-import { DataType } from "@/utils/enum"
-
-const router = useRouter()
-const route = useRoute()
+import { onMounted, type PropType } from "vue"
+import { type MapParams } from "@/types"
 
 const props = defineProps({
   mapId: {
@@ -18,36 +10,47 @@ const props = defineProps({
   }
 })
 
+const model = defineModel<MapParams>({
+  required: true,
+  type: Object as PropType<MapParams>
+})
+
+const emit = defineEmits<{
+  "update:modelValue": [value: MapParams]
+}>()
+
 const mapStore = useMapStore()
 
 onMounted(() => {
-  mapStore.initMap(props.mapId)
+  mapStore.initMap(props.mapId, model.value.dataType!)
+  const mapInstance = mapStore.getMapInstance(props.mapId)
 
-  if (route) {
-    const mapInstance = mapStore.getMapInstance(props.mapId)
-    if (route.name === "mapWithUrlParams") {
-      const p = route.params
-      mapInstance.jumpTo({
-        center: [parseFloat(p.lng as string), parseFloat(p.lat as string)],
-        zoom: parseFloat(p.zoom as string)
-      })
-      mapInstance.on("load", () => {
-        mapStore.changeDataType(p.dataType as DataType)
-      })
-    }
+  mapInstance.jumpTo({
+    center: [model.value.lng, model.value.lat],
+    zoom: model.value.zoom
+  })
 
-    mapInstance.on("moveend", () => {
-      updateMapRoute(router, { map: mapInstance })
+  const updateParams = () => {
+    emit("update:modelValue", {
+      zoom: Math.round(mapInstance.getZoom()),
+      lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
+      lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
+      dataType: mapStore.selectedDataType
     })
-    updateMapRoute(router, { map: mapInstance })
   }
+
+  mapInstance.on("moveend", updateParams)
+  updateParams()
 })
 </script>
 
 <template>
-  <div :id="mapId" data-cy="map-component" class="h-full w-full"></div>
+  <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <map-layer-switcher />
+  <div class="absolute top-0 left-0 pl-[30px] pt-[30px] flex gap-2 flex-col z-1">
+    <map-layer-switcher />
+    <map-context-tools />
+  </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
   </div>

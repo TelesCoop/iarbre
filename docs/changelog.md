@@ -1,4 +1,65 @@
-# Journal de changements
+# Journal des changements
+
+## 🔖 0.5.0 (2025-05-07): Refonte visuelle
+
+### 🛠️ enhance : Ajout d'éléments d'explication pour les différents indices en DB
+
+Dans la DB, un champ `details` contient désormais des facteurs explicatifs pour les scores (5 occupations des sols prépondérantes pour la plantabilité, sous-scores pour la vulnérabilité à la chaleur, éléments de décisions pour les LCZ). Ce champ `details` sera par la suite mis en page et affiché au clic sur une tuile.
+
+&rarr; Commit [68480fc](https://github.com/TelesCoop/iarbre/commit/68480fcd2f67e3f998daf129a00ca9cdbd04f909#diff-eaa4f8eeacf6e860936c83d08f36a735da4982a51e65d97b35eff2eefcb6d766)
+
+### ✨feat : Ajout de la possibilité de visualiser les données diurnes/nocturnes pour le calque de vulnérabilité
+
+Ajout de la visualisation des données diurnes et nocturnes pour le calque de vulnérabilité à la chaleur. Ces
+informations sont accessibles dans la pop-up, avec un changement entre les modes disponible via le panel contextuel des
+outils.
+
+&rarr; Commit [c3f7977](https://github.com/TelesCoop/iarbre/commit/c3f797754a2a2dc91d4ef77c148b6d75950a691a)
+
+### ✨ feat: Gestion des couleurs de la carte directement dans le front
+
+Auparavant, la couleur des tuiles était codée directement dans les `.mvt` et n'était en particulier par modifiable à la volée. Un changement dans les couleurs nécessitait également de générer à nouveau les tuiles.
+
+&rarr; Ticket [#199](https://github.com/TelesCoop/iarbre/issues/199)
+
+### ✨ feat: Suppression des bordures sur le calque de plantabilité
+
+Pour des raisons esthétiques, on n'affiche plus le quadrillage « inter-tuiles » sur le calque de plantabilité
+
+![Vue cartographie sans les bordures](assets/images/changelog/v0.5.0/without_border_207.png)
+
+&rarr; Ticket [#207](https://github.com/TelesCoop/iarbre/issues/207)
+
+### ✨ feat: Affichage d'une bordure autour de la zone sélectionnée
+
+La zone sélectionnée est mise en valeur par un léger surlignage noir (à améliorer), ce qui permet de facilement facilement où est-ce qu'on a cliqué.
+
+![La zone sélectionnée a un liseré noir](assets/images/changelog/v0.5.0/tile_border.png)
+
+&rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
+
+### ✅ test: Nouveaux tests pour le calque de vulnérabilité et améliorations diverses
+
+- On ne génère plus que les tuiles avec un niveau de zoom 13 dans les tests automatiques, pour gagner du temps
+
+&rarr; Ticket [#186](https://github.com/TelesCoop/iarbre/issues/186)
+
+- Les tests d’intégration sont plus strictes et cassent désormais au moindre warning côté Vue ;
+- Génération de données de tests pour le « Calque de vulnérabilité »
+
+&rarr; Ticket [#181](https://github.com/TelesCoop/iarbre/issues/181)
+
+### 🐛 fix: Suppression d'un _clignotement_ au chargement de la page
+
+Suivant la configuration, le calque était chargé puis déchargé puis chargé à nouveau. Cela conduisait à un clignotement côté utilisateur·ice.
+
+&rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
+
+### 🛠️ enhance : ajoute le style de la maquette
+
+Nous utilisons maintenant PrimeVue, une bibliothèque de composants (Ticket [#170](https://github.com/TelesCoop/iarbre/issues/170)) pour appliquer les maquettes concues par notre designer Geoffrey Dorne (https://geoffreydorne.com/).
+
+&rarr; Commit [0f38edf](https://github.com/TelesCoop/iarbre/commit/0f38edfc09fa6dac80492d15ca8a6ad0ac201553)
 
 ## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
 
@@ -7,11 +68,15 @@
 Calcul de la plantabilité à l'aide de raster
 
 1. Convertir les données de Data pour tous les facteurs en raster haute résolution (1x1m)
-2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
+2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le
+   pourcentage de chaque facteur sur des tuiles carrés 5x5m.
 3. Somme pondérée des rasters d'OCS, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité
-4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des
+   pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité
+   seuillée.
 
-En BDD nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui correspondent à l'occupation des sols par chaque facteur.
+En BDD nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui
+correspondent à l'occupation des sols par chaque facteur.
 
 Les couleurs ont aussi évolué pour une meilleure lisibilité.
 
@@ -29,7 +94,8 @@ Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise �
 
 ### ✨ feat: Intégration de [Sveltia CMS](https://github.com/sveltia/sveltia-cms) pour modifier le site statique
 
-Le contenu du site statique [iarbre.fr](https://iarbre.fr/) peut désormais être modifié sans coder en se connectant avec ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https://iarbre.fr/admin).
+Le contenu du site statique [iarbre.fr](https://iarbre.fr/) peut désormais être modifié sans coder en se connectant avec
+ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https://iarbre.fr/admin).
 
 Cette interface permettra à l’avenir de modifier et de publier des articles de blog.
 
@@ -41,7 +107,9 @@ Cette interface permettra à l’avenir de modifier et de publier des articles d
 
 ### ✨ feat: Possibilité d'ouvrir la carte sur un calque spécifique
 
-Le nom du calque est désormais codé dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà par ex. l'url centrée sur Lyon centre avec les données de vulnérabilité à la chaleur : [carte.iarbre.fr/vulnerability/16/45.75773/4.85377](https://carte.iarbre.fr/vulnerability/16/45.75773/4.85377)
+Le nom du calque est désormais codé dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà par ex.
+l'url centrée sur Lyon centre avec les données de vulnérabilité à la
+chaleur : [carte.iarbre.fr/vulnerability/16/45.75773/4.85377](https://carte.iarbre.fr/vulnerability/16/45.75773/4.85377)
 
 &rarr; Ticket [#183](https://github.com/TelesCoop/iarbre/issues/183)
 
@@ -59,7 +127,10 @@ Le nom du calque est désormais codé dans l'url, ce qui permet de partager une 
 
 ### ✨ feat: Calque vulnérabilité à la chaleur
 
-Nous avons commencé l'intégration des [travaux](https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3) de Maurine Di Tommaso (Direction Environnement, Écologie, Énergie). Le travail est en cours pour la séparation jour/nuit et une lisibilité accrue des scores.
+Nous avons commencé l'intégration
+des [travaux](https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3) de
+Maurine Di Tommaso (Direction Environnement, Écologie, Énergie). Le travail est en cours pour la séparation jour/nuit et
+une lisibilité accrue des scores.
 
 ![Capture d'écran pour le calque vulnérabilité à la chaleur](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png)
 
@@ -67,19 +138,25 @@ Nous avons commencé l'intégration des [travaux](https://geoweb.grandlyon.com/p
 
 ### ✨ feat: Possibilité d'ouvrir la carte à des coordonnées spécifiques
 
-Les coordonnées GPS sont désormais codées dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà par ex. l'url centrée sur le Lac du Bourget : [carte.iarbre.fr/11/45.72454/5.88074](https://carte.iarbre.fr/11/45.72454/5.88074)
+Les coordonnées GPS sont désormais codées dans l'url, ce qui permet de partager une vue spécifique de la carte, voilà
+par ex. l'url centrée sur le Lac du
+Bourget : [carte.iarbre.fr/11/45.72454/5.88074](https://carte.iarbre.fr/11/45.72454/5.88074)
 
 &rarr; Commit [0103e77](https://github.com/TelesCoop/iarbre/commit/0103e7703c3934f8eeba012fe80b6f64fa2e319f)
 
 ### 👷 devops: Génération de données fictives de tests
 
-Nous sommes désormais en mesure de générer en quelques secondes des données pour tester l'application. Cela signifie en particulier que les tests qui vérifient que la carte est correctement affichée vont désormais être exécutés automatiquement.
+Nous sommes désormais en mesure de générer en quelques secondes des données pour tester l'application. Cela signifie en
+particulier que les tests qui vérifient que la carte est correctement affichée vont désormais être exécutés
+automatiquement.
 
 &rarr; Commit [7435604](https://github.com/TelesCoop/iarbre/commit/7435604852342895fbf08791261524c58e45b8f8)
 
 ### ⚡️ perf: Amélioration de la performance de la génération des tuiles
 
-La fonction de transformation des géométries entre les système Lambert-93 et Pseudo-Mercator a été accélérée en supposant que la transformation d'un polygone est équivalente au polygone formé de la projection de chacun de ces sommets.
+La fonction de transformation des géométries entre les système Lambert-93 et Pseudo-Mercator a été accélérée en
+supposant que la transformation d'un polygone est équivalente au polygone formé de la projection de chacun de ces
+sommets.
 
 &rarr; Commit [7435604](https://github.com/TelesCoop/iarbre/commit/7435604852342895fbf08791261524c58e45b8f8)
 
@@ -93,11 +170,13 @@ Nous utilisons Tailwind comme framework CSS sur le projet. Une refacto a été f
 
 ### 🐛 fix: MapPopUp
 
-Il n'existait qu'une PopUp pour le calque de plantabilité, il y en a maintenant une aussi pour les ZCLs. Correction aussi des bugs de fonctionnement.
+Il n'existait qu'une PopUp pour le calque de plantabilité, il y en a maintenant une aussi pour les ZCLs. Correction
+aussi des bugs de fonctionnement.
 
 ![Capture d'écran de la popup pour les Zones Climatiques Locales](assets/images/changelog/v0.2.0/lcz-popup.png)
 
-&rarr; Commits [8434d74](https://github.com/TelesCoop/iarbre/commit/8434d74d075c34e27da6d116aafdc152931d927f) et [b87264a](https://github.com/TelesCoop/iarbre/commit/b87264a624db2e5b6bdb9aac6794dafaf2be69dc)
+&rarr; Commits [8434d74](https://github.com/TelesCoop/iarbre/commit/8434d74d075c34e27da6d116aafdc152931d927f)
+et [b87264a](https://github.com/TelesCoop/iarbre/commit/b87264a624db2e5b6bdb9aac6794dafaf2be69dc)
 
 ### ✨ feat: Création du changelog
 
@@ -115,7 +194,10 @@ Ajout dans la navbar d'un bouton qui ouvre une fenêtre permettant d'envoyer des
 
 ### ✨ feat: Légende ZCL + sources des données
 
-Mise à jour de la légende des ZCLs et ajout d'un lien vers la source des données dans le `AttributionControl` de `MapLibre` : [ERASME](https://datagora.erasme.org/projets/calque-de-plantabilite/) pour le Calque de Plantabilité et le [CEREMA] (https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/)pour les Zones Climatiques Locales
+Mise à jour de la légende des ZCLs et ajout d'un lien vers la source des données dans le `AttributionControl` de
+`MapLibre` : [ERASME](https://datagora.erasme.org/projets/calque-de-plantabilite/) pour le Calque de Plantabilité et
+le [CEREMA] (https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/)
+pour les Zones Climatiques Locales
 
 ![Capture d'écran de la mention du CEREMA](assets/images/changelog/v0.2.0/mention-cerema.png)
 
@@ -135,7 +217,9 @@ Quand une PR est prête pour review, une instance est deployée par la CI pour v
 
 ### ✅ test: Meilleurs tests de génération des tuiles sur la grille
 
-On teste maintenant sur des villes fictives (et plus petites) que les tuiles couvrent bien toutes la surface et qu'elles ne se chevauchent pas. Ca été aussi à l'occasion de revoir la génération de grille pour réduire le nombre de tuiles inutiles créées.
+On teste maintenant sur des villes fictives (et plus petites) que les tuiles couvrent bien toutes la surface et qu'elles
+ne se chevauchent pas. Ca été aussi à l'occasion de revoir la génération de grille pour réduire le nombre de tuiles
+inutiles créées.
 
 &rarr; Commit [af7ac23](https://github.com/TelesCoop/iarbre/commit/af7ac23391666c34ebb5127712d217da1c3bd9f8)
 
@@ -143,13 +227,16 @@ On teste maintenant sur des villes fictives (et plus petites) que les tuiles cou
 
 ### ✨ feat: Calque de plantabilité
 
-Affiche le calque de plantabilité à la maille 20x20m avec des tuiles hexagonales et des données remises à jour. La [méthodologie](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-https://github.com/TelesCoop/iarbre/issues/178
-Affiche les Zones Climatique Locales, telle que calculées par le [CEREMA](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/).
+Affiche le calque de plantabilité à la maille 20x20m avec des tuiles hexagonales et des données remises à jour.
+La [méthodologie](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-https://github.com/TelesCoop/iarbre/issues/178
+Affiche les Zones Climatique Locales, telle que calculées par
+le [CEREMA](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/).
 Le changement entre les calques se fait à l'aide
 
 ### ✨ feat: Site vitrine
 
-Le [site](https://iarbre.fr) de présentation du projet est en ligne. Il est généré à partir des fichiers présents dans le dossier `static`.
+Le [site](https://iarbre.fr) de présentation du projet est en ligne. Il est généré à partir des fichiers présents dans
+le dossier `static`.
 
 ### 📝 doc: Création d'une documentation avec MkDocs
 
@@ -163,7 +250,9 @@ En cliquant sur le calque de plantabilité, un popup apparaît pour afficher le 
 
 ### ✨ feat: CI et deploy
 
-Un CI sur GitHub déploie automatiquement la branche `dev` sur l'instance de [`preprod`](https://preprod-carte.iarbre.fr) et la branche `main` surl'instance de [`prod`](https://carte.iarbre.fr), après avoir fait tourner l'intégralité des tests (front et back).
+Un CI sur GitHub déploie automatiquement la branche `dev` sur l'instance de [`preprod`](https://preprod-carte.iarbre.fr)
+et la branche `main` surl'instance de [`prod`](https://carte.iarbre.fr), après avoir fait tourner l'intégralité des
+tests (front et back).
 Il existe aussi une instance [`feature`](https://feature-carte.iarbre.fr) pour tester une feature en ligne.
 
 &rarr; Commit [f78b230

@@ -1,55 +1,58 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed } from "vue"
-import type { ScoreLabelSize } from "@/utils/enum"
 
 interface ScoreLabelProps {
   score: number
   label: string
-  size: ScoreLabelSize
+  isSelected?: boolean
 }
+
 const SCORE_BG_CLASSES: Record<number, string> = {
-  0: "bg-scale-0 border-scale-0",
-  1: "bg-scale-1 border-scale-1",
-  2: "bg-scale-2 border-scale-2",
-  3: "bg-scale-3 border-scale-3",
-  4: "bg-scale-4 border-scale-4",
-  5: "bg-scale-5 border-scale-5",
-  6: "bg-scale-6 border-scale-6",
-  7: "bg-scale-7 border-scale-7",
-  8: "bg-scale-8 border-scale-8",
-  9: "bg-scale-9 border-scale-9",
-  10: "bg-scale-10 border-scale-10 text-white"
+  0: "fill-scale-0",
+  1: "fill-scale-1",
+  2: "fill-scale-2",
+  3: "fill-scale-3",
+  4: "fill-scale-4",
+  5: "fill-scale-5",
+  6: "fill-scale-6",
+  7: "fill-scale-7",
+  8: "fill-scale-8",
+  9: "fill-scale-9",
+  10: "fill-scale-10"
+}
+
+const TEXT_SCORE_CLASSES: Record<number, string> = {
+  0: "text-black",
+  2: "text-white",
+  4: "text-black",
+  6: "text-black",
+  8: "text-black",
+  10: "text-white"
 }
 
 const props = defineProps<ScoreLabelProps>()
 
 const backgroundClass = computed(() => SCORE_BG_CLASSES[props.score] || SCORE_BG_CLASSES[0])
-const sizeClass = computed(() => props.size)
+const textClass = computed(() => TEXT_SCORE_CLASSES[props.score] || TEXT_SCORE_CLASSES[0])
+const isSelected = computed(() => props.isSelected || false)
 </script>
 
 <template>
-  <div
-    class="hexagon relative m-[5px] block text-center flex justify-center items-center"
-    :class="[backgroundClass, sizeClass]"
-  >
-    <span>{{ label }}</span>
+  <div class="relative">
+    <svg height="60" viewBox="0 0 54 60" width="54" xmlns="http://www.w3.org/2000/svg">
+      <path
+        :class="backgroundClass"
+        :stroke="isSelected ? '#002814' : ''"
+        d="M3.85 13.08L23.21 1.9C25.28 0.7 27.84 0.7 29.91 1.9L49.27 13.08C51.34 14.28 52.62 16.49 52.62 18.89V41.25C52.62 43.64 51.34 45.86 49.27 47.06L29.91 58.24C27.84 59.44 25.28 59.44 23.21 58.24L3.85 47.05C1.78 45.85 0.5 43.64 0.5 41.24V18.88C0.5 16.49 1.78 14.27 3.85 13.07V13.08Z"
+        stroke-miterlimit="10"
+      />
+    </svg>
+    <span
+      :class="textClass"
+      class="absolute font-accent inset-0 text-sm flex items-center justify-center text-center"
+      >{{ label }}</span
+    >
   </div>
 </template>
 
-<style scoped>
-.hexagon {
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
-
-.hexagon.small {
-  height: 2em;
-  width: 2em;
-  font-size: 1.5em;
-}
-
-.hexagon.huge {
-  height: 4em;
-  width: 4em;
-  font-size: 1.5em;
-}
-</style>
+<style scoped></style>
