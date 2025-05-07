@@ -248,6 +248,10 @@ DECAP_CMS_AUTH = {
     "SCOPE": "repo,user",
 }
 
+GITHUB_ISSUES = {
+    "token": config.getstr("github.access_token"),
+}
+
 # For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
 if sys.platform == "darwin":
     GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
