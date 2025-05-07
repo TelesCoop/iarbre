@@ -1,8 +1,12 @@
-# 🌳 IArbre
+# 🌳 IA.rbre
 
 Bienvenue sur la documentation de IA.rbre !
 
 Vous trouverez plus de détails sur le projet sur notre [page](https://iarbre.fr).
+
+Vous pouvez aussi accéder à la [carte](https://carte.iarbre.fr) 🗺️ !
+
+La documentation est aussi accessible [ici](https://docs.iarbre.fr) 📚.
 
 ## 📁 Structure du Projet
 
