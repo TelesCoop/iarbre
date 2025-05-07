@@ -35,6 +35,5 @@ const options = [
     option-label="label"
     option-value="value"
     placeholder="Sélection de carte"
-    show-clear
   />
 </template>

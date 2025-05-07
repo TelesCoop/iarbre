@@ -6,5 +6,6 @@ declare namespace Cypress {
     mapHasNoPopup(): void
     mapOpenPopup(): void
     mapSwitchLayer(datatype: string): void
+    basemapSwitchLayer(maptype: string): void
   }
 }

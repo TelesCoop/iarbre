@@ -9,6 +9,7 @@ import {
   DataTypeToGeolevel,
   DataTypeToAttributionSource
 } from "@/utils/enum"
+import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -131,8 +132,7 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.5
       }
     })
-    console.log("layerId", layerId)
-    console.log("sourceId", sourceId)
+    console.info(`cypress: layer :${layerId} and source: ${sourceId} loaded.`)
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
@@ -204,7 +204,6 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
 
       // remove existing layers and sources
-      console.log("Je remove depuis changeDataType")
       if (previousDataType !== null) {
         mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
@@ -244,36 +243,22 @@ export const useMapStore = defineStore("map", () => {
       // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
       const newStyle =
         maptype === MapType.SATELLITE
-          ? ({
-              version: 8,
-              sources: {
-                satellite: {
-                  type: "raster",
-                  tiles: [
-                    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                  ],
-                  tileSize: 256,
-                  attribution: "Imagery © Esri"
-                }
-              },
-              layers: [
-                {
-                  id: "satellite-layer",
-                  type: "raster",
-                  source: "satellite",
-                  minzoom: MIN_ZOOM,
-                  maxzoom: MAX_ZOOM - 1
-                }
-              ]
-            } as maplibregl.StyleSpecification)
-          : "/map/map-style.json"
-
+          ? (mapStyles.SATELLITE as maplibregl.StyleSpecification)
+          : (mapStyles.OSM as maplibregl.StyleSpecification)
+      for (const layer of newStyle.layers) {
+        layer.minzoom = MIN_ZOOM
+        layer.maxzoom = MAX_ZOOM
+      }
       // Add the new layer
       attributionControl.value = new AttributionControl({
         compact: true,
         customAttribution: getAttributionSource()
       })
       mapInstance.setStyle(newStyle)
+
+      // It's ugly and only a hack because `setStyle` is async and does
+      // not handle `style.load` event as one would expect...
+      // Probably can be improved: https://github.com/maplibre/maplibre-gl-js/discussions/2716
       const checkIfLoaded = () => {
         if (
           mapInstance.isStyleLoaded() &&
@@ -301,8 +286,8 @@ export const useMapStore = defineStore("map", () => {
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
-      style: "/map/map-style.json",
-      maxZoom: MAX_ZOOM - 1,
+      style: mapStyles.OSM as maplibregl.StyleSpecification,
+      maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
       attributionControl: false
     })
