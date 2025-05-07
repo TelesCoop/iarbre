@@ -294,7 +294,6 @@ export const useMapStore = defineStore("map", () => {
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
-      console.log("style loaded")
       mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
       initTiles(mapInstance, mapId)
