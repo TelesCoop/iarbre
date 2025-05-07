@@ -1,6 +1,12 @@
 # Journal des changements
 
-## 🔖 0.5.0 (2025-04-23): Amélioration de la partie vulnérabilité à la chaleur
+## 🔖 0.5.0 (2025-05-07): Refonte visuelle
+
+### 🛠️ enhance : Ajout d'éléments d'explication pour les différents indices en DB
+
+Dans la DB, un champ `details` contient désormais des facteurs explicatifs pour les scores (5 occupations des sols prépondérantes pour la plantabilité, sous-scores pour la vulnérabilité à la chaleur, éléments de décisions pour les LCZ). Ce champ `details` sera par la suite mis en page et affiché au clic sur une tuile.
+
+&rarr; Commit [68480fc](https://github.com/TelesCoop/iarbre/commit/68480fcd2f67e3f998daf129a00ca9cdbd04f909#diff-eaa4f8eeacf6e860936c83d08f36a735da4982a51e65d97b35eff2eefcb6d766)
 
 ### ✨feat : Ajout de la possibilité de visualiser les données diurnes/nocturnes pour le calque de vulnérabilité
 
@@ -8,7 +14,7 @@ Ajout de la visualisation des données diurnes et nocturnes pour le calque de vu
 informations sont accessibles dans la pop-up, avec un changement entre les modes disponible via le panel contextuel des
 outils.
 
-## 🔖 0.5.0 (2025-xx-xx):
+&rarr; Commit [c3f7977](https://github.com/TelesCoop/iarbre/commit/c3f797754a2a2dc91d4ef77c148b6d75950a691a)
 
 ### ✨ feat: Gestion des couleurs de la carte directement dans le front
 
@@ -34,9 +40,14 @@ La zone sélectionnée est mise en valeur par un léger surlignage noir (à amé
 
 ### ✅ test: Nouveaux tests pour le calque de vulnérabilité et améliorations diverses
 
-- On ne génère plus que les tuiles avec un niveau de zoom 13 dans les tests automatiques, pour gagner du temps (ticket [#186](https://github.com/TelesCoop/iarbre/issues/186))
+- On ne génère plus que les tuiles avec un niveau de zoom 13 dans les tests automatiques, pour gagner du temps
+
+&rarr; Ticket [#186](https://github.com/TelesCoop/iarbre/issues/186)
+
 - Les tests d’intégration sont plus strictes et cassent désormais au moindre warning côté Vue ;
-- Génération de données de tests pour le « Calque de vulnérabilité » (ticket [#181](https://github.com/TelesCoop/iarbre/issues/181))
+- Génération de données de tests pour le « Calque de vulnérabilité »
+
+&rarr; Ticket [#181](https://github.com/TelesCoop/iarbre/issues/181)
 
 ### 🐛 fix: Suppression d'un _clignotement_ au chargement de la page
 
@@ -45,6 +56,10 @@ Suivant la configuration, le calque était chargé puis déchargé puis chargé 
 &rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
 
 ### 🛠️ enhance : ajoute le style de la maquette
+
+Nous utilisons maintenant PrimeVue, une bibliothèque de composants (Ticket [#170](https://github.com/TelesCoop/iarbre/issues/170)) pour appliquer les maquettes concues par notre designer Geoffrey Dorne (https://geoffreydorne.com/).
+
+&rarr; Commit [0f38edf](https://github.com/TelesCoop/iarbre/commit/0f38edfc09fa6dac80492d15ca8a6ad0ac201553)
 
 ## 🔖 0.4.0 (2025-04-23): Ajout de contenu sur le site statique et améliorations UX
 
