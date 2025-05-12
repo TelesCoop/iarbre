@@ -27,19 +27,38 @@ if (route.name === "mapWithUrlParams") {
 </script>
 
 <template>
-  <div class="map-container max-w-screen overflow-hidden relative">
+  <div class="map-container max-w-screen overflow-hidden relative hidden sm:block">
     <map-component
-      map-id="default"
       :model-value="mapParams"
+      map-id="default"
       @update:model-value="
         (params) => router.replace({ name: 'mapWithUrlParams', params: params as any })
       "
     />
+  </div>
+  <div class="on-mobile-container">
+    <div class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center">
+      <span>Le site est indisponible sur mobile.</span>
+      <Button class="underline" link severity="secondary"
+        >Cliquez ici pour en savoir plus sur IArbre
+      </Button>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .map-container {
   height: var(--content-height);
+}
+
+.on-mobile-container {
+  background-image: url("/images/mobile-screen.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: calc(100vh - var(--header-height) - 1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @apply w-full;
 }
 </style>
