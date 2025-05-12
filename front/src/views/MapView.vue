@@ -47,6 +47,7 @@ if (route.name === "mapWithUrlParams") {
 </template>
 
 <style scoped>
+@reference "@/styles/main.css";
 .map-container {
   height: var(--content-height);
 }
