@@ -52,13 +52,10 @@ if (route.name === "mapWithUrlParams") {
 }
 
 .on-mobile-container {
-  background-image: url("/images/mobile-screen.png");
-  background-repeat: no-repeat;
-  background-size: cover;
+  background: url("/images/mobile-screen.png") no-repeat cover;
   height: calc(100vh - var(--header-height) - 1px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @apply flex items-center justify-center;
   @apply w-full;
+  @apply border-primary-500 border-0.5;
 }
 </style>
