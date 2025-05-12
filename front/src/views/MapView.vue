@@ -41,8 +41,14 @@ if (route.name === "mapWithUrlParams") {
       class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center border-primary-500 border-0.5"
     >
       <span>Le site est actuellement indisponible sur mobile.</span>
-      <Button class="underline" link severity="secondary"
-        >Cliquez ici pour en savoir plus sur IArbre
+      <Button
+        as="a"
+        class="underline"
+        href="https://iarbre.fr/"
+        link
+        severity="secondary"
+        target="_blank"
+        >Cliquez ici pour en savoir plus sur IA.rbre
       </Button>
     </div>
   </div>
