@@ -37,7 +37,9 @@ if (route.name === "mapWithUrlParams") {
     />
   </div>
   <div class="on-mobile-container">
-    <div class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center">
+    <div
+      class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center border-primary-500 border-0.5"
+    >
       <span>Le site est indisponible sur mobile.</span>
       <Button class="underline" link severity="secondary"
         >Cliquez ici pour en savoir plus sur IArbre
@@ -53,10 +55,11 @@ if (route.name === "mapWithUrlParams") {
 }
 
 .on-mobile-container {
-  background: url("/images/mobile-screen.png") no-repeat cover;
+  background-image: url("/images/mobile-screen.png");
+  background-repeat: no-repeat;
+  background-size: cover;
   height: calc(100vh - var(--header-height) - 1px);
   @apply flex items-center justify-center;
   @apply w-full;
-  @apply border-primary-500 border-0.5;
 }
 </style>
