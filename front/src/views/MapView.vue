@@ -40,7 +40,7 @@ if (route.name === "mapWithUrlParams") {
     <div
       class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center border-primary-500 border-0.5"
     >
-      <span>Le site est indisponible sur mobile.</span>
+      <span>Le site est actuellement indisponible sur mobile.</span>
       <Button class="underline" link severity="secondary"
         >Cliquez ici pour en savoir plus sur IArbre
       </Button>
