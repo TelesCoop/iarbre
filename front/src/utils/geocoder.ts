@@ -1,18 +1,17 @@
-// Constants pour les sélecteurs et les dimensions
-import { LIMIT_GEOCODE_CITY_CODE } from "@/utils/constants"
 import type {
   MaplibreGeocoderApiConfig,
   MaplibreGeocoderFeatureResults,
   CarmenGeojsonFeature
 } from "@maplibre/maplibre-gl-geocoder"
 
-const SELECTORS = {
+export const LIMIT_GEOCODE_CITY_CODE = 69123
+export const GEOCODER_SELECTORS = {
   CONTAINER: ".maplibregl-ctrl-geocoder",
   INPUT: ".maplibregl-ctrl-geocoder--input",
   SEARCH_ICON: ".maplibregl-ctrl-geocoder--icon-search"
 }
 
-const GEOCODER_STYLE = {
+export const GEOCODER_STYLE = {
   COLLAPSED: {
     CONTAINER_WIDTH: "29px",
     INPUT_WIDTH: "0",
@@ -73,8 +72,8 @@ export const geocoderApi = {
 }
 
 export const collapseSearchBar = (): void => {
-  const geocoderContainer = document.querySelector<HTMLDivElement>(SELECTORS.CONTAINER)
-  const geocoderInput = document.querySelector<HTMLInputElement>(SELECTORS.INPUT)
+  const geocoderContainer = document.querySelector<HTMLDivElement>(GEOCODER_SELECTORS.CONTAINER)
+  const geocoderInput = document.querySelector<HTMLInputElement>(GEOCODER_SELECTORS.INPUT)
 
   if (geocoderContainer && geocoderInput) {
     geocoderContainer.style.width = GEOCODER_STYLE.COLLAPSED.CONTAINER_WIDTH
@@ -84,8 +83,8 @@ export const collapseSearchBar = (): void => {
 }
 
 export const expandSearchBar = (): void => {
-  const geocoderContainer = document.querySelector<HTMLDivElement>(SELECTORS.CONTAINER)
-  const geocoderInput = document.querySelector<HTMLInputElement>(SELECTORS.INPUT)
+  const geocoderContainer = document.querySelector<HTMLDivElement>(GEOCODER_SELECTORS.CONTAINER)
+  const geocoderInput = document.querySelector<HTMLInputElement>(GEOCODER_SELECTORS.INPUT)
 
   if (geocoderContainer && geocoderInput) {
     geocoderContainer.style.width = GEOCODER_STYLE.EXPANDED.CONTAINER_WIDTH
@@ -96,8 +95,8 @@ export const expandSearchBar = (): void => {
 }
 
 export const initializeExpandableSearchBar = (): void => {
-  const geocoderInput = document.querySelector<HTMLInputElement>(SELECTORS.INPUT)
-  const geocoderContainer = document.querySelector<HTMLDivElement>(SELECTORS.CONTAINER)
+  const geocoderInput = document.querySelector<HTMLInputElement>(GEOCODER_SELECTORS.INPUT)
+  const geocoderContainer = document.querySelector<HTMLDivElement>(GEOCODER_SELECTORS.CONTAINER)
 
   if (!geocoderInput || !geocoderContainer) {
     console.warn("Impossible to find the geocoder input or container")
@@ -107,7 +106,7 @@ export const initializeExpandableSearchBar = (): void => {
   collapseSearchBar()
   geocoderContainer.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement
-    if (target.closest(SELECTORS.SEARCH_ICON) || target === geocoderContainer) {
+    if (target.closest(GEOCODER_SELECTORS.SEARCH_ICON) || target === geocoderContainer) {
       expandSearchBar()
     }
   })
