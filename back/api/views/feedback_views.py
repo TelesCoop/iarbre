@@ -1,12 +1,12 @@
 from rest_framework import generics, status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
-import requests
+from django.core.mail import send_mail
 
 from api.models import Feedback
 from api.serializers import FeedbackSerializer
 
-from iarbre_data.settings import MAILGUN
+from django.conf import settings
 
 
 class FeedbackView(generics.CreateAPIView):
@@ -23,10 +23,7 @@ class FeedbackView(generics.CreateAPIView):
         return response
 
     def send_feedback_email(self, feedback_data):
-        """Send feedback data via email using Mailgun."""
-        MAILGUN_API_KEY = MAILGUN["API_KEY"]
-        MAILGUN_DOMAIN = MAILGUN["DOMAIN"]
-        RECIPIENT_EMAIL = "Ludovic Telescoop <ludovic@telescoop.fr>"
+        """Send feedback data via email."""
 
         email = feedback_data.get("email", "Anonyme")
         subject = f"Feedback IA.rbre de {email}"
@@ -41,17 +38,10 @@ class FeedbackView(generics.CreateAPIView):
         ### Feedback
         {feedback_data['feedback']}
         """
-        try:
-            response = requests.post(
-                f"https://api.eu.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-                auth=("api", f"{MAILGUN_API_KEY}"),
-                data={
-                    "from": f"Feedback IArbre <postmaster@{MAILGUN_DOMAIN}>",
-                    "to": RECIPIENT_EMAIL,
-                    "subject": subject,
-                    "text": email_body,
-                },
-            )
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print(f"Error sending feedback email: {str(e)}")
+
+        send_mail(
+            subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.RECIPIENT_EMAIL],
+        )

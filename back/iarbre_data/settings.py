@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "telescoop_backup",
     "rest_framework",
     "decapcms_auth",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -98,6 +99,7 @@ if IS_LOCAL_DEV:
     INSTALLED_APPS.append("corsheaders")
     MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
     CORS_ALLOW_CREDENTIALS = True
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 else:
     ROLLBAR = {
@@ -113,6 +115,15 @@ else:
         "root": BASE_DIR,
     }
     MIDDLEWARE.append("rollbar.contrib.django.middleware.RollbarNotifierMiddleware")
+    ANYMAIL = {
+        "MAILGUN_API_KEY": config.getstr("mail.api_key"),
+        "MAILGUN_SENDER_DOMAIN": "mail.telescoop.fr",
+        "MAILGUN_API_URL": "https://api.eu.mailgun.net/v3",
+    }
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+    DEFAULT_FROM_EMAIL = "no-reply@telescoop.fr"
+    SERVER_EMAIL = "no-reply@telescoop.fr"
+    RECIPIENT_EMAIL = "Ludovic Telescoop <ludovic@telescoop.fr>"
 ROOT_URLCONF = "iarbre_data.urls"
 
 TEMPLATES = [
@@ -246,11 +257,6 @@ DECAP_CMS_AUTH = {
     "OAUTH_CLIENT_ID": config.getstr("github_oauth.client_id"),
     "OAUTH_CLIENT_SECRET": config.getstr("github_oauth.client_secret"),
     "SCOPE": "repo,user",
-}
-
-MAILGUN = {
-    "API_KEY": config.getstr("mailgun.api_key"),
-    "DOMAIN": config.getstr("mailgun.domain"),
 }
 
 # For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
