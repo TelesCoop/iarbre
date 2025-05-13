@@ -9,6 +9,5 @@ __pycache__
 *.ipynb
 *.zip
 __pycache__
-
 site/*
 .vscode

@@ -37,7 +37,7 @@ export const useMapStore = defineStore("map", () => {
 
   const getAttributionSource = () => {
     const sourceCode =
-      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a>"
+      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
     if (!selectedDataType.value) return sourceCode
     return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
   }
