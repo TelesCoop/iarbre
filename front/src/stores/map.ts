@@ -127,7 +127,6 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
-
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
@@ -149,6 +148,11 @@ export const useMapStore = defineStore("map", () => {
         .setDOMContent(popupDomElement.value)
         .setMaxWidth("400px")
         .addTo(map)
+
+      map.flyTo({
+        center: [e.lngLat.lng, e.lngLat.lat],
+        essential: true
+      })
 
       document
         .getElementsByClassName("maplibregl-popup-close-button")[0]
