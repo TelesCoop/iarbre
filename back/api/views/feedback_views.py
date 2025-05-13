@@ -26,16 +26,16 @@ class FeedbackView(generics.CreateAPIView):
         """Send feedback data via email."""
 
         email = feedback_data.get("email", "Anonyme")
-        subject = f"Feedback IA.rbre de {email}"
+        subject = f"Retour utilisateur IA.rbre de {email}"
         created_date = feedback_data["created"]
 
         email_body = f"""
-        ## Feedback Utilisateur
+        # Retour Utilisateur
 
         **Email**: {email}
         **Date**: {created_date}
 
-        ### Feedback
+        ## Commentaire :
         {feedback_data['feedback']}
         """
 
