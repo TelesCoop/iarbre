@@ -156,7 +156,6 @@ export const useMapStore = defineStore("map", () => {
 
       // Wait for the DOM to be updated before creating the popup
       nextTick(() => {
-        console.log(popupDomElement.value!.outerHTML)
         activePopup.value = new Popup()
           .setLngLat(e.lngLat)
           .setHTML(popupDomElement.value!.outerHTML)
