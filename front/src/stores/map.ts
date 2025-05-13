@@ -9,6 +9,10 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
+import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
+import { collapseSearchBar, geocoderApi, initializeExpandableSearchBar } from "@/utils/geocoder"
+import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
+import maplibreGl from "maplibre-gl"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -17,7 +21,6 @@ export const useMapStore = defineStore("map", () => {
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
   const FILL_COLOR_MAP = computed(() => {
@@ -54,6 +57,19 @@ export const useMapStore = defineStore("map", () => {
       showZoom: true,
       showCompass: false
     })
+  )
+
+  const geocoderControl = ref(
+    new MaplibreGeocoder(
+      {
+        forwardGeocode: geocoderApi.forwardGeocode
+      },
+      {
+        // @ts-ignore
+        maplibregl: maplibreGl,
+        marker: false
+      }
+    )
   )
 
   const removeActivePopup = () => {
@@ -108,6 +124,11 @@ export const useMapStore = defineStore("map", () => {
     return extractFeatureProperty(features, datatype, geolevel)
   }
 
+  const removeGeocoder = () => {
+    collapseSearchBar()
+    geocoderControl.value.clear()
+  }
+
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
@@ -127,7 +148,7 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
-
+      removeGeocoder()
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
@@ -178,8 +199,20 @@ export const useMapStore = defineStore("map", () => {
     checkIfLoaded()
   }
 
+  const removeControls = (map: Map) => {
+    map.removeControl(attributionControl.value)
+    map.removeControl(navControl.value)
+    map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+  }
   const setupControls = (map: Map) => {
+    // Add the new attribution control
+    attributionControl.value = new AttributionControl({
+      compact: true,
+      customAttribution: getAttributionSource()
+    })
+    map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
+    map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
   const changeDataType = (datatype: DataType) => {
@@ -199,20 +232,13 @@ export const useMapStore = defineStore("map", () => {
         mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
       }
-      mapInstance.removeControl(attributionControl.value)
-      mapInstance.removeControl(navControl.value)
-
+      removeControls(mapInstance)
       // Add the new layer
       const currentGeoLevel = getGeoLevelFromDataType()
       setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
       setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
-      attributionControl.value = new AttributionControl({
-        compact: true,
-        customAttribution: getAttributionSource()
-      })
-      mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
-
+      initializeExpandableSearchBar()
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -238,9 +264,9 @@ export const useMapStore = defineStore("map", () => {
 
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
-      mapInstance.addControl(attributionControl.value, MAP_CONTROL_POSITION)
       setupControls(mapInstance)
       initTiles(mapInstance, mapId)
+      initializeExpandableSearchBar()
     })
   }
 
