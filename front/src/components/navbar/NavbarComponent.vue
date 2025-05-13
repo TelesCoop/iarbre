@@ -39,7 +39,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   </div>
   <nav class="header-nav">
     <ul class="nav-list">
-      <li class="border-r-primary-500 border-r-[1px] border-solid pr-2">
+      <li>
         <Button
           data-cy="open-feedback-button"
           severity="primary"
@@ -48,18 +48,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
           variant="text"
           @click="feedbackIsVisible = true"
           >Envoyer votre avis
-        </Button>
-      </li>
-      <li class="pl-2">
-        <Button
-          as="a"
-          data-cy="open-savoir-href"
-          href="https://iarbre.fr"
-          severity="primary"
-          size="small"
-          target="_blank"
-          variant="text"
-          >À propos
         </Button>
       </li>
     </ul>

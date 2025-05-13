@@ -67,5 +67,6 @@ if (route.name === "mapWithUrlParams") {
   height: calc(100vh - var(--header-height) - 1px);
   @apply flex items-center justify-center;
   @apply w-full;
+  @apply sm:hidden;
 }
 </style>
