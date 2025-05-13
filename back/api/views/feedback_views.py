@@ -6,7 +6,7 @@ import requests
 from api.models import Feedback
 from api.serializers import FeedbackSerializer
 
-from iarbre_data.settings import GITHUB_ISSUES
+from iarbre_data.settings import MAILGUN
 
 
 class FeedbackView(generics.CreateAPIView):
@@ -18,41 +18,40 @@ class FeedbackView(generics.CreateAPIView):
         response = self.create(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_201_CREATED:
-            self.create_github_issue(response.data)
+            self.send_feedback_email(response.data)
 
         return response
 
-    def create_github_issue(self, feedback_data):
-        """Create a GitHub issue based on feedback data."""
-        # GitHub API settings
-        github_token = GITHUB_ISSUES["token"]
-        url = "https://api.github.com/repos/TelesCoop/iarbre/issues"
+    def send_feedback_email(self, feedback_data):
+        """Send feedback data via email using Mailgun."""
+        MAILGUN_API_KEY = MAILGUN["API_KEY"]
+        MAILGUN_DOMAIN = MAILGUN["DOMAIN"]
+        RECIPIENT_EMAIL = "Ludovic Telescoop <ludovic@telescoop.fr>"
 
-        email = feedback_data.get("email", "Anonymous")
-        issue_title = f"New Feedback from {email}"
+        email = feedback_data.get("email", "Anonyme")
+        subject = f"Feedback IA.rbre de {email}"
         created_date = feedback_data["created"]
 
-        issue_body = f"""
+        email_body = f"""
         ## Feedback Utilisateur
 
         **Email**: {email}
         **Date**: {created_date}
 
-        ### Feedback Content
+        ### Feedback
         {feedback_data['feedback']}
         """
-
-        headers = {
-            "Authorization": f"token {github_token}",
-            "Accept": "application/vnd.github.v3+json",
-        }
-        issue_data = {
-            "title": issue_title,
-            "body": issue_body,
-            "labels": ["feedback", "user-submitted"],
-        }
         try:
-            response = requests.post(url, headers=headers, json=issue_data)
+            response = requests.post(
+                f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+                auth=("api", f"key-{MAILGUN_API_KEY}"),
+                data={
+                    "from": f"Feedback IArbre <postmaster@{MAILGUN_DOMAIN}>",
+                    "to": RECIPIENT_EMAIL,
+                    "subject": subject,
+                    "text": email_body,
+                },
+            )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print(f"Error creating GitHub issue: {str(e)}")
+            print(f"Error sending feedback email: {str(e)}")

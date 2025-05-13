@@ -248,8 +248,9 @@ DECAP_CMS_AUTH = {
     "SCOPE": "repo,user",
 }
 
-GITHUB_ISSUES = {
-    "token": config.getstr("github.access_token"),
+MAILGUN = {
+    "API_KEY": config.getstr("mailgun.api_key"),
+    "DOMAIN": config.getstr("mailgun.domain"),
 }
 
 # For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
