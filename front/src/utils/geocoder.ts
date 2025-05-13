@@ -104,9 +104,7 @@ export const initializeExpandableSearchBar = (): void => {
     return
   }
 
-  // Initialiser en état replié
   collapseSearchBar()
-
   geocoderContainer.addEventListener("click", (e: MouseEvent) => {
     const target = e.target as HTMLElement
     if (target.closest(SELECTORS.SEARCH_ICON) || target === geocoderContainer) {
