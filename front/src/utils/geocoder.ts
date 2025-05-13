@@ -30,8 +30,7 @@ export const geocoderApi = {
   ): Promise<MaplibreGeocoderFeatureResults> => {
     const features: CarmenGeojsonFeature[] = []
     try {
-      // Format pour l'API adresse.data.gouv.fr
-      const limit = config.limit || 5 // Valeur par défaut si non fournie
+      const limit = config.limit || 5
       const request = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
         config.query as string
       )}&limit=${limit}&citycode=${LIMIT_GEOCODE_CITY_CODE}`
@@ -39,7 +38,6 @@ export const geocoderApi = {
       const response = await fetch(request)
       const data = await response.json()
 
-      // Format différent de l'API adresse.data.gouv.fr
       for (const feature of data.features) {
         const coordinates = feature.geometry.coordinates
 
