@@ -2,6 +2,7 @@ import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
+import { nextTick } from "vue"
 import {
   GeoLevel,
   DataType,
@@ -20,7 +21,7 @@ import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const popupData = ref<MapScorePopupData | undefined>(undefined)
-  const popupDomElement = ref<HTMLElement | null>(null)
+  const popupDomElement = computed(() => document.getElementById("popup-default"))
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapType = ref<MapType>(MapType.OSM)
@@ -153,12 +154,15 @@ export const useMapStore = defineStore("map", () => {
         "#00000000"
       ])
 
-      activePopup.value = new Popup()
-        .setLngLat(e.lngLat)
-        .setDOMContent(popupDomElement.value)
-        .setMaxWidth("400px")
-        .addTo(map)
-
+      // Wait for the DOM to be updated before creating the popup
+      nextTick(() => {
+        console.log(popupDomElement.value!.outerHTML)
+        activePopup.value = new Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(popupDomElement.value!.outerHTML)
+          .setMaxWidth("400px")
+          .addTo(map)
+      })
       document
         .getElementsByClassName("maplibregl-popup-close-button")[0]
         .addEventListener("click", () =>
@@ -230,14 +234,8 @@ export const useMapStore = defineStore("map", () => {
   const changeMapType = (maptype: MapType) => {
     removeActivePopup()
     selectedMapType.value = maptype
-
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
-      const currentGeoLevel = getGeoLevelFromDataType()
-      const currentDataType = selectedDataType.value!
-
-      mapInstance.removeControl(attributionControl.value)
-      mapInstance.removeControl(navControl.value)
       // Set new style based on maptype
       // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
       // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
@@ -255,21 +253,7 @@ export const useMapStore = defineStore("map", () => {
         customAttribution: getAttributionSource()
       })
       mapInstance.setStyle(newStyle)
-
-      // It's ugly and only a hack because `setStyle` is async and does
-      // not handle `style.load` event as one would expect...
-      // Probably can be improved: https://github.com/maplibre/maplibre-gl-js/discussions/2716
-      const checkIfLoaded = () => {
-        if (
-          mapInstance.isStyleLoaded() &&
-          !mapInstance.getSource(getSourceId(currentDataType, currentGeoLevel))
-        ) {
-          mapInstance.fire("style.load")
-          return
-        }
-        setTimeout(checkIfLoaded, 100)
-      }
-      checkIfLoaded()
+      mapInstance.fire("style.load")
     })
   }
 
@@ -278,7 +262,6 @@ export const useMapStore = defineStore("map", () => {
 
     setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
     setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
-    popupDomElement.value = document.getElementById(`popup-${mapId}`)
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
