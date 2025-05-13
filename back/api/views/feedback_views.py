@@ -44,7 +44,7 @@ class FeedbackView(generics.CreateAPIView):
         try:
             response = requests.post(
                 f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-                auth=("api", f"key-{MAILGUN_API_KEY}"),
+                auth=("api", f"{MAILGUN_API_KEY}"),
                 data={
                     "from": f"Feedback IArbre <postmaster@{MAILGUN_DOMAIN}>",
                     "to": RECIPIENT_EMAIL,
