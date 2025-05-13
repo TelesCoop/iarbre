@@ -124,7 +124,7 @@ export const useMapStore = defineStore("map", () => {
     return extractFeatureProperty(features, datatype, geolevel)
   }
 
-  const removeGeocoder = () => {
+  const collapseGeocoder = () => {
     collapseSearchBar()
     geocoderControl.value.clear()
   }
@@ -148,7 +148,7 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
-      removeGeocoder()
+      collapseGeocoder()
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
