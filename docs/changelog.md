@@ -17,7 +17,7 @@ Homogénise les légendes des calques de plantabilité et vulnérabilité à la 
 
 ### ✨ feat : Retours par email
 
-m
+Les retours sur la carto sont maintenant redirigés par emails en plus d'être sauvegardés en base de données.
 &rarr; Commit [d367c5c](https://github.com/TelesCoop/iarbre/commit/d367c5cc19ffafb713d103378c2bb956857f36f9)
 
 ## 🔖 0.5.0 (2025-05-07): Refonte visuelle
