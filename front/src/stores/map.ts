@@ -10,7 +10,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
-import { collapseSearchBar, geocoderApi, initializeExpandableSearchBar } from "@/utils/geocoder"
+import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
 
@@ -67,7 +67,12 @@ export const useMapStore = defineStore("map", () => {
       {
         // @ts-ignore
         maplibregl: maplibreGl,
-        marker: false
+        marker: false,
+        showResultsWhileTyping: true,
+        countries: "FR",
+        placeholder: "Rechercher une adresse",
+        collapsed: true,
+        enableEventLogging: false
       }
     )
   )
@@ -124,11 +129,6 @@ export const useMapStore = defineStore("map", () => {
     return extractFeatureProperty(features, datatype, geolevel)
   }
 
-  const collapseGeocoder = () => {
-    collapseSearchBar()
-    geocoderControl.value.clear()
-  }
-
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
@@ -148,7 +148,6 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
-      collapseGeocoder()
       popupData.value = {
         id: extractFeatureIndex(e.features!, datatype, geolevel),
         lng: e.lngLat.lng,
@@ -238,7 +237,6 @@ export const useMapStore = defineStore("map", () => {
       setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
       setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
       setupControls(mapInstance)
-      initializeExpandableSearchBar()
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -266,7 +264,6 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("style.load", () => {
       setupControls(mapInstance)
       initTiles(mapInstance, mapId)
-      initializeExpandableSearchBar()
     })
   }
 

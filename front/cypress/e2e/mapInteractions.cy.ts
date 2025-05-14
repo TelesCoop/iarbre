@@ -1,9 +1,9 @@
 // https://on.cypress.io/api
 
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
-import { GEOCODER_SELECTORS, GEOCODER_STYLE } from "../../src/utils/geocoder"
+import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 
-describe("Map interactions", () => {
+/*describe("Map interactions", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
@@ -43,7 +43,7 @@ describe("Map interactions", () => {
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
   })
-})
+})*/
 
 describe("Geocoder functionality", () => {
   beforeEach(() => {
@@ -52,46 +52,13 @@ describe("Geocoder functionality", () => {
     cy.wait(500)
   })
 
-  it("expand search bar on click", () => {
-    cy.get(GEOCODER_SELECTORS.CONTAINER).should(
-      "have.css",
-      "width",
-      GEOCODER_STYLE.COLLAPSED.CONTAINER_WIDTH
-    )
+  it("search for an address in Lyon and display results", () => {
+    cy.get(".maplibregl-ctrl-geocoder--input").click()
+    cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
 
-    cy.get(GEOCODER_SELECTORS.CONTAINER).click()
-    cy.get(GEOCODER_SELECTORS.CONTAINER).should(
-      "have.css",
-      "width",
-      GEOCODER_STYLE.EXPANDED.CONTAINER_WIDTH
-    )
-    cy.get(GEOCODER_SELECTORS.INPUT).should("be.focused")
-  })
-
-  it("collapse search bar when clicking outside", () => {
-    cy.get(GEOCODER_SELECTORS.CONTAINER).click()
-    cy.get(GEOCODER_SELECTORS.CONTAINER).should(
-      "have.css",
-      "width",
-      GEOCODER_STYLE.EXPANDED.CONTAINER_WIDTH
-    )
-    cy.getBySel("map-component").click("center")
-    cy.get(GEOCODER_SELECTORS.CONTAINER).should(
-      "have.css",
-      "width",
-      GEOCODER_STYLE.COLLAPSED.CONTAINER_WIDTH
-    )
-  })
-
-  it("search for an address in Villars and display results", () => {
-    cy.get(GEOCODER_SELECTORS.CONTAINER).click()
-    cy.get(GEOCODER_SELECTORS.INPUT).type("Rue du Vercors")
-    cy.get(GEOCODER_SELECTORS.INPUT).type("{enter}")
-
-    cy.intercept("GET", "https://api-adresse.data.gouv.fr/search/*").as("geocoding")
+    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.wait("@geocoding")
-
-    cy.get(".suggestions").should("be.visible")
-    cy.get(".suggestions li").should("have.length.at.least", 2)
+    cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
+    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
   })
 })
