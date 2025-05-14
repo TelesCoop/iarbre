@@ -1,5 +1,25 @@
 # Journal des changements
 
+## 🔖 0.6.0 (2025-05-14): Changements cosmétiques
+
+### 🛠️ enhance : rend l'affichage inaccessible sur mobile
+
+L'affichage n'étant pas adapté pour mobile à l'heure actuelle, un message s'affiche maintenant sur mobile pour le signaler et propose un lien vers la page
+du projet.
+
+&rarr; Commit [379e073](https://github.com/TelesCoop/iarbre/commit/379e073d296cd379e09dc8685603a459fc4660c2)
+
+### 🛠️ enhance : Homogénisation des légendes
+
+Homogénise les légendes des calques de plantabilité et vulnérabilité à la chaleur. Remplace aussi les hexagones par des carrés pour correspondre aux carrés sur le calque.
+
+&rarr; Commit [2f8b33a](https://github.com/TelesCoop/iarbre/commit/2f8b33a02c9fc741a49c41a6b1d5ddbfd308662d)
+
+### ✨ feat : Retours par email
+
+Les retours sur la carto sont maintenant redirigés par emails en plus d'être sauvegardés en base de données.
+&rarr; Commit [d367c5c](https://github.com/TelesCoop/iarbre/commit/d367c5cc19ffafb713d103378c2bb956857f36f9)
+
 ## 🔖 0.5.0 (2025-05-07): Refonte visuelle
 
 ### 🛠️ enhance : Ajout d'éléments d'explication pour les différents indices en DB
@@ -8,7 +28,7 @@ Dans la DB, un champ `details` contient désormais des facteurs explicatifs pour
 
 &rarr; Commit [68480fc](https://github.com/TelesCoop/iarbre/commit/68480fcd2f67e3f998daf129a00ca9cdbd04f909#diff-eaa4f8eeacf6e860936c83d08f36a735da4982a51e65d97b35eff2eefcb6d766)
 
-### ✨feat : Ajout de la possibilité de visualiser les données diurnes/nocturnes pour le calque de vulnérabilité
+### ✨ feat : Ajout de la possibilité de visualiser les données diurnes/nocturnes pour le calque de vulnérabilité
 
 Ajout de la visualisation des données diurnes et nocturnes pour le calque de vulnérabilité à la chaleur. Ces
 informations sont accessibles dans la pop-up, avec un changement entre les modes disponible via le panel contextuel des
