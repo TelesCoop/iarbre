@@ -70,7 +70,8 @@ export const useMapStore = defineStore("map", () => {
         marker: false,
         showResultsWhileTyping: true,
         countries: "FR",
-        placeholder: "Rechercher une adresse",
+        placeholder: "Recherche",
+        clearOnBlur: true,
         collapsed: true,
         enableEventLogging: false
       }
@@ -145,6 +146,7 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.6
       }
     })
+
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
