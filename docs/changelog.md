@@ -1,25 +1,23 @@
 # Journal des changements
 
-## 🔖 0.6.0 (2025-05-14): Changements cosmetiques
+## 🔖 0.6.0 (2025-05-14): Changements cosmétiques
 
-### 🛠️ enhance : Inaccessble sur mobile
+### 🛠️ enhance : rend l'affichage inaccessible sur mobile
 
-L'affichage n'est pas responsive à l'heure actuelle donc la carte était illisible sur mobile. Dans l'attente
-de s'y pencher, maintenant un message s'affiche suyr mobile pour le signaler et propose un lien vers la page
+L'affichage n'étant pas adapté pour mobile à l'heure actuelle, un message s'affiche maintenant sur mobile pour le signaler et propose un lien vers la page
 du projet.
 
 &rarr; Commit [379e073](https://github.com/TelesCoop/iarbre/commit/379e073d296cd379e09dc8685603a459fc4660c2)
 
 ### 🛠️ enhance : Homogénisation des légendes
 
-Homogénise les légendes des calques de plantabilité et vulnérabilité à la chaleur. Rempalce aussi les hexagones par des carrés pour coller aux carrés sur le calque.
+Homogénise les légendes des calques de plantabilité et vulnérabilité à la chaleur. Remplace aussi les hexagones par des carrés pour correspondre aux carrés sur le calque.
 
 &rarr; Commit [2f8b33a](https://github.com/TelesCoop/iarbre/commit/2f8b33a02c9fc741a49c41a6b1d5ddbfd308662d)
 
 ### ✨ feat : Retours par email
 
-Les retours sur la carto sont maintenant redirigés par emails en plus d'être sauvegardés en DB.
-
+m
 &rarr; Commit [d367c5c](https://github.com/TelesCoop/iarbre/commit/d367c5cc19ffafb713d103378c2bb956857f36f9)
 
 ## 🔖 0.5.0 (2025-05-07): Refonte visuelle
