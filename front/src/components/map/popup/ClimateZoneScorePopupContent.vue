@@ -1,25 +1,50 @@
 <script lang="ts" setup>
 import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
-import type { MapScorePopupData } from "@/types"
+import type { MapScorePopupData, PlantabilityTile } from "@/types"
+import { onMounted, ref } from "vue"
+import { useMapStore } from "@/stores/map"
 
-defineProps({
+const mapStore = useMapStore()
+
+const props = defineProps({
   popupData: {
     required: true,
     type: Object as () => MapScorePopupData
   }
 })
+
+const details = ref<null | PlantabilityTile>(null)
+const showDetails = ref(false)
+
+const parseDetails = () => {
+  if (details.value) {
+    return details.value
+  }
+  return null
+}
+const getDetails = async () => {
+  const tileDetails = await mapStore.retrieveTileDetails(props.popupData.id)
+  if (tileDetails) {
+    details.value = parseDetails()
+    return
+  }
+  details.value = null
+}
 </script>
 <template>
   <div data-cy="lcz-score-popup">
     <div class="flex items-center gap-2 w-full">
-      <div :style="{ backgroundColor: getZoneColor(popupData.id) }" class="w-4 h-6 rounded"></div>
+      <div
+        :style="{ backgroundColor: getZoneColor(popupData.score) }"
+        class="w-4 h-6 rounded"
+      ></div>
       <span class="font-accent text-xl" data-cy="lcz-score-popup-title"
-        >LCZ {{ popupData.id }}</span
+        >LCZ {{ popupData.score }}</span
       >
     </div>
     <div class="w-full text-md">
-      {{ popupData.id }}
-      <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.id) }}</span>
+      {{ popupData.score }}
+      <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.score) }}</span>
     </div>
   </div>
 </template>
