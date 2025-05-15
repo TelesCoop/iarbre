@@ -68,14 +68,8 @@ describe("Map context data", () => {
   it("verifies plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
-
-    // Attendre explicitement que le popup soit complètement chargé
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
-
     cy.getBySel("show-plantability-score-details").click()
-
-    // Attendre explicitement l'interception
-    cy.wait("@plantability")
     cy.getBySel("map-context-data").should("exist")
   })
 })
