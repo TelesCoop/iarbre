@@ -1,9 +1,15 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
-import { Map, Popup, NavigationControl, AttributionControl } from "maplibre-gl"
+import {
+  Map,
+  Popup,
+  NavigationControl,
+  AttributionControl,
+  type MapGeoJSONFeature
+} from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
-import type { MapScorePopupData } from "@/types"
+import type { MapScorePopupData, PlantabilityTile } from "@/types"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -13,6 +19,7 @@ import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
+import { getTileDetails } from "@/services/tileService"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -21,6 +28,7 @@ export const useMapStore = defineStore("map", () => {
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const tileDetails = ref<PlantabilityTile | {} | null>(null)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
   const FILL_COLOR_MAP = computed(() => {
@@ -108,7 +116,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const extractFeatureProperty = (
-    features: Array<any>,
+    features: MapGeoJSONFeature[],
     datatype: DataType,
     geolevel: GeoLevel,
     propertyName?: string
@@ -117,11 +125,15 @@ export const useMapStore = defineStore("map", () => {
     if (!feature) return undefined
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
-
-  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
-    return extractFeatureProperty(features, datatype, geolevel, "indice")
+  const setTileDetails = async (featureId: string) => {
+    if (!featureId) return null
+    const tile = await getTileDetails(featureId, selectedDataType.value)
+    if (!tile) {
+      tileDetails.value = {}
+      return
+    }
+    tileDetails.value = tile
   }
-
   const extractFeatureProperties = (
     features: Array<any>,
     datatype: DataType,
@@ -129,10 +141,10 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     return extractFeatureProperty(features, datatype, geolevel)
   }
-
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layerId = getLayerId(datatype, geolevel)
+
     map.addLayer({
       id: layerId,
       type: "fill",
@@ -146,18 +158,17 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.6
       }
     })
-
     map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
+      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       popupData.value = {
-        id: extractFeatureIndex(e.features!, datatype, geolevel),
+        id: featureId,
+        score: extractFeatureProperty(e.features!, datatype, geolevel, "indice"),
         lng: e.lngLat.lng,
         lat: e.lngLat.lat,
         properties: extractFeatureProperties(e.features!, datatype, geolevel)
       }
-
-      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       map.setPaintProperty(layerId, "fill-outline-color", [
         "match",
         ["get", "id"],
@@ -165,6 +176,7 @@ export const useMapStore = defineStore("map", () => {
         "#000000",
         "#00000000"
       ])
+      if (tileDetails.value) setTileDetails(featureId)
 
       activePopup.value = new Popup()
         .setLngLat(e.lngLat)
@@ -174,9 +186,10 @@ export const useMapStore = defineStore("map", () => {
 
       document
         .getElementsByClassName("maplibregl-popup-close-button")[0]
-        .addEventListener("click", () =>
+        .addEventListener("click", () => {
           map.setPaintProperty(layerId, "fill-outline-color", "#00000000")
-        )
+          tileDetails.value = null
+        })
     })
   }
 
@@ -276,6 +289,8 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType,
     changeDataType,
     getMapInstance,
-    vulnerabilityMode
+    vulnerabilityMode,
+    setTileDetails,
+    tileDetails
   }
 })

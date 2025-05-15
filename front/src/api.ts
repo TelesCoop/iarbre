@@ -67,3 +67,27 @@ async function useApiRequestWithCsrfToken<Type>(
 export async function useApiPost<Type>(path: string, payload = {}, onErrorMessage: string = "") {
   return useApiRequestWithCsrfToken<Type>(path, "POST", payload, onErrorMessage)
 }
+
+export async function useApiGet<Type>(
+  path: string,
+  onErrorMessage: string = ""
+): Promise<{ data: Type | undefined; error: unknown }> {
+  try {
+    const response = await fetch(`${FULL_BASE_API_URL}/${path}`, {
+      method: "GET",
+      credentials: "include",
+      headers: getHeaders()
+    })
+    const data = await response.json()
+    if (response.status >= 400) {
+      // noinspection ExceptionCaughtLocallyJS
+      throw data
+    }
+    return { data, error: undefined }
+  } catch (error) {
+    if (onErrorMessage) {
+      console.error(error)
+    }
+    return { error, data: undefined }
+  }
+}

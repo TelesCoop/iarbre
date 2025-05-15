@@ -3,19 +3,19 @@
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 
-/*describe("Map interactions", () => {
+describe("Map", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
   })
 
-  it("Map loading seems to be okay", () => {
+  it("load map", () => {
     cy.getBySel("plantability-legend").should("exist")
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
 
-  it("Verifies map layer switching and popup behavior", () => {
+  it("verifies map layer switching and popup behavior", () => {
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.PLANTABILITY])
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
@@ -43,9 +43,40 @@ import { GEOCODER_API_URL } from "../../src/utils/geocoder"
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
   })
-})*/
+})
 
-describe("Geocoder functionality", () => {
+describe("Map context data", () => {
+  beforeEach(() => {
+    // Définir l'intercept AVANT de visiter la page
+    cy.intercept("GET", "**/api/tiles/plantability/", {
+      statusCode: 200,
+      body: {
+        data: {
+          details: {
+            top5LandUse: {
+              parking: 0.5,
+              eau: 0.3,
+              foret: 0.1
+            }
+          }
+        }
+      }
+    }).as("plantability")
+
+    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
+  })
+
+  it("verifies plantability context data", () => {
+    cy.getBySel("map-context-data").should("not.exist")
+    cy.mapOpenPopup()
+    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.getBySel("show-plantability-score-details").click()
+    cy.getBySel("map-context-data").should("exist")
+  })
+})
+
+describe("Geocoder", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
     // eslint-disable-next-line cypress/no-unnecessary-waiting
