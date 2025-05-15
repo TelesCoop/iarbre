@@ -29,7 +29,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
-  const tileDetails = ref<PlantabilityTile | {} | null>({})
+  const tileDetails = ref<PlantabilityTile | {} | null>(null)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
   const FILL_COLOR_MAP = computed(() => {
@@ -159,7 +159,7 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": 0.6
       }
     })
-    map.on("click", layerId, async (e) => {
+    map.on("click", layerId, (e) => {
       if (!popupDomElement.value) throw new Error("Popupdomelement is not defined")
       removeActivePopup()
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")

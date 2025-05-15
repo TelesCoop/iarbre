@@ -3,7 +3,7 @@
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 
-/*describe("Map interactions", () => {
+describe("Map interactions", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
@@ -43,7 +43,7 @@ import { GEOCODER_API_URL } from "../../src/utils/geocoder"
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
   })
-})*/
+})
 
 describe("Geocoder functionality", () => {
   beforeEach(() => {
