@@ -51,6 +51,7 @@ onMounted(() => {
     <map-layer-switcher />
     <map-bg-switcher />
     <map-context-tools />
+    <map-context-data />
   </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup />

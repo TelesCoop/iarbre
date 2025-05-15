@@ -50,3 +50,11 @@
 .card {
   @apply bg-white shadow-md rounded-[0.75rem] p-5;
 }
+
+.map-tool-container {
+  @apply w-[26rem];
+  @apply flex items-center gap-4;
+  @apply rounded-md;
+  @apply bg-white p-4 shadow-lg z-10;
+  @apply border-primary-500 border-0.5;
+}

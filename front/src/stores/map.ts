@@ -18,8 +18,9 @@ import {
   DataTypeToAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
-import type { MapScorePopupData } from "@/types"
-import { FULL_BASE_API_URL } from "@/api"
+import type { MapScorePopupData, PlantabilityTile } from "@/types"
+import { FULL_BASE_API_URL, useApiGet } from "@/api"
+
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -47,6 +48,19 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
+  const tileDetails = ref<PlantabilityTile | null>(null)
+
+  const retrieveTileDetails = async (id: string): Promise<PlantabilityTile | null> => {
+    const req = await useApiGet(
+      `tiles/${selectedDataType.value}/${id}/`,
+      `Impossible de récupérer les informations de la tuile avec l'id ${id}`
+    )
+    if (!req.data) {
+      return null
+    }
+    return req.data as PlantabilityTile
+  }
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
@@ -138,6 +152,7 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+
   const createPopup = (
     e: any,
     map: Map,
@@ -180,7 +195,6 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
   }
-
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
@@ -297,6 +311,8 @@ export const useMapStore = defineStore("map", () => {
     changeMapStyle,
     changeDataType,
     getMapInstance,
-    vulnerabilityMode
+    vulnerabilityMode,
+    retrieveTileDetails,
+    tileDetails
   }
 })
