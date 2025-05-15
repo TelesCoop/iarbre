@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
-import type { MapScorePopupData, PlantabilityTile } from "@/types"
-import { onMounted, ref } from "vue"
+import type { MapScorePopupData } from "@/types"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -12,24 +11,6 @@ const props = defineProps({
     type: Object as () => MapScorePopupData
   }
 })
-
-const details = ref<null | PlantabilityTile>(null)
-const showDetails = ref(false)
-
-const parseDetails = () => {
-  if (details.value) {
-    return details.value
-  }
-  return null
-}
-const getDetails = async () => {
-  const tileDetails = await mapStore.retrieveTileDetails(props.popupData.id)
-  if (tileDetails) {
-    details.value = parseDetails()
-    return
-  }
-  details.value = null
-}
 </script>
 <template>
   <div data-cy="lcz-score-popup">
