@@ -1,11 +1,8 @@
 <script lang="ts" setup>
 import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
 import type { MapScorePopupData } from "@/types"
-import { useMapStore } from "@/stores/map"
 
-const mapStore = useMapStore()
-
-const props = defineProps({
+defineProps({
   popupData: {
     required: true,
     type: Object as () => MapScorePopupData

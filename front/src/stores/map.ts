@@ -10,7 +10,7 @@ import {
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
 import { GeoLevel, DataType, DataTypeToGeolevel, DataTypeToAttributionSource } from "@/utils/enum"
 import type { MapScorePopupData, PlantabilityTile } from "@/types"
-import { FULL_BASE_API_URL, useApiGet } from "@/api"
+import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -28,7 +28,6 @@ export const useMapStore = defineStore("map", () => {
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const tileDetails = ref<PlantabilityTile | {} | null>(null)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round

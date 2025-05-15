@@ -5,7 +5,8 @@ import { computed } from "vue"
 const props = defineProps({
   data: {
     required: false,
-    type: Object as () => PlantabilityTile
+    type: Object as () => PlantabilityTile,
+    default: () => ({})
   }
 })
 const landUseData = computed(() => {
