@@ -3,7 +3,6 @@ import ScoreLabel from "@/components/map/ScoreLabel.vue"
 import { computed } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types"
-import { ref } from "vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -20,7 +19,7 @@ const label = computed(() => getPlantabilityScore(score.value))
 
 const onShow = async () => {
   if (!mapStore.tileDetails) {
-    mapStore.tileDetails = await mapStore.retrieveTileDetails(props.popupData.id)
+    await mapStore.retrieveTileDetails(props.popupData.id)
   } else {
     mapStore.tileDetails = null
   }

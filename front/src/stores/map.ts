@@ -37,7 +37,7 @@ import {
   getSourceId,
   highlightFeature
 } from "@/utils/map"
-
+import { getTileDetails } from "@/services/tileService"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"
@@ -49,18 +49,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
-  const tileDetails = ref<PlantabilityTile | null>(null)
-
-  const retrieveTileDetails = async (id: string): Promise<PlantabilityTile | null> => {
-    const req = await useApiGet(
-      `tiles/${selectedDataType.value}/${id}/`,
-      `Impossible de récupérer les informations de la tuile avec l'id ${id}`
-    )
-    if (!req.data) {
-      return null
-    }
-    return req.data as PlantabilityTile
-  }
+  const tileDetails = ref<PlantabilityTile | {} | null>({})
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
@@ -312,7 +301,6 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
-    retrieveTileDetails,
     tileDetails
   }
 })
