@@ -25,6 +25,7 @@ def rasterize_data_across_all_cities(
     transform_out: rasterio.Affine,
     all_cities_union: GEOSGeometry,
     grid_size: int = 5,
+    grid_type: int = 0,
     output_dir: str = None,
 ) -> None:
     """
@@ -43,12 +44,12 @@ def rasterize_data_across_all_cities(
         transform_out (rasterio.Affine): Affine transformation for the raster output.
         all_cities_union (GEOSGeometry): GEOSGeometry containing the union of all city geometries.
         grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
+        grid_type: (int, optionnal): Square of hexagonal grid. Default to square.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
 
     Returns:
         None
     """
-    max_count = grid_size * grid_size
     os.makedirs(output_dir, exist_ok=True)
 
     qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
@@ -65,8 +66,21 @@ def rasterize_data_across_all_cities(
     )
     if len(raster[raster > 0]) == 0:
         raise ValueError(f"{factor_name} is producing a blank tif.")
-    log_progress("Summing on 5x5")
-    kernel = np.ones((grid_size, grid_size))
+
+    if grid_type == 0:
+        log_progress("Square kernel")
+        kernel = np.ones((grid_size, grid_size))
+    else:
+        log_progress("Hexagonal kernel")
+        kernel_size = 2 * grid_size + 1
+        # hexagonal kernel
+        y, x = np.ogrid[
+            -(kernel_size // 2) : (kernel_size // 2) + 1,
+            -(kernel_size // 2) : (kernel_size // 2) + 1,
+        ]
+        dist = np.maximum(abs(y), abs(x) * np.sqrt(3) / 2 + abs(y) * 0.5)
+        kernel = (dist <= grid_size).astype(np.float64)
+    max_count = np.sum(kernel)
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
         0 : height_out * grid_size : grid_size,
         0 : width_out * grid_size : grid_size,
@@ -98,10 +112,18 @@ class Command(BaseCommand):
             "--grid-size", type=int, default=5, help="Grid size in meters"
         )
 
+        parser.add_argument(
+            "--grid-type",
+            type=int,
+            default=0,
+            help="Grid type: 0 (square), 1 (hexagons).",
+        )
+
     def handle(self, *args, **options):
         output_dir = str(BASE_DIR) + "/media/rasters/"
         resolution = 1
         grid_size = options["grid_size"]
+        grid_type = options["grid_type"]
         kernel_size = grid_size / resolution
         if not kernel_size.is_integer():
             raise ValueError(
@@ -117,7 +139,16 @@ class Command(BaseCommand):
 
         width_out = int((maxx - minx) / grid_size)
         height_out = int((maxy - miny) / grid_size)
-        transform_out = from_origin(minx, maxy, grid_size, grid_size)
+        if grid_type == 1:
+            hex_x_scale = (
+                grid_size * np.sqrt(3) / 2 * 2
+            )  # Horizontal spacing between hexagons
+            hex_y_scale = grid_size
+            transform_out = from_origin(minx, maxy, hex_x_scale, hex_y_scale)
+        elif grid_type == 0:
+            transform_out = from_origin(minx, maxy, grid_size, grid_size)
+        else:
+            raise ValueError("grid_type should be either 0 (square) or 1 hexagons.")
 
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
@@ -131,5 +162,6 @@ class Command(BaseCommand):
                 transform_out,
                 all_cities_union=all_cities_union,
                 grid_size=kernel_size,
+                grid_type=grid_type,
                 output_dir=output_dir,
             )
