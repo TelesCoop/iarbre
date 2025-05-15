@@ -19,7 +19,7 @@ const label = computed(() => getPlantabilityScore(score.value))
 
 const onShow = async () => {
   if (!mapStore.tileDetails) {
-    await mapStore.retrieveTileDetails(props.popupData.id)
+    await mapStore.setTileDetails(props.popupData.id)
   } else {
     mapStore.tileDetails = null
   }
