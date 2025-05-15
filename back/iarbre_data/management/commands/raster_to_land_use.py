@@ -4,7 +4,6 @@ from django.core.management import BaseCommand
 from django.contrib.gis.db.models import Extent
 from typing import List, Iterator
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 import json
 
@@ -12,7 +11,7 @@ from iarbre_data.models import Tile
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.utils.database import log_progress
 
-BATCH_SIZE = 5_000
+BATCH_SIZE = 50_000
 
 
 def get_tile_batches(batch_size: int) -> Iterator[List[Tile]]:
@@ -97,7 +96,7 @@ def process_tile_batch(
         tile.details = json.dumps(details)
         tiles_to_update.append(tile)
     log_progress("Bulk update in the DB.")
-    Tile.objects.bulk_update(tiles_to_update, ["details"])
+    Tile.objects.bulk_update(tiles_to_update, ["details"], batch_size=5000)
 
 
 def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> None:
@@ -122,22 +121,11 @@ def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> N
     log_progress(f"Processing {total_tiles} tiles in batches of {batch_size}")
 
     batch_count = (total_tiles + batch_size - 1) // batch_size
-
-    with ThreadPoolExecutor(max_workers=6) as executor:
-        future_to_batch = {
-            executor.submit(
-                process_tile_batch,
-                tiles=tile_batch,
-                raster_files=raster_files,
-                raster_path=raster_path,
-            ): i
-            for i, tile_batch in enumerate(get_tile_batches(batch_size))
-        }
-
-        for future in as_completed(future_to_batch):
-            batch_index = future_to_batch.pop(future)
-            future.result()
-            log_progress(f"Completed batch {batch_index + 1} of {batch_count}")
+    for i, tile_batch in enumerate(get_tile_batches(batch_size)):
+        log_progress(f"Batch {i + 1} of {batch_count}")
+        process_tile_batch(
+            tiles=tile_batch, raster_files=raster_files, raster_path=raster_path
+        )
     log_progress("Successfully processed all tiles")
 
 
