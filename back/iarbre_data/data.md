@@ -1,4 +1,6 @@
-# Sources de données
+# Calque de plantabilité
+
+Ce calque provient d'un travail de [Exo-Dev](https://exo-dev.fr/) en 2022 qui a été documenté dans cette [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf).
 
 ## Format données
 
@@ -12,7 +14,7 @@ sont appliquées pour transformer en un `POLYGON` qui représente l'occupation a
 Toues les données de https://data.grandlyon.com sont récupérées sur leur `geoserver` en utilisant le `WFS` (Web Feature Service).
 Les données sont donc récupérées au format `GML3` (Geography Markup Language), un subset de XML. On récupère les données directement dans le référentiel (EPSG) 2154, Lambert-93. Pour le format de l'URL, il est spécifié en suivant les liens de chaque données.
 
-Pour les données BD TOPO et Cartofriches, voir le lien pour les paramètres de l'API.
+Pour les données BD TOPO et Cartofriches, voir le [lien](https://github.com/TelesCoop/iarbre/blob/dev/back/iarbre_data/data_config.py#L397) pour les paramètres de l'API.
 
 ### Données autres
 
@@ -52,7 +54,5 @@ Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été ré
 
 ## Pondération des facteurs
 
-La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable
-et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
-organisés par Exo-Dev avec les services de terrains en 2022, voir la [notice](https://file.notion.so/f/f/28f51d61-2938-4b1f-bb08-f39f2b1a7fd2/7875e500-461e-4f0e-8a23-efed65d71677/Synthse_du_projet_-_Calque_de_plantabilit.pdf?table=block&id=8db6b6bb-0c64-4ba2-9b19-f9e67a7c1583&spaceId=28f51d61-2938-4b1f-bb08-f39f2b1a7fd2&expirationTimestamp=1722952800000&signature=831-UAU2J3u-l8MOptA2UXHN3MVC9AZQOs9soaTNFOo&downloadName=Synth%C3%A8se+du+projet+-+Calque+de+plantabilit%C3%A9.pdf)
-du projet.
+La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
+organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.

@@ -46,10 +46,12 @@ plugins:
 nav:
   - Documentation IA.rbre: index.md
   - Changelog: changelog.md
+  - Méthodologie:
+      - Facteurs de plantabilité: methodology/data.md
+      - Atlas des vulnérabitilités: methodology/vulnerability.md
+      - Zones climatiques locales: methodology/lcz.md
   - Backend:
       - Instructions: back/backend.md
-      - Sources de données: back/data.md
-      - Atlas des vulnérabilitiés: back/vulnerability.md
       - Données de test: back/testing-data.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
@@ -63,7 +65,6 @@ nav:
           - Raster plantability to geometry: api/raster_plantability_to_geom.md
           - Import LCZ: api/import_lcz.md
           - Import heat vulnerability data: api/import_vulnerability.md
-
           - Database utils: api/utils_db.md
           - Data processing utils: api/utils_data_process.md
           - Generate MVT: api/generate_mvt.md
