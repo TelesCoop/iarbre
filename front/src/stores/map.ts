@@ -20,7 +20,6 @@ import {
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData, PlantabilityTile } from "@/types"
 import { FULL_BASE_API_URL, useApiGet } from "@/api"
-
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -48,7 +47,6 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
-  const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
   const tileDetails = ref<PlantabilityTile | {} | null>(null)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
