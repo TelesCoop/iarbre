@@ -59,6 +59,15 @@ onMounted(() => {
 <style>
 @reference "@/styles/main.css";
 
+.maplibregl-ctrl-geocoder {
+  width: 450px;
+  max-width: none;
+}
+
+.maplibregl-ctrl-geocoder--suggestions {
+  width: 100%;
+}
+
 .maplibregl-ctrl-geocoder--input {
   @apply text-primary-500;
   @apply font-accent;
