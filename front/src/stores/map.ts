@@ -126,7 +126,7 @@ export const useMapStore = defineStore("map", () => {
     if (!feature) return undefined
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
-  const retrieveTileDetails = async (featureId: string) => {
+  const setTileDetails = async (featureId: string) => {
     if (!featureId) return null
     const tile = await getTileDetails(featureId, selectedDataType.value)
     if (!tile) {
@@ -177,7 +177,7 @@ export const useMapStore = defineStore("map", () => {
         "#000000",
         "#00000000"
       ])
-      if (tileDetails.value) retrieveTileDetails(featureId)
+      if (tileDetails.value) setTileDetails(featureId)
 
       activePopup.value = new Popup()
         .setLngLat(e.lngLat)
@@ -291,7 +291,7 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
-    retrieveTileDetails,
+    setTileDetails,
     tileDetails
   }
 })
