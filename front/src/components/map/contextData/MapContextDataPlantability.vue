@@ -4,7 +4,7 @@ import { computed } from "vue"
 
 const props = defineProps({
   data: {
-    required: true,
+    required: false,
     type: Object as () => PlantabilityTile
   }
 })
@@ -23,13 +23,17 @@ const landUseData = computed(() => {
     aria-label="Utilisation des terres - Top 5"
     class="w-full"
     data-key="label"
-    empty-message="Aucune donnée disponible"
     responsive-layout="scroll"
     show-gridlines
     size="small"
     striped-rows
   >
-    <Column class="w-3/4" field="label" header="Type d'utilisation" />
+    <Column class="w-3/4" field="label" header="Facteur" />
     <Column class="w-1/2" field="value" header="Valeur" sortable />
+    <template #empty>
+      <div class="flex items-center justify-center w-full h-full">
+        <p class="text-sm text-gray-500">Aucune donnée disponible</p>
+      </div>
+    </template>
   </DataTable>
 </template>

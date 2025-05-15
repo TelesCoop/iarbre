@@ -19,6 +19,7 @@ import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
+import { getTileDetails } from "@/services/tileService"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -28,18 +29,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
-  const tileDetails = ref<PlantabilityTile | null>(null)
-
-  const retrieveTileDetails = async (id: string): Promise<PlantabilityTile | null> => {
-    const req = await useApiGet(
-      `tiles/${selectedDataType.value}/${id}/`,
-      `Impossible de récupérer les informations de la tuile avec l'id ${id}`
-    )
-    if (!req.data) {
-      return null
-    }
-    return req.data as PlantabilityTile
-  }
+  const tileDetails = ref<PlantabilityTile | {} | null>({})
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions/#round
   const FILL_COLOR_MAP = computed(() => {
@@ -136,7 +126,15 @@ export const useMapStore = defineStore("map", () => {
     if (!feature) return undefined
     return propertyName ? feature.properties[propertyName] : feature.properties
   }
-
+  const retrieveTileDetails = async (featureId: string) => {
+    if (!featureId) return null
+    const tile = await getTileDetails(featureId, selectedDataType.value)
+    if (!tile) {
+      tileDetails.value = {}
+      return
+    }
+    tileDetails.value = tile
+  }
   const extractFeatureProperties = (
     features: Array<any>,
     datatype: DataType,
@@ -179,7 +177,7 @@ export const useMapStore = defineStore("map", () => {
         "#000000",
         "#00000000"
       ])
-      if (tileDetails.value) tileDetails.value = await retrieveTileDetails(featureId) // Replace with the new tile details
+      if (tileDetails.value) retrieveTileDetails(featureId)
 
       activePopup.value = new Popup()
         .setLngLat(e.lngLat)

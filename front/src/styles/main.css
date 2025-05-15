@@ -1,3 +1,4 @@
+/* Import external stylesheets */
 @import "tailwindcss-primeui";
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
@@ -5,6 +6,7 @@
 @import "@/styles/utility.css";
 @import "primeicons/primeicons.css";
 
+/* Define custom fonts */
 @font-face {
   font-family: "IBM Plex Mono";
   src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
@@ -17,6 +19,7 @@
   src: url("/fonts/Sligoil-Micro.otf") format("opentype");
 }
 
+/* Define theme variables */
 @theme {
   --color-scale-0: #c4c4c4;
   --color-scale-1: #d1a99d;
@@ -41,10 +44,17 @@
   --font-main: var(--font-sans);
 }
 
+/* Define root variables */
 :root {
   /* Dimensions */
   --header-height: 80px;
   --content-height: calc(100vh - var(--header-height) - 1px);
+}
+
+/* Component styles */
+.p-button {
+  @apply font-sans!;
+  /* There is no way actually to override the default font in PrimeReact */
 }
 
 .card {
