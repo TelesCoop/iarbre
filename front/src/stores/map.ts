@@ -49,7 +49,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentGeoLevel = ref<GeoLevel>(GeoLevel.TILE)
-  const tileDetails = ref<PlantabilityTile | {} | null>({})
+  const tileDetails = ref<PlantabilityTile | {} | null>(null)
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
