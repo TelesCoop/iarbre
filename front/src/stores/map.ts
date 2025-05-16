@@ -159,7 +159,7 @@ export const useMapStore = defineStore("map", () => {
     const tempPopup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
     nextTick(() => {
       // we wait for DOM to be updated before cloning the popup otherwise the popup is empty
-      // clone the node popup to avoid being deleted when the setDOMContent function is called
+      // then clone the node popup to avoid being deleted when the setDOMContent function is called
       const popupContentClone = popupDomElement.value!.cloneNode(true) as HTMLElement
       activePopup.value = tempPopup.setDOMContent(popupContentClone).addTo(map)
       const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
@@ -167,7 +167,7 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const setupTileOnClickEvent = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+  const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -185,7 +185,7 @@ export const useMapStore = defineStore("map", () => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
     map.addLayer(layer)
-    setupTileOnClickEvent(map, datatype, geolevel)
+    setupClickEventOnTile(map, datatype, geolevel)
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
