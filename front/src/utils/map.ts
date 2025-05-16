@@ -22,3 +22,32 @@ export const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
 export const getLayerId = (datatype: DataType, geolevel: GeoLevel) => {
   return `${geolevel}-${datatype}-layer`
 }
+
+export const extractFeatures = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
+  if (!features) return undefined
+
+  const feature = features.find(
+    (feature: any) => feature.layer.id === getLayerId(datatype, geolevel)
+  )
+
+  return feature || undefined
+}
+
+export const extractFeatureProperty = (
+  features: Array<any>,
+  datatype: DataType,
+  geolevel: GeoLevel,
+  propertyName?: string
+) => {
+  const feature = extractFeatures(features, datatype, geolevel)
+  if (!feature) return undefined
+  return propertyName ? feature.properties[propertyName] : feature.properties
+}
+
+export const extractFeatureProperties = (
+  features: Array<any>,
+  datatype: DataType,
+  geolevel: GeoLevel
+) => {
+  return extractFeatureProperty(features, datatype, geolevel)
+}

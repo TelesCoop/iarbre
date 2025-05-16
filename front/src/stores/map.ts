@@ -28,14 +28,21 @@ import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
-import type { ExpressionSpecification } from "@maplibre/maplibre-gl-style-spec"
-import { clearHighlight, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  clearHighlight,
+  extractFeatureProperties,
+  extractFeatureProperty,
+  getLayerId,
+  getSourceId,
+  highlightFeature
+} from "@/utils/map"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
+  const POPUP_MAX_WIDTH = "400px"
   const popupData = ref<MapScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
-  const mapEventsListener = ref<Record<string, boolean>>({})
+  const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const activePopup = ref<Popup | null>(null)
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
@@ -108,43 +115,7 @@ export const useMapStore = defineStore("map", () => {
   const getMapInstance = (mapId: string): Map => {
     return mapInstancesByIds.value[mapId]
   }
-  const extractFeatures = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
-    if (!features) return undefined
 
-    const feature = features.find(
-      (feature: any) => feature.layer.id === getLayerId(datatype, geolevel)
-    )
-
-    return feature || undefined
-  }
-
-  const extractFeatureProperty = (
-    features: Array<any>,
-    datatype: DataType,
-    geolevel: GeoLevel,
-    propertyName?: string
-  ) => {
-    const feature = extractFeatures(features, datatype, geolevel)
-    if (!feature) return undefined
-    return propertyName ? feature.properties[propertyName] : feature.properties
-  }
-
-  const extractFeatureIndex = (features: Array<any>, datatype: DataType, geolevel: GeoLevel) => {
-    return extractFeatureProperty(features, datatype, geolevel, "indice")
-  }
-
-  const extractFeatureProperties = (
-    features: Array<any>,
-    datatype: DataType,
-    geolevel: GeoLevel
-  ) => {
-    return extractFeatureProperty(features, datatype, geolevel)
-  }
-
-  // Constants and types
-  const POPUP_MAX_WIDTH = "400px"
-
-  // Helper functions
   const createMapLayer = (
     datatype: DataType,
     geolevel: GeoLevel,
@@ -180,7 +151,7 @@ export const useMapStore = defineStore("map", () => {
 
     removeActivePopup()
     popupData.value = {
-      id: extractFeatureIndex(e.features!, datatype, geolevel),
+      id: extractFeatureProperty(e.features!, datatype, geolevel, "indice"),
       lng: e.lngLat.lng,
       lat: e.lngLat.lat,
       properties: extractFeatureProperties(e.features!, datatype, geolevel)
@@ -198,17 +169,16 @@ export const useMapStore = defineStore("map", () => {
 
   const setupTileOnClickEvent = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
-    const onTileClick = (e: any) => {
+    if (mapEventsListener.value[layerId]) {
+      map.off("click", layerId, mapEventsListener.value[layerId])
+    }
+    const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
     }
-    // Set up click event handler if not already done
-    if (mapEventsListener.value[layerId]) {
-      map.off("click", layerId, onTileClick)
-    }
-    map.on("click", layerId, onTileClick)
-    mapEventsListener.value[layerId] = true
+    map.on("click", layerId, clickHandler)
+    mapEventsListener.value[layerId] = clickHandler
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
