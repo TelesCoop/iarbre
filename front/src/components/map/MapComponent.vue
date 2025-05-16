@@ -53,7 +53,7 @@ onMounted(() => {
     <map-context-tools />
   </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
-    <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
+    <map-score-popup />
   </div>
 </template>
 

@@ -1,30 +1,30 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { MapType, MapTypeToLabel } from "@/utils/enum"
+import { MapStyle, MapStyleToLabel } from "@/utils/enum"
 import { computed } from "vue"
 
 const mapStore = useMapStore()
 
-const selectedMapType = computed({
-  get: () => mapStore.selectedMapType,
-  set: (value: MapType) => mapStore.changeMapType(value)
+const selectedMapStyle = computed({
+  get: () => mapStore.selectedMapStyle,
+  set: (value: MapStyle) => mapStore.changeMapStyle(value)
 })
 
 const options = [
   {
-    label: MapTypeToLabel[MapType.OSM],
-    value: MapType.OSM
+    label: MapStyleToLabel[MapStyle.OSM],
+    value: MapStyle.OSM
   },
   {
-    label: MapTypeToLabel[MapType.SATELLITE],
-    value: MapType.SATELLITE
+    label: MapStyleToLabel[MapStyle.SATELLITE],
+    value: MapStyle.SATELLITE
   }
 ]
 </script>
 
 <template>
   <Select
-    v-model="selectedMapType"
+    v-model="selectedMapStyle"
     :options="options"
     :pt="{
       root: 'text-sm',

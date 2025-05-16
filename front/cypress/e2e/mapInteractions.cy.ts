@@ -1,6 +1,6 @@
 // https://on.cypress.io/api
 
-import { DataType, DataTypeToLabel, MapType } from "../../src/utils/enum"
+import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 
 describe("Map interactions", () => {
@@ -18,12 +18,12 @@ describe("Map interactions", () => {
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
   it("Verifies basemap and layer switching and popup behavior", () => {
-    cy.basemapSwitchLayer(MapType.SATELLITE)
+    cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer :tile-plantability-layer and source: tile-plantability-source loaded."
     )
-    cy.basemapSwitchLayer(MapType.OSM)
+    cy.basemapSwitchLayer(MapStyle.OSM)
     // check that layer is loaded
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
@@ -35,7 +35,7 @@ describe("Map interactions", () => {
     cy.getBySel("plantability-score-popup-title").should("exist")
 
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
-    cy.basemapSwitchLayer(MapType.SATELLITE)
+    cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.mapHasNoPopup()
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()

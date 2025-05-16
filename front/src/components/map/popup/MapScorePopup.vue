@@ -11,15 +11,10 @@ import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePo
 
 const mapStore = useMapStore()
 const toast = useToast()
-const props = defineProps({
-  popupData: {
-    required: true,
-    type: Object as () => MapScorePopupData
-  }
-})
 
+const popupData = computed(() => mapStore.popupData)
 const coords = computed(
-  () => `${props.popupData.lat.toFixed(5)}° N, ${props.popupData.lng.toFixed(5)}° E`
+  () => `${popupData.value?.lat.toFixed(5)}° N, ${popupData.value?.lng.toFixed(5)}° E`
 )
 
 const copy = (text: string) => {
@@ -34,8 +29,8 @@ const copy = (text: string) => {
 </script>
 
 <template>
-  <div class="max-w-xs" data-cy="score-popup">
-    <div v-if="popupData" class="flex justify-between">
+  <div v-if="popupData" class="max-w-xs" data-cy="score-popup">
+    <div class="flex justify-between">
       <plantability-score-popup
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
         :popup-data="popupData"

@@ -9,16 +9,16 @@ export enum DataType {
   VULNERABILITY = "vulnerability"
 }
 
-export enum MapType {
+export enum MapStyle {
   OSM = "plan",
   SATELLITE = "satellite",
   ORTHOPHOTOS = "orthophotos"
 }
 
-export const MapTypeToLabel: Record<MapType, string> = {
-  [MapType.OSM]: "Plan de la ville",
-  [MapType.SATELLITE]: "Images satellite",
-  [MapType.ORTHOPHOTOS]: "Orthophotos"
+export const MapStyleToLabel: Record<MapStyle, string> = {
+  [MapStyle.OSM]: "Plan de la ville",
+  [MapStyle.SATELLITE]: "Images satellite",
+  [MapStyle.ORTHOPHOTOS]: "Orthophotos"
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {
