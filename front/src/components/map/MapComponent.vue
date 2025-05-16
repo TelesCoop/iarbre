@@ -56,3 +56,25 @@ onMounted(() => {
     <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
   </div>
 </template>
+
+<style>
+@reference "@/styles/main.css";
+
+.maplibregl-ctrl-geocoder {
+  width: 450px;
+  max-width: none;
+}
+
+.maplibregl-ctrl-geocoder--suggestions {
+  width: 100%;
+}
+
+.maplibregl-ctrl-geocoder--input {
+  @apply text-primary-500;
+  @apply font-accent;
+}
+
+.maplibregl-ctrl-geocoder--icon-search {
+  @apply fill-primary-500;
+}
+</style>

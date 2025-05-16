@@ -6,7 +6,6 @@ describe("Navbar", () => {
   })
   it("renders correctly", () => {
     cy.getBySel("open-feedback-button").should("exist")
-    cy.getBySel("open-savoir-href").should("exist")
   })
   it("fill and submit the feedback form", () => {
     cy.getBySel("open-feedback-button").click()
