@@ -45,7 +45,7 @@ describe("MapScorePopup", () => {
     })
     cy.contains("LCZ")
     cy.contains("Sol imperméable naturel ou artificiel")
-    cy.contains("12.34° N, 56.78° E")
+    cy.contains("12.34000° N, 56.78000° E")
   })
   it(`renders correctly when the selected map data type is ${DataType.VULNERABILITY}`, () => {
     const mapStore = useMapStore()
@@ -79,6 +79,6 @@ describe("MapScorePopup", () => {
     cy.contains(3) // capaf_index_day
     cy.contains(5) // sensibilty_index_day
 
-    cy.contains("12.34° N, 56.78° E")
+    cy.contains("12.34000° N, 56.78000° E")
   })
 })

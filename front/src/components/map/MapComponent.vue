@@ -49,10 +49,11 @@ onMounted(() => {
   <map-legend />
   <div class="absolute top-0 left-0 pl-[30px] pt-[30px] flex gap-2 flex-col z-1">
     <map-layer-switcher />
+    <map-bg-switcher />
     <map-context-tools />
   </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
-    <map-score-popup v-if="mapStore.popupData" :popup-data="mapStore.popupData" />
+    <map-score-popup />
   </div>
 </template>
 

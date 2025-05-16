@@ -1,21 +1,42 @@
 {
-  "layers": [
-    {
-      "id": "osm",
-      "source": "osm",
-      "type": "raster"
-    }
-  ],
-  "sources": {
-    "osm": {
-      "attribution": "&copy; OpenStreetMap Contributors",
-      "maxzoom": 19,
-      "tileSize": 256,
-      "tiles": [
-        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      ],
-      "type": "raster"
-    }
+  "OSM": {
+    "layers": [
+      {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "osm": {
+        "attribution": "&copy; OpenStreetMap Contributors",
+        "tileSize": 256,
+        "tiles": [
+          "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
   },
-  "version": 8
+  "SATELLITE": {
+    "layers": [
+      {
+        "id": "satellite-layer",
+        "source": "satellite",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "satellite": {
+        "attribution": "Imagery &copy; Esri",
+        "tileSize": 256,
+        "tiles": [
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  }
 }
