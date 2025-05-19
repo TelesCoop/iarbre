@@ -10,7 +10,7 @@ export enum DataType {
 }
 
 export enum MapStyle {
-  OSM = "plan",
+  OSM = "Plan",
   SATELLITE = "satellite",
   ORTHOPHOTOS = "orthophotos"
 }

@@ -9,7 +9,7 @@ describe("Map interactions", () => {
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      "cypress: layer :tile-plantability-layer and source: tile-plantability-source loaded."
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
   })
   it("Map loading seems to be okay", () => {
@@ -21,25 +21,25 @@ describe("Map interactions", () => {
     cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      "cypress: layer :tile-plantability-layer and source: tile-plantability-source loaded."
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
     cy.basemapSwitchLayer(MapStyle.OSM)
     // check that layer is loaded
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      "cypress: layer :tile-plantability-layer and source: tile-plantability-source loaded."
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
     cy.mapHasNoPopup()
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
-    cy.getBySel("plantability-score-popup-title").should("exist")
+    cy.getBySel("plantability-score-popup").should("exist")
 
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.mapHasNoPopup()
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
-    cy.getBySel("vulnerability-score-popup-title").should("exist")
+    cy.getBySel("vulnerability-score-popup").should("exist")
   })
 })
 

@@ -236,6 +236,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
+    removeActivePopup()
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -281,6 +282,9 @@ export const useMapStore = defineStore("map", () => {
     })
     mapInstance.once("render", () => {
       console.info("cypress: map data loaded")
+      console.info(
+        `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
+      )
     })
   }
 
