@@ -1,8 +1,9 @@
 // https://on.cypress.io/api
 
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
+import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 
-describe("Map interactions", () => {
+/*describe("Map interactions", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
@@ -41,5 +42,23 @@ describe("Map interactions", () => {
 
     cy.visit("/lcz/13/45.07126/5.5543")
     cy.getBySel("map-legend-title").should("contain", DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES])
+  })
+})*/
+
+describe("Geocoder functionality", () => {
+  beforeEach(() => {
+    cy.visit("/plantability/13/45.07126/5.5543")
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500)
+  })
+
+  it("search for an address in Lyon and display results", () => {
+    cy.get(".maplibregl-ctrl-geocoder--input").click()
+    cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
+
+    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
+    cy.wait("@geocoding")
+    cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
+    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
   })
 })

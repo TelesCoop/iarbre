@@ -1,5 +1,23 @@
 # Journal des changements
 
+## 🔖 0.7.0 (2025-05-19): Geocoder et mise à jour de la page de présentation
+
+### ✨ feat : Geocoder
+
+Ajout d'un geocoder pour pouvoir rechercher une addresse. Le geocoder utilise l'API de [`Nominatim`](https://nominatim.org/), la base d'addresse open-source de `OpenStreetMap`
+
+&rarr;Commit [b9bee09](https://github.com/TelesCoop/iarbre/commit/b9bee09c04bfaecbedd996da846026e191d4b59f)
+
+### 🛠️ enhance : Mise à jour de la page du projet
+
+Mise à jour des logos et ajout de mentions à [`data.grandlyon`](https://data.grandlyon.com/portail/fr/). Mise à jour de l'équipe avec l'ajout des personnes de l'université Lyon 2.
+
+### 📝 doc: Ajout d'une section méthodologie
+
+La section [`Méthodologie`](https://docs.iarbre.fr/methodology/data/) est là pour expliquer d'où proviennent les données que l'on affiche et comment elles ont été obtenues.
+
+&rarr; Commit [515a2f1](https://github.com/TelesCoop/iarbre/commit/515a2f16764754754f2b6b165b865d81e540de3a)
+
 ## 🔖 0.6.0 (2025-05-14): Changements cosmétiques
 
 ### 🛠️ enhance : rend l'affichage inaccessible sur mobile
