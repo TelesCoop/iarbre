@@ -66,26 +66,30 @@ def rasterize_data_across_all_cities(
     )
     if len(raster[raster > 0]) == 0:
         raise ValueError(f"{factor_name} is producing a blank tif.")
-
-    if grid_type == 0:
-        log_progress("Square kernel")
-        kernel = np.ones((grid_size, grid_size))
-    else:
+    kernel = np.ones((grid_size, grid_size))
+    if grid_type == 1:
         log_progress("Hexagonal kernel")
-        kernel_size = 2 * grid_size + 1
-        # hexagonal kernel
-        y, x = np.ogrid[
-            -(kernel_size // 2) : (kernel_size // 2) + 1,
-            -(kernel_size // 2) : (kernel_size // 2) + 1,
-        ]
-        dist = np.maximum(abs(y), abs(x) * np.sqrt(3) / 2 + abs(y) * 0.5)
-        kernel = (dist <= grid_size).astype(np.float64)
+        kernel -= 1
+        center = grid_size // 2
+        radius = grid_size // 2
+        for i in range(grid_size):
+            for j in range(grid_size):
+                dx = j - center
+                dy = i - center
+                if abs(dx) + abs(dy) <= radius:
+                    kernel[i, j] = 1
+    else:
+        log_progress("Square kernel")
     max_count = np.sum(kernel)
+    kernel = kernel.astype(np.float32)
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
         0 : height_out * grid_size : grid_size,
         0 : width_out * grid_size : grid_size,
     ]
     coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
+    log_progress("Convolution OK")
+    dtype = raster.dtype
+    del raster
     # Save the raster to file
     output_path = os.path.join(output_dir, f"{factor_name}.tif")
     log_progress(f"Saving {factor_name}")
@@ -96,7 +100,7 @@ def rasterize_data_across_all_cities(
         height=height_out,
         width=width_out,
         count=1,
-        dtype=raster.dtype,
+        dtype=dtype,
         crs="EPSG:2154",
         transform=transform_out,
     ) as dst:
@@ -139,16 +143,7 @@ class Command(BaseCommand):
 
         width_out = int((maxx - minx) / grid_size)
         height_out = int((maxy - miny) / grid_size)
-        if grid_type == 1:
-            hex_x_scale = (
-                grid_size * np.sqrt(3) / 2 * 2
-            )  # Horizontal spacing between hexagons
-            hex_y_scale = grid_size
-            transform_out = from_origin(minx, maxy, hex_x_scale, hex_y_scale)
-        elif grid_type == 0:
-            transform_out = from_origin(minx, maxy, grid_size, grid_size)
-        else:
-            raise ValueError("grid_type should be either 0 (square) or 1 hexagons.")
+        transform_out = from_origin(minx, maxy, grid_size, grid_size)
 
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
