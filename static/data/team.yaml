@@ -6,6 +6,10 @@
   title: Responsable de ERASME
   function: ERASME
   portrait: parent.png
+- name: Gilles Gesquière
+  title: Chercheur Sciences de données urbaines
+  function: Université Lumière Lyon 2 / LIRIS
+  portrait: ggesquiere.png
 - name: Geoffrey Dorne
   title: Designer
   function: TelesCoop
@@ -26,6 +30,10 @@
   title: Geomaticienne
   function: Exo-Dev
   portrait: nat.png
+- name: John Samuel
+  title: Chercheur Sciences de données urbaines
+  function: Université Lumière Lyon 2 / LIRIS
+  portrait: jsamuel.png
 - name: Antoine Bernier
   title: Développeur
   function: TelesCoop
@@ -42,11 +50,27 @@
   title: Senior Lead Tech
   function: Datagora
   portrait: sap.png
+- name: Arthur Villarroya-Palau
+  title: Data-scientist
+  function: Université Lumière Lyon 2 / LIRIS
+  portrait: avillarroya.png
 - name: Quentin Madura
   title: Développeur
   function: TelesCoop
   portrait: mad.png
+- name: Pierre-Antoine Chiron
+  title: Stagiaire – Développeur
+  function: CPE Lyon – Université Lumière Lyon 2 / LIRIS
+  portrait: pachiron.png
 - name: Maxime Bellec
   title: Développeur
   function: TelesCoop
   portrait: bel.png
+- name: Mika Inisan
+  title: Data-scientist
+  function: Université Lumière Lyon 2 / LIRIS
+  portrait: minisan.png
+- name: Marwan Ait-Addi
+  title: Stagiaire – Développeur
+  function: Gamagora – Université Lumière Lyon 2 / LIRIS
+  portrait: maitaddi.png
