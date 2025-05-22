@@ -9,6 +9,18 @@ export enum DataType {
   VULNERABILITY = "vulnerability"
 }
 
+export enum MapStyle {
+  OSM = "Plan",
+  SATELLITE = "satellite",
+  ORTHOPHOTOS = "orthophotos"
+}
+
+export const MapStyleToLabel: Record<MapStyle, string> = {
+  [MapStyle.OSM]: "Plan de la ville",
+  [MapStyle.SATELLITE]: "Images satellite",
+  [MapStyle.ORTHOPHOTOS]: "Orthophotos"
+}
+
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Score de plantabilité",
   [DataType.LOCAL_CLIMATE_ZONES]: "Zones climatiques locales",
