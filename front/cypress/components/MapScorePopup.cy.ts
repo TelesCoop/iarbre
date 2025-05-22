@@ -18,7 +18,7 @@ describe("MapScorePopup", () => {
     cy.mount(MapscorePopup, {
       props: {
         popupData: {
-          id: "8",
+          score: "8",
           lat: 45.76,
           lng: 4.85
         }
@@ -37,7 +37,7 @@ describe("MapScorePopup", () => {
     cy.mount(MapscorePopup, {
       props: {
         popupData: {
-          id: "E",
+          score: "E",
           lat: 12.34,
           lng: 56.78
         }
