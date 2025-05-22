@@ -5,7 +5,7 @@ import { DataType } from "@/utils/enum"
 
 const mapStore = useMapStore()
 const show = computed(() => {
-  return mapStore.tileDetails
+  return mapStore.tileDetails && mapStore.selectedDataType === DataType.PLANTABILITY
 })
 </script>
 
