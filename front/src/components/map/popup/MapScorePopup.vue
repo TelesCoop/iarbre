@@ -5,7 +5,6 @@ import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import { computed } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
-import type { MapScorePopupData } from "@/types"
 import { useToast } from "primevue/usetoast"
 import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
 
