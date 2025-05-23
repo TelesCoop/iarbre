@@ -47,6 +47,7 @@ declare module 'vue' {
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
     ScoreTag: typeof import('./src/components/map/score/ScoreTag.vue')['default']
     Select: typeof import('primevue/select')['default']
+    Sidebar: typeof import('primevue/sidebar')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
