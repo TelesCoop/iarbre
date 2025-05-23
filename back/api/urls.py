@@ -13,5 +13,5 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("", include(router.urls)),
-    path("api/health-check/", HealthCheckView.as_view(), name="health-check"),
+    path("health-check/", HealthCheckView.as_view(), name="health-check"),
 ]
