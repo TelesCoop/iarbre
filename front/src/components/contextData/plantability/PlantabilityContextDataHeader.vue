@@ -26,7 +26,7 @@ const handleClose = () => {
 
       <p id="plantability-description" class="text-sm opacity-90">
         <i class="pi pi-info-circle mr-2" aria-hidden="true"></i>
-        Calcul basé sur la pondération de 30 paramètres
+        Calcul basé sur la pondération de +37 paramètres
       </p>
     </div>
   </header>

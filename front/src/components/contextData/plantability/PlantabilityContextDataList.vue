@@ -21,7 +21,7 @@ const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
     </h3>
 
     <div
-      class="overflow-y-auto space-y-3 pr-2 custom-scrollbar"
+      class="overflow-y-auto space-y-3 pr-2 custom-scrollbar h-32 md:h-48 xl:max-h-64"
       role="list"
       aria-label="Liste des paramètres de plantabilité"
     >

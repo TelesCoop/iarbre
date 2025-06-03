@@ -22,7 +22,7 @@ const handleClose = () => {
 
 <template>
   <div
-    class="plantability-card max-w-md mx-auto bg-white shadow-lg overflow-hidden rounded-md max-h-3/12"
+    class="plantability-card max-w-md mx-auto bg-white shadow-lg overflow-hidden rounded-md"
     role="dialog"
     aria-labelledby="plantability-title"
     aria-describedby="plantability-description"
