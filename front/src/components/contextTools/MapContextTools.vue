@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import VulnerabilityContextTool from "@/components/map/contextTools/VulnerabilityContextTool.vue"
+import VulnerabilityContextTool from "@/components/contextTools/VulnerabilityContextTool.vue"
 import { computed } from "vue"
 
 const mapStore = useMapStore()

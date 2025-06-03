@@ -14,6 +14,7 @@ const show = computed(() => {
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
       :data="mapStore.tileDetails"
+      @close="() => mapStore.removeTileDetails()"
     />
   </div>
 </template>

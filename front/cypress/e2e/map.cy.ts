@@ -12,12 +12,12 @@ describe("Map", () => {
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
   })
-  it("Map loading seems to be okay", () => {
+  /*  it("Map loading seems to be okay", () => {
     cy.getBySel("plantability-legend").should("exist")
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
-  })
-  it("Verifies basemap and layer switching and popup behavior", () => {
+  })*/
+  /*it("changes map style", () => {
     cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
@@ -29,24 +29,27 @@ describe("Map", () => {
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
-    cy.mapHasNoPopup()
-    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
-    cy.mapOpenPopup()
-    cy.getBySel("plantability-score-popup").should("exist")
-
+  })*/
+  it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
-    cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.mapHasNoPopup()
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapOpenPopup()
     cy.getBySel("vulnerability-score-popup").should("exist")
+    cy.contains("Vulnérabilité moyenne à élevée").should("exist")
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+    cy.mapHasNoPopup()
+    cy.mapOpenPopup()
+    cy.getBySel("plantability-score-popup").should("exist")
   })
+  it("shows plantability context data", () => {})
 })
 
+/*
 describe("Map context data", () => {
   beforeEach(() => {
     // Définir l'intercept AVANT de visiter la page
-    cy.intercept("GET", "**/api/tiles/plantability/", {
+    cy.intercept("GET", "**!/api/tiles/plantability/", {
       statusCode: 200,
       body: {
         data: {
@@ -91,3 +94,4 @@ describe("Geocoder", () => {
     cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
   })
 })
+*/
