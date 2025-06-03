@@ -2,7 +2,7 @@
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
 import { computed } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
-import type { MapScorePopupData } from "@/types"
+import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()

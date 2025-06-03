@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
-import { type MapParams } from "@/types"
+import { type MapParams } from "@/types/map"
 
 const props = defineProps({
   mapId: {
@@ -47,11 +47,11 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <div class="absolute top-0 left-0 pl-[30px] pt-[30px] flex gap-2 flex-col z-1">
+  <div class="absolute top-0 left-0 pl-8 pt-8 flex gap-2 flex-col z-1">
     <map-layer-switcher />
     <map-bg-switcher />
     <map-context-tools />
-    <map-context-data />
+    <map-context-data close="false" />
   </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup />

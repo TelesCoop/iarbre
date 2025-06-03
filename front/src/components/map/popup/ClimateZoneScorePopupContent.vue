@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
-import type { MapScorePopupData } from "@/types"
+import type { MapScorePopupData } from "@/types/map"
 
 defineProps({
   popupData: {

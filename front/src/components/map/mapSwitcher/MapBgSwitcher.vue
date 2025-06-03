@@ -2,7 +2,7 @@
 
 <template>
   <div
-    class="bg-white rounded-md p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4 w-[24.75rem]"
+    class="bg-white rounded-md p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4 w-[26rem]"
     data-cy="map-bg-switcher"
   >
     <map-switcher />

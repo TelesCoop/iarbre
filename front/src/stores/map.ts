@@ -18,7 +18,7 @@ import {
   DataTypeToAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
-import type { MapScorePopupData, PlantabilityTile } from "@/types"
+import type { MapScorePopupData } from "@/types/map"
 import { FULL_BASE_API_URL, useApiGet } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -36,7 +36,7 @@ import {
   getSourceId,
   highlightFeature
 } from "@/utils/map"
-import { getTileDetails } from "@/services/tileService"
+import type { PlantabilityTile } from "@/types/plantability"
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"

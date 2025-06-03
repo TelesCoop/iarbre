@@ -1,4 +1,4 @@
-import type { PlantabilityTile } from "@/types"
+import type { PlantabilityTile } from "@/types/plantability"
 import { useApiGet } from "@/api"
 import type { DataType } from "@/utils/enum"
 

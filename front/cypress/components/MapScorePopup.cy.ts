@@ -3,7 +3,7 @@ import MapscorePopup from "@/components/map/popup/MapScorePopup.vue"
 import { createPinia, setActivePinia } from "pinia"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { PlantabilityScore } from "@/utils/plantability"
+import { PlantabilityScore } from "@/types/plantability"
 import { getVulnerabilityScoreLabel, VulnerabilityType } from "@/utils/vulnerability"
 
 describe("MapScorePopup", () => {
