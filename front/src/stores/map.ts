@@ -9,7 +9,6 @@ import {
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
-import { nextTick } from "vue"
 import {
   GeoLevel,
   DataType,
@@ -19,7 +18,7 @@ import {
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
-import { FULL_BASE_API_URL, useApiGet } from "@/api"
+import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -37,6 +36,8 @@ import {
   highlightFeature
 } from "@/utils/map"
 import type { PlantabilityTile } from "@/types/plantability"
+import { getTileDetails } from "@/services/tileService"
+
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"
@@ -61,6 +62,19 @@ export const useMapStore = defineStore("map", () => {
       [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
+
+  const setTileDetails = async (featureId: string) => {
+    if (!featureId) return null
+    const tile = await getTileDetails(featureId, selectedDataType.value)
+    if (!tile) {
+      tileDetails.value = {}
+      return
+    }
+    tileDetails.value = tile
+  }
+  const removeTileDetails = () => {
+    tileDetails.value = null
+  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -139,7 +153,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-
   const createPopup = (
     e: any,
     map: Map,
@@ -153,20 +166,16 @@ export const useMapStore = defineStore("map", () => {
 
     removeActivePopup()
     popupData.value = {
-      id: extractFeatureProperty(e.features!, datatype, geolevel, "indice"),
+      id: extractFeatureProperty(e.features!, datatype, geolevel, "id"),
       lng: e.lngLat.lng,
       lat: e.lngLat.lat,
-      properties: extractFeatureProperties(e.features!, datatype, geolevel)
+      properties: extractFeatureProperties(e.features!, datatype, geolevel),
+      score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
     }
     const tempPopup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
-    nextTick(() => {
-      // we wait for DOM to be updated before cloning the popup otherwise the popup is empty
-      // then clone the node popup to avoid being deleted when the setDOMContent function is called
-      const popupContentClone = popupDomElement.value!.cloneNode(true) as HTMLElement
-      activePopup.value = tempPopup.setDOMContent(popupContentClone).addTo(map)
-      const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
-      closeButton.addEventListener("click", () => clearHighlight(map, layerId))
-    })
+    activePopup.value = tempPopup.setDOMContent(popupDomElement.value).addTo(map)
+    const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
+    closeButton.addEventListener("click", () => clearHighlight(map, layerId))
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
@@ -178,6 +187,7 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
+      setTileDetails(featureId)
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
@@ -237,7 +247,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
-    removeActivePopup()
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -255,6 +264,9 @@ export const useMapStore = defineStore("map", () => {
       }
       mapInstance.setStyle(newStyle)
       mapInstance.fire("style.load")
+      /*mapInstance.once("style.load", () => {
+        removeActivePopup()
+      })*/
     })
   }
 
@@ -299,6 +311,8 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
-    tileDetails
+    tileDetails,
+    setTileDetails,
+    removeTileDetails
   }
 })

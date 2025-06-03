@@ -47,11 +47,11 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
-  <div class="absolute top-0 left-0 pl-8 pt-8 flex gap-2 flex-col z-1">
+  <div class="absolute top-0 left-0 pl-8 pt-8 flex gap-2 flex-col z-1 w-[26rem]">
     <map-layer-switcher />
     <map-bg-switcher />
     <map-context-tools />
-    <map-context-data close="false" />
+    <map-context-data />
   </div>
   <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
     <map-score-popup />

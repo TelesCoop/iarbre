@@ -1,6 +1,6 @@
-import type { PlantabilityTile } from "@/types/plantability"
 import { useApiGet } from "@/api"
 import type { DataType } from "@/utils/enum"
+import type { PlantabilityTile } from "@/types/plantability"
 
 export const getTileDetails = async (
   id: string,

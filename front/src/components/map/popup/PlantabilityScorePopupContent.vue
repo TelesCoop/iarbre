@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
-import { computed } from "vue"
+import { computed, onMounted } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
@@ -16,12 +16,11 @@ const props = defineProps({
 
 const score = computed(() => Number(props.popupData.score))
 const label = computed(() => getPlantabilityScore(score.value))
-
-const onShow = async () => {
+const toggleTileDetails = () => {
   if (!mapStore.tileDetails) {
-    await mapStore.setTileDetails(props.popupData.id)
+    mapStore.setTileDetails(props.popupData.id)
   } else {
-    mapStore.tileDetails = null
+    mapStore.removeTileDetails()
   }
 }
 </script>
@@ -39,11 +38,7 @@ const onShow = async () => {
         data-cy="show-plantability-score-details"
         severity="secondary"
         size="small"
-        @click="
-          () => {
-            onShow()
-          }
-        "
+        @click="toggleTileDetails"
       />
     </div>
     <div class="flex-grow ml-1.25"></div>

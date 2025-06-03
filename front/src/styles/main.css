@@ -81,7 +81,6 @@
 }
 
 .map-tool-container {
-  @apply w-[18rem] lg:w-[26rem];
   @apply flex items-center gap-4;
   @apply rounded-md;
   @apply bg-white shadow-lg z-10;
