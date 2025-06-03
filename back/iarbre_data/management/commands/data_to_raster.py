@@ -80,13 +80,13 @@ def rasterize_data_across_all_cities(
                     kernel[i, j] = 1
     else:
         log_progress("Square kernel")
-    max_count = np.sum(kernel)
+    max_count = np.sum(kernel).astype(np.uint8)
     kernel = kernel.astype(np.float32)
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
         0 : height_out * grid_size : grid_size,
         0 : width_out * grid_size : grid_size,
     ]
-    coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
+    coarse_raster = (coarse_raster / max_count * 100).astype(np.uint8)
     log_progress("Convolution OK")
     dtype = raster.dtype
     del raster
