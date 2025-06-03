@@ -172,8 +172,8 @@ export const useMapStore = defineStore("map", () => {
       properties: extractFeatureProperties(e.features!, datatype, geolevel),
       score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
     }
-    const tempPopup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
-    activePopup.value = tempPopup.setDOMContent(popupDomElement.value).addTo(map)
+    const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
+    activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
     const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
     closeButton.addEventListener("click", () => clearHighlight(map, layerId))
   }
@@ -264,9 +264,6 @@ export const useMapStore = defineStore("map", () => {
       }
       mapInstance.setStyle(newStyle)
       mapInstance.fire("style.load")
-      /*mapInstance.once("style.load", () => {
-        removeActivePopup()
-      })*/
     })
   }
 

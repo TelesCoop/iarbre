@@ -1,9 +1,9 @@
 <script lang="ts" setup></script>
 
 <template>
-  <div class="map-tool-container p-4" data-cy="map-layer-switcher">
+  <div class="map-tool-container p-2 md:p-4" data-cy="map-layer-switcher">
     <layer-switcher />
-    <div class="flex-1">
+    <div class="flex-1 hidden md:flex">
       <svg
         fill="none"
         height="24"

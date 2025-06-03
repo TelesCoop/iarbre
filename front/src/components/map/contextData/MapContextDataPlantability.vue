@@ -69,8 +69,6 @@ const emit = defineEmits(["close"])
         Calcul basée sur la pondération de 30 paramètres
       </p>
     </div>
-
-    <!-- Content -->
     <div class="p-4 flex flex-col gap-4">
       <div class="text-center">
         <div class="relative inline-block">
@@ -84,7 +82,6 @@ const emit = defineEmits(["close"])
               fill="none"
               class="text-gray-200"
             />
-            <!-- Cercle de progression -->
             <circle
               cx="60"
               cy="60"
@@ -112,7 +109,7 @@ const emit = defineEmits(["close"])
           <i class="pi pi-chart-bar text-blue-500"></i>
           Paramètres principaux
         </h3>
-        <div class="h-40 sm:h-48 md:h-64 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+        <div class="h-32 lg:h-40 xl:h-48 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
           <template v-if="factors.length">
             <div
               v-for="param in factors"

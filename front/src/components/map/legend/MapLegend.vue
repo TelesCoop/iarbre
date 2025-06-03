@@ -20,8 +20,8 @@ const mapStore = useMapStore()
 @reference "@/styles/main.css";
 .map-legend {
   @apply bg-white;
-  @apply p-3;
-  @apply top-0 right-0 mt-8 mr-4 lg:mr-8;
+  @apply p-2 md:p-4;
+  @apply top-0 right-0 mt-8 mr-2 lg:mr-8;
   @apply absolute z-3;
   @apply flex flex-col items-center;
   @apply rounded-md border-primary-500 border-0.5;

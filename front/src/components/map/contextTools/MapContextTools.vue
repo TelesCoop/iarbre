@@ -20,7 +20,7 @@ const show = computed(() => {
 @reference "@/styles/main.css";
 .context-menu-tools {
   @apply flex flex-col gap-2 w-full;
-  @apply p-4;
+  @apply p-2 md:p-4;
 }
 
 .context-menu-tool {
