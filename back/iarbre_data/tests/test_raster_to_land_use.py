@@ -66,7 +66,7 @@ class RasterToLandUse(TestCase):
         tile1 = Tile.objects.create(geometry=Polygon.from_bbox((25, 25, 30, 30)))
         tile2 = Tile.objects.create(geometry=Polygon.from_bbox((40, 40, 45, 45)))
         tile3 = Tile.objects.create(geometry=Polygon.from_bbox((45, 70, 50, 75)))
-        tile4 = Tile.objects.cr < eate(
+        tile4 = Tile.objects.create(
             geometry=Polygon.from_bbox((35, 35, 45, 45)),
             details=json.dumps({"top5_land_use": {"Friches": 10}}),
         )
