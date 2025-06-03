@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import ScoreLabel from "@/components/map/ScoreLabel.vue"
-import { computed, onMounted } from "vue"
+import { computed } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
@@ -35,7 +35,7 @@ const toggleTileDetails = () => {
       <Button
         :label="mapStore.tileDetails ? 'Masquer les détails' : 'Voir les détails'"
         class="font-accent"
-        data-cy="show-plantability-score-details"
+        data-cy="toggle-plantability-score-details"
         severity="secondary"
         size="small"
         @click="toggleTileDetails"

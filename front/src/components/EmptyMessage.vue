@@ -4,7 +4,7 @@ interface EmptyStateProps {
   icon?: string
 }
 
-const props = withDefaults(defineProps<EmptyStateProps>(), {
+withDefaults(defineProps<EmptyStateProps>(), {
   icon: "pi-info-circle"
 })
 </script>
