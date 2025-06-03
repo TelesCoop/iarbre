@@ -19,7 +19,7 @@ defineProps<PlantabilityScoreProps>()
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
         <span class="text-sm text-gray-600">Score :</span>
-        <span class="text-3xl font-bold text-gray-800"> {{ score }}/10 </span>
+        <span class="text-xl md:text-3xl font-bold text-gray-800"> {{ score }}/10 </span>
       </div>
     </div>
   </section>

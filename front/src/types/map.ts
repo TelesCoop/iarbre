@@ -1,4 +1,4 @@
-import { type DataType } from "../utils/enum"
+import { type DataType } from "@/utils/enum"
 
 export interface MapScorePopupData {
   lng: number

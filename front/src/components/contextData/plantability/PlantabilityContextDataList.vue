@@ -14,14 +14,14 @@ const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
 </script>
 
 <template>
-  <section aria-labelledby="factors-section">
+  <div aria-labelledby="factors-section">
     <h3 id="factors-section" class="text-md font-semibold mb-4 flex items-center gap-2">
       <i class="pi pi-chart-bar text-blue-500" aria-hidden="true"></i>
       Paramètres principaux
     </h3>
 
     <div
-      class="h-32 lg:h-40 xl:h-48 overflow-y-auto space-y-3 pr-2 custom-scrollbar"
+      class="overflow-y-auto space-y-3 pr-2 custom-scrollbar"
       role="list"
       aria-label="Liste des paramètres de plantabilité"
     >
@@ -37,7 +37,7 @@ const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
         <empty-message message="Aucune donnée disponible" />
       </template>
     </div>
-  </section>
+  </div>
 </template>
 
 <style scoped></style>

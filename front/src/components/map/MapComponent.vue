@@ -48,7 +48,7 @@ onMounted(() => {
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <map-legend />
   <div
-    class="absolute top-0 left-0 ml-2 lg:ml-8 pt-8 flex gap-2 flex-col z-1 w-[18.5rem] xs:[22rem] lg:w-[26rem]"
+    class="absolute top-0 left-0 ml-2 lg:ml-8 mt-4 flex gap-2 flex-col z-1 w-[18.5rem] xs:[22rem] lg:w-[26rem]"
   >
     <map-layer-switcher />
     <map-bg-switcher />

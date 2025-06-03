@@ -13,7 +13,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const scorePercentage = computed(() => (props.data.plantabilityNormalizedIndice / 10) * 100)
+const scorePercentage = computed(() => props.data.plantabilityNormalizedIndice * 10)
 
 const handleClose = () => {
   emit("close")
@@ -22,19 +22,19 @@ const handleClose = () => {
 
 <template>
   <div
-    class="plantability-card max-w-md mx-auto bg-white shadow-lg overflow-hidden rounded-lg"
+    class="plantability-card max-w-md mx-auto bg-white shadow-lg overflow-hidden rounded-md max-h-3/12"
     role="dialog"
     aria-labelledby="plantability-title"
     aria-describedby="plantability-description"
   >
     <plantability-context-data-header @close="handleClose" />
-    <main class="p-4 flex flex-col gap-6">
+    <div class="p-2 md:p-4 flex flex-col gap-2 md:gap-4">
       <plantability-context-data-score
         :score="data.plantabilityNormalizedIndice"
         :percentage="scorePercentage"
       />
 
       <plantability-context-data-list :data="data" />
-    </main>
+    </div>
   </div>
 </template>
