@@ -6,7 +6,7 @@
 
 Il est maintenant possible de superposer les calques à un fond de carte d'images satellite. C'est la basemap open-source [World Imagery](https://www.esri.com/arcgis-blog/products/imagery/imagery/learning-more-about-the-world-imagery-basemap) l'éditeur de logiciel SIG Esri.
 
-![Villeurbanne Grate-Ciel avec images satellite](assets/images/changelog/v0.8.0/images_sat.png)
+![Villeurbanne Grate-Ciel avec images satellite](assets/images/changelog/v0.8.0/images_sat.jpg)
 
 &rarr; Commit [5582a18](https://github.com/TelesCoop/iarbre/commit/5582a182f733ef2e38a70ca721ade7c9cee1c5df)
 
