@@ -1,24 +1,24 @@
 # Journal des changements
 
-## 🔖 0.8.0 (2025-06-04): Ajout d'images satellite et fixs mineurs
+## 🔖 0.8.0 (2025-06-04) : Ajout d'images satellite et corrections mineures
 
 ### ✨ feat : Images satellite
 
-Il est maintenant possible de superposer les calques à un fond de carte d'images satellite. C'est la basemap open-source [World Imagery](https://www.esri.com/arcgis-blog/products/imagery/imagery/learning-more-about-the-world-imagery-basemap) l'éditeur de logiciel SIG Esri.
+Il est maintenant possible de superposer les calques à un fond de carte composé d'images satellite. Il s'agit de la basemap open source [World Imagery](https://www.esri.com/arcgis-blog/products/imagery/imagery/learning-more-about-the-world-imagery-basemap) de l'éditeur de logiciels SIG Esri.
 
-![Villeurbanne Grate-Ciel avec images satellite](assets/images/changelog/v0.8.0/images_sat.jpg)
+![Villeurbanne Gratte-Ciel avec images satellite](assets/images/changelog/v0.8.0/images_sat.jpg)
 
 &rarr; Commit [5582a18](https://github.com/TelesCoop/iarbre/commit/5582a182f733ef2e38a70ca721ade7c9cee1c5df)
 
-### 🛠️ enhance : Quelques améliorations et fixs sur le site iarbre.fr
+### 🛠️ enhance : Quelques améliorations et corrections sur le site iarbre.fr
 
 - Ajout de la newsletter dans le header
 - Correction de l'affichage dans la section `Articles`
 - Affichage correct des images dans la section `Articles`
 
-### 👷 DevOps: Surveillances automatique de la santé
+### 👷 DevOps : Surveillance automatique de la santé
 
-Il y a maintenant une surveillance automatique de l'état de la DB et que tous nos environnements sont bien en ligne.
+Il y a maintenant une surveillance automatique de l'état de la base de données et de la disponibilité de tous nos environnements.
 
 &rarr; Commit [b02fe04](https://github.com/TelesCoop/iarbre/commit/b02fe04c85a1b88f6b9eff7bcb9db71a9e2aefcc)
 
