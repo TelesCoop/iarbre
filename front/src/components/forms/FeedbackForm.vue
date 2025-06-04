@@ -27,7 +27,7 @@ const sendFeedback = (event: Event) => {
     <span class="popin-text"
       >Partagez-nous vos impressions pour nous aider à améliorer le site :</span
     >
-    <InputText v-model="email" class="w-full" placeholder="Votre email" required type="email" />
+    <InputText v-model="email" class="w-full" placeholder="Votre email" type="email" />
     <Textarea
       v-model="feedback"
       class="w-full"
