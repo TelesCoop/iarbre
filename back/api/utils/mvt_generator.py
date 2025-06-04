@@ -2,6 +2,7 @@
 MVT Generator as django-media.
 """
 
+import json
 from typing import Dict
 import itertools
 import math
@@ -328,17 +329,28 @@ class MVTGenerator:
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
         spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
-        mean_aggregated = (
+        aggregated = (
             spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-            .mean()
+            .agg(["mean", lambda x: list(x)])
             .reset_index()
         )
+        aggregated.columns = [
+            "grid_id",
+            "plantability_normalized_indice",
+            "source_values",
+        ]
+
         # Map the mean values to PLANTABILITY_NORMALIZED set of values
-        mean_aggregated["plantability_normalized_indice"] = mean_aggregated[
+        aggregated["plantability_normalized_indice"] = aggregated[
             "plantability_normalized_indice"
         ].apply(self.map_to_discrete_value)
 
-        df_clipped = grid.merge(mean_aggregated, on="grid_id", how="left")
+        # Store source_values in a JSON format to be added in the `details` field
+        aggregated["source_values"] = aggregated["source_values"].apply(
+            lambda x: json.dumps(x) if x else "[]"
+        )
+
+        df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
 
         return df_clipped
@@ -369,6 +381,9 @@ class MVTGenerator:
             properties = {
                 "id": obj.id,
                 "indice": obj.plantability_normalized_indice,
+                "source_values": (
+                    obj.source_values if hasattr(obj, "source_values") else []
+                ),
             }
             all_features.append(
                 {
