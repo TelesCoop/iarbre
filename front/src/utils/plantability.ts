@@ -1,6 +1,7 @@
 import {
   PlantabilityImpact,
   PlantabilityLandUseKeys,
+  PlantabilityMetaCategory,
   PlantabilityScore
 } from "@/types/plantability"
 
@@ -78,11 +79,13 @@ export const PLANTABILITY_EMOJIS: Record<PlantabilityLandUseKeys, string> = {
 }
 
 export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, PlantabilityImpact> = {
+  // Réseaux et infrastructures (NEGATIF)
   [PlantabilityLandUseKeys.ASSAINISSEMENT]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RESEAU_FIBRE]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RSX_GAZ]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: PlantabilityImpact.NEGATIVE,
+  [PlantabilityLandUseKeys.RSX_AERIENS_ERDF]: PlantabilityImpact.NEGATIVE,
 
   // Infrastructure de transport (NEGATIF)
   [PlantabilityLandUseKeys.AERODROME]: PlantabilityImpact.NEGATIVE,
@@ -119,8 +122,51 @@ export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, Planta
   [PlantabilityLandUseKeys.FRICHES]: PlantabilityImpact.POSITIVE,
   [PlantabilityLandUseKeys.MARCHES_FORAINS]: PlantabilityImpact.POSITIVE,
 
-  // Autres (classification à déterminer)
-  [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityImpact.POSITIVE,
-  [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityImpact.NEGATIVE,
-  [PlantabilityLandUseKeys.RSX_AERIENS_ERDF]: PlantabilityImpact.NEGATIVE
+  // Plans d'eau (NEGATIF)
+  [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityImpact.NEGATIVE,
+  [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityImpact.NEGATIVE
+}
+
+export const PLANTABILITY_FACTORS_META_CATEGORIES = {
+  [PlantabilityLandUseKeys.ASSAINISSEMENT]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+  [PlantabilityLandUseKeys.RESEAU_FIBRE]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+  [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+  [PlantabilityLandUseKeys.RSX_GAZ]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+  [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+  [PlantabilityLandUseKeys.RSX_AERIENS_ERDF]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
+
+  [PlantabilityLandUseKeys.AERODROME]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.PARKINGS]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.SIGNALISATION_TRICOLORE]:
+    PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.STATION_VELOV]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.ARRETS_TRANSPORT]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.PISTES_CYCLABLE]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.PONTS]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.VOIES_FERREES]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.TRACE_METRO]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.TRACE_TRAMWAY]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.TRACE_BUS]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.PMR]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+  [PlantabilityLandUseKeys.AUTO_PARTAGE]: PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT,
+
+  [PlantabilityLandUseKeys.PROXIMITE_FACADE]: PlantabilityMetaCategory.BATIMENTS,
+  [PlantabilityLandUseKeys.BATIMENTS]: PlantabilityMetaCategory.BATIMENTS,
+
+  [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.ARBRES]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.PARCS_JARDINS]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.FRICHE_NATURELLE]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.STRATE_ARBOREE]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.STRATE_BASSE_PELOUSE]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.ESPACES_AGRICOLES]: PlantabilityMetaCategory.ESPACES_VERTS,
+  [PlantabilityLandUseKeys.FORETS]: PlantabilityMetaCategory.ESPACES_VERTS,
+
+  [PlantabilityLandUseKeys.GIRATOIRES]: PlantabilityMetaCategory.AMENAGEMENTS_URBAINS,
+  [PlantabilityLandUseKeys.ESPACES_JEUX_PIETONNIER]: PlantabilityMetaCategory.AMENAGEMENTS_URBAINS,
+  [PlantabilityLandUseKeys.FRICHES]: PlantabilityMetaCategory.AMENAGEMENTS_URBAINS,
+  [PlantabilityLandUseKeys.MARCHES_FORAINS]: PlantabilityMetaCategory.AMENAGEMENTS_URBAINS,
+
+  [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityMetaCategory.PLANS_EAU,
+  [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityMetaCategory.PLANS_EAU
 }

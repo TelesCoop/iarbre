@@ -58,6 +58,15 @@ export enum PlantabilityOccupationLevel {
   FORT = "fort"
 }
 
+export enum PlantabilityMetaCategory {
+  RESEAUX_INFRASTRUCTURES = "Réseaux et infrastructures",
+  INFRASTRUCTURE_TRANSPORT = "Infrastructure de transport",
+  BATIMENTS = "Bâtiments",
+  ESPACES_VERTS = "Espaces verts",
+  AMENAGEMENTS_URBAINS = "Aménagements urbains",
+  PLANS_EAU = "Plans d'eau"
+}
+
 export interface PlantabilityLandUse {
   [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]?: number
   [PlantabilityLandUseKeys.ARBRES]?: number

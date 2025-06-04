@@ -1,6 +1,7 @@
 import { computed, type ComputedRef } from "vue"
 import {
   PlantabilityImpact,
+  type PlantabilityLandUse,
   PlantabilityLandUseKeys,
   PlantabilityOccupationLevel,
   type PlantabilityTile
@@ -37,22 +38,38 @@ export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
     return `Impact ${factorImpact} ${occupationLevel}`
   }
 
+  const filterSensitiveLandUses = (landUseData: PlantabilityLandUse | undefined) => {
+    if (!landUseData) return {}
+
+    const factorsToRemove = [
+      PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF,
+      PlantabilityLandUseKeys.RSX_AERIENS_ERDF,
+      PlantabilityLandUseKeys.RSX_GAZ,
+      PlantabilityLandUseKeys.ASSAINISSEMENT
+    ]
+
+    return Object.entries(landUseData).reduce((acc, [key, value]) => {
+      if (factorsToRemove.includes(key as PlantabilityLandUseKeys)) {
+        return acc
+      }
+      acc[key as PlantabilityLandUseKeys] = value
+      return acc
+    }, {} as PlantabilityLandUse)
+  }
+
   const factors: ComputedRef<PlantabilityFactor[]> = computed(() => {
     const data = dataRef()
-    const landUseData = data?.details?.top5LandUse
-
+    const landUseData = filterSensitiveLandUses(data?.details?.top5LandUse)
     if (!landUseData) return []
-
     return Object.entries(landUseData).map(([key, value]) => {
-      const typedKey = key as PlantabilityLandUseKeys
-
+      const plantabilityLandKey = key as PlantabilityLandUseKeys
       return {
         key,
         label: key,
-        value: createFactorLabel(typedKey, value),
-        icon: PLANTABILITY_EMOJIS[typedKey] || "❓",
-        impact: PLANTABILITY_FACTORS_IMPACT[typedKey] || null,
-        occupationLevel: getOccupationLevel(value)
+        value: createFactorLabel(plantabilityLandKey, value!),
+        icon: PLANTABILITY_EMOJIS[plantabilityLandKey] || "❓",
+        impact: PLANTABILITY_FACTORS_IMPACT[plantabilityLandKey] || null,
+        occupationLevel: getOccupationLevel(value!)
       }
     })
   })

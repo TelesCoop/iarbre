@@ -1,3 +1,5 @@
+import type { PlantabilityTile } from "../../src/types/plantability"
+
 declare namespace Cypress {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Chainable<Subject = any> {

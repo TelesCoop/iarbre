@@ -34,7 +34,7 @@ const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
       </template>
 
       <template v-else>
-        <empty-message message="Aucune donnée disponible" />
+        <empty-message message="Aucune donnée connue" />
       </template>
     </div>
   </div>
