@@ -102,7 +102,7 @@ const impactIndicatorClasses = computed(() => {
     </button>
 
     <div
-      v-show="isExpanded"
+      v-if="isExpanded"
       :id="`category-${group.category}`"
       class="mt-2 ml-4 space-y-2 animate-fade-in"
     >

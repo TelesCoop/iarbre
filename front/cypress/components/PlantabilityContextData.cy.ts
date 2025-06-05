@@ -3,7 +3,9 @@ import { mount } from "cypress/vue"
 import MapContextData from "@/components/contextData/MapContextData.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { PlantabilityLandUseKeys } from "../../src/types/plantability"
+import { PlantabilityLandUseKeys, PlantabilityMetaCategory } from "../../src/types/plantability"
+import { GeoLevel } from "../../src/utils/enum"
+import { PLANTABILITY_FACTORS_META_CATEGORIES } from "../../src/utils/plantability"
 
 describe("MapContextData", () => {
   beforeEach(() => {
@@ -45,20 +47,25 @@ describe("MapContextData", () => {
         details: {
           top5LandUse: {
             [PlantabilityLandUseKeys.PROXIMITE_FACADE]: 88,
-            [PlantabilityLandUseKeys.ARBRES]: 60,
-            [PlantabilityLandUseKeys.BATIMENTS]: 56,
-            [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: 32
+            [PlantabilityLandUseKeys.BATIMENTS]: 56
           }
         },
-        geolevel: "tile",
-        datatype: "plantability",
+        geolevel: GeoLevel.TILE,
+        datatype: DataType.PLANTABILITY,
         iris: 547,
         city: 63
       }
       store.selectedDataType = DataType.PLANTABILITY
     })
+    cy.contains("2/10").should("be.visible")
 
-    // Le score affiché devrait être 7.5/10
-    cy.contains("7.5/10").should("be.visible")
+    cy.getBySel(`category-${[PlantabilityMetaCategory.BATIMENTS]}`).should("exist")
+    cy.getBySel(`"factor-${PlantabilityLandUseKeys.PROXIMITE_FACADE}"`).should("not.exist")
+    cy.getBySel(`"factor-${PlantabilityLandUseKeys.BATIMENTS}"`).should("not.exist")
+
+    cy.getBySel(`category-${[PlantabilityMetaCategory.BATIMENTS]}`).click()
+
+    cy.getBySel(`"factor-${PlantabilityLandUseKeys.BATIMENTS}"`).should("exist")
+    cy.getBySel(`"factor-${PlantabilityLandUseKeys.PROXIMITE_FACADE}"`).should("exist")
   })
 })

@@ -175,7 +175,10 @@ export const useMapStore = defineStore("map", () => {
     const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
     activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
     const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
-    closeButton.addEventListener("click", () => clearHighlight(map, layerId))
+    closeButton.addEventListener("click", () => {
+      clearHighlight(map, layerId)
+      removeTileDetails()
+    })
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
