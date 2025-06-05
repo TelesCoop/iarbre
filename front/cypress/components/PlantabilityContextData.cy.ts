@@ -3,9 +3,8 @@ import { mount } from "cypress/vue"
 import MapContextData from "@/components/contextData/MapContextData.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import { PlantabilityLandUseKeys, PlantabilityMetaCategory } from "../../src/types/plantability"
-import { GeoLevel } from "../../src/utils/enum"
-import { PLANTABILITY_FACTORS_META_CATEGORIES } from "../../src/utils/plantability"
+import { PlantabilityLandUseKeys, PlantabilityMetaCategory } from "@/types/plantability"
+import { GeoLevel } from "@/utils/enum"
 
 describe("MapContextData", () => {
   beforeEach(() => {
@@ -22,7 +21,7 @@ describe("MapContextData", () => {
   })
 
   it("should display component when tileDetails and PLANTABILITY datatype are set", () => {
-    cy.window().then((win) => {
+    cy.window().then(() => {
       const store = useMapStore()
       store.tileDetails = { plantabilityNormalizedIndice: 8.5 }
       store.selectedDataType = DataType.PLANTABILITY
@@ -30,7 +29,7 @@ describe("MapContextData", () => {
     cy.get('[data-cy="map-context-data"]').should("be.visible")
   })
   it("should hide component when tileDetails is null", () => {
-    cy.window().then((win) => {
+    cy.window().then(() => {
       const store = useMapStore()
       store.tileDetails = null
       store.selectedDataType = DataType.PLANTABILITY
@@ -40,7 +39,7 @@ describe("MapContextData", () => {
   })
 
   it("should display informations correctly", () => {
-    cy.window().then((win) => {
+    cy.window().then(() => {
       const store = useMapStore()
       store.tileDetails = {
         plantabilityNormalizedIndice: 2,
