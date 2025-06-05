@@ -42,7 +42,7 @@ class TileSerializer(serializers.ModelSerializer):
             try:
                 return json.loads(obj.details)
             except json.JSONDecodeError:
-                return None  # ou raise une erreur
+                return None
         return obj.details
 
 
