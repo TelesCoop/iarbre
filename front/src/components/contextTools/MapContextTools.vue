@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import VulnerabilityContextTool from "@/components/map/contextTools/VulnerabilityContextTool.vue"
+import VulnerabilityContextTool from "@/components/contextTools/VulnerabilityContextTool.vue"
 import { computed } from "vue"
 
 const mapStore = useMapStore()
@@ -11,11 +11,7 @@ const show = computed(() => {
 </script>
 
 <template>
-  <div
-    v-if="show"
-    class="rounded-md bg-white p-4 border-primary-500 border-0.5 shadow-lg z-10 flex items-center gap-4"
-    data-cy="map-context-tools"
-  >
+  <div v-if="show" class="map-tool-container" data-cy="map-context-tools">
     <vulnerability-context-tool />
   </div>
 </template>
@@ -24,6 +20,7 @@ const show = computed(() => {
 @reference "@/styles/main.css";
 .context-menu-tools {
   @apply flex flex-col gap-2 w-full;
+  @apply p-2 md:p-4;
 }
 
 .context-menu-tool {
