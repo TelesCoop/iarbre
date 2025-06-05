@@ -9,7 +9,7 @@ interface PlantabilityScoreProps {
 const props = defineProps<PlantabilityScoreProps>()
 
 const textColor = computed(() => {
-  if (!props.percentage) return "text-gray-800"
+  if (!props.percentage) return "text-gray-300"
   return props.percentage >= 80
     ? "text-scale-8"
     : props.percentage >= 60

@@ -9,7 +9,7 @@ interface CircularProgressProps {
 
 const props = withDefaults(defineProps<CircularProgressProps>(), {
   strokeWidth: 8,
-  backgroundColor: "transparent"
+  backgroundColor: "text-gray-200"
 })
 
 // Taille fixe responsive
