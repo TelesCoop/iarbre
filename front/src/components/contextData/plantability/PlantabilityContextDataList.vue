@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { type PlantabilityTile } from "@/types/plantability"
 import { usePlantabilityFactors } from "@/composables/usePlantabilityFactors"
-import PlantabilityContextDataItem from "@/components/contextData/plantability/PlantabilityContextDataItem.vue"
+import PlantabilityAccordionItem from "@/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
 interface PlantabilityFactorsProps {
@@ -10,7 +10,7 @@ interface PlantabilityFactorsProps {
 
 const props = defineProps<PlantabilityFactorsProps>()
 
-const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
+const { factorGroups, hasFactors } = usePlantabilityFactors(() => props.data)
 </script>
 
 <template>
@@ -21,20 +21,20 @@ const { factors, hasFactors } = usePlantabilityFactors(() => props.data)
     </h3>
 
     <div
-      class="overflow-y-auto space-y-3 pr-2 custom-scrollbar h-32 md:h-48 xl:max-h-64"
+      class="overflow-y-auto space-y-3 pr-2 custom-scrollbar md:max-h-48 lg:max-60"
       role="list"
-      aria-label="Liste des paramètres de plantabilité"
+      aria-label="Liste des paramètres de plantabilité par catégorie"
     >
       <template v-if="hasFactors">
-        <plantability-context-data-item
-          v-for="factor in factors"
-          :key="factor.key"
-          :item="factor"
+        <plantability-accordion-item
+          v-for="group in factorGroups"
+          :key="group.category"
+          :group="group"
         />
       </template>
 
       <template v-else>
-        <empty-message message="Aucune donnée connue" />
+        <empty-message message="Aucune donnée connue" data-cy="empty-message" />
       </template>
     </div>
   </div>

@@ -2,7 +2,7 @@ import { type DataType, GeoLevel } from "@/utils/enum"
 
 export enum PlantabilityImpact {
   POSITIVE = "positive",
-  NEGATIVE = "négative"
+  NEGATIVE = "négatif"
 }
 
 export enum PlantabilityScore {

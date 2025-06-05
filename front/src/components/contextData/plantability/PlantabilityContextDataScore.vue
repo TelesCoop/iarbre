@@ -1,10 +1,21 @@
 <script lang="ts" setup>
+import { computed } from "vue"
+
 interface PlantabilityScoreProps {
   score: number
   percentage: number
 }
 
-defineProps<PlantabilityScoreProps>()
+const props = defineProps<PlantabilityScoreProps>()
+
+const textColor = computed(() => {
+  if (!props.percentage) return "text-gray-800"
+  return props.percentage >= 80
+    ? "text-scale-8"
+    : props.percentage >= 60
+      ? "text-scale-4"
+      : "text-scale-2"
+})
 </script>
 
 <template>
@@ -14,12 +25,16 @@ defineProps<PlantabilityScoreProps>()
     <div class="relative inline-block">
       <circular-progress
         :percentage="percentage"
+        :background-color="textColor"
         :aria-label="`Score de plantabilité: ${score} sur 10`"
+        data-cy="circular-progress"
       />
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
         <span class="text-sm text-gray-600">Score :</span>
-        <span class="text-xl md:text-3xl font-bold text-gray-800"> {{ score }}/10 </span>
+        <span class="text-xl md:text-3xl font-bold" :class="textColor" data-cy="plantability-score">
+          {{ score }}/10
+        </span>
       </div>
     </div>
   </section>

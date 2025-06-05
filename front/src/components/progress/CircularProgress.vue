@@ -4,14 +4,12 @@ import { computed } from "vue"
 interface CircularProgressProps {
   percentage: number
   strokeWidth?: number
-  color?: string
   backgroundColor?: string
 }
 
 const props = withDefaults(defineProps<CircularProgressProps>(), {
   strokeWidth: 8,
-  color: "text-green-600",
-  backgroundColor: "text-gray-200"
+  backgroundColor: "transparent"
 })
 
 // Taille fixe responsive
@@ -40,7 +38,7 @@ const strokeDashOffset = computed(
       stroke="currentColor"
       :stroke-width="strokeWidth"
       fill="none"
-      :class="backgroundColor"
+      class="text-gray-200"
     />
     <circle
       :cx="size / 2"
@@ -49,7 +47,7 @@ const strokeDashOffset = computed(
       stroke="currentColor"
       :stroke-width="strokeWidth"
       fill="none"
-      :class="color"
+      :class="backgroundColor"
       :stroke-dasharray="circumference"
       :stroke-dashoffset="strokeDashOffset"
       stroke-linecap="round"

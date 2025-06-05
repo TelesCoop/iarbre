@@ -3,6 +3,7 @@ import { mount } from "cypress/vue"
 import MapContextData from "@/components/contextData/MapContextData.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
+import { PlantabilityLandUseKeys } from "../../src/types/plantability"
 
 describe("MapContextData", () => {
   beforeEach(() => {
@@ -36,11 +37,25 @@ describe("MapContextData", () => {
     cy.get('[data-cy="map-context-data"]').should("not.exist")
   })
 
-  it("should display correct score calculation", () => {
-    mount(MapContextData, {
-      props: {
-        data: mockData
+  it("should display informations correctly", () => {
+    cy.window().then((win) => {
+      const store = useMapStore()
+      store.tileDetails = {
+        plantabilityNormalizedIndice: 2,
+        details: {
+          top5LandUse: {
+            [PlantabilityLandUseKeys.PROXIMITE_FACADE]: 88,
+            [PlantabilityLandUseKeys.ARBRES]: 60,
+            [PlantabilityLandUseKeys.BATIMENTS]: 56,
+            [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: 32
+          }
+        },
+        geolevel: "tile",
+        datatype: "plantability",
+        iris: 547,
+        city: 63
       }
+      store.selectedDataType = DataType.PLANTABILITY
     })
 
     // Le score affiché devrait être 7.5/10

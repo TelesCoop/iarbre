@@ -47,8 +47,9 @@ const valueClasses = computed(() => {
   <div
     role="listitem"
     class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
+    :data-cy="`factor-${item.key}`"
   >
-    <div :class="iconClasses" :aria-label="`Icône pour ${item.label}`">
+    <div :class="iconClasses" :aria-label="`Icône pour ${item.label}`" data-cy="factor-icon">
       {{ item.icon }}
     </div>
 

@@ -27,6 +27,7 @@ declare module 'vue' {
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
+    PlantabilityContextDataAccordionItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue')['default']
     PlantabilityContextDataHeader: typeof import('./src/components/contextData/plantability/PlantabilityContextDataHeader.vue')['default']
     PlantabilityContextDataItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataItem.vue')['default']
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']
