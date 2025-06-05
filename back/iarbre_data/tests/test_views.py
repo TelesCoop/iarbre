@@ -33,6 +33,12 @@ class MVTGeneratorTestCase(TestCase):
         return super().tearDown()
 
     def test_queryset_bounds(self):
+        expected_bounds = {
+            "west": 4.862904542088828,
+            "south": 45.814411026142736,
+            "east": 4.908787723340132,
+            "north": 45.85159245978295,
+        }
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
@@ -46,14 +52,23 @@ class MVTGeneratorTestCase(TestCase):
 
         qs = Tile.objects.all()
         mvt_generator = MVTGenerator(qs, zoom_levels=(8, 10))
-        self.assertDictEqual(
-            mvt_generator._get_queryset_bounds(),
-            {
-                "west": 4.862904542088828,
-                "south": 45.814411026142736,
-                "east": 4.908787723340132,
-                "north": 45.85159245978295,
-            },
+        actual_bounds = mvt_generator._get_queryset_bounds()
+
+        # Define a delta for floating-point comparison
+        delta = 1e-10
+
+        # Check each value with tolerance
+        self.assertAlmostEqual(
+            actual_bounds["west"], expected_bounds["west"], delta=delta
+        )
+        self.assertAlmostEqual(
+            actual_bounds["south"], expected_bounds["south"], delta=delta
+        )
+        self.assertAlmostEqual(
+            actual_bounds["east"], expected_bounds["east"], delta=delta
+        )
+        self.assertAlmostEqual(
+            actual_bounds["north"], expected_bounds["north"], delta=delta
         )
 
     def test_generate_tile_for_zoom(self):

@@ -41,7 +41,7 @@ const isSelected = computed(() => props.isSelected || false)
   <div
     :class="backgroundClass"
     :stroke="isSelected ? '#002814' : ''"
-    class="relative w-[37px] h-[37px] rounded-[2px] flex items-center justify-center font-accent text-sm"
+    class="relative w-[24px] h-[24px] lg:w-[36px] lg:h-[36px] rounded-[2px] flex items-center justify-center font-accent text-sm"
   >
     <span :class="textClass">{{ label }}</span>
   </div>

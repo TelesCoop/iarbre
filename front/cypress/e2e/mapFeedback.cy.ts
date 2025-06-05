@@ -1,6 +1,6 @@
 // https://on.cypress.io/api
 
-describe("Feedback Popin interactivity", () => {
+describe("Map feedback", () => {
   beforeEach(() => {
     cy.visit("/")
   })

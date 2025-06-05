@@ -2,7 +2,7 @@
 import MapComponent from "@/components/map/MapComponent.vue"
 import { useRouter, useRoute } from "vue-router"
 import { ref } from "vue"
-import type { MapParams } from "@/types"
+import type { MapParams } from "@/types/map"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_CENTER } from "@/utils/constants"
 
