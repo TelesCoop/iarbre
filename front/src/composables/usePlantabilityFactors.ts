@@ -87,7 +87,8 @@ export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
       PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF,
       PlantabilityLandUseKeys.RSX_AERIENS_ERDF,
       PlantabilityLandUseKeys.RSX_GAZ,
-      PlantabilityLandUseKeys.ASSAINISSEMENT
+      PlantabilityLandUseKeys.ASSAINISSEMENT,
+      PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN
     ]
 
     return Object.entries(landUseData).reduce((acc, [key, value]) => {
