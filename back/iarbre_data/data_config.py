@@ -456,6 +456,52 @@ FACTORS = {
     # "QPV": 1,
 }
 
+META_FACTORS_MAPPING = {
+    "Réseaux et infrastructures": [
+        "Assainissement",
+        "Réseau Fibre",
+        "Réseau de chaleur urbain",
+        "Rsx gaz",
+        "Rsx souterrains ERDF",
+        "Rsx aériens ERDF",
+    ],
+    "Infrastructure de transport": [
+        "Aerodrome",
+        "Parkings",
+        "Signalisation tricolore et lumineuse matériel",
+        "Station velov",
+        "Arrêts transport en commun",
+        "Pistes cyclable",
+        "Ponts",
+        "Voies ferrées",
+        "Tracé de métro",
+        "Tracé de tramway",
+        "Tracé de bus",
+        "PMR",
+        "Auto-partage",
+    ],
+    "Bâtiments": ["Proximité façade", "Bâtiments"],
+    "Espaces verts": [
+        "Souches ou emplacements libres",
+        "Arbres",
+        "Parcs et jardins publics",
+        "Friche naturelle",
+        "Strate arborée",
+        "Strate basse et pelouse",
+        "Espaces agricoles",
+        "Forêt",
+    ],
+    "Aménagements urbains": [
+        "Giratoires",
+        "Espaces jeux et pietonnier",
+        "Friches",
+        "Marchés forrains",
+    ],
+    "Plan d'eau": ["Plan d'eau"],
+    "Espaces artificialisés": ["Espaces artificialisés"],
+}
+
+
 UPDATES = [
     {
         "name": "Réseau Fibre",

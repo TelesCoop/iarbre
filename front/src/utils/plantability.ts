@@ -41,6 +41,7 @@ export const PLANTABILITY_COLOR_MAP = [
 ]
 
 export const PLANTABILITY_EMOJIS: Record<PlantabilityLandUseKeys, string> = {
+  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]: "🔧",
   [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]: "🪵",
   [PlantabilityLandUseKeys.ARBRES]: "🌳",
   [PlantabilityLandUseKeys.AERODROME]: "✈️",
@@ -80,6 +81,7 @@ export const PLANTABILITY_EMOJIS: Record<PlantabilityLandUseKeys, string> = {
 
 export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, PlantabilityImpact> = {
   // Réseaux et infrastructures (NEGATIF)
+  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.ASSAINISSEMENT]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RESEAU_FIBRE]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: PlantabilityImpact.NEGATIVE,
@@ -128,6 +130,8 @@ export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, Planta
 }
 
 export const PLANTABILITY_FACTORS_META_CATEGORIES = {
+  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]:
+    PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
   [PlantabilityLandUseKeys.ASSAINISSEMENT]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
   [PlantabilityLandUseKeys.RESEAU_FIBRE]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,
   [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES,

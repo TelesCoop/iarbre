@@ -1,7 +1,7 @@
 import { type DataType, GeoLevel } from "@/utils/enum"
 
 export enum PlantabilityImpact {
-  POSITIVE = "positive",
+  POSITIVE = "positif",
   NEGATIVE = "négatif"
 }
 
@@ -49,7 +49,8 @@ export enum PlantabilityLandUseKeys {
   RSX_SOUTERRAINS_ERDF = "Rsx souterrains ERDF",
   RSX_AERIENS_ERDF = "Rsx aériens ERDF",
   PMR = "PMR",
-  AUTO_PARTAGE = "Auto-partage"
+  AUTO_PARTAGE = "Auto-partage",
+  RESEAUX_INFRASTRUCTURES = "Réseaux et infrastructures"
 }
 
 export enum PlantabilityOccupationLevel {
@@ -68,6 +69,7 @@ export enum PlantabilityMetaCategory {
 }
 
 export interface PlantabilityLandUse {
+  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]?: number
   [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]?: number
   [PlantabilityLandUseKeys.ARBRES]?: number
   [PlantabilityLandUseKeys.AERODROME]?: number
