@@ -118,14 +118,14 @@ def process_tile_batch(
         reseaux_souterrains_total = 0
         keys_to_remove = []
         for key in land_uses:
-            if key in META_FACTORS_MAPPING["Réseaux souterrains"]:
+            if key in META_FACTORS_MAPPING["Réseaux et infrastructures"]:
                 reseaux_souterrains_total += land_uses[key]
                 keys_to_remove.append(key)
         for key in keys_to_remove:
             del land_uses[key]
 
         if reseaux_souterrains_total > 0:
-            land_uses["Réseaux souterrains"] = reseaux_souterrains_total
+            land_uses["Réseaux et infrastructures"] = reseaux_souterrains_total
 
         meta_factors = compute_meta_factors(land_uses)
         sorted_land_uses = sorted(

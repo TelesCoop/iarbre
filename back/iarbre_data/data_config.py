@@ -457,7 +457,7 @@ FACTORS = {
 }
 
 META_FACTORS_MAPPING = {
-    "Réseaux souterrains": [
+    "Réseaux et infrastructures": [
         "Assainissement",
         "Réseau Fibre",
         "Réseau de chaleur urbain",
