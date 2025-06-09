@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import MapContextDataVulnerability from "@/components/contextData/MapContextDataVulnerability.vue"
-import MapContextDataPlantability from "@/components/contextData/MapContextDataPlantability.vue"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 
