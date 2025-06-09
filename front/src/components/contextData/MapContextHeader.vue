@@ -17,7 +17,6 @@ const handleClose = () => {
   <header class="bg-primary-500 text-white relative">
     <div class="absolute right-0 mb-2 pr-4">
       <button
-        aria-label="Fermer la carte de plantabilité"
         class="h-8 w-8 p-2 md:p-4 mt-4 rounded-full hover:bg-white/20 focus:bg-white/20 transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-white/50 flex items-center justify-center"
         data-cy="close-plantability-context-data"
         type="button"
