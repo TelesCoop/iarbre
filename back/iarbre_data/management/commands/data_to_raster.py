@@ -25,6 +25,7 @@ def rasterize_data_across_all_cities(
     transform_out: rasterio.Affine,
     all_cities_union: GEOSGeometry,
     grid_size: int = 5,
+    grid_type: int = 0,
     output_dir: str = None,
 ) -> None:
     """
@@ -43,12 +44,12 @@ def rasterize_data_across_all_cities(
         transform_out (rasterio.Affine): Affine transformation for the raster output.
         all_cities_union (GEOSGeometry): GEOSGeometry containing the union of all city geometries.
         grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
+        grid_type: (int, optionnal): Square of hexagonal grid. Default to square.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
 
     Returns:
         None
     """
-    max_count = grid_size * grid_size
     os.makedirs(output_dir, exist_ok=True)
 
     qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
@@ -65,13 +66,30 @@ def rasterize_data_across_all_cities(
     )
     if len(raster[raster > 0]) == 0:
         raise ValueError(f"{factor_name} is producing a blank tif.")
-    log_progress("Summing on 5x5")
     kernel = np.ones((grid_size, grid_size))
+    if grid_type == 1:
+        log_progress("Hexagonal kernel")
+        kernel -= 1
+        center = grid_size // 2
+        radius = grid_size // 2
+        for i in range(grid_size):
+            for j in range(grid_size):
+                dx = j - center
+                dy = i - center
+                if abs(dx) + abs(dy) <= radius:
+                    kernel[i, j] = 1
+    else:
+        log_progress("Square kernel")
+    max_count = np.sum(kernel).astype(np.uint8)
+    kernel = kernel.astype(np.float32)
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
         0 : height_out * grid_size : grid_size,
         0 : width_out * grid_size : grid_size,
     ]
-    coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
+    coarse_raster = (coarse_raster / max_count * 100).astype(np.uint8)
+    log_progress("Convolution OK")
+    dtype = raster.dtype
+    del raster
     # Save the raster to file
     output_path = os.path.join(output_dir, f"{factor_name}.tif")
     log_progress(f"Saving {factor_name}")
@@ -82,7 +100,7 @@ def rasterize_data_across_all_cities(
         height=height_out,
         width=width_out,
         count=1,
-        dtype=raster.dtype,
+        dtype=dtype,
         crs="EPSG:2154",
         transform=transform_out,
     ) as dst:
@@ -98,10 +116,18 @@ class Command(BaseCommand):
             "--grid-size", type=int, default=5, help="Grid size in meters"
         )
 
+        parser.add_argument(
+            "--grid-type",
+            type=int,
+            default=0,
+            help="Grid type: 0 (square), 1 (hexagons).",
+        )
+
     def handle(self, *args, **options):
         output_dir = str(BASE_DIR) + "/media/rasters/"
         resolution = 1
         grid_size = options["grid_size"]
+        grid_type = options["grid_type"]
         kernel_size = grid_size / resolution
         if not kernel_size.is_integer():
             raise ValueError(
@@ -131,5 +157,6 @@ class Command(BaseCommand):
                 transform_out,
                 all_cities_union=all_cities_union,
                 grid_size=kernel_size,
+                grid_type=grid_type,
                 output_dir=output_dir,
             )
