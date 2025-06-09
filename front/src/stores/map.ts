@@ -164,7 +164,6 @@ export const useMapStore = defineStore("map", () => {
     const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
     closeButton.addEventListener("click", () => {
       clearHighlight(map, layerId)
-      console.log("click")
       contextData.removeData()
     })
   }
@@ -179,7 +178,6 @@ export const useMapStore = defineStore("map", () => {
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
       if (contextData.data) {
-        console.log("setData")
         contextData.setData(featureId)
       }
     }

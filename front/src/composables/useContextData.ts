@@ -12,7 +12,6 @@ export function useContextData() {
     if (!featureId) return null
     const stringId = String(featureId)
     const tile = await getTileDetails(stringId, mapStore.selectedDataType)
-    console.log(tile)
     if (!tile) {
       data.value = {}
       return
