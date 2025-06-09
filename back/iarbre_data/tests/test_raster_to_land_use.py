@@ -15,7 +15,7 @@ class RasterToLandUse(TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.raster_path = self.temp_dir.name
-        self.raster_files = ["Parking.tif", "Bâtiments.tif", "Giratoires.tif"]
+        self.raster_files = ["Parkings.tif", "Bâtiments.tif", "Giratoires.tif"]
         self.create_test_rasters()
         ids = self.create_test_tiles()
         self.tiles = Tile.objects.filter(id__in=ids)
@@ -44,7 +44,7 @@ class RasterToLandUse(TestCase):
             data = np.zeros((height, width), dtype=np.float32)
             land_type = land_type.split(".")[0]
             # Set specific areas with different values
-            if land_type == "Parking":
+            if land_type == "Parkings":
                 # Parking in the top part
                 data[10:40, 20:80] = 80.0
             elif land_type == "Bâtiments":
@@ -82,20 +82,54 @@ class RasterToLandUse(TestCase):
 
         for tile in updated_tiles:
             details = json.loads(tile.details) if tile.details else {}
+            meta_factors_data = (
+                json.loads(tile.meta_factors) if tile.meta_factors else {}
+            )
+
             self.assertIn("top5_land_use", details)
+            self.assertIn("meta_factors", meta_factors_data)
+
             if tile.id == self.tiles[1].id:
                 self.assertIn("Bâtiments", details["top5_land_use"])
                 self.assertGreater(details["top5_land_use"]["Bâtiments"], 0)
+                self.assertIn("Bâtiments", meta_factors_data["meta_factors"])
+                self.assertGreater(meta_factors_data["meta_factors"]["Bâtiments"], 0)
+
             elif tile.id == self.tiles[2].id:
-                self.assertIn("Parking", details["top5_land_use"])
-                self.assertGreater(details["top5_land_use"]["Parking"], 0)
+                self.assertIn("Parkings", details["top5_land_use"])
+                self.assertGreater(details["top5_land_use"]["Parkings"], 0)
+                self.assertIn(
+                    "Infrastructure de transport", meta_factors_data["meta_factors"]
+                )
+                self.assertGreater(
+                    meta_factors_data["meta_factors"]["Infrastructure de transport"], 0
+                )
+
             elif tile.id == self.tiles[3].id:
                 self.assertIn("Giratoires", details["top5_land_use"])
                 self.assertGreater(details["top5_land_use"]["Giratoires"], 0)
-            elif tile.id == self.tiles[3].id:
+                self.assertIn("Aménagements urbains", meta_factors_data["meta_factors"])
+                self.assertGreater(
+                    meta_factors_data["meta_factors"]["Aménagements urbains"], 0
+                )
                 # Multiple land uses
                 land_uses = list(details["top5_land_use"].keys())
+                self.assertTrue(
+                    sum(
+                        1
+                        for value in meta_factors_data["meta_factors"].values()
+                        if value > 0
+                    )
+                    > 1
+                )
                 self.assertGreaterEqual(len(land_uses), 1)
+
             elif tile.id == self.tiles[4].id:
                 # Outside tile
                 self.assertEqual(details["top5_land_use"], {})
+                self.assertTrue(
+                    all(
+                        value == 0
+                        for value in meta_factors_data["meta_factors"].values()
+                    )
+                )
