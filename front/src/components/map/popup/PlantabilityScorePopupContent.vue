@@ -16,13 +16,6 @@ const props = defineProps({
 
 const score = computed(() => Number(props.popupData.score))
 const label = computed(() => getPlantabilityScore(score.value))
-const toggleTileDetails = () => {
-  if (!mapStore.tileDetails) {
-    mapStore.setTileDetails(props.popupData.id)
-  } else {
-    mapStore.removeTileDetails()
-  }
-}
 </script>
 
 <template>
@@ -33,12 +26,12 @@ const toggleTileDetails = () => {
     </div>
     <div class="flex w-full items-center justify-center">
       <Button
-        :label="mapStore.tileDetails ? 'Masquer les détails' : 'Voir les détails'"
+        :label="mapStore.contextData.data ? 'Masquer les détails' : 'Voir les détails'"
         class="font-accent"
         data-cy="toggle-plantability-score-details"
         severity="secondary"
         size="small"
-        @click="toggleTileDetails"
+        @click="mapStore.contextData.toggleContextData(props.popupData.id)"
       />
     </div>
     <div class="flex-grow ml-1.25"></div>

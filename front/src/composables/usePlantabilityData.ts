@@ -5,7 +5,7 @@ import {
   PlantabilityLandUseKeys,
   PlantabilityOccupationLevel,
   PlantabilityMetaCategory,
-  type PlantabilityTile
+  type PlantabilityData
 } from "@/types/plantability"
 import {
   PLANTABILITY_EMOJIS,
@@ -64,7 +64,7 @@ const META_CATEGORY_CONFIG = {
   }
 }
 
-export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
+export function usePlantabilityData(dataRef: () => PlantabilityData) {
   const getOccupationLevel = (value: number): PlantabilityOccupationLevel => {
     if (value < OCCUPATION_THRESHOLDS.LOW) return PlantabilityOccupationLevel.FAIBLE
     if (value < OCCUPATION_THRESHOLDS.MEDIUM) return PlantabilityOccupationLevel.MOYEN
@@ -132,7 +132,6 @@ export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
       }
     })
 
-    // Convertir en array de groupes
     return Array.from(factorsByCategory.entries())
       .map(([category, categoryFactors]) => {
         const config = META_CATEGORY_CONFIG[category] || { label: category, icon: "📊" }

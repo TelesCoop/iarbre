@@ -1,20 +1,25 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { computed } from "vue"
 import { DataType } from "@/utils/enum"
+import MapContextDataVulnerability from "@/components/contextData/MapContextDataVulnerability.vue"
+import MapContextDataPlantability from "@/components/contextData/MapContextDataPlantability.vue"
+import type { PlantabilityData } from "@/types/plantability"
+import type { VulnerabilityData } from "@/types/vulnerability"
 
 const mapStore = useMapStore()
-const show = computed(() => {
-  return mapStore.tileDetails && mapStore.selectedDataType === DataType.PLANTABILITY
-})
 </script>
 
 <template>
-  <div v-if="show" class="map-tool-container" data-cy="map-context-data">
+  <div v-if="mapStore.contextData.data" class="map-tool-container" data-cy="map-context-data">
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
-      :data="mapStore.tileDetails"
-      @close="() => mapStore.removeTileDetails()"
+      :data="mapStore.contextData.data as PlantabilityData"
+      @close="() => mapStore.contextData.removeData()"
+    />
+    <map-context-data-vulnerability
+      v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+      :data="mapStore.contextData.data as VulnerabilityData"
+      @close="() => mapStore.contextData.removeData()"
     />
   </div>
 </template>

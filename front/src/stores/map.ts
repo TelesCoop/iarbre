@@ -20,6 +20,7 @@ import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
+
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
@@ -35,8 +36,7 @@ import {
   getSourceId,
   highlightFeature
 } from "@/utils/map"
-import type { PlantabilityTile } from "@/types/plantability"
-import { getTileDetails } from "@/services/tileService"
+import { useContextData } from "@/composables/useContextData"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -48,7 +48,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
-  const tileDetails = ref<PlantabilityTile | {} | null>(null)
+  const contextData = useContextData()
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
@@ -62,19 +62,6 @@ export const useMapStore = defineStore("map", () => {
       [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
-
-  const setTileDetails = async (featureId: string) => {
-    if (!featureId) return null
-    const tile = await getTileDetails(featureId, selectedDataType.value)
-    if (!tile) {
-      tileDetails.value = {}
-      return
-    }
-    tileDetails.value = tile
-  }
-  const removeTileDetails = () => {
-    tileDetails.value = null
-  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -177,7 +164,7 @@ export const useMapStore = defineStore("map", () => {
     const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
     closeButton.addEventListener("click", () => {
       clearHighlight(map, layerId)
-      removeTileDetails()
+      contextData.removeData()
     })
   }
 
@@ -190,8 +177,8 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
-      if (tileDetails.value) {
-        setTileDetails(featureId)
+      if (contextData.data) {
+        contextData.setData(featureId)
       }
     }
     map.on("click", layerId, clickHandler)
@@ -313,8 +300,11 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
-    tileDetails,
-    setTileDetails,
-    removeTileDetails
+    contextData: {
+      data: contextData.data,
+      setData: contextData.setData,
+      removeData: contextData.removeData,
+      toggleContextData: contextData.toggleContextData
+    }
   }
 })

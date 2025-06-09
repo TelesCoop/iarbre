@@ -105,15 +105,15 @@ export interface PlantabilityLandUse {
   [PlantabilityLandUseKeys.AUTO_PARTAGE]?: number
 }
 
-interface PlantabilityTileDetails {
+interface PlantabilityDataDetails {
   top5LandUse: PlantabilityLandUse
 }
 
-export interface PlantabilityTile {
+export interface PlantabilityData {
   id: string
   plantabilityNormalizedIndice: number
   plantabilityIndice: number
-  details?: PlantabilityTileDetails
+  details?: PlantabilityDataDetails
   geolevel: GeoLevel
   datatype: DataType
   iris: number
