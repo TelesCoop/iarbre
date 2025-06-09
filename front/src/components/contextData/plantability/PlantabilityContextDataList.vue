@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { type PlantabilityData } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
+import { toRef } from "vue"
 import PlantabilityAccordionItem from "@/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
@@ -10,7 +11,7 @@ interface PlantabilityFactorsProps {
 
 const props = defineProps<PlantabilityFactorsProps>()
 
-const { factorGroups, hasFactors } = usePlantabilityData(() => props.data)
+const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
 </script>
 
 <template>

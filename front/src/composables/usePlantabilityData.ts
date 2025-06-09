@@ -1,4 +1,4 @@
-import { computed, type ComputedRef } from "vue"
+import { computed, type ComputedRef, type Ref } from "vue"
 import {
   PlantabilityImpact,
   type PlantabilityLandUse,
@@ -64,7 +64,7 @@ const META_CATEGORY_CONFIG = {
   }
 }
 
-export function usePlantabilityData(dataRef: () => PlantabilityData) {
+export function usePlantabilityData(data: Ref<PlantabilityData>) {
   const getOccupationLevel = (value: number): PlantabilityOccupationLevel => {
     if (value < OCCUPATION_THRESHOLDS.LOW) return PlantabilityOccupationLevel.FAIBLE
     if (value < OCCUPATION_THRESHOLDS.MEDIUM) return PlantabilityOccupationLevel.MOYEN
@@ -101,8 +101,7 @@ export function usePlantabilityData(dataRef: () => PlantabilityData) {
   }
 
   const factors: ComputedRef<PlantabilityFactor[]> = computed(() => {
-    const data = dataRef()
-    const landUseData = filterSensitiveFactors(data?.details?.top5LandUse)
+    const landUseData = filterSensitiveFactors(data.value?.details?.top5LandUse)
     if (!landUseData) return []
 
     return Object.entries(landUseData).map(([key, value]) => {
