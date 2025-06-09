@@ -4,7 +4,7 @@ import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 describe("Map", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.5543")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
