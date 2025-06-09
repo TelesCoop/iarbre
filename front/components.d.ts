@@ -42,13 +42,21 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
-    VulnerabilityContextDataAccordionItem: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataAccordionItem.vue')['default']
-    VulnerabilityContextDataItem: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataItem.vue')['default']
-    VulnerabilityContextDataList: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataList.vue')['default']
+    VulnerabilityContent: typeof import("./src/components/contextData/vulnerability/VulnerabilityContent.vue")["default"]
+    VulnerabilityContexDataTableRow: typeof import('./src/components/contextData/vulnerability/VulnerabilityContexDataTableRow.vue')['default']
+    VulnerabilityContextDataHeader: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataHeader.vue')['default']
+    VulnerabilityContextDataHeaderIcon: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataHeaderIcon.vue')['default']
+    VulnerabilityContextDataItem: typeof import("./src/components/contextData/vulnerability/VulnerabilityContextDataItem.vue")["default"]
+    VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
     VulnerabilityContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScore.vue')['default']
+    VulnerabilityContextDataTable: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTable.vue')['default']
+    VulnerabilityContextDataTableHeader: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTableHeader.vue')['default']
     VulnerabilityContextTool: typeof import('./src/components/contextTools/VulnerabilityContextTool.vue')['default']
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
     VulnerabilityScorePopupContent: typeof import('./src/components/map/popup/VulnerabilityScorePopupContent.vue')['default']
     VulnerabilityScorePopupItem: typeof import('./src/components/map/popup/VulnerabilityScorePopupItem.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

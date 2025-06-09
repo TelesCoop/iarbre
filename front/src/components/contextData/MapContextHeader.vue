@@ -27,7 +27,7 @@ const handleClose = () => {
       </button>
     </div>
     <div class="p-2 md:p-4">
-      <h2 id="plantability-title" class="text-xl font-semibold mb-2 pr-8">{{ title }}</h2>
+      <h2 id="plantability-title" class="text-xl mb-2 pr-8">{{ title }}</h2>
 
       <p v-if="description" id="plantability-description" class="text-sm opacity-90">
         <i aria-hidden="true" class="pi pi-info-circle mr-2"></i>

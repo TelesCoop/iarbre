@@ -14,10 +14,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-console.log("PlantabilityCardProps", props.data)
-
 const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice * 10)
-
 const handleClose = () => {
   emit("close")
 }

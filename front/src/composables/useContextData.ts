@@ -11,9 +11,7 @@ export function useContextData() {
   const setData = async (featureId: string | number) => {
     if (!featureId) return null
     const stringId = String(featureId)
-    console.log("setData called with ID:", stringId, "DataType:", mapStore.selectedDataType)
     const tile = await getTileDetails(stringId, mapStore.selectedDataType)
-    console.log("Tile response:", tile)
     if (!tile) {
       data.value = {}
       return
