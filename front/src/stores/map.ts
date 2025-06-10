@@ -37,6 +37,7 @@ import {
 } from "@/utils/map"
 import type { PlantabilityTile } from "@/types/plantability"
 import { getTileDetails } from "@/services/tileService"
+import { addCenterControl } from "@/utils/mapControls"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -118,6 +119,11 @@ export const useMapStore = defineStore("map", () => {
       }
     )
   )
+
+  const centerControl = ref({
+    onAdd: (map: Map) => addCenterControl(map),
+    onRemove: () => null
+  })
 
   const removeActivePopup = () => {
     if (activePopup.value) {
@@ -217,6 +223,7 @@ export const useMapStore = defineStore("map", () => {
   const removeControls = (map: Map) => {
     map.removeControl(attributionControl.value)
     map.removeControl(navControl.value)
+    map.removeControl(centerControl.value)
     map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
   }
   const setupControls = (map: Map) => {
@@ -227,6 +234,7 @@ export const useMapStore = defineStore("map", () => {
     })
     map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
+    map.addControl(centerControl.value, MAP_CONTROL_POSITION)
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 

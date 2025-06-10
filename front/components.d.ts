@@ -46,4 +46,7 @@ declare module 'vue' {
     VulnerabilityScorePopupContent: typeof import('./src/components/map/popup/VulnerabilityScorePopupContent.vue')['default']
     VulnerabilityScorePopupItem: typeof import('./src/components/map/popup/VulnerabilityScorePopupItem.vue')['default']
   }
+  export interface ComponentCustomProperties {
+    Tooltip: typeof import('primevue/tooltip')['default']
+  }
 }
