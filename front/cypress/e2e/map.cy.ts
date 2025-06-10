@@ -31,6 +31,7 @@ describe("Map", () => {
   })
   it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
+    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapHasNoPopup()
     cy.mapOpenPopup()
     cy.getBySel("vulnerability-score-popup").should("exist")

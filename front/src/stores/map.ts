@@ -177,7 +177,7 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
-      if (contextData.data) {
+      if (contextData.data.value) {
         contextData.setData(featureId)
       }
     }
