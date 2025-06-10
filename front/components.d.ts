@@ -24,6 +24,7 @@ declare module 'vue' {
     MapContextDataVulnerability: typeof import('./src/components/contextData/MapContextDataVulnerability.vue')['default']
     MapContextHeader: typeof import('./src/components/contextData/MapContextHeader.vue')['default']
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
+    MapFiltersStatus: typeof import('./src/components/map/MapFiltersStatus.vue')['default']
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
