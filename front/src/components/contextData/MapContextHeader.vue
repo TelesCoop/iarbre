@@ -8,9 +8,6 @@ defineProps<MapContextHeaderProps>()
 const emit = defineEmits<{
   close: []
 }>()
-const handleClose = () => {
-  emit("close")
-}
 </script>
 
 <template>
@@ -20,7 +17,7 @@ const handleClose = () => {
         class="h-8 w-8 p-2 md:p-4 mt-4 rounded-full hover:bg-white/20 focus:bg-white/20 transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-white/50 flex items-center justify-center"
         data-cy="close-plantability-context-data"
         type="button"
-        @click="handleClose"
+        @click="emit('close')"
       >
         <i aria-hidden="true" class="pi pi-times text-xl"></i>
       </button>

@@ -15,9 +15,6 @@ const emit = defineEmits<{
 }>()
 
 const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice * 10)
-const handleClose = () => {
-  emit("close")
-}
 </script>
 
 <template>
@@ -30,7 +27,7 @@ const handleClose = () => {
     <map-context-header
       description="Calcul basé sur la pondération de +37 paramètres"
       title="Score de plantabilité"
-      @close="handleClose"
+      @close="emit('close')"
     />
     <div class="p-2 md:p-4 flex flex-col gap-2 md:gap-4">
       <plantability-context-data-score

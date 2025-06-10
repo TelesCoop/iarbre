@@ -58,6 +58,8 @@ describe("Map", () => {
     cy.getBySel("toggle-vulnerability-score-details").should("be.visible").click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Vulnérabilité à la chaleur")
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+    cy.getBySel("map-context-data").should("not.exist")
   })
 })
 
