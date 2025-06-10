@@ -8,7 +8,11 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div v-if="mapStore.contextData.data" class="map-tool-container" data-cy="map-context-data">
+  <div
+    v-if="mapStore.contextData.data"
+    class="map-tool-container--no-padding w-full"
+    data-cy="map-context-data"
+  >
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
       :data="mapStore.contextData.data as PlantabilityData"

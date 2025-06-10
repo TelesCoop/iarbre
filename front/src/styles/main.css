@@ -83,10 +83,21 @@
 }
 
 .map-tool-container {
-  @apply flex items-center gap-4;
+  @apply flex items-center gap-2 sm:gap-4;
   @apply rounded-md;
   @apply bg-white shadow-lg z-10;
   @apply border-primary-500 border-0.5;
+  @apply p-2 md:p-4;
+  @apply max-w-full;
+}
+
+.map-tool-container--no-padding {
+  @apply flex flex-col;
+  @apply rounded-md;
+  @apply bg-white shadow-lg z-10;
+  @apply border-primary-500 border-0.5;
+  @apply p-0;
+  @apply max-w-full;
 }
 
 /* Scroll bars */
