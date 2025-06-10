@@ -11,12 +11,12 @@ describe("Map", () => {
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
-  it.skip("loads with plantability layer", () => {
+  it("loads with plantability layer", () => {
     cy.getBySel("plantability-legend").should("exist")
     cy.getBySel("map-component").should("exist")
     cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it.skip("changes map style", () => {
+  it("changes map style", () => {
     cy.basemapSwitchLayer(MapStyle.SATELLITE)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
@@ -29,7 +29,7 @@ describe("Map", () => {
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
   })
-  it.skip("switches layer", () => {
+  it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapHasNoPopup()
@@ -41,7 +41,7 @@ describe("Map", () => {
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-popup").should("exist")
   })
-  it.skip("shows plantability context data", () => {
+  it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
     cy.getBySel("toggle-plantability-score-details").should("be.visible").click()
@@ -66,7 +66,7 @@ describe("Geocoder", () => {
     cy.visit("/plantability/13/45.07126/5.5543")
   })
 
-  it.skip("search for an address in Lyon and display results", () => {
+  it("search for an address in Lyon and display results", () => {
     cy.get(".maplibregl-ctrl-geocoder--input").should("be.visible").click()
     cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
     cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
