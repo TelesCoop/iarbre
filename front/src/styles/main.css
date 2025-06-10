@@ -90,34 +90,34 @@
 }
 
 /* Scroll bars */
-.custom-scrollbar::-webkit-scrollbar {
+.scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.scrollbar::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.scrollbar::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.scrollbar::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
   background-clip: content-box;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:active {
+.scrollbar::-webkit-scrollbar-thumb:active {
   background: #6b7280;
   background-clip: content-box;
 }
 
 /* Pour Firefox */
-.custom-scrollbar {
+.scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
 }

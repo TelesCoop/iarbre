@@ -158,7 +158,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
     def generate_vulnerability_zones(self):
-        vulnerabilities = Lcz.objects.filter(
+        vulnerabilities = Vulnerability.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if vulnerabilities.count() == 81:
@@ -222,7 +222,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self._create_city_and_iris()
-
         self.city = City.objects.get(code=CITY_CODE)
 
         self._generate_plantability_tiles()
