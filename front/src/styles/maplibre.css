@@ -15,11 +15,12 @@
   font-size: 18px;
   @apply h-6 w-6;
   @apply text-primary-500;
+  @apply rounded-full;
+  @apply transition-colors;
 }
 
 .maplibregl-popup-close-button:hover {
   @apply bg-primary-100;
-  @apply rounded-full;
 }
 
 .maplibregl-ctrl-attrib-inner,
