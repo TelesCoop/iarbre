@@ -10,7 +10,7 @@ const mapStore = useMapStore()
 <template>
   <div
     v-if="mapStore.contextData.data"
-    class="map-tool-container--no-padding w-full"
+    class="map-context-data-container w-full"
     data-cy="map-context-data"
   >
     <map-context-data-plantability

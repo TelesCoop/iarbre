@@ -91,13 +91,46 @@
   @apply max-w-full;
 }
 
-.map-tool-container--no-padding {
+.map-context-data-container {
   @apply flex flex-col;
-  @apply rounded-md;
+  @apply rounded-lg;
   @apply bg-white shadow-lg z-10;
-  @apply border-primary-500 border-0.5;
+  @apply border border-gray-200;
   @apply p-0;
   @apply max-w-full;
+  @apply overflow-hidden;
+  @apply transition-all duration-200;
+  @apply hover:shadow-xl hover:border-gray-300;
+}
+
+.map-context-panel {
+  @apply bg-white w-full max-w-full;
+  @apply transition-all duration-200;
+}
+
+.map-context-panel-content {
+  @apply p-1 sm:p-2 md:p-4;
+  @apply flex flex-col gap-1 sm:gap-2 md:gap-4;
+  @apply text-xs min-h-0;
+}
+
+.context-interactive-item {
+  @apply bg-gray-50 hover:bg-gray-100 focus-within:bg-gray-100;
+  @apply transition-colors duration-200;
+  @apply cursor-pointer;
+}
+
+.context-category-header {
+  @apply bg-gray-50 hover:bg-gray-100 focus:bg-gray-100;
+  @apply transition-colors duration-200;
+  @apply cursor-pointer;
+}
+
+.vulnerability-table-row {
+  @apply grid grid-cols-12 gap-1 sm:gap-3 p-2 sm:p-3 2xl:p-4;
+  @apply hover:bg-primary-100 hover:shadow-sm;
+  @apply transition-all duration-200 items-center;
+  @apply border-l-2 border-transparent hover:border-primary-300;
 }
 
 /* Scroll bars */
