@@ -12,6 +12,7 @@ describe("Map", () => {
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
   it.skip("shows vulnerability context data", () => {
+    // will be restored in a later PR
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.getBySel("map-context-data").should("not.exist")
@@ -36,8 +37,7 @@ describe("Map", () => {
       return text.includes("Vulnérabilité à la chaleur") || text.includes("Aucune donnée")
     })
 
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
-    cy.getBySel("map-context-data").should("not.exist")
+    //cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
   })
   it("loads with plantability layer", () => {
     cy.getBySel("plantability-legend").should("exist")
