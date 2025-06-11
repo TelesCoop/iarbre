@@ -45,6 +45,7 @@ declare module 'vue' {
     VulnerabilityContexDataTableRow: typeof import('./src/components/contextData/vulnerability/VulnerabilityContexDataTableRow.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
     VulnerabilityContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScore.vue')['default']
+    VulnerabilityContextDataScoreBadge: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue')['default']
     VulnerabilityContextDataTable: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTable.vue')['default']
     VulnerabilityContextDataTableHeader: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTableHeader.vue')['default']
     VulnerabilityContextTool: typeof import('./src/components/contextTools/VulnerabilityContextTool.vue')['default']
