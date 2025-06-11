@@ -193,6 +193,14 @@ DATA_FILES = [
 ]
 URL_FILES = [
     {
+        "name": "Quartiers prioritaires de la ville",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.qpv_2024&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
+        "scripts": [""],
+        "layer_name": "ter_territoire.qpv_2024",
+        "factors": ["QPV"],
+        "output_type": "LINESTRING",
+    },
+    {
         "name": "Réseau Fibre",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
         "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
@@ -453,7 +461,7 @@ FACTORS = {
     "Rsx aériens ERDF": -2,
     "PMR": -4,
     "Auto-partage": -2,
-    # "QPV": 1,
+    "QPV": 0,
 }
 
 META_FACTORS_MAPPING = {
