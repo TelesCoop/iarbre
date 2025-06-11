@@ -158,7 +158,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
     def generate_vulnerability_zones(self):
-        vulnerabilities = Tile.objects.filter(
+        vulnerabilities = Vulnerability.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if vulnerabilities.count() == 81:
