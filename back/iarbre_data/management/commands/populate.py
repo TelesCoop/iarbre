@@ -183,6 +183,54 @@ class Command(BaseCommand):
                     (x, y),
                 )
             )
+            details = {
+                "_expo_jour_note_dens_bati_vol": random.choice([0, 2, 4]),
+                "_expo_jour_note_sky_view_factor": random.choice([-2, 0, 4]),
+                "_expo_jour_note_canyon": random.choice([-2, 2, 4]),
+                "_expo_jour_note_vegetation_haute": random.choice([-1, -2]),
+                "_expo_jour_note_vegetation": random.choice([-2, -1, 0, 1]),
+                "_expo_jour_note_eau": random.choice([-2, -1, 1]),
+                "_expo_jour_note_permeabilite": random.choice([-1, 2, 3]),
+                "_expo_jour_note_proxi_foret": random.choice([-1, 0]),
+                "_expo_jour_note_proxi_eau": random.choice([-1, 0]),
+                "_expo_jour_note_effusivite_thermique": random.choice([0, 2, 4]),
+                "_expo_jour_note_albedo": random.choice([-2, 1, 2]),
+                "_expo_nuit_note_dens_bati_vol": random.choice([0, 2, 4]),
+                "_expo_nuit_note_sky_view_factor": random.choice([-2, 0, 4]),
+                "_expo_nuit_note_canyon": random.choice([-2, 2, 4]),
+                "_expo_nuit_note_vegetation": random.choice([-2, -1, 0, 1]),
+                "_expo_nuit_note_eau": random.choice([-2, -1, 1]),
+                "_expo_nuit_note_permeabilite": random.choice([-1, 2, 3]),
+                "_expo_nuit_note_proxi_foret": random.choice([-1, 0]),
+                "_expo_nuit_note_proxi_eau": random.choice([-1, 0]),
+                "_sensi_jour_note_densité_hab": random.choice([0, 2, 4]),
+                "_sensi_jour_note_population_sensible_âge": random.choice([0, 1, 4]),
+                "_sensi_jour_note_densité_occupation_logement": random.choice(
+                    [1, 3, 5]
+                ),
+                "_sensi_jour_note_incofort_habitat": random.choice([0, 2, 6]),
+                "_sensi_jour_note_qualité_air": random.choice([1, 2, 4]),
+                "_sensi_jour_note_part_menage_1ind": random.choice([0, 1, 6]),
+                "_sensi_nuit_note_densité_hab": random.choice([0, 2, 4]),
+                "_sensi_jour_note_densite_emploi": random.choice([0, 2, 3]),
+                "_sensi_nuit_note_population_sensible_âge": random.choice([0, 1, 4]),
+                "_sensi_nuit_note_densité_occupation_logement": random.choice(
+                    [1, 3, 5]
+                ),
+                "_sensi_nuit_note_incofort_habitat": random.choice([0, 2, 6]),
+                "_sensi_nuit_note_qualité_air": random.choice([1, 2, 4]),
+                "_sensi_nuit_note_part_menage_1ind": random.choice([1, 2, 4]),
+                "_capaf_jour_note_menpauv": random.choice([0, 3, 6]),
+                "_capaf_jour_note_offremed": random.choice([0, 2]),
+                "_capaf_jour_note_accesurgences": random.choice([0, 1, 2]),
+                "_capaf_jour_note_proxiespacevert": random.choice([0, 1, 2]),
+                "_capaf_jour_note_vegetation_haute": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_menpauv": random.choice([0, 3, 6]),
+                "_capaf_nuit_note_accesurgences": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_proxiespacevert": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_vegetation_haute": random.choice([0, 1, 2]),
+            }
+
             vul = Vulnerability(
                 geometry=geometry.wkt,
                 vulnerability_index_day=i,
@@ -193,6 +241,7 @@ class Command(BaseCommand):
                 capaf_index_night=(i + j + 4) % 4,
                 sensibilty_index_day=(i + j + 5) % 4,
                 sensibilty_index_night=(i + j + 6) % 4,
+                details=details,
             )
             vul.save()
 
