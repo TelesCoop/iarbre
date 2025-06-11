@@ -1,3 +1,7 @@
+.maplibregl-ctrl-center {
+  @apply flex! justify-center items-center;
+}
+
 .maplibregl-popup {
   @apply z-50;
 }
