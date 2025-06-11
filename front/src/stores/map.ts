@@ -37,7 +37,7 @@ import {
   highlightFeature
 } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
-
+import { addCenterControl } from "@/utils/mapControls"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
