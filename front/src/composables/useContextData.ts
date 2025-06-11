@@ -5,7 +5,7 @@ import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
 
 export function useContextData() {
-  const data = ref<PlantabilityData | VulnerabilityData | {} | null>(null)
+  const data = ref<PlantabilityData | VulnerabilityData | null>(null)
   const mapStore = useMapStore()
 
   const setData = async (featureId: string | number) => {
@@ -13,7 +13,7 @@ export function useContextData() {
     const stringId = String(featureId)
     const tile = await getTileDetails(stringId, mapStore.selectedDataType)
     if (!tile) {
-      data.value = {}
+      data.value = null
       return
     }
 

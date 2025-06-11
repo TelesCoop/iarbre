@@ -41,3 +41,27 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.VULNERABILITY]:
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon</a>'
 }
+
+export enum VulnerabilityCategory {
+  EXPOSITION = "Exposition",
+  CAPACITY_TO_FACE = "Capacité à faire face",
+  SENSIBILITY = "Sensibilité"
+}
+
+export const VulnerabilityCategoryToIcon: Record<VulnerabilityCategory, string> = {
+  [VulnerabilityCategory.EXPOSITION]: "🌡️",
+  [VulnerabilityCategory.CAPACITY_TO_FACE]: "🏥",
+  [VulnerabilityCategory.SENSIBILITY]: "👥"
+}
+
+export const VulnerabilityCategoryToDescription: Record<VulnerabilityCategory, string> = {
+  [VulnerabilityCategory.EXPOSITION]: "Facteurs liés à l'exposition à la chaleur",
+  [VulnerabilityCategory.CAPACITY_TO_FACE]: "Facteurs de capacité d'adaptation",
+  [VulnerabilityCategory.SENSIBILITY]: "Facteurs de sensibilité de la population"
+}
+
+export const VulnerabilityCategoryOrder = [
+  VulnerabilityCategory.EXPOSITION,
+  VulnerabilityCategory.CAPACITY_TO_FACE,
+  VulnerabilityCategory.SENSIBILITY
+]
