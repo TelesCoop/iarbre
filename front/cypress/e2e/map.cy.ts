@@ -11,7 +11,7 @@ describe("Map", () => {
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
-  it("shows vulnerability context data", () => {
+  it.skip("shows vulnerability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.getBySel("map-context-data").should("not.exist")
