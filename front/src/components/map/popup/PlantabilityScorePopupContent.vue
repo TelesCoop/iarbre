@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import ScoreLabel from "@/components/map/ScoreLabel.vue"
+import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import { computed } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types/map"
@@ -15,13 +15,14 @@ const props = defineProps({
 })
 
 const score = computed(() => Number(props.popupData.score))
+const percentage = computed(() => score.value * 10)
 const label = computed(() => getPlantabilityScore(score.value))
 </script>
 
 <template>
   <div data-cy="plantability-score-popup">
     <div class="flex items-center gap-3 w-11/12 mb-2">
-      <score-label :label="`${score}/10`" :score="score" is-selected />
+      <plantability-context-data-score :score="score" :percentage="percentage" />
       <h3 class="font-accent text-sm" data-cy="plantability-score-label">{{ label }}</h3>
     </div>
     <div class="flex w-full items-center justify-center">

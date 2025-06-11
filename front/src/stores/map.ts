@@ -283,7 +283,7 @@ export const useMapStore = defineStore("map", () => {
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })
     mapInstance.once("render", () => {
-      console.info("cypress: map data loaded")
+      console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
       console.info(
         `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
       )
