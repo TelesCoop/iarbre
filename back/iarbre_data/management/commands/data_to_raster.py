@@ -124,6 +124,8 @@ class Command(BaseCommand):
 
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
+            if factor_name == "QPV":
+                continue
             rasterize_data_across_all_cities(
                 factor_name,
                 height,
