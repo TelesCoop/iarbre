@@ -21,7 +21,7 @@ const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice 
   <div
     aria-describedby="plantability-description"
     aria-labelledby="plantability-title"
-    class="max-w-md mx-auto bg-white shadow-lg overflow-hidden rounded-md"
+    class="map-context-panel"
     role="dialog"
   >
     <map-context-header
@@ -29,7 +29,7 @@ const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice 
       title="Score de plantabilité"
       @close="emit('close')"
     />
-    <div class="p-2 md:p-4 flex flex-col gap-2 md:gap-4">
+    <div class="map-context-panel-content">
       <plantability-context-data-score
         :percentage="scorePercentage"
         :score="data.plantabilityNormalizedIndice"
