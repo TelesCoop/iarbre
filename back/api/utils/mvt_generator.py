@@ -74,19 +74,19 @@ class MVTGenerator:
             else:
                 funct = self._generate_tile_for_zoom
             with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
-                future_to_tiles = {
-                    executor.submit(funct, tile, zoom): tile
-                    for tile in tiles
-                    if not ignore_existing
-                    or MVTTile.objects.filter(
+                future_to_tiles = {}
+
+                for tile in tiles:
+                    existing_count = MVTTile.objects.filter(
                         tile_x=tile.x,
                         tile_y=tile.y,
                         zoom_level=zoom,
                         geolevel=self.geolevel,
                         datatype=self.datatype,
                     ).count()
-                    == 0
-                }
+
+                    if (existing_count == 0) or (ignore_existing):
+                        future_to_tiles[executor.submit(funct, tile, zoom)] = tile
                 for future in as_completed(future_to_tiles):
                     future.result()
                     future_to_tiles.pop(future)  # Free RAM after completion
