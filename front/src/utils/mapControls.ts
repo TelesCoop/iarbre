@@ -11,8 +11,11 @@ export const addCenterControl = (map: Map) => {
         </svg>
       `
   button.addEventListener("click", () => {
-    map.setCenter([4.8611, 45.760547])
-    map.setZoom(14)
+    map.flyTo({
+      center: [4.8611, 45.760547],
+      zoom: 14,
+      duration: 1000
+    })
   })
 
   const container = document.createElement("div")
