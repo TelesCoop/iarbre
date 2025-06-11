@@ -31,7 +31,6 @@ describe("Map", () => {
     // The context data should appear (or show an empty message if no data)
     cy.getBySel("map-context-data").should("exist")
 
-    // Check for either vulnerability data or empty message
     cy.getBySel("map-context-data").should("satisfy", ($el) => {
       const text = $el.text()
       return text.includes("Vulnérabilité à la chaleur") || text.includes("Aucune donnée")
