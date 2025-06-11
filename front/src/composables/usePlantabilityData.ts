@@ -1,11 +1,11 @@
-import { computed, type ComputedRef } from "vue"
+import { computed, type ComputedRef, type Ref } from "vue"
 import {
   PlantabilityImpact,
   type PlantabilityLandUse,
   PlantabilityLandUseKeys,
   PlantabilityOccupationLevel,
   PlantabilityMetaCategory,
-  type PlantabilityTile
+  type PlantabilityData
 } from "@/types/plantability"
 import {
   PLANTABILITY_EMOJIS,
@@ -64,7 +64,7 @@ const META_CATEGORY_CONFIG = {
   }
 }
 
-export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
+export function usePlantabilityData(data: Ref<PlantabilityData>) {
   const getOccupationLevel = (value: number): PlantabilityOccupationLevel => {
     if (value < OCCUPATION_THRESHOLDS.LOW) return PlantabilityOccupationLevel.FAIBLE
     if (value < OCCUPATION_THRESHOLDS.MEDIUM) return PlantabilityOccupationLevel.MOYEN
@@ -101,8 +101,7 @@ export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
   }
 
   const factors: ComputedRef<PlantabilityFactor[]> = computed(() => {
-    const data = dataRef()
-    const landUseData = filterSensitiveFactors(data?.details?.top5LandUse)
+    const landUseData = filterSensitiveFactors(data.value?.details?.top5LandUse)
     if (!landUseData) return []
 
     return Object.entries(landUseData).map(([key, value]) => {
@@ -132,7 +131,6 @@ export function usePlantabilityFactors(dataRef: () => PlantabilityTile) {
       }
     })
 
-    // Convertir en array de groupes
     return Array.from(factorsByCategory.entries())
       .map(([category, categoryFactors]) => {
         const config = META_CATEGORY_CONFIG[category] || { label: category, icon: "📊" }

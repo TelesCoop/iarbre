@@ -23,7 +23,7 @@ describe("MapContextData", () => {
   it("should display component when tileDetails and PLANTABILITY datatype are set", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.tileDetails = { plantabilityNormalizedIndice: 8.5 }
+      store.contextData.data = { plantabilityNormalizedIndice: 8.5 }
       store.selectedDataType = DataType.PLANTABILITY
     })
     cy.get('[data-cy="map-context-data"]').should("be.visible")
@@ -31,7 +31,7 @@ describe("MapContextData", () => {
   it("should hide component when tileDetails is null", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.tileDetails = null
+      store.contextData.data = null
       store.selectedDataType = DataType.PLANTABILITY
     })
 
@@ -41,7 +41,7 @@ describe("MapContextData", () => {
   it("should display informations correctly", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.tileDetails = {
+      store.contextData.data = {
         plantabilityNormalizedIndice: 2,
         details: {
           top5LandUse: {

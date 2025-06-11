@@ -20,12 +20,14 @@
   font-weight: 500;
   font-style: normal;
 }
+
 @font-face {
   font-family: "IBM Plex Mono";
   src: url("/fonts/IBMPlexMono-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
 }
+
 @font-face {
   font-family: "IBM Plex Mono";
   src: url("/fonts/IBMPlexMono-Bold.ttf") format("truetype");
@@ -81,41 +83,85 @@
 }
 
 .map-tool-container {
-  @apply flex items-center gap-4;
+  @apply flex items-center gap-2 sm:gap-4;
   @apply rounded-md;
   @apply bg-white shadow-lg z-10;
   @apply border-primary-500 border-0.5;
+  @apply p-2 md:p-4;
+  @apply max-w-full;
+}
+
+.map-context-data-container {
+  @apply flex flex-col;
+  @apply rounded-lg;
+  @apply bg-white shadow-lg z-10;
+  @apply border border-gray-200;
+  @apply p-0;
+  @apply max-w-full;
+  @apply overflow-hidden;
+  @apply transition-all duration-200;
+  @apply hover:shadow-xl hover:border-gray-300;
+}
+
+.map-context-panel {
+  @apply bg-white w-full max-w-full;
+  @apply transition-all duration-200;
+}
+
+.map-context-panel-content {
+  @apply p-1 sm:p-2 md:p-4;
+  @apply flex flex-col gap-1 sm:gap-2 md:gap-4;
+  @apply text-xs min-h-0;
+}
+
+.context-interactive-item {
+  @apply bg-gray-50 hover:bg-gray-100 focus-within:bg-gray-100;
+  @apply transition-colors duration-200;
+  @apply cursor-pointer;
+}
+
+.context-category-header {
+  @apply bg-gray-50 hover:bg-gray-100 focus:bg-gray-100;
+  @apply transition-colors duration-200;
+  @apply cursor-pointer;
+}
+
+.vulnerability-table-row {
+  @apply grid grid-cols-12 gap-1 sm:gap-3 p-2 sm:p-3 2xl:p-4;
+  @apply hover:bg-primary-100 hover:shadow-sm;
+  @apply transition-all duration-200 items-center;
+  @apply border-l-2 border-transparent hover:border-primary-300;
 }
 
 /* Scroll bars */
-.custom-scrollbar::-webkit-scrollbar {
+.scrollbar::-webkit-scrollbar {
   width: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.scrollbar::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.scrollbar::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.scrollbar::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
   background-clip: content-box;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:active {
+.scrollbar::-webkit-scrollbar-thumb:active {
   background: #6b7280;
   background-clip: content-box;
 }
 
 /* Pour Firefox */
-.custom-scrollbar {
+.scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
 }
