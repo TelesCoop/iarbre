@@ -103,13 +103,14 @@ class Command(BaseCommand):
             geolevel=geolevel,
             number_of_thread=4,
         )
-        mvt_generator.generate_tiles(ignore_existing=True)
+        mvt_generator.generate_tiles(ignore_existing=False)
 
     def _generate_lcz_zones(self):
         lczs = Lcz.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if lczs.count() == 16:
+            self.stdout.write("LCZ already computed")
             return
         lczs.delete()
 
@@ -162,8 +163,7 @@ class Command(BaseCommand):
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if vulnerabilities.count() == 81:
-            return
-        vulnerabilities.delete()
+            self.stdout.write("Vulnerability already computed")
 
         (x0, y0) = self.city_center
         city_length = 2500
@@ -231,19 +231,28 @@ class Command(BaseCommand):
                 "_capaf_nuit_note_vegetation_haute": random.choice([0, 1, 2]),
             }
 
-            vul = Vulnerability(
+            vul, created = Vulnerability.objects.update_or_create(
                 geometry=geometry.wkt,
-                vulnerability_index_day=i,
-                vulnerability_index_night=j,
-                expo_index_day=(i + j + 1) % 4,
-                expo_index_night=(i + j + 2) % 4,
-                capaf_index_day=(i + j + 3) % 4,
-                capaf_index_night=(i + j + 4) % 4,
-                sensibilty_index_day=(i + j + 5) % 4,
-                sensibilty_index_night=(i + j + 6) % 4,
-                details=details,
+                defaults={
+                    "vulnerability_index_day": i,
+                    "vulnerability_index_night": j,
+                    "expo_index_day": (i + j + 1) % 4,
+                    "expo_index_night": (i + j + 2) % 4,
+                    "capaf_index_day": (i + j + 3) % 4,
+                    "capaf_index_night": (i + j + 4) % 4,
+                    "sensibilty_index_day": (i + j + 5) % 4,
+                    "sensibilty_index_night": (i + j + 6) % 4,
+                    "details": details,
+                },
             )
-            vul.save()
+            if created:
+                self.stdout.write(
+                    self.style.SUCCESS(f"> Vulnerability created with ID {vul.id}")
+                )
+            else:
+                self.stdout.write(
+                    self.style.SUCCESS(f"> Vulnerability with ID {vul.id} updated")
+                )
 
     def generate_lcz_mvt_tiles(self):
         lczs = Lcz.objects.filter(
