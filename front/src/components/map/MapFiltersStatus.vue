@@ -1,11 +1,34 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
+import { computed } from "vue"
+import { DataType } from "@/utils/enum"
 
 const mapStore = useMapStore()
 
-const handleResetFilters = () => {
-  mapStore.clearAllFilters()
-}
+const nbFilters = computed(() => {
+  return mapStore.filteredValues.length
+})
+
+const filterTypeLabel = computed(() => {
+  const count = nbFilters.value
+  if (count === 0) return ""
+
+  switch (mapStore.selectedDataType) {
+    case DataType.PLANTABILITY:
+      return count === 1 ? "score" : "scores"
+    case DataType.LOCAL_CLIMATE_ZONES:
+      return count === 1 ? "zone" : "zones"
+    case DataType.VULNERABILITY:
+      return count === 1 ? "niveau" : "niveaux"
+    default:
+      return count === 1 ? "filtre" : "filtres"
+  }
+})
+
+const filterSummary = computed(() => {
+  if (nbFilters.value === 0) return ""
+  return `${nbFilters.value} ${filterTypeLabel.value}`
+})
 </script>
 
 <template>
@@ -23,22 +46,22 @@ const handleResetFilters = () => {
       data-cy="map-filters-status"
     >
       <div class="filter-status-content">
-        <div class="filter-status-info">
-          <span class="filter-status-icon">🔍</span>
-          <div class="filter-status-text">
-            <span class="filter-status-title">{{ mapStore.getFiltersSummary() }}</span>
-          </div>
+        <div class="filter-info">
+          <span class="filter-count-label">Filtres actifs :</span>
+          <span class="filter-summary" data-cy="filter-summary">{{ filterSummary }}</span>
         </div>
-
-        <button
-          class="filter-reset-button"
+        <Button
+          :icon-class="'filter-reset-icon'"
           data-cy="reset-filters-button"
+          icon="pi pi-times"
+          label="Effacer"
+          outlined
+          severity="danger"
+          size="small"
           title="Supprimer tous les filtres"
-          @click="handleResetFilters"
+          @click="mapStore.resetFilters()"
         >
-          <span class="filter-reset-icon">✕</span>
-          <span class="filter-reset-text">Restaurer</span>
-        </button>
+        </Button>
       </div>
     </div>
   </Transition>
@@ -64,96 +87,29 @@ const handleResetFilters = () => {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  width: 100%;
 }
 
-.filter-status-info {
+.filter-info {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 1;
 }
 
-.filter-status-icon {
-  font-size: 1.125rem;
-  filter: grayscale(0.2);
-}
-
-.filter-status-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.filter-status-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #047857;
-  font-family: inherit;
-}
-
-.filter-status-summary {
-  font-size: 0.75rem;
-  color: #059669;
-}
-
-.filter-reset-button {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
-  color: #b91c1c;
-  cursor: pointer;
-}
-
-.filter-reset-button:hover {
-  background-color: #fee2e2;
-  color: #991b1b;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
-}
-
-.filter-reset-button:focus {
-  outline: none;
-  box-shadow:
-    0 0 0 2px #fca5a5,
-    0 0 0 4px #ffffff;
-}
-
-.filter-reset-icon {
+.filter-count-label {
   font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.filter-reset-text {
-  font-size: 0.75rem;
   font-weight: 500;
-  font-family: inherit;
+  color: #374151;
 }
 
-.filter-status-indicator {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-}
-
-.filter-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  background-color: #047857;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 9999px;
-  border: 2px solid white;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  animation: pulse-subtle 2s ease-in-out infinite;
+.filter-summary {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
 }
 
 @keyframes pulse-subtle {

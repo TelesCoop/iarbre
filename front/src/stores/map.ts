@@ -59,8 +59,7 @@ export const useMapStore = defineStore("map", () => {
     isFiltered,
     filteredValues,
     toggleFilter,
-    activeFiltersCount,
-    getFiltersSummary
+    activeFiltersCount
   } = useMapFilters()
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
@@ -102,6 +101,11 @@ export const useMapStore = defineStore("map", () => {
 
   const toggleAndApplyFilter = (value: number | string) => {
     toggleFilter(value)
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
+
+  const resetFilters = () => {
+    clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
   const geocoderControl = ref(
@@ -337,9 +341,9 @@ export const useMapStore = defineStore("map", () => {
     hasActiveFilters,
     isFiltered,
     filteredValues,
-    getFiltersSummary,
     toggleFilter,
     activeFiltersCount,
-    toggleAndApplyFilter
+    toggleAndApplyFilter,
+    resetFilters
   }
 })

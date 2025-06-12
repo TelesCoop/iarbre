@@ -23,12 +23,6 @@ export function useMapFilters() {
   const clearAllFilters = () => {
     filteredValues.value = []
   }
-  const getFiltersSummary = () => {
-    if (filteredValues.value.length === 0) {
-      return "Aucun filtre actif"
-    }
-    return `Nombre de filtres : ${filteredValues.value.length}`
-  }
 
   const applyFilters = (
     mapInstancesByIds: Ref<Record<string, Map>>,
@@ -74,7 +68,6 @@ export function useMapFilters() {
     applyFilters,
     hasActiveFilters,
     activeFiltersCount,
-    isFiltered,
-    getFiltersSummary
+    isFiltered
   }
 }
