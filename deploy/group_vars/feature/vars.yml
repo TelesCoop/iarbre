@@ -18,7 +18,7 @@ redirect_hostnames: []
 
 showcase_hostname: "feature-{{ branch_slug[:20] }}-showcase.iarbre.fr"
 showcase_redirect_hostnames: []
-showcase_certificate_hostname: "iarbre.fr-0001"
+showcase_certificate_hostname: iarbre.fr
 
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
