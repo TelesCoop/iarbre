@@ -53,9 +53,7 @@ const handleClick = () => {
   <div
     :class="[
       backgroundClass,
-      isClickable
-        ? 'cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out'
-        : '',
+      isClickable ? 'cursor-pointer score-label' : '',
       isSelected ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
     ]"
     :data-score="clickable ? score : undefined"
@@ -70,22 +68,47 @@ const handleClick = () => {
     <span :class="textClass">{{ label }}</span>
 
     <!-- Indicateur de sélection -->
-    <Transition
-      enter-active-class="transition-all duration-200 ease-out"
-      enter-from-class="opacity-0 scale-0"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition-all duration-150 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-0"
+    <div
+      v-if="isSelected"
+      class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center selection-indicator"
     >
-      <div
-        v-if="isSelected"
-        class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center"
-      >
-        <span class="text-white text-[8px] font-bold">✓</span>
-      </div>
-    </Transition>
+      <span class="text-white text-[8px] font-bold">✓</span>
+    </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.score-label {
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+}
+
+.score-label:hover {
+  animation: hover-scale 0.2s ease-out forwards;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.selection-indicator {
+  animation: selection-appear 0.2s ease-out;
+}
+
+@keyframes hover-scale {
+  to {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes selection-appear {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
