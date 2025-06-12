@@ -240,6 +240,7 @@ BACKUP_HOST = config.getstr("backup.backup_host", None)
 
 BACKUP_COMPRESS = config.getbool("backup.backup_compress", False)
 BACKUP_RECOVER_N_WORKERS = config.getint("backup.backup_recovery_n_workers", 1)
+BACKUP_KEEP_N_DAYS = 365 * 20
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
