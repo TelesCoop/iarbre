@@ -109,7 +109,12 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: () => null
+    onRemove: (map: Map) => {
+      const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
+      if (controlElement) {
+        controlElement.remove()
+      }
+    }
   })
 
   const removeActivePopup = () => {

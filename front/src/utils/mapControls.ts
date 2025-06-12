@@ -19,7 +19,7 @@ export const addCenterControl = (map: Map) => {
   })
 
   const container = document.createElement("div")
-  container.className = "maplibregl-ctrl maplibregl-ctrl-group"
+  container.className = "maplibregl-ctrl maplibregl-ctrl-group maplibregl-ctrl-center-container"
   container.appendChild(button)
   return container
 }
