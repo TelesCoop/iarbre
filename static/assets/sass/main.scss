@@ -311,7 +311,7 @@ hr.full-width {
   line-height: 1.6;
 }
 
-.newsletter-button {
+.regular-button {
   font-family: $accent-font, Arial, sans-serif; /* Police pour le bouton */
   background-color: $darkGreen; /* Couleur de fond du bouton */
   color: $white; /* Couleur du texte */
@@ -347,7 +347,7 @@ hr.full-width {
   color: #32312d;
 }
 
-.newsletter-button:hover {
+.regular-button:hover {
   background-color: $darkGreen; /* Changement de couleur au survol */
   color: $white; /* Maintient le texte blanc */
   text-decoration: none; /* Pas de soulignement au survol */
