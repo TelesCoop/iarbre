@@ -105,6 +105,16 @@ export const IArbrePreset = definePreset(Aura, {
             color: "white",
             hoverColor: "white",
             activeColor: "white"
+          },
+          white: {
+            background: "white",
+            color: "{primary.500}",
+            hoverColor: "{primary.500}",
+            hoverBackground: "{gray.100}",
+            hoverBorderColor: "#BCBCBC",
+            border: {
+              color: "#BCBCBC"
+            }
           }
         }
       }

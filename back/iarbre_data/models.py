@@ -64,6 +64,7 @@ class Tile(models.Model):
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
     details = models.JSONField(null=True, blank=True)
+    meta_factors = models.JSONField(null=True, blank=True)
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.TILE.value

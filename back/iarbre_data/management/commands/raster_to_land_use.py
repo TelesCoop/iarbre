@@ -7,10 +7,12 @@ from typing import List, Iterator
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 import json
+from typing import Dict
 
 from iarbre_data.models import Tile
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.utils.database import log_progress
+from iarbre_data.data_config import META_FACTORS_MAPPING
 
 BATCH_SIZE = 5_000
 
@@ -39,11 +41,36 @@ def get_tile_batches(batch_size: int) -> Iterator[List[Tile]]:
         last_id = list(batch)[-1].id
 
 
+def compute_meta_factors(land_uses: Dict[str, float]) -> Dict[str, float]:
+    """
+    Compute meta-factors for a given set of land uses.
+
+    Parameters:
+    -----------
+    land_uses : Dict[str, float]
+        A dictionary where keys are land use types and values are their corresponding scores.
+
+    Returns:
+    --------
+    Dict[str, float]
+        A dictionary where keys are meta-categories and values are the computed scores for those categories.
+    """
+    meta_factors = {}
+    for meta_category, factors in META_FACTORS_MAPPING.items():
+        total_score = 0
+        for factor in factors:
+            score = land_uses.get(factor, 0)
+            total_score += score
+        meta_factors[meta_category] = round(total_score, 2)
+
+    return meta_factors
+
+
 def process_tile_batch(
     tiles: List[Tile], raster_files: List[str], raster_path: str
 ) -> None:
     """
-    Process a batch of tiles against all raster files and update their details.
+    Process a batch of tiles against all raster files and update their details and meta_factors fields.
 
     Parameters:
     -----------
@@ -84,20 +111,40 @@ def process_tile_batch(
                         if pixel_value > 0:
                             tile_land_use[tile.id][land_use_type] = pixel_value
 
-    log_progress("Top 5 land use.")
+    log_progress("Top 5 land use and meta-factors.")
     tiles_to_update = []
     for tile in tiles:
-        land_uses = tile_land_use[tile.id]
+        land_uses = tile_land_use[tile.id].copy()
+        reseaux_souterrains_total = 0
+        keys_to_remove = []
+        for key in land_uses:
+            if key in META_FACTORS_MAPPING["Réseaux et infrastructures"]:
+                reseaux_souterrains_total += land_uses[key]
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            del land_uses[key]
 
-        top5_land_use = dict(
-            sorted(land_uses.items(), key=lambda item: item[1], reverse=True)[:5]
+        if reseaux_souterrains_total > 0:
+            land_uses["Réseaux et infrastructures"] = reseaux_souterrains_total
+
+        meta_factors = compute_meta_factors(land_uses)
+        sorted_land_uses = sorted(
+            land_uses.items(), key=lambda item: item[1], reverse=True
         )
+        top5_land_use = dict(sorted_land_uses[:5])
+
         details = json.loads(tile.details) if tile.details else {}
         details["top5_land_use"] = top5_land_use
         tile.details = json.dumps(details)
+
+        meta_factors_field = json.loads(tile.meta_factors) if tile.meta_factors else {}
+        meta_factors_field["meta_factors"] = meta_factors
+        tile.meta_factors = json.dumps(meta_factors_field)
         tiles_to_update.append(tile)
     log_progress("Bulk update in the DB.")
-    Tile.objects.bulk_update(tiles_to_update, ["details"])
+    Tile.objects.bulk_update(
+        tiles_to_update, ["details", "meta_factors"], batch_size=1000
+    )
 
 
 def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> None:

@@ -1,3 +1,7 @@
+.maplibregl-ctrl-center {
+  @apply flex! justify-center items-center;
+}
+
 .maplibregl-popup {
   @apply z-50;
 }
@@ -11,10 +15,16 @@
 
 .maplibregl-popup-close-button {
   top: 10px;
-  right: 15px;
+  right: 10px;
   font-size: 18px;
-  width: 20px;
-  @apply text-gray-400;
+  @apply h-6 w-6;
+  @apply text-primary-500;
+  @apply rounded-full;
+  @apply transition-colors;
+}
+
+.maplibregl-popup-close-button:hover {
+  @apply bg-primary-100;
 }
 
 .maplibregl-ctrl-attrib-inner,

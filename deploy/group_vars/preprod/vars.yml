@@ -9,7 +9,7 @@ public_hostnames:
 
 showcase_hostname: "preprod-showcase.iarbre.fr"
 showcase_redirect_hostnames: []
-showcase_certificate_hostname: "iarbre.fr-0001"
+showcase_certificate_hostname: iarbre.fr
 hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
 use_password: true
 
@@ -18,7 +18,7 @@ redirect_hostnames: []
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 # the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
 # in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
-certificate_hostname: iarbre.fr-0001
+certificate_hostname: iarbre.fr
 # only change this variable after having:
 # - run the playbook at least once with the value `false`
 # - run `certbot --nginx` manually on the server

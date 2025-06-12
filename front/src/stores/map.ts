@@ -9,7 +9,6 @@ import {
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
 import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM } from "@/utils/constants"
-import { nextTick } from "vue"
 import {
   GeoLevel,
   DataType,
@@ -18,9 +17,10 @@ import {
   DataTypeToAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
-import type { MapScorePopupData } from "@/types"
+import type { MapScorePopupData } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
+
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
@@ -36,6 +36,8 @@ import {
   getSourceId,
   highlightFeature
 } from "@/utils/map"
+import { useContextData } from "@/composables/useContextData"
+import { addCenterControl } from "@/utils/mapControls"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -47,6 +49,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const contextData = useContextData()
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
@@ -104,6 +107,16 @@ export const useMapStore = defineStore("map", () => {
     )
   )
 
+  const centerControl = ref({
+    onAdd: (map: Map) => addCenterControl(map),
+    onRemove: (map: Map) => {
+      const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
+      if (controlElement) {
+        controlElement.remove()
+      }
+    }
+  })
+
   const removeActivePopup = () => {
     if (activePopup.value) {
       activePopup.value.remove()
@@ -151,19 +164,18 @@ export const useMapStore = defineStore("map", () => {
 
     removeActivePopup()
     popupData.value = {
-      id: extractFeatureProperty(e.features!, datatype, geolevel, "indice"),
+      id: extractFeatureProperty(e.features!, datatype, geolevel, "id"),
       lng: e.lngLat.lng,
       lat: e.lngLat.lat,
-      properties: extractFeatureProperties(e.features!, datatype, geolevel)
+      properties: extractFeatureProperties(e.features!, datatype, geolevel),
+      score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
     }
-    const tempPopup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
-    nextTick(() => {
-      // we wait for DOM to be updated before cloning the popup otherwise the popup is empty
-      // then clone the node popup to avoid being deleted when the setDOMContent function is called
-      const popupContentClone = popupDomElement.value!.cloneNode(true) as HTMLElement
-      activePopup.value = tempPopup.setDOMContent(popupContentClone).addTo(map)
-      const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
-      closeButton.addEventListener("click", () => clearHighlight(map, layerId))
+    const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
+    activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
+    const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
+    closeButton.addEventListener("click", () => {
+      clearHighlight(map, layerId)
+      contextData.removeData()
     })
   }
 
@@ -176,11 +188,13 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
+      if (contextData.data.value) {
+        contextData.setData(featureId)
+      }
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
   }
-
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
@@ -201,6 +215,7 @@ export const useMapStore = defineStore("map", () => {
   const removeControls = (map: Map) => {
     map.removeControl(attributionControl.value)
     map.removeControl(navControl.value)
+    map.removeControl(centerControl.value)
     map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
   }
   const setupControls = (map: Map) => {
@@ -211,6 +226,7 @@ export const useMapStore = defineStore("map", () => {
     })
     map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
+    map.addControl(centerControl.value, MAP_CONTROL_POSITION)
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
@@ -236,7 +252,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
-    removeActivePopup()
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -281,7 +296,7 @@ export const useMapStore = defineStore("map", () => {
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })
     mapInstance.once("render", () => {
-      console.info("cypress: map data loaded")
+      console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
       console.info(
         `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
       )
@@ -297,6 +312,12 @@ export const useMapStore = defineStore("map", () => {
     changeMapStyle,
     changeDataType,
     getMapInstance,
-    vulnerabilityMode
+    vulnerabilityMode,
+    contextData: {
+      data: contextData.data,
+      setData: contextData.setData,
+      removeData: contextData.removeData,
+      toggleContextData: contextData.toggleContextData
+    }
   }
 })

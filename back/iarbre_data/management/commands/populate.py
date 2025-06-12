@@ -103,13 +103,14 @@ class Command(BaseCommand):
             geolevel=geolevel,
             number_of_thread=4,
         )
-        mvt_generator.generate_tiles(ignore_existing=True)
+        mvt_generator.generate_tiles(ignore_existing=False)
 
     def _generate_lcz_zones(self):
         lczs = Lcz.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if lczs.count() == 16:
+            self.stdout.write("LCZ already computed")
             return
         lczs.delete()
 
@@ -158,12 +159,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> Lcz zones computed"))
 
     def generate_vulnerability_zones(self):
-        vulnerabilities = Lcz.objects.filter(
+        vulnerabilities = Vulnerability.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         if vulnerabilities.count() == 81:
-            return
-        vulnerabilities.delete()
+            self.stdout.write("Vulnerability already computed")
 
         (x0, y0) = self.city_center
         city_length = 2500
@@ -183,18 +183,76 @@ class Command(BaseCommand):
                     (x, y),
                 )
             )
-            vul = Vulnerability(
+            details = {
+                "_expo_jour_note_dens_bati_vol": random.choice([0, 2, 4]),
+                "_expo_jour_note_sky_view_factor": random.choice([-2, 0, 4]),
+                "_expo_jour_note_canyon": random.choice([-2, 2, 4]),
+                "_expo_jour_note_vegetation_haute": random.choice([-1, -2]),
+                "_expo_jour_note_vegetation": random.choice([-2, -1, 0, 1]),
+                "_expo_jour_note_eau": random.choice([-2, -1, 1]),
+                "_expo_jour_note_permeabilite": random.choice([-1, 2, 3]),
+                "_expo_jour_note_proxi_foret": random.choice([-1, 0]),
+                "_expo_jour_note_proxi_eau": random.choice([-1, 0]),
+                "_expo_jour_note_effusivite_thermique": random.choice([0, 2, 4]),
+                "_expo_jour_note_albedo": random.choice([-2, 1, 2]),
+                "_expo_nuit_note_dens_bati_vol": random.choice([0, 2, 4]),
+                "_expo_nuit_note_sky_view_factor": random.choice([-2, 0, 4]),
+                "_expo_nuit_note_canyon": random.choice([-2, 2, 4]),
+                "_expo_nuit_note_vegetation": random.choice([-2, -1, 0, 1]),
+                "_expo_nuit_note_eau": random.choice([-2, -1, 1]),
+                "_expo_nuit_note_permeabilite": random.choice([-1, 2, 3]),
+                "_expo_nuit_note_proxi_foret": random.choice([-1, 0]),
+                "_expo_nuit_note_proxi_eau": random.choice([-1, 0]),
+                "_sensi_jour_note_densité_hab": random.choice([0, 2, 4]),
+                "_sensi_jour_note_population_sensible_âge": random.choice([0, 1, 4]),
+                "_sensi_jour_note_densité_occupation_logement": random.choice(
+                    [1, 3, 5]
+                ),
+                "_sensi_jour_note_incofort_habitat": random.choice([0, 2, 6]),
+                "_sensi_jour_note_qualité_air": random.choice([1, 2, 4]),
+                "_sensi_jour_note_part_menage_1ind": random.choice([0, 1, 6]),
+                "_sensi_nuit_note_densité_hab": random.choice([0, 2, 4]),
+                "_sensi_jour_note_densite_emploi": random.choice([0, 2, 3]),
+                "_sensi_nuit_note_population_sensible_âge": random.choice([0, 1, 4]),
+                "_sensi_nuit_note_densité_occupation_logement": random.choice(
+                    [1, 3, 5]
+                ),
+                "_sensi_nuit_note_incofort_habitat": random.choice([0, 2, 6]),
+                "_sensi_nuit_note_qualité_air": random.choice([1, 2, 4]),
+                "_sensi_nuit_note_part_menage_1ind": random.choice([1, 2, 4]),
+                "_capaf_jour_note_menpauv": random.choice([0, 3, 6]),
+                "_capaf_jour_note_offremed": random.choice([0, 2]),
+                "_capaf_jour_note_accesurgences": random.choice([0, 1, 2]),
+                "_capaf_jour_note_proxiespacevert": random.choice([0, 1, 2]),
+                "_capaf_jour_note_vegetation_haute": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_menpauv": random.choice([0, 3, 6]),
+                "_capaf_nuit_note_accesurgences": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_proxiespacevert": random.choice([0, 1, 2]),
+                "_capaf_nuit_note_vegetation_haute": random.choice([0, 1, 2]),
+            }
+
+            vul, created = Vulnerability.objects.update_or_create(
                 geometry=geometry.wkt,
-                vulnerability_index_day=i,
-                vulnerability_index_night=j,
-                expo_index_day=(i + j + 1) % 4,
-                expo_index_night=(i + j + 2) % 4,
-                capaf_index_day=(i + j + 3) % 4,
-                capaf_index_night=(i + j + 4) % 4,
-                sensibilty_index_day=(i + j + 5) % 4,
-                sensibilty_index_night=(i + j + 6) % 4,
+                defaults={
+                    "vulnerability_index_day": i,
+                    "vulnerability_index_night": j,
+                    "expo_index_day": (i + j + 1) % 4,
+                    "expo_index_night": (i + j + 2) % 4,
+                    "capaf_index_day": (i + j + 3) % 4,
+                    "capaf_index_night": (i + j + 4) % 4,
+                    "sensibilty_index_day": (i + j + 5) % 4,
+                    "sensibilty_index_night": (i + j + 6) % 4,
+                    "details": details,
+                },
             )
-            vul.save()
+            if created:
+                self.stdout.write(
+                    self.style.SUCCESS(f"> Vulnerability created with ID {vul.id}")
+                )
+            else:
+                self.stdout.write(
+                    self.style.SUCCESS(f"> Vulnerability with ID {vul.id} updated")
+                )
 
     def generate_lcz_mvt_tiles(self):
         lczs = Lcz.objects.filter(
@@ -222,7 +280,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self._create_city_and_iris()
-
         self.city = City.objects.get(code=CITY_CODE)
 
         self._generate_plantability_tiles()

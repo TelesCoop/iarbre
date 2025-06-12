@@ -1,5 +1,5 @@
 import { DataType, GeoLevel } from "@/utils/enum"
-import { type AddLayerObject, type DataDrivenPropertyValueSpecification, Map } from "maplibre-gl"
+import { Map } from "maplibre-gl"
 
 export const highlightFeature = (map: Map, layerId: string, featureId: string) => {
   map.setPaintProperty(layerId, "fill-outline-color", [

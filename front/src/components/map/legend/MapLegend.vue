@@ -8,7 +8,7 @@ const mapStore = useMapStore()
 <template>
   <div class="map-legend">
     <div class="mb-2 text-sm font-semibold font-accent text-primary-900" data-cy="map-legend-title">
-      {{ DataTypeToLabel[mapStore.selectedDataType!] }}
+      {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
     </div>
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
     <climate-zones-legend v-else-if="mapStore.selectedDataType === DataType.LOCAL_CLIMATE_ZONES" />
@@ -20,10 +20,9 @@ const mapStore = useMapStore()
 @reference "@/styles/main.css";
 .map-legend {
   @apply bg-white;
-  @apply p-3;
-  @apply lg:mt-[30px] lg:mr-[30px];
+  @apply p-2 md:p-4;
+  @apply top-0 right-0 mt-4 mr-2 lg:mr-8;
   @apply absolute z-3;
-  @apply max-lg:bottom-[52px] max-lg:left-[30px] lg:top-0 lg:right-0;
   @apply flex flex-col items-center;
   @apply rounded-md border-primary-500 border-0.5;
   @apply shadow-lg;

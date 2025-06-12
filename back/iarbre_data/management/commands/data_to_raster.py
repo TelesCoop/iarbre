@@ -65,7 +65,7 @@ def rasterize_data_across_all_cities(
     )
     if len(raster[raster > 0]) == 0:
         raise ValueError(f"{factor_name} is producing a blank tif.")
-    log_progress("Summing on 5x5")
+    log_progress("Sum on 5x5")
     kernel = np.ones((grid_size, grid_size))
     coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
         0 : height_out * grid_size : grid_size,
@@ -108,7 +108,10 @@ class Command(BaseCommand):
                 f"Grid size should be a multiple of the resolution: {resolution}m"
             )
         kernel_size = int(kernel_size)
-        all_cities_union = City.objects.aggregate(union=Union("geometry"))["union"]
+        # remove test data
+        all_cities_union = City.objects.exclude(code="38250").aggregate(
+            union=Union("geometry")
+        )["union"]
         minx, miny, maxx, maxy = all_cities_union.extent
 
         width = int((maxx - minx) / resolution)
@@ -121,6 +124,8 @@ class Command(BaseCommand):
 
         for factor_name in FACTORS.keys():
             log_progress(f"Processing {factor_name}")
+            if factor_name == "QPV":
+                continue
             rasterize_data_across_all_cities(
                 factor_name,
                 height,

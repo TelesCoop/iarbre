@@ -2,7 +2,7 @@
 import { ref } from "vue"
 import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
-import type { Feedback } from "@/types"
+import type { Feedback } from "@/types/map"
 import Button from "primevue/button"
 import { useToast } from "primevue"
 
