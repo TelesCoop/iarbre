@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.9.0 (2025-06-08) : Panels d'explicabilité
+## 🔖 0.9.0 (2025-06-12) : Panels d'explicabilité
 
 ### ✨ feat : Panel d'explicabilité pour la plantabilité
 
