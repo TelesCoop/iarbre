@@ -1,142 +1,80 @@
 import { ref, computed, type Ref } from "vue"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
-import type { Map } from "maplibre-gl"
+import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
 
 export function useMapFilters() {
-  const filteredScores = ref<number[]>([])
-  const filteredZones = ref<string[]>([])
-  const filteredVulnerability = ref<number[]>([])
+  const filteredValues = ref<(number | string)[]>([])
 
-  const hasActiveFilters = computed(() => {
-    return (
-      filteredScores.value.length > 0 ||
-      filteredZones.value.length > 0 ||
-      filteredVulnerability.value.length > 0
-    )
-  })
+  const hasActiveFilters = computed(() => filteredValues.value.length > 0)
+  const activeFiltersCount = computed(() => filteredValues.value.length)
 
-  const getActiveFiltersCount = computed(() => {
-    return (
-      filteredScores.value.length + filteredZones.value.length + filteredVulnerability.value.length
-    )
-  })
-
-  const getFilterSummary = computed(() => {
-    const counts = []
-    if (filteredScores.value.length > 0) {
-      counts.push(
-        `${filteredScores.value.length} score${filteredScores.value.length > 1 ? "s" : ""}`
-      )
-    }
-    if (filteredZones.value.length > 0) {
-      counts.push(`${filteredZones.value.length} zone${filteredZones.value.length > 1 ? "s" : ""}`)
-    }
-    if (filteredVulnerability.value.length > 0) {
-      counts.push(
-        `${filteredVulnerability.value.length} niveau${filteredVulnerability.value.length > 1 ? "x" : ""}`
-      )
-    }
-    return counts.join(", ")
-  })
-
-  const toggleScoreFilter = (score: number) => {
-    const index = filteredScores.value.indexOf(score)
+  const toggleFilter = (value: number | string) => {
+    const index = filteredValues.value.indexOf(value)
     if (index > -1) {
-      filteredScores.value.splice(index, 1)
+      filteredValues.value.splice(index, 1)
     } else {
-      filteredScores.value.push(score)
+      filteredValues.value.push(value)
     }
   }
 
-  const toggleZoneFilter = (zone: string) => {
-    const index = filteredZones.value.indexOf(zone)
-    if (index > -1) {
-      filteredZones.value.splice(index, 1)
-    } else {
-      filteredZones.value.push(zone)
-    }
-  }
-
-  const toggleVulnerabilityFilter = (level: number) => {
-    const index = filteredVulnerability.value.indexOf(level)
-    if (index > -1) {
-      filteredVulnerability.value.splice(index, 1)
-    } else {
-      filteredVulnerability.value.push(level)
-    }
-  }
-
-  const isScoreFiltered = (score: number) => {
-    return filteredScores.value.includes(score)
-  }
-
-  const isZoneFiltered = (zone: string) => {
-    return filteredZones.value.includes(zone)
-  }
-
-  const isVulnerabilityFiltered = (level: number) => {
-    return filteredVulnerability.value.includes(level)
-  }
+  const isFiltered = (value: number | string) => filteredValues.value.includes(value)
 
   const clearAllFilters = () => {
-    filteredScores.value.length = 0
-    filteredZones.value.length = 0
-    filteredVulnerability.value.length = 0
+    filteredValues.value = []
+  }
+  const getFiltersSummary = () => {
+    if (filteredValues.value.length === 0) {
+      return "Aucun filtre actif"
+    }
+    return `Nombre de filtres : ${filteredValues.value.length}`
   }
 
   const applyFilters = (
     mapInstancesByIds: Ref<Record<string, Map>>,
     selectedDataType: Ref<DataType>,
-    vulnerabilityMode: Ref<string>
+    vulnerabilityMode?: Ref<string>
   ) => {
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
+    if (filteredValues.value.length === 0) {
+      Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+        const geoLevel = DataTypeToGeolevel[selectedDataType.value!]
+        const layerId = getLayerId(selectedDataType.value!, geoLevel)
+        mapInstance.setFilter(layerId, null)
+      })
+      return
+    }
+
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
       const geoLevel = DataTypeToGeolevel[selectedDataType.value!]
       const layerId = getLayerId(selectedDataType.value!, geoLevel)
 
-      let filterExpression: any = null
+      let filter = null
+      const dataType = selectedDataType.value
 
-      if (selectedDataType.value === DataType.PLANTABILITY && filteredScores.value.length > 0) {
-        filterExpression = ["in", ["floor", ["get", "indice"]], ["literal", filteredScores.value]]
-      } else if (
-        selectedDataType.value === DataType.LOCAL_CLIMATE_ZONES &&
-        filteredZones.value.length > 0
-      ) {
-        filterExpression = ["in", ["get", "indice"], ["literal", filteredZones.value]]
-      } else if (
-        selectedDataType.value === DataType.VULNERABILITY &&
-        filteredVulnerability.value.length > 0
-      ) {
-        filterExpression = [
+      if (dataType === DataType.PLANTABILITY) {
+        filter = ["in", ["floor", ["get", "indice"]], ["literal", filteredValues.value]]
+      } else if (dataType === DataType.LOCAL_CLIMATE_ZONES) {
+        filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
+      } else if (dataType === DataType.VULNERABILITY) {
+        filter = [
           "in",
-          ["get", `indice_${vulnerabilityMode.value}`],
-          ["literal", filteredVulnerability.value]
+          ["get", `indice_${vulnerabilityMode!.value}`],
+          ["literal", filteredValues.value]
         ]
       }
 
-      mapInstance.setFilter(layerId, filterExpression)
+      mapInstance.setFilter(layerId, filter as FilterSpecification)
     })
   }
 
   return {
-    filteredScores,
-    filteredZones,
-    filteredVulnerability,
-
-    toggleScoreFilter,
-    toggleZoneFilter,
-    toggleVulnerabilityFilter,
-
-    isScoreFiltered,
-    isZoneFiltered,
-    isVulnerabilityFiltered,
-
+    filteredValues,
+    toggleFilter,
     clearAllFilters,
     applyFilters,
-
     hasActiveFilters,
-    getActiveFiltersCount,
-    getFilterSummary
+    activeFiltersCount,
+    isFiltered,
+    getFiltersSummary
   }
 }

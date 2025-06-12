@@ -6,13 +6,13 @@
     <div class="flex p-2 flex-wrap justify-center gap-2">
       <div v-for="(zone, index) in zones" :key="index" class="flex items-center gap-1">
         <div
-          :style="{ backgroundColor: getZoneColor(zone) }"
           :class="[
             'w-4 h-7 rounded cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out transform relative',
-            mapStore.isZoneFiltered(zone) ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
+            mapStore.isFiltered(zone) ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
           ]"
           :data-zone="zone"
-          :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isZoneFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
+          :style="{ backgroundColor: getZoneColor(zone) }"
+          :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
           @click="handleZoneClick(zone)"
         >
           <!-- Indicateur de sélection -->
@@ -25,7 +25,7 @@
             leave-to-class="opacity-0 scale-0"
           >
             <div
-              v-if="mapStore.isZoneFiltered(zone)"
+              v-if="mapStore.isFiltered(zone)"
               class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center"
             >
               <span class="text-white text-[8px] font-bold">✓</span>
@@ -47,13 +47,13 @@
         class="flex items-center gap-2"
       >
         <div
-          :style="{ backgroundColor: getZoneColor(zone) }"
           :class="[
             'w-4 h-4 rounded cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out transform relative',
-            mapStore.isZoneFiltered(zone) ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
+            mapStore.isFiltered(zone) ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
           ]"
           :data-zone="zone"
-          :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isZoneFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
+          :style="{ backgroundColor: getZoneColor(zone) }"
+          :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
           @click="handleZoneClick(zone)"
         >
           <!-- Indicateur de sélection -->
@@ -66,7 +66,7 @@
             leave-to-class="opacity-0 scale-0"
           >
             <div
-              v-if="mapStore.isZoneFiltered(zone)"
+              v-if="mapStore.isFiltered(zone)"
               class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center"
             >
               <span class="text-white text-[8px] font-bold">✓</span>
@@ -90,6 +90,6 @@ const mapStore = useMapStore()
 const zones = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"]
 
 const handleZoneClick = (zone: string) => {
-  mapStore.toggleZoneFilter(zone)
+  mapStore.toggleAndApplyFilter(zone)
 }
 </script>

@@ -26,8 +26,7 @@ const handleResetFilters = () => {
         <div class="filter-status-info">
           <span class="filter-status-icon">🔍</span>
           <div class="filter-status-text">
-            <span class="filter-status-title">Filtres actifs</span>
-            <span class="filter-status-summary">{{ mapStore.getFilterSummary }}</span>
+            <span class="filter-status-title">{{ mapStore.getFiltersSummary() }}</span>
           </div>
         </div>
 
@@ -38,12 +37,8 @@ const handleResetFilters = () => {
           @click="handleResetFilters"
         >
           <span class="filter-reset-icon">✕</span>
-          <span class="filter-reset-text">Reset</span>
+          <span class="filter-reset-text">Restaurer</span>
         </button>
-      </div>
-
-      <div class="filter-status-indicator">
-        <span class="filter-count-badge">{{ mapStore.getActiveFiltersCount }}</span>
       </div>
     </div>
   </Transition>

@@ -155,7 +155,7 @@ describe("Legend Filtering", () => {
 
       // Filter status should now be visible
       cy.getBySel("map-filters-status").should("be.visible")
-      cy.getBySel("map-filters-status").should("contain", "Filtres actifs")
+      cy.getBySel("map-filters-status").should("contain", "Nombre de filtres : 1")
       cy.getBySel("map-filters-status").should("contain", "1 score")
 
       // Add another filter

@@ -53,20 +53,14 @@ export const useMapStore = defineStore("map", () => {
   const contextData = useContextData()
 
   const {
-    filteredScores,
-    filteredZones,
-    filteredVulnerability,
-    toggleScoreFilter: _toggleScoreFilter,
-    toggleZoneFilter: _toggleZoneFilter,
-    toggleVulnerabilityFilter: _toggleVulnerabilityFilter,
-    isScoreFiltered,
-    isZoneFiltered,
-    isVulnerabilityFiltered,
-    clearAllFilters: _clearAllFilters,
-    applyFilters: _applyFilters,
+    clearAllFilters,
+    applyFilters,
     hasActiveFilters,
-    getActiveFiltersCount,
-    getFilterSummary
+    isFiltered,
+    filteredValues,
+    toggleFilter,
+    activeFiltersCount,
+    getFiltersSummary
   } = useMapFilters()
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
@@ -81,30 +75,6 @@ export const useMapStore = defineStore("map", () => {
       [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
-
-  const toggleScoreFilter = (score: number) => {
-    _toggleScoreFilter(score)
-    applyFilters()
-  }
-
-  const toggleZoneFilter = (zone: string) => {
-    _toggleZoneFilter(zone)
-    applyFilters()
-  }
-
-  const toggleVulnerabilityFilter = (level: number) => {
-    _toggleVulnerabilityFilter(level)
-    applyFilters()
-  }
-
-  const clearAllFilters = () => {
-    _clearAllFilters()
-    applyFilters()
-  }
-
-  const applyFilters = () => {
-    _applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
-  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -130,6 +100,10 @@ export const useMapStore = defineStore("map", () => {
     })
   )
 
+  const toggleAndApplyFilter = (value: number | string) => {
+    toggleFilter(value)
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
   const geocoderControl = ref(
     new MaplibreGeocoder(
       {
@@ -273,7 +247,7 @@ export const useMapStore = defineStore("map", () => {
     const previousGeoLevel = getGeoLevelFromDataType()
     selectedDataType.value = datatype
     // Clear filters when changing data type
-    _clearAllFilters()
+    clearAllFilters()
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -358,18 +332,14 @@ export const useMapStore = defineStore("map", () => {
       removeData: contextData.removeData,
       toggleContextData: contextData.toggleContextData
     },
-    toggleScoreFilter,
-    toggleZoneFilter,
-    toggleVulnerabilityFilter,
-    isScoreFiltered,
-    isZoneFiltered,
-    isVulnerabilityFiltered,
     clearAllFilters,
-    filteredScores,
-    filteredZones,
-    filteredVulnerability,
+    applyFilters,
     hasActiveFilters,
-    getActiveFiltersCount,
-    getFilterSummary
+    isFiltered,
+    filteredValues,
+    getFiltersSummary,
+    toggleFilter,
+    activeFiltersCount,
+    toggleAndApplyFilter
   }
 })

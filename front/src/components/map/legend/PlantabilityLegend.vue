@@ -4,7 +4,7 @@ import { useMapStore } from "@/stores/map"
 const mapStore = useMapStore()
 
 const handleScoreClick = (score: number) => {
-  mapStore.toggleScoreFilter(score)
+  mapStore.toggleAndApplyFilter(score)
 }
 </script>
 
@@ -18,10 +18,10 @@ const handleScoreClick = (score: number) => {
       <score-label
         v-for="index in [0, 2, 4, 6, 8, 10]"
         :key="index"
+        :clickable="true"
+        :is-selected="mapStore.isFiltered(index)"
         :label="`${index}`"
         :score="index"
-        :clickable="true"
-        :is-selected="mapStore.isScoreFiltered(index)"
         class="flex items-center justify-center"
         @click="handleScoreClick"
       />
