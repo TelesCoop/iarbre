@@ -1,5 +1,25 @@
 # Journal des changements
 
+## 🔖 0.9.0 (2025-06-08) : Panels d'explicabilité
+
+### ✨ feat : Panel d'explicabilité pour la plantabilité
+
+La plantabilité est calculé à partir de l'occupation des sols, décrite par 37 paramètres influant sur la possiblité de planter ou non un arbre. Le panel permet de voir quels sont les paramètres princpaux qui influent sur le score pour chaque carré de 5x5m.
+
+![Context panel plantabilité](assets/images/changelog/v0.9.0/context_plantability.jpg)
+
+&rarr; Commit [117d402](https://github.com/TelesCoop/iarbre/commit/117d4024c073b861cbc95702502da1d4a2b0d3d5)
+&rarr; Commit [a47cafd](https://github.com/TelesCoop/iarbre/commit/a47cafd0d1f2addcb0b4d2584aef4c8bbc4c6a3f)
+
+### ✨ feat : Panel d'explicabilité pour la vulnérabilité à la chaleur
+
+La vulnérabilité à la chaleur est la somme de l'exposition, la sensibilité et la capactié à faire face. Ces facteurs de vulnérabilité sont calculés à partir d'éléments observables sur le terrain qui sont décrits dans ce panel.
+
+![Context panel vulnérabilité à la chaleur](assets/images/changelog/v0.9.0/context_vulnerabilite.jpg)
+
+&rarr; Commit [1ee6f5f](https://github.com/TelesCoop/iarbre/commit/1ee6f5f1bb47ef17cb777bbe99bfd3836a132cbd)
+&rarr; Commit [49a8242](https://github.com/TelesCoop/iarbre/commit/49a8242b41914d45c90082cd2a7971aba0f4e015)
+
 ## 🔖 0.8.0 (2025-06-04) : Ajout d'images satellite et corrections mineures
 
 ### ✨ feat : Images satellite
