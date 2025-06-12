@@ -16,10 +16,8 @@ const filterTypeLabel = computed(() => {
   switch (mapStore.selectedDataType) {
     case DataType.PLANTABILITY:
       return count === 1 ? "score" : "scores"
-    case DataType.LOCAL_CLIMATE_ZONES:
+    case DataType.LOCAL_CLIMATE_ZONES || DataType.VULNERABILITY:
       return count === 1 ? "zone" : "zones"
-    case DataType.VULNERABILITY:
-      return count === 1 ? "niveau" : "niveaux"
     default:
       return count === 1 ? "filtre" : "filtres"
   }
