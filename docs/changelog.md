@@ -20,6 +20,18 @@ La vulnérabilité à la chaleur est la somme de l'exposition, la sensibilité e
 &rarr; Commit [1ee6f5f](https://github.com/TelesCoop/iarbre/commit/1ee6f5f1bb47ef17cb777bbe99bfd3836a132cbd)
 &rarr; Commit [49a8242](https://github.com/TelesCoop/iarbre/commit/49a8242b41914d45c90082cd2a7971aba0f4e015)
 
+### ✨ feat : Bouton pour recentrer la carte
+
+Nous avons ajouté un petit bouton permettant de recentrer la carte et le niveau de zoom.
+
+&rarr; Commit [55babeb](https://github.com/TelesCoop/iarbre/commit/55babeb3f8ebd194a1e4b2f2a822b8262816a778)
+
+### 🛠️ enhance : Corrections de bugs mineurs
+
+- Correction des tests e2e
+- Ajout de liens plus facilement accessibles sur la iarbre.fr
+- Correction DevOps sur les certificats wildcard
+
 ## 🔖 0.8.0 (2025-06-04) : Ajout d'images satellite et corrections mineures
 
 ### ✨ feat : Images satellite
