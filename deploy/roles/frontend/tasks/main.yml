@@ -8,6 +8,13 @@
   notify:
     - reload nginx
 
+- name: Copy dns ovh credentials config
+  template:
+    src: dns-ovh-credentials.ini.j2
+    dest: "/etc/{{ organization_slug }}/{{ project_slug }}/dns-ovh-credentials.ini"
+    owner: root
+    mode: 0600
+
 - name: get latest frontend code
   git:
     repo: "{{ frontend_repo }}"

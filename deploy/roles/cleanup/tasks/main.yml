@@ -29,3 +29,8 @@
   file:
     path: "/usr/local/bin/{{ project_slug }}-ctl"
     state: absent
+
+- name: Remove nginx config
+  file:
+    path: "/etc/nginx/sites-available/{{ project_slug }}"
+    state: absent
