@@ -1,10 +1,16 @@
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
+import { createPinia } from "pinia"
 
 describe("Map legends", () => {
   it("renders correctly plantability legend", () => {
-    cy.mount(PlantabilityLegend, {})
+    const pinia = createPinia()
+    cy.mount(PlantabilityLegend, {
+      global: {
+        plugins: [pinia]
+      }
+    })
     cy.contains(0)
     cy.contains(2)
     cy.contains(4)
@@ -15,9 +21,19 @@ describe("Map legends", () => {
     cy.contains("Non plantable")
   })
   it("renders correctly vulnerability legend", () => {
-    cy.mount(VulnerabilityLegend)
+    const pinia = createPinia()
+    cy.mount(VulnerabilityLegend, {
+      global: {
+        plugins: [pinia]
+      }
+    })
   })
   it("renders correctly lcz legend", () => {
-    cy.mount(ClimateZonesLegend)
+    const pinia = createPinia()
+    cy.mount(ClimateZonesLegend, {
+      global: {
+        plugins: [pinia]
+      }
+    })
   })
 })
