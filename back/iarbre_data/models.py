@@ -183,8 +183,43 @@ class Vulnerability(models.Model):
         }
 
 
+class Cadastre(models.Model):
+    """Cadastre parcels for Lyon metropolitan area."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    parcel_id = models.CharField(max_length=50, unique=True)
+    commune_code = models.CharField(max_length=10)
+    commune_name = models.CharField(max_length=200, null=True, blank=True)
+    section = models.CharField(max_length=10, null=True, blank=True)
+    numero = models.CharField(max_length=20, null=True, blank=True)
+    surface = models.IntegerField(null=True, blank=True)
+
+    city = models.ForeignKey(
+        City, on_delete=models.CASCADE, related_name="cadastres", null=True, blank=True
+    )
+
+    geolevel = GeoLevel.CADASTRE.value
+    datatype = DataType.CADASTRE.value
+
+    def get_layer_properties(self):
+        """Return the properties of the cadastre parcel for the MVT datatype."""
+        return {
+            "id": self.id,
+            "parcel_id": self.parcel_id,
+            "commune_code": self.commune_code,
+            "section": self.section,
+            "numero": self.numero,
+            "surface": self.surface,
+        }
+
+    def __str__(self):
+        return f"Parcel {self.parcel_id} in {self.commune_name}"
+
+
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)
+@receiver(pre_save, sender=Cadastre)
 def before_save(sender, instance, **kwargs):
     create_mapgeometry(instance)

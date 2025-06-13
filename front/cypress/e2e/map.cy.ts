@@ -57,6 +57,18 @@ describe("Map", () => {
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
   })
+  it("changes to cadastre map style", () => {
+    cy.basemapSwitchLayer(MapStyle.CADASTRE)
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+    cy.basemapSwitchLayer(MapStyle.OSM)
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  })
   it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
