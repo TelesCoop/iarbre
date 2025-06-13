@@ -67,7 +67,6 @@ const handleClick = () => {
   >
     <span :class="textClass">{{ label }}</span>
 
-    <!-- Indicateur de sélection -->
     <div
       v-if="isSelected"
       class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center selection-indicator"

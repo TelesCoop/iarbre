@@ -65,7 +65,7 @@ export const useMapStore = defineStore("map", () => {
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     return {
-      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
         "match",
         ["get", `indice_${vulnerabilityMode.value}`],

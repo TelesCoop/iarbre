@@ -15,7 +15,6 @@
           :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
           @click="handleZoneClick(zone)"
         >
-          <!-- Indicateur de sélection -->
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
             enter-from-class="opacity-0 scale-0"
@@ -56,7 +55,6 @@
           :title="`Zone LCZ ${zone} - ${getZoneDesc(zone)} - Cliquez pour ${mapStore.isFiltered(zone) ? 'désactiver' : 'activer'} le filtre`"
           @click="handleZoneClick(zone)"
         >
-          <!-- Indicateur de sélection -->
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
             enter-from-class="opacity-0 scale-0"

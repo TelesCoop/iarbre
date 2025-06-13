@@ -9,23 +9,9 @@ const nbFilters = computed(() => {
   return mapStore.filteredValues.length
 })
 
-const filterTypeLabel = computed(() => {
-  const count = nbFilters.value
-  if (count === 0) return ""
-
-  switch (mapStore.selectedDataType) {
-    case DataType.PLANTABILITY:
-      return count === 1 ? "score" : "scores"
-    case DataType.LOCAL_CLIMATE_ZONES || DataType.VULNERABILITY:
-      return count === 1 ? "zone" : "zones"
-    default:
-      return count === 1 ? "filtre" : "filtres"
-  }
-})
-
 const filterSummary = computed(() => {
   if (nbFilters.value === 0) return ""
-  return `${nbFilters.value} ${filterTypeLabel.value}`
+  return `${nbFilters.value} ${nbFilters.value === 1 ? "score" : "scores"}`
 })
 </script>
 

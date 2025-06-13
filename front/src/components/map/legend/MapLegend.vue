@@ -19,16 +19,11 @@ const mapStore = useMapStore()
 <style scoped>
 @reference "@/styles/main.css";
 .map-legend {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.5rem 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 0.375rem;
-  border: 1px solid #059669;
-  box-shadow:
-    0 10px 15px -3px rgb(0 0 0 / 0.1),
-    0 4px 6px -4px rgb(0 0 0 / 0.1);
-  backdrop-filter: blur(10px);
+  @apply bg-white;
+  @apply p-2 md:p-4;
+  @apply top-0 right-0 mt-4 mr-2 lg:mr-8;
+  @apply flex flex-col items-center;
+  @apply rounded-md border-primary-500 border-0.5;
+  @apply shadow-lg;
 }
 </style>
