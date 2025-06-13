@@ -44,7 +44,6 @@ class Command(BaseCommand):
             try:
                 self.import_cadastre_for_city(city)
             except Exception as e:
-                logger.error(f"Error processing city {city.name}: {e}")
                 print(f"Error processing city {city.name}: {e}")
 
     def import_cadastre_for_city(self, city):
@@ -56,13 +55,11 @@ class Command(BaseCommand):
         response.raise_for_status()
 
         geojson_data = response.json()
-
         if geojson_data.get("type") != "FeatureCollection":
             print(f"No cadastre data found for {city.name}")
             return
 
-        source_srid = self.get_srid_from_geojson(geojson_data)
-        print(f"Detected SRID: {source_srid}")
+        source_srid = 4326
 
         features = geojson_data.get("features", [])
         print(f"Found {len(features)} parcels for {city.name}")
@@ -108,12 +105,3 @@ class Command(BaseCommand):
                 continue
 
         print(f"Successfully imported {parcels_created} parcels for {city.name}")
-
-    def get_srid_from_geojson(self, geojson_data):
-        crs = geojson_data.get("crs")
-        if crs and crs.get("type") == "name":
-            crs_name = crs.get("properties", {}).get("name", "")
-            if "EPSG:" in crs_name:
-                return int(crs_name.split("EPSG:")[-1])
-
-        raise ValueError("Unable to determine SRID from GeoJSON data")
