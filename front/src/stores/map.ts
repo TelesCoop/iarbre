@@ -1,5 +1,6 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
+import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   Popup,
@@ -51,10 +52,20 @@ export const useMapStore = defineStore("map", () => {
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const contextData = useContextData()
 
+  const {
+    clearAllFilters,
+    applyFilters,
+    hasActiveFilters,
+    isFiltered,
+    filteredValues,
+    toggleFilter,
+    activeFiltersCount
+  } = useMapFilters()
+
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     return {
-      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
         "match",
         ["get", `indice_${vulnerabilityMode.value}`],
@@ -88,6 +99,15 @@ export const useMapStore = defineStore("map", () => {
     })
   )
 
+  const toggleAndApplyFilter = (value: number | string) => {
+    toggleFilter(value)
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
+
+  const resetFilters = () => {
+    clearAllFilters()
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
   const geocoderControl = ref(
     new MaplibreGeocoder(
       {
@@ -235,6 +255,8 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     selectedDataType.value = datatype
+    // Clear filters when changing data type
+    clearAllFilters()
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -318,6 +340,15 @@ export const useMapStore = defineStore("map", () => {
       setData: contextData.setData,
       removeData: contextData.removeData,
       toggleContextData: contextData.toggleContextData
-    }
+    },
+    clearAllFilters,
+    applyFilters,
+    hasActiveFilters,
+    isFiltered,
+    filteredValues,
+    toggleFilter,
+    activeFiltersCount,
+    toggleAndApplyFilter,
+    resetFilters
   }
 })
