@@ -79,6 +79,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: flex-end;
   pointer-events: none;
+  @apply gap-2;
 }
 
 .legend-container > * {

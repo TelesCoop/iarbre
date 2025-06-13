@@ -53,7 +53,7 @@ const handleClick = () => {
   <div
     :class="[
       backgroundClass,
-      isClickable ? 'cursor-pointer score-label' : '',
+      isClickable ? 'cursor-pointer hover:scale-110 transition-transform duration-200' : '',
       isSelected ? 'ring-2 ring-primary-900 scale-105 shadow-md' : ''
     ]"
     :data-score="clickable ? score : undefined"
@@ -77,38 +77,4 @@ const handleClick = () => {
   </div>
 </template>
 
-<style scoped>
-.score-label {
-  transition:
-    transform 0.2s ease-out,
-    box-shadow 0.2s ease-out;
-}
-
-.score-label:hover {
-  animation: hover-scale 0.2s ease-out forwards;
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.selection-indicator {
-  animation: selection-appear 0.2s ease-out;
-}
-
-@keyframes hover-scale {
-  to {
-    transform: scale(1.1);
-  }
-}
-
-@keyframes selection-appear {
-  from {
-    opacity: 0;
-    transform: scale(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-</style>
+<style scoped></style>
