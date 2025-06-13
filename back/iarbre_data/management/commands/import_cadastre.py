@@ -1,4 +1,3 @@
-import logging
 import requests
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
@@ -6,8 +5,6 @@ from tqdm import tqdm
 
 from iarbre_data.models import City, Cadastre
 from iarbre_data.settings import TARGET_PROJ
-
-logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -80,6 +77,13 @@ class Command(BaseCommand):
                 if source_srid != TARGET_PROJ:
                     geometry.transform(TARGET_PROJ)
 
+                if not geometry.valid:
+                    try:
+                        geometry = geometry.buffer(0)
+                    except Exception as e:
+                        print("Geometry not valid", e)
+                        continue
+
                 parcel_id = properties.get("id")
                 if not parcel_id:
                     continue
@@ -101,7 +105,7 @@ class Command(BaseCommand):
                 parcels_created += 1
 
             except Exception as e:
-                logger.error(f"Error importing parcel: {e}")
+                print(f"Error importing parcel: {e}")
                 continue
 
         print(f"Successfully imported {parcels_created} parcels for {city.name}")

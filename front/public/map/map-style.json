@@ -10,12 +10,22 @@
         "id": "cadastre-layer",
         "paint": {
           "fill-color": "#92a48d",
-          "fill-opacity": 0.3,
-          "fill-outline-color": "#426A45"
+          "fill-opacity": 0.8,
+          "fill-outline-color": "#000000"
         },
         "source": "cadastre",
         "source-layer": "cadastre--cadastre",
         "type": "fill"
+      },
+      {
+        "id": "cadastre-border",
+        "paint": {
+          "line-color": "#000000",
+          "line-width": 2
+        },
+        "source": "cadastre",
+        "source-layer": "cadastre--cadastre",
+        "type": "line"
       }
     ],
     "sources": {
