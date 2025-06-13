@@ -10,9 +10,11 @@ class GeoLevel(TextChoices):
     CITY = "city", "City"
     IRIS = "iris", "Iris"
     LCZ = "lcz", "LCZ"
+    CADASTRE = "cadastre", "Cadastre"
 
 
 class DataType(TextChoices):
     LCZ = "lcz", "LCZ"
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
+    CADASTRE = "cadastre", "Cadastre"
