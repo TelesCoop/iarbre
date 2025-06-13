@@ -12,7 +12,7 @@ export enum DataType {
 export enum MapStyle {
   OSM = "Plan",
   SATELLITE = "satellite",
-  CADASTRE = "cadastre"
+  CADASTRE = "Cadastre"
 }
 
 export const MapStyleToLabel: Record<MapStyle, string> = {
