@@ -28,6 +28,7 @@ import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
+import { getCadastreInBounds } from "@/services/cadastreService"
 import {
   clearHighlight,
   extractFeatureProperties,
@@ -230,6 +231,36 @@ export const useMapStore = defineStore("map", () => {
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
+  const setupCadastreLayer = async (mapInstance: Map) => {
+    try {
+      const bounds = mapInstance.getBounds()
+      const cadastreData = await getCadastreInBounds(bounds)
+
+      if (mapInstance.getSource("cadastre")) {
+        mapInstance.removeLayer("cadastre-layer")
+        mapInstance.removeSource("cadastre")
+      }
+
+      mapInstance.addSource("cadastre", {
+        type: "geojson",
+        data: cadastreData
+      })
+
+      mapInstance.addLayer({
+        id: "cadastre-layer",
+        type: "line",
+        source: "cadastre",
+        paint: {
+          "line-color": "#426A45",
+          "line-width": 1,
+          "line-opacity": 0.8
+        }
+      })
+    } catch (error) {
+      console.error("Error setting up cadastre layer:", error)
+    }
+  }
+
   const changeDataType = (datatype: DataType) => {
     removeActivePopup()
     const previousDataType = selectedDataType.value!
@@ -256,18 +287,35 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-      // Set new style based on mapstyle
-      // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
-      // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
-      const newStyle =
-        mapstyle === MapStyle.SATELLITE
-          ? (mapStyles.SATELLITE as maplibregl.StyleSpecification)
-          : (mapStyles.OSM as maplibregl.StyleSpecification)
-      for (const layer of newStyle.layers) {
-        layer.minzoom = MIN_ZOOM
-        layer.maxzoom = MAX_ZOOM
+
+      if (mapstyle === MapStyle.CADASTRE) {
+        const baseStyle = mapStyles.OSM as maplibregl.StyleSpecification
+        for (const layer of baseStyle.layers) {
+          layer.minzoom = MIN_ZOOM
+          layer.maxzoom = MAX_ZOOM
+        }
+        mapInstance.setStyle(baseStyle)
+        mapInstance.once("style.load", () => {
+          setupCadastreLayer(mapInstance)
+        })
+      } else if (mapstyle === MapStyle.SATELLITE) {
+        // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+        // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
+        const newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
+        for (const layer of newStyle.layers) {
+          layer.minzoom = MIN_ZOOM
+          layer.maxzoom = MAX_ZOOM
+        }
+        mapInstance.setStyle(newStyle)
+      } else if (mapstyle === MapStyle.OSM) {
+        const newStyle = mapStyles.OSM as maplibregl.StyleSpecification
+        for (const layer of newStyle.layers) {
+          layer.minzoom = MIN_ZOOM
+          layer.maxzoom = MAX_ZOOM
+        }
+        mapInstance.setStyle(newStyle)
       }
-      mapInstance.setStyle(newStyle)
+
       mapInstance.fire("style.load")
     })
   }
