@@ -143,12 +143,14 @@ export const useMapStore = defineStore("map", () => {
         }
       })
 
-      // Add selected layers with blending
+      // Add selected layers with adaptive opacity
       const selectedTypesArray = Array.from(selectedDataTypes.value)
+      const layerCount = selectedTypesArray.length
+
       selectedTypesArray.forEach((dataType, index) => {
         const geoLevel = getGeoLevelFromDataType(dataType)
         setupSource(mapInstance, dataType, geoLevel)
-        setupTileWithBlending(mapInstance, dataType, geoLevel, index > 0)
+        setupTileWithBlending(mapInstance, dataType, geoLevel, index, layerCount)
       })
 
       // MapComponent is listening to moveend event
@@ -205,9 +207,13 @@ export const useMapStore = defineStore("map", () => {
     datatype: DataType,
     geolevel: GeoLevel,
     sourceId: string,
-    useBlending = false
+    layerIndex: number,
+    totalLayers: number
   ): AddLayerObject => {
     const layerId = getLayerId(datatype, geolevel)
+
+    const opacity = totalLayers > 1 ? (layerIndex === 0 ? 0.6 : 0.4 / layerIndex) : 0.6
+
     const layer: AddLayerObject = {
       id: layerId,
       type: "fill",
@@ -219,7 +225,7 @@ export const useMapStore = defineStore("map", () => {
           datatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
         "fill-outline-color": "#00000000",
-        "fill-opacity": useBlending ? 0.6 : 0.5
+        "fill-opacity": opacity
       }
     }
 
@@ -275,7 +281,7 @@ export const useMapStore = defineStore("map", () => {
   }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
-    const layer = createMapLayer(datatype, geolevel, sourceId)
+    const layer = createMapLayer(datatype, geolevel, sourceId, 0, 1)
     map.addLayer(layer)
     setupClickEventOnTile(map, datatype, geolevel)
   }
@@ -284,10 +290,11 @@ export const useMapStore = defineStore("map", () => {
     map: Map,
     datatype: DataType,
     geolevel: GeoLevel,
-    useBlending = false
+    layerIndex: number,
+    totalLayers: number
   ) => {
     const sourceId = getSourceId(datatype, geolevel)
-    const layer = createMapLayer(datatype, geolevel, sourceId, useBlending)
+    const layer = createMapLayer(datatype, geolevel, sourceId, layerIndex, totalLayers)
     map.addLayer(layer)
     setupClickEventOnTile(map, datatype, geolevel)
   }
