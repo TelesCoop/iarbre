@@ -251,36 +251,35 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const setLayerZoomLimits = (style: maplibregl.StyleSpecification) => {
+    for (const layer of style.layers) {
+      layer.minzoom = MIN_ZOOM
+      layer.maxzoom = MAX_ZOOM
+    }
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
 
+      let newStyle: maplibregl.StyleSpecification
+
       if (mapstyle === MapStyle.CADASTRE) {
-        const newStyle = JSON.parse(
+        newStyle = JSON.parse(
           JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", FULL_BASE_API_URL)
         ) as maplibregl.StyleSpecification
-        for (const layer of newStyle.layers) {
-          layer.minzoom = MIN_ZOOM
-          layer.maxzoom = MAX_ZOOM
-        }
-        mapInstance.setStyle(newStyle)
       } else if (mapstyle === MapStyle.SATELLITE) {
         // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
         // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
-        const newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
-        for (const layer of newStyle.layers) {
-          layer.minzoom = MIN_ZOOM
-          layer.maxzoom = MAX_ZOOM
-        }
-        mapInstance.setStyle(newStyle)
+        newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.OSM) {
-        const newStyle = mapStyles.OSM as maplibregl.StyleSpecification
-        for (const layer of newStyle.layers) {
-          layer.minzoom = MIN_ZOOM
-          layer.maxzoom = MAX_ZOOM
-        }
+        newStyle = mapStyles.OSM as maplibregl.StyleSpecification
+      }
+
+      if (newStyle!) {
+        setLayerZoomLimits(newStyle)
         mapInstance.setStyle(newStyle)
       }
 

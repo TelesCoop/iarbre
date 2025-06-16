@@ -95,8 +95,8 @@ class Command(BaseCommand):
                 Cadastre.objects.create(
                     geometry=geometry,
                     parcel_id=parcel_id,
-                    commune_code=properties.get("commune", city.code),
-                    commune_name=city.name,
+                    city_code=properties.get("commune", city.code),
+                    city_name=city.name,
                     section=properties.get("section"),
                     numero=properties.get("numero"),
                     surface=properties.get("contenance"),

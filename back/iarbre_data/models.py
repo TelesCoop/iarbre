@@ -189,8 +189,8 @@ class Cadastre(models.Model):
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     parcel_id = models.CharField(max_length=50, unique=True)
-    commune_code = models.CharField(max_length=10)
-    commune_name = models.CharField(max_length=200, null=True, blank=True)
+    city_code = models.CharField(max_length=10)
+    city_name = models.CharField(max_length=200, null=True, blank=True)
     section = models.CharField(max_length=10, null=True, blank=True)
     numero = models.CharField(max_length=20, null=True, blank=True)
     surface = models.IntegerField(null=True, blank=True)
@@ -207,7 +207,7 @@ class Cadastre(models.Model):
         return {
             "id": self.id,
             "parcel_id": self.parcel_id,
-            "commune_code": self.commune_code,
+            "city_code": self.city_code,
             "section": self.section,
             "numero": self.numero,
             "surface": self.surface,
