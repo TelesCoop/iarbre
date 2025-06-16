@@ -47,7 +47,10 @@ export const useMapStore = defineStore("map", () => {
   const popupDomElement = ref<HTMLElement | null>(null)
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const activePopup = ref<Popup | null>(null)
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const selectedDataTypes = ref<Set<DataType>>(new Set([DataType.PLANTABILITY]))
+  const selectedDataType = computed(
+    () => Array.from(selectedDataTypes.value)[0] || DataType.PLANTABILITY
+  )
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const contextData = useContextData()
@@ -81,8 +84,8 @@ export const useMapStore = defineStore("map", () => {
     if (!selectedDataType.value) return sourceCode
     return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
   }
-  const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value!]
+  const getGeoLevelFromDataType = (dataType?: DataType) => {
+    return DataTypeToGeolevel[dataType || selectedDataType.value!]
   }
   const attributionControl = ref(
     new AttributionControl({
@@ -102,6 +105,55 @@ export const useMapStore = defineStore("map", () => {
   const toggleAndApplyFilter = (value: number | string) => {
     toggleFilter(value)
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
+
+  const toggleDataType = (dataType: DataType) => {
+    const newSelectedTypes = new Set(selectedDataTypes.value)
+    if (newSelectedTypes.has(dataType)) {
+      newSelectedTypes.delete(dataType)
+      // Ensure at least one data type is selected
+      if (newSelectedTypes.size === 0) {
+        newSelectedTypes.add(DataType.PLANTABILITY)
+      }
+    } else {
+      newSelectedTypes.add(dataType)
+    }
+    selectedDataTypes.value = newSelectedTypes
+    updateMapLayers()
+  }
+
+  const updateMapLayers = () => {
+    removeActivePopup()
+    clearAllFilters()
+
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      // Remove all existing data layers
+      Object.values(DataType).forEach((dataType) => {
+        const geoLevel = getGeoLevelFromDataType(dataType)
+        const layerId = getLayerId(dataType, geoLevel)
+        const sourceId = getSourceId(dataType, geoLevel)
+
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
+      })
+
+      // Add selected layers with blending
+      const selectedTypesArray = Array.from(selectedDataTypes.value)
+      selectedTypesArray.forEach((dataType, index) => {
+        const geoLevel = getGeoLevelFromDataType(dataType)
+        setupSource(mapInstance, dataType, geoLevel)
+        setupTileWithBlending(mapInstance, dataType, geoLevel, index > 0)
+      })
+
+      // MapComponent is listening to moveend event
+      mapInstance.fire("moveend")
+    })
   }
 
   const resetFilters = () => {
@@ -152,10 +204,11 @@ export const useMapStore = defineStore("map", () => {
   const createMapLayer = (
     datatype: DataType,
     geolevel: GeoLevel,
-    sourceId: string
+    sourceId: string,
+    useBlending = false
   ): AddLayerObject => {
     const layerId = getLayerId(datatype, geolevel)
-    return {
+    const layer: AddLayerObject = {
       id: layerId,
       type: "fill",
       source: sourceId,
@@ -166,9 +219,11 @@ export const useMapStore = defineStore("map", () => {
           datatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
         "fill-outline-color": "#00000000",
-        "fill-opacity": 0.5
+        "fill-opacity": useBlending ? 0.6 : 0.5
       }
     }
+
+    return layer
   }
 
   const createPopup = (
@@ -205,11 +260,14 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
     const clickHandler = (e: any) => {
-      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
-      highlightFeature(map, layerId, featureId)
-      createPopup(e, map, datatype, geolevel, layerId)
-      if (contextData.data.value) {
-        contextData.setData(featureId)
+      // Only show popup and context data when a single layer is selected
+      if (selectedDataTypes.value.size === 1) {
+        const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+        highlightFeature(map, layerId, featureId)
+        createPopup(e, map, datatype, geolevel, layerId)
+        if (contextData.data.value) {
+          contextData.setData(featureId)
+        }
       }
     }
     map.on("click", layerId, clickHandler)
@@ -218,6 +276,18 @@ export const useMapStore = defineStore("map", () => {
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
+    map.addLayer(layer)
+    setupClickEventOnTile(map, datatype, geolevel)
+  }
+
+  const setupTileWithBlending = (
+    map: Map,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    useBlending = false
+  ) => {
+    const sourceId = getSourceId(datatype, geolevel)
+    const layer = createMapLayer(datatype, geolevel, sourceId, useBlending)
     map.addLayer(layer)
     setupClickEventOnTile(map, datatype, geolevel)
   }
@@ -251,26 +321,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeDataType = (datatype: DataType) => {
-    removeActivePopup()
-    const previousDataType = selectedDataType.value!
-    const previousGeoLevel = getGeoLevelFromDataType()
-    selectedDataType.value = datatype
-    // Clear filters when changing data type
-    clearAllFilters()
-    // Update all map instances with the new layer
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
-      // remove existing layers and sources
-      if (previousDataType !== null) {
-        mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
-        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
-      }
-      removeControls(mapInstance)
-      initTiles(mapInstance)
-      setupControls(mapInstance)
-      // MapComponent is listening to moveend event
-      mapInstance.fire("moveend")
-    })
+    selectedDataTypes.value = new Set([datatype])
+    updateMapLayers()
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
@@ -301,7 +353,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
-    selectedDataType.value = initialDatatype
+    selectedDataTypes.value = new Set([initialDatatype])
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
@@ -330,9 +382,11 @@ export const useMapStore = defineStore("map", () => {
     initMap,
     popupData,
     selectedDataType,
+    selectedDataTypes,
     selectedMapStyle,
     changeMapStyle,
     changeDataType,
+    toggleDataType,
     getMapInstance,
     vulnerabilityMode,
     contextData: {

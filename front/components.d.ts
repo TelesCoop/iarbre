@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
+    Checkbox: typeof import('primevue/checkbox')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
