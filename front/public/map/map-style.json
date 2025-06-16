@@ -10,9 +10,9 @@
       {
         "id": "cadastre-layer",
         "paint": {
-          "fill-color": "#92a48d",
-          "fill-opacity": 0.9,
-          "fill-outline-color": "#000000"
+          "fill-color": "#ffffff",
+          "fill-opacity": 0,
+          "fill-outline-color": "#ffffff"
         },
         "source": "cadastre",
         "source-layer": "cadastre--cadastre",
