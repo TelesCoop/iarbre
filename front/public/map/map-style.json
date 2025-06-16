@@ -1,4 +1,52 @@
 {
+  "CADASTRE": {
+    "layers": [
+      {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      },
+      {
+        "id": "cadastre-layer",
+        "paint": {
+          "fill-color": "#92a48d",
+          "fill-opacity": 0.8,
+          "fill-outline-color": "#000000"
+        },
+        "source": "cadastre",
+        "source-layer": "cadastre--cadastre",
+        "type": "fill"
+      },
+      {
+        "id": "cadastre-border",
+        "paint": {
+          "line-color": "#000000",
+          "line-width": 2
+        },
+        "source": "cadastre",
+        "source-layer": "cadastre--cadastre",
+        "type": "line"
+      }
+    ],
+    "sources": {
+      "cadastre": {
+        "attribution": "Cadastre &copy; Etalab",
+        "tiles": [
+          "{API_BASE_URL}/tiles/cadastre/cadastre/{z}/{x}/{y}.mvt"
+        ],
+        "type": "vector"
+      },
+      "osm": {
+        "attribution": "&copy; OpenStreetMap Contributors",
+        "tileSize": 256,
+        "tiles": [
+          "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  },
   "OSM": {
     "layers": [
       {

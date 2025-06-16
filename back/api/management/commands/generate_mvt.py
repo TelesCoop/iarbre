@@ -12,7 +12,7 @@ from django.db.models import QuerySet, Model
 
 from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, Vulnerability, MVTTile
+from iarbre_data.models import Tile, Lcz, Vulnerability, Cadastre, MVTTile
 
 
 class Command(BaseCommand):
@@ -93,8 +93,16 @@ class Command(BaseCommand):
             geolevel == GeoLevel.LCZ.value and datatype == DataType.VULNERABILITY.value
         ):
             mdl = Vulnerability
+        elif (
+            geolevel == GeoLevel.CADASTRE.value and datatype == DataType.CADASTRE.value
+        ):
+            mdl = Cadastre
         else:
-            supported_levels = [GeoLevel.TILE.value, GeoLevel.LCZ.value]
+            supported_levels = [
+                GeoLevel.TILE.value,
+                GeoLevel.LCZ.value,
+                GeoLevel.CADASTRE.value,
+            ]
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
             )
