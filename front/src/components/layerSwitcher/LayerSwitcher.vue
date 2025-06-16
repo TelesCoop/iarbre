@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
-import { computed } from "vue"
 
 const mapStore = useMapStore()
 
