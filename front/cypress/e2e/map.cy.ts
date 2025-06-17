@@ -16,19 +16,12 @@ describe("Map", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.getBySel("map-context-data").should("not.exist")
-
-    // Wait for the vulnerability layer to be fully loaded
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
-
     cy.mapOpenPopup()
-
     // Check if the popup actually contains vulnerability data before trying to open details
     cy.getBySel("vulnerability-score-popup").should("exist")
-
     // Check if the details button exists and is clickable
     cy.getBySel("toggle-vulnerability-score-details").should("be.visible")
     cy.getBySel("toggle-vulnerability-score-details").click()
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
 
     // The context data should appear (or show an empty message if no data)
     cy.getBySel("map-context-data").should("exist")
@@ -72,7 +65,6 @@ describe("Map", () => {
   })
   it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapHasNoPopup()
     cy.mapOpenPopup()
     cy.getBySel("vulnerability-score-popup").should("exist")
@@ -85,7 +77,6 @@ describe("Map", () => {
   it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("toggle-plantability-score-details").should("be.visible").click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Score de plantabilité")
@@ -95,10 +86,8 @@ describe("Map", () => {
 
   it("shows climate zone context data", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("toggle-climate-zone-details").should("be.visible").click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Zones climatiques locales")
