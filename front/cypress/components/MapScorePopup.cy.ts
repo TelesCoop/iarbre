@@ -27,9 +27,9 @@ describe("MapScorePopup", () => {
     cy.contains(PlantabilityScore.FAVORED)
   })
 
-  it(`renders correctly when the selected map data type is ${DataType.LOCAL_CLIMATE_ZONES}`, () => {
+  it(`renders correctly when the selected map data type is ${DataType.CLIMATE_ZONE}`, () => {
     const mapStore = useMapStore()
-    mapStore.selectedDataType = DataType.LOCAL_CLIMATE_ZONES
+    mapStore.selectedDataType = DataType.CLIMATE_ZONE
     mapStore.popupData = {
       score: "E",
       lat: 12.34,

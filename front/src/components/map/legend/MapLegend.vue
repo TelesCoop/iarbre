@@ -11,7 +11,7 @@ const mapStore = useMapStore()
       {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
     </div>
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
-    <climate-zones-legend v-else-if="mapStore.selectedDataType === DataType.LOCAL_CLIMATE_ZONES" />
+    <climate-zone-legend v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE" />
     <vulnerability-legend v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY" />
   </div>
 </template>
@@ -24,6 +24,5 @@ const mapStore = useMapStore()
   @apply top-0 right-0;
   @apply flex flex-col items-center;
   @apply rounded-md border-primary-500 border-0.5;
-  @apply shadow-lg;
 }
 </style>

@@ -24,7 +24,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
-import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
+import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
@@ -71,7 +71,7 @@ export const useMapStore = defineStore("map", () => {
         ["get", `indice_${vulnerabilityMode.value}`],
         ...VULNERABILITY_COLOR_MAP
       ],
-      [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
 

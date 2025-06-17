@@ -5,7 +5,7 @@
   >
     <div class="flex p-2 flex-wrap justify-center gap-2">
       <div v-for="(zone, index) in zones" :key="index" class="flex items-center gap-1">
-        <ClimateZonesScoreLabel :zone="zone" size="compact" @click="handleZoneClick(zone)" />
+        <ClimateZoneScoreLabel :zone="zone" size="compact" @click="handleZoneClick(zone)" />
       </div>
     </div>
     <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
@@ -15,7 +15,7 @@
         :key="'vertical-' + index"
         class="flex items-center gap-2"
       >
-        <ClimateZonesScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
+        <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
         <span class="text-[0.9rem]">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
       </div>
     </div>
@@ -24,9 +24,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue"
-import { getZoneDesc } from "@/utils/climateZones"
+import { getZoneDesc } from "@/utils/climateZone"
 import { useMapStore } from "@/stores/map"
-import ClimateZonesScoreLabel from "@/components/map/score/ClimateZonesScoreLabel.vue"
+import ClimateZoneScoreLabel from "@/components/map/score/ClimateZoneScoreLabel.vue"
 import ExpandToggle from "../../toggle/ExpandToggle.vue"
 
 const isExpanded = ref(false)

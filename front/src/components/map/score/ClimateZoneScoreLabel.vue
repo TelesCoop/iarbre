@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import { getZoneDesc, getZoneColor } from "@/utils/climateZones"
+import { getZoneDesc, getZoneColor } from "@/utils/climateZone"
 import { useMapStore } from "@/stores/map"
 import FilterIndicator from "../legend/FilterIndicator.vue"
 

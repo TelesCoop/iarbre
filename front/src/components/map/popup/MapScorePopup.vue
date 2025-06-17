@@ -35,7 +35,7 @@ const copy = (text: string) => {
         :popup-data="popupData"
       />
       <climate-zone-score-popup
-        v-else-if="mapStore.selectedDataType === DataType.LOCAL_CLIMATE_ZONES"
+        v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
         :popup-data="popupData"
       />
       <vulnerability-score-popup

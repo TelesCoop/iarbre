@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
+import type { ClimateData } from "@/types/climate"
 
 const mapStore = useMapStore()
 </script>
@@ -23,12 +24,10 @@ const mapStore = useMapStore()
       :data="mapStore.contextData.data as VulnerabilityData"
       @close="() => mapStore.contextData.removeData()"
     />
+    <map-context-data-climate-zone
+      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+      :data="mapStore.contextData.data as ClimateData"
+      @close="() => mapStore.contextData.removeData()"
+    />
   </div>
 </template>
-
-<style>
-@reference "@/styles/main.css";
-.context-map-data {
-  @apply flex flex-col gap-2 w-full;
-}
-</style>
