@@ -10,8 +10,29 @@
 <!-- Section de contenu avec mise en page à deux colonnes -->
 <section class="content">
   <div class="split-section">
-    <div class="left">
-      <img src="/images/logo.png" alt="Logo" />
+    <div class="left flex flex-col mockup-container">
+      <a
+        href="https://carte.iarbre.fr/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        <img
+          alt="Mockup du projet IA.rbre"
+          class="mockup-image"
+          src="/images/mockup.png"
+        />
+      </a>
+
+      <div class="flex justify-center" style="margin-bottom: 2rem">
+        <a
+          class="regular-button"
+          href="https://carte.iarbre.fr/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          🌳 Testez l'outil à Lyon ➜
+        </a>
+      </div>
     </div>
     <div class="right">
       <div class="text">
@@ -21,26 +42,10 @@
   </div>
 </section>
 
-<section class="image-fullwidth">
-  <div class="flex justify-center">
-    <a
-      href="https://carte.iarbre.fr/"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="regular-button"
-    >
-      Testez l'outil sur la Métropole de Lyon ➜
-    </a>
-  </div>
-  <a href="https://carte.iarbre.fr/" target="_blank" rel="noopener noreferrer">
-    <img src="/images/mockup.jpg" alt="Mockup du projet IA.rbre" />
-  </a>
-</section>
-
 <section class="content">
   <div class="split-section reversed-section">
     <div class="left">
-      <img src="/images/telescoop.png" alt="Logo TelesCoop" />
+      <img alt="Logo TelesCoop" src="/images/telescoop.png" />
     </div>
     <div class="right">
       <div class="text">
@@ -56,9 +61,9 @@
   <div class="split-section reversed-section">
     <div class="left">
       <img
-        src="/images/part.png"
         alt="Logo partenaires"
         class="logo-partners"
+        src="/images/part.png"
       />
     </div>
     <div class="right">
@@ -95,17 +100,18 @@
         style="display: none"
       />
       <div class="flex flex-col">
-        <div
-          class="h-captcha"
-          data-sitekey="{{ .Site.Params.newsletter.captchaKey }}"
-          data-theme="light"
-        ></div>
-        <script async="" defer="" src="https://hcaptcha.com/1/api.js"></script>
+        <!--<div
+                        class="h-captcha"
+                        data-sitekey="{{ .Site.Params.newsletter.captchaKey }}"
+                        data-theme="light"
+                ></div>
+                <script async="" defer="" src="https://hcaptcha.com/1/api.js"></script>-->
       </div>
-      <div class="flex justify-center">
+
+      <div>
         <input
-          type="submit"
           class="regular-button"
+          type="submit"
           value="Je m'inscris par e-mail"
         />
       </div>
@@ -132,8 +138,8 @@
     {{ range $member := .Site.Data.team }}
     <div class="team-member">
       <img
-        src="/images/{{ $member.portrait }}"
         alt="Photo de {{ $member.name }}"
+        src="/images/{{ $member.portrait }}"
       />
       <h3>{{ $member.name }}</h3>
       <p class="title">{{ $member.title}}</p>
@@ -155,7 +161,7 @@
       </p>
     </div>
     <div class="bandeau-logo">
-      <img src="/images/2030.png" alt="Logo 2030" />
+      <img alt="Logo 2030" src="/images/2030.png" />
     </div>
   </div>
 </section>
@@ -163,7 +169,7 @@
 <section class="bandeau-cdc">
   <div class="bandeau-content">
     <div class="bandeau-logo">
-      <img src="/images/cdc.png" alt="Logo Caisse des Dépôts" />
+      <img alt="Logo Caisse des Dépôts" src="/images/cdc.png" />
     </div>
     <div class="bandeau-text">
       <p>
