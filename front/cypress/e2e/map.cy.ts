@@ -28,6 +28,7 @@ describe("Map", () => {
     // Check if the details button exists and is clickable
     cy.getBySel("toggle-vulnerability-score-details").should("be.visible")
     cy.getBySel("toggle-vulnerability-score-details").click()
+    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
 
     // The context data should appear (or show an empty message if no data)
     cy.getBySel("map-context-data").should("exist")
@@ -81,13 +82,25 @@ describe("Map", () => {
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-popup").should("exist")
   })
-  it.skip("shows plantability context data", () => {
+  it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
     cy.getBySel("toggle-plantability-score-details").should("be.visible").click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Score de plantabilité")
-    cy.getBySel("close-plantability-context-data").click()
+    cy.getBySel("close-context-data").click()
+    cy.getBySel("map-context-data").should("not.exist")
+  })
+
+  it("shows plantability context data", () => {
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
+    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.getBySel("map-context-data").should("not.exist")
+    cy.mapOpenPopup()
+    cy.getBySel("toggle-climate-zone-details").should("be.visible").click()
+    cy.getBySel("map-context-data").should("exist")
+    cy.getBySel("map-context-data").should("contain", "Vulnérabilité à la chaleur")
+    cy.getBySel("close-context-data").click()
     cy.getBySel("map-context-data").should("not.exist")
   })
 })

@@ -25,8 +25,8 @@ const handleClose = () => {
     role="dialog"
   >
     <map-context-header
-      title="Indicateurs climatiques"
-      description="Indicateurs urbains de caractérisation climatique"
+      description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
+      title="Zones climatiques locales"
       @close="handleClose"
     />
     <div class="map-context-panel-content">
