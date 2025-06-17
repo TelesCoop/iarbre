@@ -47,7 +47,7 @@ export function useMapFilters() {
 
       if (dataType === DataType.PLANTABILITY) {
         filter = ["in", ["floor", ["get", "indice"]], ["literal", filteredValues.value]]
-      } else if (dataType === DataType.LOCAL_CLIMATE_ZONES) {
+      } else if (dataType === DataType.CLIMATE_ZONE) {
         filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
       } else if (dataType === DataType.VULNERABILITY) {
         filter = [

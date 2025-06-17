@@ -1,11 +1,12 @@
 import { ref } from "vue"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
+import type { ClimateData } from "@/types/climate"
 import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
 
 export function useContextData() {
-  const data = ref<PlantabilityData | VulnerabilityData | null>(null)
+  const data = ref<PlantabilityData | VulnerabilityData | ClimateData | null>(null)
   const mapStore = useMapStore()
 
   const setData = async (featureId: string | number) => {

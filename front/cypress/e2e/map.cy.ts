@@ -16,15 +16,9 @@ describe("Map", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
     cy.getBySel("map-context-data").should("not.exist")
-
-    // Wait for the vulnerability layer to be fully loaded
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
-
     cy.mapOpenPopup()
-
     // Check if the popup actually contains vulnerability data before trying to open details
     cy.getBySel("vulnerability-score-popup").should("exist")
-
     // Check if the details button exists and is clickable
     cy.getBySel("toggle-vulnerability-score-details").should("be.visible")
     cy.getBySel("toggle-vulnerability-score-details").click()
@@ -71,7 +65,6 @@ describe("Map", () => {
   })
   it("switches layer", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
-    cy.wait(100) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapHasNoPopup()
     cy.mapOpenPopup()
     cy.getBySel("vulnerability-score-popup").should("exist")
@@ -81,13 +74,24 @@ describe("Map", () => {
     cy.mapOpenPopup()
     cy.getBySel("plantability-score-popup").should("exist")
   })
-  it.skip("shows plantability context data", () => {
+  it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
     cy.getBySel("toggle-plantability-score-details").should("be.visible").click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Score de plantabilité")
-    cy.getBySel("close-plantability-context-data").click()
+    cy.getBySel("close-context-data").click()
+    cy.getBySel("map-context-data").should("not.exist")
+  })
+
+  it("shows climate zone context data", () => {
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
+    cy.getBySel("map-context-data").should("not.exist")
+    cy.mapOpenPopup()
+    cy.getBySel("toggle-climate-zone-details").should("be.visible").click()
+    cy.getBySel("map-context-data").should("exist")
+    cy.getBySel("map-context-data").should("contain", "Zones climatiques locales")
+    cy.getBySel("close-context-data").click()
     cy.getBySel("map-context-data").should("not.exist")
   })
 })

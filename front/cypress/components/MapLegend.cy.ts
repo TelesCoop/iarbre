@@ -1,6 +1,6 @@
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
-import ClimateZonesLegend from "@/components/map/legend/ClimateZonesLegend.vue"
+import ClimateZoneLegend from "@/components/map/legend/ClimateZoneLegend.vue"
 import { createPinia } from "pinia"
 
 describe("Map legends", () => {
@@ -30,7 +30,7 @@ describe("Map legends", () => {
   })
   it("renders correctly lcz legend", () => {
     const pinia = createPinia()
-    cy.mount(ClimateZonesLegend, {
+    cy.mount(ClimateZoneLegend, {
       global: {
         plugins: [pinia]
       }
