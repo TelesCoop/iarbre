@@ -52,7 +52,6 @@ describe("MapContextDataClimateZone", () => {
 
   it("display climate metrics with categories", () => {
     const pinia = createPinia()
-    cy.viewport(1280, 800)
     mount(MapContextDataClimateZone, {
       global: {
         plugins: [pinia]
