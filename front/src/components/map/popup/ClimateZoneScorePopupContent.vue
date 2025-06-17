@@ -31,7 +31,7 @@ const mapStore = useMapStore()
       <Button
         :label="mapStore.contextData.data ? 'Masquer les détails' : 'Voir les détails'"
         class="font-accent"
-        data-cy="toggle-climate-zone-score-details"
+        data-cy="toggle-climate-zone-details"
         severity="secondary"
         size="small"
         @click="mapStore.contextData.toggleContextData(props.popupData.id)"

@@ -163,7 +163,7 @@ const metricsByCategory = computed(() => {
             </div>
             <div class="col-span-4 flex justify-end">
               <div class="text-right">
-                <div class="text-lg font-bold text-primary-500">
+                <div v-if="data.details?.[metric.key]" class="text-lg font-bold text-primary-500">
                   {{ data.details[metric.key] || "N/A" }}
                 </div>
                 <div class="text-xs text-gray-500 font-medium">
