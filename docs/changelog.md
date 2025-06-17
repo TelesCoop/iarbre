@@ -20,6 +20,14 @@ La vulnérabilité à la chaleur est la somme de l'exposition, la sensibilité e
 &rarr; Commit [1ee6f5f](https://github.com/TelesCoop/iarbre/commit/1ee6f5f1bb47ef17cb777bbe99bfd3836a132cbd)
 &rarr; Commit [49a8242](https://github.com/TelesCoop/iarbre/commit/49a8242b41914d45c90082cd2a7971aba0f4e015)
 
+### ✨ feat : Filtrer les zones par score
+
+La légende permet de filtrer l'affichage des calques et de n'afficher que les zones correspondants aux scores sélectionnés.
+
+![Filtre des scores sur le calque de vulnérabilité à la chaleur](assets/images/changelog/v0.9.0/filtre_score.jpg)
+
+&rarr; Commit [53d9950](https://github.com/TelesCoop/iarbre/commit/53d99507d1004964110b31df97d220a17193ac9f)
+
 ### ✨ feat : Bouton pour recentrer la carte
 
 Nous avons ajouté un petit bouton permettant de recentrer la carte et le niveau de zoom.
