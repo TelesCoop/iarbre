@@ -1,5 +1,6 @@
 {
   "CADASTRE": {
+    "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
     "layers": [
       {
         "id": "osm",
@@ -9,9 +10,9 @@
       {
         "id": "cadastre-layer",
         "paint": {
-          "fill-color": "#92a48d",
-          "fill-opacity": 0.8,
-          "fill-outline-color": "#000000"
+          "fill-color": "#ffffff",
+          "fill-opacity": 0,
+          "fill-outline-color": "#ffffff"
         },
         "source": "cadastre",
         "source-layer": "cadastre--cadastre",
@@ -20,12 +21,47 @@
       {
         "id": "cadastre-border",
         "paint": {
-          "line-color": "#000000",
+          "line-color": "#ffffff",
           "line-width": 2
         },
         "source": "cadastre",
         "source-layer": "cadastre--cadastre",
         "type": "line"
+      },
+      {
+        "id": "cadastre-labels",
+        "layout": {
+          "text-allow-overlap": false,
+          "text-anchor": "center",
+          "text-field": [
+            "number-format",
+            [
+              "to-number",
+              [
+                "slice",
+                [
+                  "get",
+                  "parcel_id"
+                ],
+                -4
+              ]
+            ],
+            {}
+          ],
+          "text-font": [
+            "Open Sans Regular"
+          ],
+          "text-ignore-placement": false,
+          "text-size": 14
+        },
+        "paint": {
+          "text-color": "#000000",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1
+        },
+        "source": "cadastre",
+        "source-layer": "cadastre--cadastre",
+        "type": "symbol"
       }
     ],
     "sources": {
