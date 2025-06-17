@@ -22,6 +22,12 @@ export interface ClimateDataDetails {
   [ClimateDataDetailsKey.VHR]: number // Part de végétation arborée sur la végétation globale (en %)
 }
 
+export enum ClimateCategory {
+  BUILDING = "Caractéristiques du bâti",
+  SURFACES = "Types de surfaces",
+  VEGETATION = "Végétation et eau"
+}
+
 export interface ClimateData {
   details: ClimateDataDetails
 

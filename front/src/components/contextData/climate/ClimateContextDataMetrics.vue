@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
-import { type ClimateData, ClimateDataDetailsKey } from "@/types/climate"
+import { type ClimateData, ClimateDataDetailsKey, ClimateCategory } from "@/types/climate"
+import { useClimateZone } from "@/composables/useClimateZone"
 
 interface ClimateMetricsProps {
   data: ClimateData
@@ -8,98 +9,22 @@ interface ClimateMetricsProps {
 
 defineProps<ClimateMetricsProps>()
 
-enum ClimateCategory {
-  BUILDING = "Caractéristiques du bâti",
-  SURFACES = "Types de surfaces",
-  VEGETATION = "Végétation et eau"
-}
-
-const climateCategoryToIcon: Record<ClimateCategory, string> = {
-  [ClimateCategory.BUILDING]: "🏢",
-  [ClimateCategory.SURFACES]: "🛣️",
-  [ClimateCategory.VEGETATION]: "🌿"
-}
-
-const climateCategoryToDescription: Record<ClimateCategory, string> = {
-  [ClimateCategory.BUILDING]: "Indicateurs liés aux bâtiments et à l'urbanisation",
-  [ClimateCategory.SURFACES]: "Répartition des différents types de surfaces au sol",
-  [ClimateCategory.VEGETATION]: "Présence de végétation et d'eau dans la zone"
-}
-
-const climateCategoryOrder = [
-  ClimateCategory.BUILDING,
-  ClimateCategory.SURFACES,
-  ClimateCategory.VEGETATION
-]
+const {
+  climateCategoryToIcon,
+  climateCategoryToDescription,
+  climateCategoryOrder,
+  climateZoneDetailsByCategory
+} = useClimateZone()
 
 const expandedCategories = ref<Record<ClimateCategory, boolean>>({
-  [ClimateCategory.BUILDING]: true,
-  [ClimateCategory.SURFACES]: true,
-  [ClimateCategory.VEGETATION]: true
+  [ClimateCategory.BUILDING]: false,
+  [ClimateCategory.SURFACES]: false,
+  [ClimateCategory.VEGETATION]: false
 })
 
 const toggleCategory = (category: ClimateCategory) => {
   expandedCategories.value[category] = !expandedCategories.value[category]
 }
-
-const metricsByCategory = computed(() => {
-  return {
-    [ClimateCategory.BUILDING]: [
-      {
-        key: ClimateDataDetailsKey.HRE,
-        label: "Hauteur moyenne du bâti",
-        unit: "m",
-        description: "Hauteur moyenne des bâtiments dans la zone"
-      },
-      {
-        key: ClimateDataDetailsKey.ARE,
-        label: "Superficie moyenne du bâti",
-        unit: "m²",
-        description: "Superficie moyenne des bâtiments"
-      },
-      {
-        key: ClimateDataDetailsKey.BUR,
-        label: "Taux de surface bâtie",
-        unit: "%",
-        description: "Pourcentage de la surface occupée par des bâtiments"
-      }
-    ],
-    [ClimateCategory.SURFACES]: [
-      {
-        key: ClimateDataDetailsKey.ROR,
-        label: "Surface minérale imperméable",
-        unit: "%",
-        description: "Pourcentage de surface imperméable (routes, trottoirs, etc.)"
-      },
-      {
-        key: ClimateDataDetailsKey.BSR,
-        label: "Sol nu perméable",
-        unit: "%",
-        description: "Pourcentage de sol nu mais perméable"
-      }
-    ],
-    [ClimateCategory.VEGETATION]: [
-      {
-        key: ClimateDataDetailsKey.WAR,
-        label: "Surface en eau",
-        unit: "%",
-        description: "Pourcentage de surface occupée par l'eau"
-      },
-      {
-        key: ClimateDataDetailsKey.VER,
-        label: "Végétation totale",
-        unit: "%",
-        description: "Pourcentage de surface couverte par la végétation"
-      },
-      {
-        key: ClimateDataDetailsKey.VHR,
-        label: "Végétation arborée",
-        unit: "%",
-        description: "Part de végétation arborée sur la végétation totale"
-      }
-    ]
-  }
-})
 </script>
 
 <template>
@@ -139,7 +64,7 @@ const metricsByCategory = computed(() => {
       </button>
       <div v-if="expandedCategories[category]" class="divide-y divide-gray-100">
         <div
-          v-for="(metric, index) in metricsByCategory[category]"
+          v-for="(metric, index) in climateZoneDetailsByCategory[category]"
           :key="metric.key"
           class="p-4 hover:bg-primary-100 transition-colors duration-150"
         >
