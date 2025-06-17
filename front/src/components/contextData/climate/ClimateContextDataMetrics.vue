@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue"
-import { type ClimateData, ClimateDataDetailsKey, ClimateCategory } from "@/types/climate"
+import { ref } from "vue"
+import { type ClimateData, ClimateCategory } from "@/types/climate"
 import { useClimateZone } from "@/composables/useClimateZone"
 
 interface ClimateMetricsProps {
