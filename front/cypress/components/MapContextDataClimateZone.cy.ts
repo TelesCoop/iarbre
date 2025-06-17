@@ -4,6 +4,8 @@ import MapContextDataClimateZone from "@/components/contextData/MapContextDataCl
 import { DataType, GeoLevel } from "@/utils/enum"
 import type { ClimateData } from "@/types/climate"
 import { ClimateDataDetailsKey } from "@/types/climate"
+import { ClimateCategory } from "@/types/climate"
+import { useClimateZone } from "@/composables/useClimateZone"
 
 describe("MapContextDataClimateZone", () => {
   const mockClimateData: ClimateData = {
@@ -50,7 +52,7 @@ describe("MapContextDataClimateZone", () => {
 
   it("display climate metrics with categories", () => {
     const pinia = createPinia()
-
+    cy.viewport(1280, 800)
     mount(MapContextDataClimateZone, {
       global: {
         plugins: [pinia]
@@ -59,9 +61,9 @@ describe("MapContextDataClimateZone", () => {
         data: mockClimateData
       }
     })
-
-    cy.contains("Caractéristiques du bâti").should("be.visible")
-
+    const { climateCategoryKey } = useClimateZone()
+    cy.contains(ClimateCategory.BUILDING).should("be.visible")
+    cy.getBySel(climateCategoryKey[ClimateCategory.BUILDING]).click()
     cy.contains("Hauteur moyenne du bâti").should("be.visible")
     cy.contains("15.5").should("be.visible")
     cy.contains("Superficie moyenne du bâti").should("be.visible")

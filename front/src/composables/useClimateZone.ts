@@ -70,6 +70,12 @@ export const useClimateZone = () => {
     [ClimateCategory.VEGETATION]: "Présence de végétation et d'eau dans la zone"
   }
 
+  const climateCategoryKey: Record<ClimateCategory, string> = {
+    [ClimateCategory.BUILDING]: "building",
+    [ClimateCategory.SURFACES]: "surfaces",
+    [ClimateCategory.VEGETATION]: "vegetation"
+  }
+
   const climateCategoryOrder = [
     ClimateCategory.BUILDING,
     ClimateCategory.SURFACES,
@@ -80,6 +86,7 @@ export const useClimateZone = () => {
     climateZoneDetailsByCategory,
     climateCategoryToIcon,
     climateCategoryToDescription,
-    climateCategoryOrder
+    climateCategoryOrder,
+    climateCategoryKey
   }
 }

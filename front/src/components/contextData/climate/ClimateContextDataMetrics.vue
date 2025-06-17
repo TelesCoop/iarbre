@@ -13,7 +13,8 @@ const {
   climateCategoryToIcon,
   climateCategoryToDescription,
   climateCategoryOrder,
-  climateZoneDetailsByCategory
+  climateZoneDetailsByCategory,
+  climateCategoryKey
 } = useClimateZone()
 
 const expandedCategories = ref<Record<ClimateCategory, boolean>>({
@@ -33,6 +34,7 @@ const toggleCategory = (category: ClimateCategory) => {
   >
     <div v-for="category in climateCategoryOrder" :key="category" class="overflow-hidden">
       <button
+        :data-cy="`${climateCategoryKey[category]}`"
         class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between text-left"
         @click="toggleCategory(category)"
       >
