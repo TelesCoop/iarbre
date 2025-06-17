@@ -1,21 +1,6 @@
-const zoneDescriptions: Record<string | number, string> = {
-  1: "Ensemble compact de tours",
-  2: "Ensemble compact d'immeubles",
-  3: "Ensemble compact de maisons",
-  4: "Ensemble de tours espacées",
-  5: "Ensemble d'immeubles espacés",
-  6: "Ensemble de maisons espacées",
-  7: "Ensemble dense de constructions légères",
-  8: "Bâtiments bas de grande emprise",
-  9: "Implantation diffuse de maisons",
-  A: "Espace densément arboré",
-  B: "Ensemble arboré clairsemé",
-  C: "Espace végétalisé hétérogène",
-  D: "Végétation basse",
-  E: "Sol imperméable naturel ou artificiel",
-  F: "Sol nu perméable",
-  G: "Surface en eau"
-}
+import { LOCAL_CLIMATE_ZONES } from "@/config/shared"
+
+const zoneDescriptions: Record<string | number, string> = LOCAL_CLIMATE_ZONES
 
 // Color defined by CEREMA in
 // https://www.data.gouv.fr/fr/datasets/r/f80e08a4-ecd1-42a2-a8d6-963af16aec75

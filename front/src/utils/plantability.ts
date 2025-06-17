@@ -4,6 +4,7 @@ import {
   PlantabilityMetaCategory,
   PlantabilityScore
 } from "@/types/plantability"
+import { META_FACTORS_MAPPING } from "@/config/shared"
 
 export function getPlantabilityScore(id: number): string {
   if (id < 2) return PlantabilityScore.IMPOSSIBLE
@@ -128,6 +129,13 @@ export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, Planta
   [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityImpact.NEGATIVE
 }
+
+const invertedMetaMapping: Record<string, string> = {}
+Object.entries(META_FACTORS_MAPPING).forEach(([category, factors]) => {
+  ;(factors as string[]).forEach((factor) => {
+    invertedMetaMapping[factor] = category
+  })
+})
 
 export const PLANTABILITY_FACTORS_META_CATEGORIES = {
   [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]:

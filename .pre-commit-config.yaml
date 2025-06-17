@@ -29,7 +29,7 @@ repos:
       - args:
           - --autofix
         id: pretty-format-json
-        exclude: back/file_data/.*\.json$
+        exclude: (back/file_data/.*\.json$|shared/config.json)
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
   - hooks:

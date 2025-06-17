@@ -22,6 +22,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "file_data"
+SHARED_CONFIG_PATH = BASE_DIR.parent / "shared" / "config.json"
 
 IS_LOCAL_DEV = bool(os.environ.get("TELESCOOP_DEV"))
 DEBUG = IS_LOCAL_DEV
