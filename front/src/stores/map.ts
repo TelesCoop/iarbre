@@ -50,6 +50,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const currentZoom = ref<number>(14)
   const contextData = useContextData()
 
   const {
@@ -332,6 +333,10 @@ export const useMapStore = defineStore("map", () => {
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })
+
+    mapInstance.on("moveend", () => {
+      currentZoom.value = mapInstance.getZoom()
+    })
     mapInstance.once("render", () => {
       console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
       console.info(
@@ -350,6 +355,7 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
+    currentZoom,
     contextData: {
       data: contextData.data,
       setData: contextData.setData,

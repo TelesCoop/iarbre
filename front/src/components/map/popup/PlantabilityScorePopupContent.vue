@@ -1,12 +1,11 @@
 <script lang="ts" setup>
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
-import { computed, ref, onMounted } from "vue"
+import { computed } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
-const currentZoom = ref(14)
 
 const props = defineProps({
   popupData: {
@@ -18,22 +17,8 @@ const props = defineProps({
 const score = computed(() => Number(props.popupData.score))
 const percentage = computed(() => score.value * 10)
 const label = computed(() => getPlantabilityScore(score.value))
-const showDetails = computed(() => currentZoom.value > 16)
-
-const updateZoom = () => {
-  const mapInstance = mapStore.getMapInstance("default")
-  if (mapInstance) {
-    currentZoom.value = mapInstance.getZoom()
-  }
-}
-
-onMounted(() => {
-  const mapInstance = mapStore.getMapInstance("default")
-  if (mapInstance) {
-    currentZoom.value = mapInstance.getZoom()
-    mapInstance.on("zoomend", updateZoom)
-  }
-})
+// https://github.com/TelesCoop/iarbre/blob/dev/back/api/constants.py#L5
+const showDetails = computed(() => mapStore.currentZoom > 16)
 </script>
 
 <template>
