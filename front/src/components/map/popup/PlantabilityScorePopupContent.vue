@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
-import { computed } from "vue"
+import { computed, ref, onMounted } from "vue"
 import { getPlantabilityScore } from "@/utils/plantability"
 import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
+const currentZoom = ref(14)
 
 const props = defineProps({
   popupData: {
@@ -17,6 +18,22 @@ const props = defineProps({
 const score = computed(() => Number(props.popupData.score))
 const percentage = computed(() => score.value * 10)
 const label = computed(() => getPlantabilityScore(score.value))
+const showDetails = computed(() => currentZoom.value > 16)
+
+const updateZoom = () => {
+  const mapInstance = mapStore.getMapInstance("default")
+  if (mapInstance) {
+    currentZoom.value = mapInstance.getZoom()
+  }
+}
+
+onMounted(() => {
+  const mapInstance = mapStore.getMapInstance("default")
+  if (mapInstance) {
+    currentZoom.value = mapInstance.getZoom()
+    mapInstance.on("zoomend", updateZoom)
+  }
+})
 </script>
 
 <template>
@@ -27,6 +44,7 @@ const label = computed(() => getPlantabilityScore(score.value))
     </div>
     <div class="flex w-full items-center justify-center">
       <Button
+        v-if="showDetails"
         :label="mapStore.contextData.data ? 'Masquer les détails' : 'Voir les détails'"
         class="font-accent"
         data-cy="toggle-plantability-score-details"
@@ -34,6 +52,9 @@ const label = computed(() => getPlantabilityScore(score.value))
         size="small"
         @click="mapStore.contextData.toggleContextData(props.popupData.id)"
       />
+      <p v-else class="text-sm font-sans text-center">
+        Zoomez davantage pour consulter le détail de l'occupation des sols.
+      </p>
     </div>
     <div class="flex-grow ml-1.25"></div>
   </div>
