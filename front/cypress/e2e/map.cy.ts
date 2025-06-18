@@ -79,6 +79,7 @@ describe("Map", () => {
     cy.mapOpenPopup()
     cy.getBySel("toggle-plantability-score-details").should("not.exist")
     cy.mapZoomTo(4)
+    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("toggle-plantability-score-details").should("be.visible")
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Score de plantabilité")
