@@ -27,6 +27,6 @@ const show = computed(() => {
 }
 
 .context-menu-title {
-  @apply text-primary-500 font-accent text-sm font-semibold;
+  @apply text-primary-500 font-sans text-sm;
 }
 </style>
