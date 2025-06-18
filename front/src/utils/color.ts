@@ -1,10 +1,5 @@
 import { getContrast } from "polished"
 
-/**
- * Gets the background color of an element by traversing up the DOM tree
- * @param element HTML element to analyze
- * @returns Background color string or 'white' as fallback
- */
 function getElementBackgroundColor(element: HTMLElement): string {
   let currentElement: HTMLElement | null = element
 
@@ -28,11 +23,6 @@ function getElementBackgroundColor(element: HTMLElement): string {
   return "white"
 }
 
-/**
- * Determines the appropriate text color (black or white) based on accessibility contrast ratios
- * @param element HTML element to analyze, or a color string
- * @returns CSS class name for text color ('text-black' or 'text-white')
- */
 export function getAdaptativeColorClass(element: HTMLElement | string | null): string {
   let backgroundColor: string
 
