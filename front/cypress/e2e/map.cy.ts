@@ -77,8 +77,9 @@ describe("Map", () => {
   it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("not.exist")
     cy.mapOpenPopup()
+    cy.getBySel("toggle-plantability-score-details").should("not.exist")
     cy.mapZoomTo(4)
-    cy.getBySel("toggle-plantability-score-details").should("be.visible").click()
+    cy.getBySel("toggle-plantability-score-details").should("be.visible")
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Score de plantabilité")
     cy.getBySel("close-context-data").click()
