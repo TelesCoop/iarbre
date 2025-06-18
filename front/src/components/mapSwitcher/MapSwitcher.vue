@@ -18,6 +18,10 @@ const options = [
   {
     label: MapStyleToLabel[MapStyle.SATELLITE],
     value: MapStyle.SATELLITE
+  },
+  {
+    label: MapStyleToLabel[MapStyle.CADASTRE],
+    value: MapStyle.CADASTRE
   }
 ]
 </script>

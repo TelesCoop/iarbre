@@ -79,13 +79,13 @@
 }
 
 .card {
-  @apply bg-white shadow-md rounded-[0.75rem] p-5;
+  @apply bg-white rounded-[0.75rem] p-5;
 }
 
 .map-tool-container {
   @apply flex items-center gap-2 sm:gap-4;
   @apply rounded-md;
-  @apply bg-white shadow-lg z-10;
+  @apply bg-white z-10;
   @apply border-primary-500 border-0.5;
   @apply p-2 md:p-4;
   @apply max-w-full;
@@ -94,13 +94,12 @@
 .map-context-data-container {
   @apply flex flex-col;
   @apply rounded-lg;
-  @apply bg-white shadow-lg z-10;
-  @apply border border-gray-200;
+  @apply bg-white z-10;
+  @apply border border-primary-500;
   @apply p-0;
   @apply max-w-full;
   @apply overflow-hidden;
   @apply transition-all duration-200;
-  @apply hover:shadow-xl hover:border-gray-300;
 }
 
 .map-context-panel {
@@ -128,9 +127,9 @@
 
 .vulnerability-table-row {
   @apply grid grid-cols-12 gap-1 sm:gap-3 p-2 sm:p-3 2xl:p-4;
-  @apply hover:bg-primary-100 hover:shadow-sm;
+  @apply hover:bg-primary-100;
   @apply transition-all duration-200 items-center;
-  @apply border-l-2 border-transparent hover:border-primary-300;
+  @apply border-l-2 border-transparent;
 }
 
 /* Scroll bars */

@@ -1,5 +1,30 @@
 # Journal des changements
 
+## 🔖 0.10.0 (2025-06-18) : Filtre, cadastre et panel d'explicabilité pour les LCZs
+
+### ✨ feat : Filtrer les zones par score
+
+La légende permet de filtrer l'affichage des calques et de n'afficher que les zones correspondantes aux scores sélectionnés.
+
+![Filtre des scores sur le calque de vulnérabilité à la chaleur](assets/images/changelog/v0.10.0/filtre_score.jpg)
+
+&rarr; Commit [53d9950](https://github.com/TelesCoop/iarbre/commit/53d99507d1004964110b31df97d220a17193ac9f)
+
+### ✨ feat : Panel d'explicabilité pour les zones climatiques locales
+
+La classification des zones climatiques par le CEREMA se base sur un arbre de décision (voir [méthodologie](https://docs.iarbre.fr/methodology/lcz/)) qui prend en compte 8 méta-indicateurs sur le bâti 3D et l'occupation des sols. Les valeurs de ces méta-indicateurs sur un îlot sont maintenant accessibles dans le panel de contexte.
+
+![Filtre des scores sur le calque de vulnérabilité à la chaleur](assets/images/changelog/v0.10.0/context_lcz.png)
+
+&rarr; Commit [50e7091](https://github.com/TelesCoop/iarbre/commit/50e709188cb52539cf2f60efae8a4e0808da1634)
+
+### ✨ feat : Cadastre en fond de carte
+
+Il y a maintenant une option dans le menu déroulant pour afficher le cadastre avec les numéros de parcelle en superposition de la carte OpenStreetMap en fond de carte.
+
+&rarr; Commit [5e62373](https://github.com/TelesCoop/iarbre/commit/5e62373ac8bdc165597b6e830e48ffe08b533bab)
+&rarr; Commit [d83bb41](https://github.com/TelesCoop/iarbre/commit/d83bb41003d7f7bcbeaec96ab0e2f0d45a5b0918)
+
 ## 🔖 0.9.0 (2025-06-12) : Panels d'explicabilité
 
 ### ✨ feat : Panel d'explicabilité pour la plantabilité

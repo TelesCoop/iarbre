@@ -16,12 +16,12 @@ const options = [
     value: DataType.PLANTABILITY
   },
   {
-    label: DataTypeToLabel[DataType.LOCAL_CLIMATE_ZONES],
-    value: DataType.LOCAL_CLIMATE_ZONES
-  },
-  {
     label: DataTypeToLabel[DataType.VULNERABILITY],
     value: DataType.VULNERABILITY
+  },
+  {
+    label: DataTypeToLabel[DataType.CLIMATE_ZONE],
+    value: DataType.CLIMATE_ZONE
   }
 ]
 </script>

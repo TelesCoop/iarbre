@@ -5,36 +5,36 @@ export enum GeoLevel {
 
 export enum DataType {
   PLANTABILITY = "plantability",
-  LOCAL_CLIMATE_ZONES = "lcz",
-  VULNERABILITY = "vulnerability"
+  VULNERABILITY = "vulnerability",
+  CLIMATE_ZONE = "lcz"
 }
 
 export enum MapStyle {
   OSM = "Plan",
   SATELLITE = "satellite",
-  ORTHOPHOTOS = "orthophotos"
+  CADASTRE = "Cadastre"
 }
 
 export const MapStyleToLabel: Record<MapStyle, string> = {
   [MapStyle.OSM]: "Plan de la ville",
   [MapStyle.SATELLITE]: "Images satellite",
-  [MapStyle.ORTHOPHOTOS]: "Orthophotos"
+  [MapStyle.CADASTRE]: "Cadastre"
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Score de plantabilité",
-  [DataType.LOCAL_CLIMATE_ZONES]: "Zones climatiques locales",
+  [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
   [DataType.VULNERABILITY]: "Vulnérabilité chaleur"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.PLANTABILITY]: GeoLevel.TILE,
-  [DataType.LOCAL_CLIMATE_ZONES]: GeoLevel.LCZ,
+  [DataType.CLIMATE_ZONE]: GeoLevel.LCZ,
   [DataType.VULNERABILITY]: GeoLevel.LCZ
 }
 
 export const DataTypeToAttributionSource: Record<DataType, string> = {
-  [DataType.LOCAL_CLIMATE_ZONES]:
+  [DataType.CLIMATE_ZONE]:
     '<a class="text-primary-500" href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA</a>',
   [DataType.PLANTABILITY]:
     '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',

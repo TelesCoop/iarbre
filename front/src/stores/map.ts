@@ -1,5 +1,6 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
+import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   Popup,
@@ -23,7 +24,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
-import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZones"
+import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
@@ -49,18 +50,29 @@ export const useMapStore = defineStore("map", () => {
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const currentZoom = ref<number>(14)
   const contextData = useContextData()
+
+  const {
+    clearAllFilters,
+    applyFilters,
+    hasActiveFilters,
+    isFiltered,
+    filteredValues,
+    toggleFilter,
+    activeFiltersCount
+  } = useMapFilters()
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     return {
-      [DataType.PLANTABILITY]: ["match", ["floor", ["get", "indice"]], ...PLANTABILITY_COLOR_MAP],
+      [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
         "match",
         ["get", `indice_${vulnerabilityMode.value}`],
         ...VULNERABILITY_COLOR_MAP
       ],
-      [DataType.LOCAL_CLIMATE_ZONES]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
 
@@ -88,6 +100,15 @@ export const useMapStore = defineStore("map", () => {
     })
   )
 
+  const toggleAndApplyFilter = (value: number | string) => {
+    toggleFilter(value)
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
+
+  const resetFilters = () => {
+    clearAllFilters()
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+  }
   const geocoderControl = ref(
     new MaplibreGeocoder(
       {
@@ -235,6 +256,8 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     selectedDataType.value = datatype
+    // Clear filters when changing data type
+    clearAllFilters()
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -251,23 +274,38 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const setLayerZoomLimits = (style: maplibregl.StyleSpecification) => {
+    for (const layer of style.layers) {
+      layer.minzoom = MIN_ZOOM
+      layer.maxzoom = MAX_ZOOM
+    }
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-      // Set new style based on mapstyle
-      // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
-      // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
-      const newStyle =
-        mapstyle === MapStyle.SATELLITE
-          ? (mapStyles.SATELLITE as maplibregl.StyleSpecification)
-          : (mapStyles.OSM as maplibregl.StyleSpecification)
-      for (const layer of newStyle.layers) {
-        layer.minzoom = MIN_ZOOM
-        layer.maxzoom = MAX_ZOOM
+
+      let newStyle: maplibregl.StyleSpecification
+
+      if (mapstyle === MapStyle.CADASTRE) {
+        newStyle = JSON.parse(
+          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", FULL_BASE_API_URL)
+        ) as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.SATELLITE) {
+        // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+        // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
+        newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.OSM) {
+        newStyle = mapStyles.OSM as maplibregl.StyleSpecification
       }
-      mapInstance.setStyle(newStyle)
+
+      if (newStyle!) {
+        setLayerZoomLimits(newStyle)
+        mapInstance.setStyle(newStyle)
+      }
+
       mapInstance.fire("style.load")
     })
   }
@@ -295,6 +333,10 @@ export const useMapStore = defineStore("map", () => {
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })
+
+    mapInstance.on("moveend", () => {
+      currentZoom.value = mapInstance.getZoom()
+    })
     mapInstance.once("render", () => {
       console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
       console.info(
@@ -313,11 +355,21 @@ export const useMapStore = defineStore("map", () => {
     changeDataType,
     getMapInstance,
     vulnerabilityMode,
+    currentZoom,
     contextData: {
       data: contextData.data,
       setData: contextData.setData,
       removeData: contextData.removeData,
       toggleContextData: contextData.toggleContextData
-    }
+    },
+    clearAllFilters,
+    applyFilters,
+    hasActiveFilters,
+    isFiltered,
+    filteredValues,
+    toggleFilter,
+    activeFiltersCount,
+    toggleAndApplyFilter,
+    resetFilters
   }
 })

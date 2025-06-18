@@ -1,22 +1,27 @@
 {{ define "main" }}
 
-<div class="text-column">
-  <ul class="posts-list">
-    {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
-    ".PublishDate" }} {{ range $posts.Reverse }}
-    <li class="post-item">
-      <div>
-        <span class="tag"
-          >Publié le {{ .PublishDate | time.Format "01 January 2006" }} par {{
-          .Params.author }}</span
-        >
-      </div>
-      <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
-      <p>{{ .Summary }}</p>
-      <a href="{{.RelPermalink}}" class="cta-button">Lire l'article ➜</a>
-    </li>
-    {{ end }}
-  </ul>
+<div class="posts-container">
+  <div class="text-column">
+    <h1 class="posts-title">Actualités</h1>
+    <ul class="posts-list">
+      {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
+      ".PublishDate" }} {{ range $posts.Reverse }}
+      <li class="post-item">
+        <div class="post-meta">
+          <span class="tag"
+            >Publié le {{ .PublishDate | time.Format "02 January 2006" }} par {{
+            .Params.author }}</span
+          >
+        </div>
+        <div class="post-content">
+          <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
+          <p class="summary">{{ .Summary }}</p>
+          <a href="{{.RelPermalink}}" class="cta-button">Lire l'article ➜</a>
+        </div>
+      </li>
+      {{ end }}
+    </ul>
+  </div>
 </div>
 
 {{ end }}

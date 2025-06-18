@@ -1,32 +1,38 @@
 {{ define "main" }} {{ $currentPermalink := .RelPermalink }}
-<section class="sidebar">
-  <div class="posts-list">
-    <ul>
-      {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
-      ".PublishDate" }} {{ range first 3 $posts.Reverse }}
-      <li
-        class="post-item{{ if eq .RelPermalink $currentPermalink }} selected{{end}}"
-      >
-        <div>
-          <span class="tag"
-            >{{ .PublishDate | time.Format "01 January 2006" }}</span
-          >
-        </div>
-        <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
-      </li>
-      {{ end }}
-    </ul>
-    <a href="/actualites/" class="cta-button center">Tous les articles</a>
-  </div>
-</section>
-<section class="post">
-  <a id="close-post-button" class="cta-button" href="/actualites"> X </a>
-  <div class="text-column">
-    <div class="tag">
-      Publié le {{ .PublishDate | time.Format "01 January 2006" }} − Par {{
-      .Params.Author }}
+<div class="post-container">
+  <section class="sidebar">
+    <div class="posts-list">
+      <h3 class="sidebar-title">Articles récents</h3>
+      <ul>
+        {{ $posts := sort (where site.RegularPages.ByTitle "Section"
+        "actualites") ".PublishDate" }} {{ range first 3 $posts.Reverse }}
+        <li
+          class="post-item sidebar-item{{ if eq .RelPermalink $currentPermalink }} selected{{end}}"
+        >
+          <div>
+            <span class="tag"
+              >{{ .PublishDate | time.Format "02 January 2006" }}</span
+            >
+          </div>
+          <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
+        </li>
+        {{ end }}
+      </ul>
+      <a href="/actualites/" class="cta-button center">Tous les articles</a>
     </div>
-    {{ .Content }}
-  </div>
-</section>
+  </section>
+  <section class="post">
+    <a id="close-post-button" class="cta-button" href="/actualites"> X </a>
+    <article class="text-column">
+      <header class="post-header">
+        <div class="tag post-date">
+          Publié le {{ .PublishDate | time.Format "02 January 2006" }} − Par {{
+          .Params.Author }}
+        </div>
+        <h1 class="post-title">{{ .Title }}</h1>
+      </header>
+      <div class="post-content">{{ .Content }}</div>
+    </article>
+  </section>
+</div>
 {{ end }}
