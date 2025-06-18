@@ -45,6 +45,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
+    ScoreTag: typeof import('./src/components/map/score/ScoreTag.vue')['default']
     Select: typeof import('primevue/select')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
@@ -57,6 +58,7 @@ declare module 'vue' {
     VulnerabilityContextDataTableHeader: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTableHeader.vue')['default']
     VulnerabilityContextTool: typeof import('./src/components/contextTools/VulnerabilityContextTool.vue')['default']
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
+    VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     VulnerabilityScorePopupContent: typeof import('./src/components/map/popup/VulnerabilityScorePopupContent.vue')['default']
     VulnerabilityScorePopupItem: typeof import('./src/components/map/popup/VulnerabilityScorePopupItem.vue')['default']
   }
