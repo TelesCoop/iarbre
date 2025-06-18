@@ -6,6 +6,19 @@ const mapStore = useMapStore()
 const handleScoreClick = (score: number) => {
   mapStore.toggleAndApplyFilter(score)
 }
+const SCORE_BG_CLASSES: Record<number, string> = {
+  0: "bg-scale-0",
+  1: "bg-scale-1",
+  2: "bg-scale-2",
+  3: "bg-scale-3",
+  4: "bg-scale-4",
+  5: "bg-scale-5",
+  6: "bg-scale-6",
+  7: "bg-scale-7",
+  8: "bg-scale-8",
+  9: "bg-scale-9",
+  10: "bg-scale-10"
+}
 </script>
 
 <template>
@@ -23,6 +36,7 @@ const handleScoreClick = (score: number) => {
         :label="`${index}`"
         :score="index"
         class="flex items-center justify-center"
+        :background-color-class="SCORE_BG_CLASSES[index]"
         @click="handleScoreClick"
       />
     </div>
