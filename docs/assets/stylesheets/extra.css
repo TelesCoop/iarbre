@@ -2,6 +2,7 @@
   font-family: "Bricolage Grotesque";
   src: url("BricolageGrotesque-Regular.otf") format("opentype");
 }
+
 :root {
   --md-primary-fg-color: #426a45;
   --md-primary-fg-color--light: #efefed;
