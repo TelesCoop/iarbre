@@ -28,7 +28,8 @@ Cypress.Commands.add("basemapSwitchLayer", (maptype: string) => {
 })
 
 Cypress.Commands.add("mapZoomTo", (zoom: number) => {
-  for (let i = 1; i < zoom; i++) {
-    cy.getBySel(".maplibregl-ctrl-zoom-in").should("be.visible").click()
+  for (let i = 1; i < zoom + 1; i++) {
+    cy.get(".maplibregl-ctrl-zoom-in").should("be.visible").click()
+    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
   }
 })
