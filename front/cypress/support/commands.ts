@@ -26,3 +26,9 @@ Cypress.Commands.add("basemapSwitchLayer", (maptype: string) => {
   cy.getBySel("map-switcher").should("be.visible").click()
   cy.getBySel("map-switcher").get(".p-select-option-label").contains(maptype).click()
 })
+
+Cypress.Commands.add("mapZoomTo", (zoom: number) => {
+  for (let i = 1; i < zoom; i++) {
+    cy.getBySel(".maplibregl-ctrl-zoom-in").should("be.visible").click()
+  }
+})
