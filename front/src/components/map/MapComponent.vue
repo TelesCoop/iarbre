@@ -32,7 +32,7 @@ onMounted(() => {
 
   const updateParams = () => {
     emit("update:modelValue", {
-      zoom: Math.round(mapInstance.getZoom()),
+      zoom: Math.round(mapStore.currentZoom),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
       dataType: mapStore.selectedDataType

@@ -26,3 +26,10 @@ Cypress.Commands.add("basemapSwitchLayer", (maptype: string) => {
   cy.getBySel("map-switcher").should("be.visible").click()
   cy.getBySel("map-switcher").get(".p-select-option-label").contains(maptype).click()
 })
+
+Cypress.Commands.add("mapZoomTo", (zoom: number) => {
+  for (let i = 1; i < zoom + 1; i++) {
+    cy.get(".maplibregl-ctrl-zoom-in").should("be.visible").click()
+    cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
+  }
+})
