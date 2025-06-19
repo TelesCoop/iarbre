@@ -50,7 +50,7 @@ onMounted(() => {
     <map-legend />
     <div class="flex gap-2">
       <map-filters-status />
-      <map-context-tools />
+      <map-context-tools class="ml-auto" />
     </div>
   </div>
   <div
@@ -86,6 +86,8 @@ onMounted(() => {
 
 .legend-container > * {
   pointer-events: auto;
+  flex: 1;
+  width: 100%;
 }
 
 @media (min-width: 1024px) {
