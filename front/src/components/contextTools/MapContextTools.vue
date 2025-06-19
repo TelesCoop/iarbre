@@ -15,18 +15,3 @@ const show = computed(() => {
     <vulnerability-context-tool />
   </div>
 </template>
-
-<style>
-@reference "@/styles/main.css";
-.context-menu-tools {
-  @apply flex flex-col gap-2 w-full;
-}
-
-.context-menu-tool {
-  @apply flex items-center gap-2;
-}
-
-.context-menu-title {
-  @apply text-primary-500 font-sans text-sm;
-}
-</style>
