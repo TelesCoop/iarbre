@@ -27,7 +27,7 @@ if (route.name === "mapWithUrlParams") {
 </script>
 
 <template>
-  <div class="map-container max-w-screen overflow-hidden relative hidden sm:block">
+  <div class="map-container max-w-screen overflow-hidden relative sm:block">
     <map-component
       :model-value="mapParams"
       map-id="default"
@@ -36,37 +36,11 @@ if (route.name === "mapWithUrlParams") {
       "
     />
   </div>
-  <div class="on-mobile-container">
-    <div
-      class="bg-white p-4 m-4 rounded-md shadow-lg flex flex-col text-center border-primary-500 border-0.5"
-    >
-      <span>Le site est actuellement indisponible sur mobile.</span>
-      <Button
-        as="a"
-        class="underline"
-        href="https://iarbre.fr/"
-        link
-        severity="secondary"
-        target="_blank"
-        >Cliquez ici pour en savoir plus sur IA.rbre
-      </Button>
-    </div>
-  </div>
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
 .map-container {
   height: var(--content-height);
-}
-
-.on-mobile-container {
-  background-image: url("/images/mobile-screen.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: calc(100vh - var(--header-height) - 1px);
-  @apply flex items-center justify-center;
-  @apply w-full;
-  @apply sm:hidden;
 }
 </style>
