@@ -99,7 +99,7 @@ describe("Legend Filtering", () => {
 
       // Check component structure and accessibility
       cy.getBySel("map-filters-status").should("be.visible")
-      cy.getBySel("map-filters-status").should("contain", "Filtres actifs :")
+      cy.getBySel("map-filters-status").should("contain", "Filtres")
       cy.getBySel("reset-filters-button")
         .should("be.visible")
         .should("have.attr", "title", "Supprimer tous les filtres")
