@@ -39,10 +39,12 @@ import {
 } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { addCenterControl } from "@/utils/mapControls"
+import { useAppStore } from "./app"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"
+  const MOBILE_MAX_WIDTH = "300px"
   const popupData = ref<MapScorePopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
@@ -51,6 +53,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
+  const isLegendVisible = ref<boolean>(false)
   const contextData = useContextData()
 
   const {
@@ -191,7 +194,8 @@ export const useMapStore = defineStore("map", () => {
       properties: extractFeatureProperties(e.features!, datatype, geolevel),
       score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
     }
-    const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
+    const maxWidth = useAppStore().isMobile ? MOBILE_MAX_WIDTH : POPUP_MAX_WIDTH
+    const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(maxWidth)
     activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
     const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
     closeButton.addEventListener("click", () => {
@@ -345,6 +349,10 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const toggleLegendVisibility = () => {
+    isLegendVisible.value = !isLegendVisible.value
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -356,6 +364,8 @@ export const useMapStore = defineStore("map", () => {
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
+    isLegendVisible,
+    toggleLegendVisibility,
     contextData: {
       data: contextData.data,
       setData: contextData.setData,
