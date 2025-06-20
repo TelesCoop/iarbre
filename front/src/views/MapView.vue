@@ -28,7 +28,7 @@ if (route.name === "mapWithUrlParams") {
 </script>
 
 <template>
-  <div class="map-container max-w-screen overflow-hidden relative sm:block">
+  <div class="map-container max-w-screen overflow-hidden relative">
     <map-component
       :model-value="mapParams"
       map-id="default"
