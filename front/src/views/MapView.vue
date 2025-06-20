@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import MapComponent from "@/components/map/MapComponent.vue"
+import MapSidebar from "@/components/map/MapSidebar.vue"
 import { useRouter, useRoute } from "vue-router"
 import { ref } from "vue"
 import type { MapParams } from "@/types/map"
@@ -35,6 +36,9 @@ if (route.name === "mapWithUrlParams") {
         (params) => router.replace({ name: 'mapWithUrlParams', params: params as any })
       "
     />
+
+    <!-- Sidebar -->
+    <map-sidebar />
   </div>
 </template>
 

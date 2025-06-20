@@ -46,7 +46,7 @@ onMounted(() => {
 
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
-  <div class="legend-container">
+  <div class="legend-container hidden lg:flex">
     <map-legend />
     <div class="flex gap-2">
       <map-filters-status />
@@ -54,7 +54,7 @@ onMounted(() => {
     </div>
   </div>
   <div
-    class="absolute top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 flex gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
+    class="absolute hidden lg:flex top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
   >
     <map-layer-switcher />
     <map-bg-switcher />
@@ -72,16 +72,14 @@ onMounted(() => {
 
 .legend-container {
   position: absolute;
-  top: 0;
-  right: 0;
   margin-top: 1rem;
-  margin-right: 0.5rem;
   z-index: 30;
-  display: flex;
   flex-direction: column;
   align-items: flex-end;
   pointer-events: none;
   @apply gap-2;
+  @apply top-0 right-0;
+  @apply mx-1;
 }
 
 .legend-container > * {

@@ -2,6 +2,8 @@
 import { getZoneDesc, getZoneColor } from "@/utils/climateZone"
 import type { MapScorePopupData } from "@/types/map"
 import { useMapStore } from "@/stores/map"
+import { useAppStore } from "@/stores/app"
+import { computed } from "vue"
 
 const props = defineProps({
   popupData: {
@@ -9,8 +11,6 @@ const props = defineProps({
     type: Object as () => MapScorePopupData
   }
 })
-
-const mapStore = useMapStore()
 </script>
 <template>
   <div data-cy="lcz-score-popup">
@@ -28,14 +28,7 @@ const mapStore = useMapStore()
       <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.score) }}</span>
     </div>
     <div class="flex w-full items-center justify-center">
-      <Button
-        :label="mapStore.contextData.data ? 'Masquer les détails' : 'Voir les détails'"
-        class="font-accent"
-        data-cy="toggle-climate-zone-details"
-        severity="secondary"
-        size="small"
-        @click="mapStore.contextData.toggleContextData(props.popupData.id)"
-      />
+      <show-hide-score-button :feature-id="popupData.id" data-cy="toggle-climate-zone-details" />
     </div>
   </div>
 </template>

@@ -37,7 +37,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       <img alt="Logo I-Arbre" class="h-8 sm:h-10 w-auto" src="/images/logo-iarbre.png" />
     </a>
   </div>
-  <nav class="header-nav">
+  <nav class="header-nav ml-auto">
     <ul class="nav-list">
       <li>
         <Button
