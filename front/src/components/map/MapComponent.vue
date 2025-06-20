@@ -95,8 +95,8 @@ onMounted(() => {
 }
 
 .maplibregl-ctrl-geocoder {
-  width: 450px;
-  max-width: none;
+  width: 90%;
+  max-width: 400px;
 }
 
 .maplibregl-ctrl-geocoder--suggestions {
