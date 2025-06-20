@@ -6,6 +6,7 @@ export const useAppStore = defineStore("app", () => {
   const windowWidth = ref(window.innerWidth)
   const sidebarVisible = ref(false)
 
+  const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
   const isMobileOrTablet = computed(() => windowWidth.value < convertRemToPx(Breakpoint.MD))
   const isDesktop = computed(() => windowWidth.value >= convertRemToPx(Breakpoint.MD))
 
@@ -33,6 +34,7 @@ export const useAppStore = defineStore("app", () => {
   return {
     windowWidth,
     sidebarVisible,
+    isMobile,
     isMobileOrTablet,
     isDesktop,
     refreshWindowWidth,
