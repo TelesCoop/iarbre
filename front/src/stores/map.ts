@@ -1,4 +1,4 @@
-import { computed, ref } from "vue"
+import { computed, ref, nextTick } from "vue"
 import { defineStore } from "pinia"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
@@ -18,7 +18,12 @@ import {
   DataTypeToAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
-import type { MapScorePopupData } from "@/types/map"
+import type {
+  MapScorePopupData,
+  LayerConfig,
+  MultiLayerPopupData,
+  LayerPopupData
+} from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
@@ -44,6 +49,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"
   const popupData = ref<MapScorePopupData | undefined>(undefined)
+  const multiLayerPopupData = ref<MultiLayerPopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const activePopup = ref<Popup | null>(null)
@@ -52,6 +58,19 @@ export const useMapStore = defineStore("map", () => {
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
+
+  // Nouvelle gestion multi-calques
+  const activeLayers = ref<LayerConfig[]>([
+    {
+      dataType: DataType.PLANTABILITY,
+      visible: true,
+      opacity: 0.7,
+      zIndex: 1,
+      filters: []
+    }
+  ])
+
+  const isMultiLayerMode = ref<boolean>(false)
 
   const {
     clearAllFilters,
@@ -143,6 +162,7 @@ export const useMapStore = defineStore("map", () => {
       activePopup.value.remove()
       activePopup.value = null
       popupData.value = undefined
+      multiLayerPopupData.value = undefined
     }
   }
 
@@ -202,19 +222,40 @@ export const useMapStore = defineStore("map", () => {
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
-    if (mapEventsListener.value[layerId]) {
-      map.off("click", layerId, mapEventsListener.value[layerId])
-    }
-    const clickHandler = (e: any) => {
-      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
-      highlightFeature(map, layerId, featureId)
-      createPopup(e, map, datatype, geolevel, layerId)
-      if (contextData.data.value) {
-        contextData.setData(featureId)
+
+    // En mode mono-calque seulement : gestionnaire spécifique par calque
+    // En mode multi-calques, le gestionnaire global est configuré dans updateMapLayers
+    if (!isMultiLayerMode.value) {
+      if (mapEventsListener.value[layerId]) {
+        map.off("click", layerId, mapEventsListener.value[layerId])
       }
+      const clickHandler = (e: any) => {
+        const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+        highlightFeature(map, layerId, featureId)
+        createPopup(e, map, datatype, geolevel, layerId)
+        if (contextData.data.value) {
+          contextData.setData(featureId)
+        }
+      }
+      map.on("click", layerId, clickHandler)
+      mapEventsListener.value[layerId] = clickHandler
     }
-    map.on("click", layerId, clickHandler)
-    mapEventsListener.value[layerId] = clickHandler
+  }
+
+  const setupGlobalClickHandler = (map: Map) => {
+    const globalHandlerKey = "global-multi-layer"
+
+    // Supprimer l'ancien gestionnaire s'il existe
+    if (mapEventsListener.value[globalHandlerKey]) {
+      map.off("click", mapEventsListener.value[globalHandlerKey])
+    }
+
+    const globalClickHandler = (e: any) => {
+      createMultiLayerPopup(e, map)
+    }
+
+    map.on("click", globalClickHandler)
+    mapEventsListener.value[globalHandlerKey] = globalClickHandler
   }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
@@ -311,13 +352,42 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initTiles = (mapInstance: Map) => {
-    const currentGeoLevel = getGeoLevelFromDataType()
-    setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
-    setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
+    if (isMultiLayerMode.value) {
+      // Mode multi-calques : utiliser la nouvelle logique
+      activeLayers.value
+        .filter((layer) => layer.visible)
+        .sort((a, b) => a.zIndex - b.zIndex)
+        .forEach((layer) => {
+          const geoLevel = DataTypeToGeolevel[layer.dataType]
+          setupSource(mapInstance, layer.dataType, geoLevel)
+          setupTileWithOpacity(mapInstance, layer.dataType, geoLevel, layer.opacity)
+        })
+    } else {
+      // Mode mono-calque classique
+      const currentGeoLevel = getGeoLevelFromDataType()
+      setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+      setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
+    }
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+
+    // S'assurer que les activeLayers correspondent au selectedDataType initial
+    if (!isMultiLayerMode.value) {
+      const existingLayer = activeLayers.value.find((layer) => layer.dataType === initialDatatype)
+      if (!existingLayer) {
+        activeLayers.value = [
+          {
+            dataType: initialDatatype,
+            visible: true,
+            opacity: 0.7,
+            zIndex: 1,
+            filters: []
+          }
+        ]
+      }
+    }
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
@@ -345,10 +415,266 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  // === Nouvelles fonctions multi-calques ===
+
+  const toggleMultiLayerMode = () => {
+    isMultiLayerMode.value = !isMultiLayerMode.value
+
+    if (!isMultiLayerMode.value) {
+      // Retour au mode mono-calque : garder seulement le premier calque visible
+      const firstVisibleLayer = activeLayers.value.find((layer) => layer.visible)
+      if (firstVisibleLayer) {
+        activeLayers.value = [firstVisibleLayer]
+        selectedDataType.value = firstVisibleLayer.dataType
+      }
+    }
+
+    // Toujours mettre à jour les calques pour reconfigurer les gestionnaires d'événements
+    updateMapLayers()
+  }
+
+  const addLayer = (dataType: DataType, opacity: number = 0.7) => {
+    const existingLayer = activeLayers.value.find((layer) => layer.dataType === dataType)
+    if (existingLayer) {
+      existingLayer.visible = true
+      existingLayer.opacity = opacity
+    } else {
+      const newZIndex = Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
+      activeLayers.value.push({
+        dataType,
+        visible: true,
+        opacity,
+        zIndex: newZIndex,
+        filters: []
+      })
+    }
+    isMultiLayerMode.value = true
+    updateMapLayers()
+  }
+
+  const removeLayer = (dataType: DataType) => {
+    const index = activeLayers.value.findIndex((layer) => layer.dataType === dataType)
+    if (index > -1) {
+      activeLayers.value.splice(index, 1)
+    }
+    if (activeLayers.value.length <= 1) {
+      isMultiLayerMode.value = false
+    }
+    updateMapLayers()
+  }
+
+  const toggleLayerVisibility = (dataType: DataType) => {
+    const layer = activeLayers.value.find((l) => l.dataType === dataType)
+    if (layer) {
+      layer.visible = !layer.visible
+      updateMapLayers()
+    }
+  }
+
+  const setLayerOpacity = (dataType: DataType, opacity: number) => {
+    const layer = activeLayers.value.find((l) => l.dataType === dataType)
+    if (layer) {
+      layer.opacity = Math.max(0, Math.min(1, opacity))
+      updateMapLayerOpacity(dataType, layer.opacity)
+    }
+  }
+
+  const updateMapLayerOpacity = (dataType: DataType, opacity: number) => {
+    const geoLevel = DataTypeToGeolevel[dataType]
+    const layerId = getLayerId(dataType, geoLevel)
+
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.setPaintProperty(layerId, "fill-opacity", opacity)
+      }
+    })
+  }
+
+  const updateMapLayers = () => {
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      // Nettoyer tous les gestionnaires d'événements existants
+      Object.keys(mapEventsListener.value).forEach((key) => {
+        if (key === "global-multi-layer") {
+          mapInstance.off("click", mapEventsListener.value[key])
+        } else {
+          mapInstance.off("click", key, mapEventsListener.value[key])
+        }
+      })
+      mapEventsListener.value = {}
+
+      // Supprimer tous les calques existants
+      Object.values(DataType).forEach((dataType) => {
+        const geoLevel = DataTypeToGeolevel[dataType]
+        const layerId = getLayerId(dataType, geoLevel)
+        const sourceId = getSourceId(dataType, geoLevel)
+
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
+      })
+
+      // Configurer le gestionnaire d'événements selon le mode
+      if (isMultiLayerMode.value) {
+        setupGlobalClickHandler(mapInstance)
+      }
+
+      // Ajouter les calques actifs visibles
+      activeLayers.value
+        .filter((layer) => layer.visible)
+        .sort((a, b) => a.zIndex - b.zIndex) // Ordre par zIndex
+        .forEach((layer) => {
+          const geoLevel = DataTypeToGeolevel[layer.dataType]
+          setupSource(mapInstance, layer.dataType, geoLevel)
+          setupTileWithOpacity(mapInstance, layer.dataType, geoLevel, layer.opacity)
+        })
+    })
+  }
+
+  const setupTileWithOpacity = (
+    map: Map,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    opacity: number
+  ) => {
+    const sourceId = getSourceId(datatype, geolevel)
+    const layer = createMapLayerWithOpacity(datatype, geolevel, sourceId, opacity)
+    map.addLayer(layer)
+    setupClickEventOnTile(map, datatype, geolevel)
+  }
+
+  const createMapLayerWithOpacity = (
+    datatype: DataType,
+    geolevel: GeoLevel,
+    sourceId: string,
+    opacity: number
+  ): AddLayerObject => {
+    const layerId = getLayerId(datatype, geolevel)
+    return {
+      id: layerId,
+      type: "fill",
+      source: sourceId,
+      "source-layer": `${geolevel}--${datatype}`,
+      layout: {},
+      paint: {
+        "fill-color": FILL_COLOR_MAP.value[
+          datatype
+        ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
+        "fill-outline-color": "#00000000",
+        "fill-opacity": opacity
+      }
+    }
+  }
+
+  const createMultiLayerPopup = (e: any, map: Map) => {
+    // Vérification de sécurité : ne pas afficher la popup multi-calques en mode simple
+    if (!isMultiLayerMode.value) {
+      return
+    }
+
+    if (!popupDomElement.value) {
+      throw new Error("Popup DOM element is not defined")
+    }
+
+    removeActivePopup()
+
+    // Collecter les données de tous les calques visibles à cette position
+    const layerData: LayerPopupData[] = []
+
+    // Obtenir toutes les features à cette position pour tous les calques actifs
+    const visibleLayerIds = activeLayers.value
+      .filter((layer) => layer.visible)
+      .map((layer) => {
+        const geoLevel = DataTypeToGeolevel[layer.dataType]
+        return getLayerId(layer.dataType, geoLevel)
+      })
+
+    const allFeatures = map.queryRenderedFeatures(e.point, { layers: visibleLayerIds })
+
+    // Grouper les features par calque
+    activeLayers.value
+      .filter((layer) => layer.visible)
+      .forEach((layer) => {
+        const geoLevel = DataTypeToGeolevel[layer.dataType]
+        const layerId = getLayerId(layer.dataType, geoLevel)
+
+        // Trouver les features pour ce calque spécifique
+        const layerFeatures = allFeatures.filter((feature) => feature.layer.id === layerId)
+
+        if (layerFeatures && layerFeatures.length > 0) {
+          layerData.push({
+            dataType: layer.dataType,
+            id: extractFeatureProperty(layerFeatures, layer.dataType, geoLevel, "id"),
+            properties: extractFeatureProperties(layerFeatures, layer.dataType, geoLevel),
+            score: extractFeatureProperty(layerFeatures, layer.dataType, geoLevel, "indice")
+          })
+        }
+      })
+
+    if (layerData.length > 0) {
+      if (isMultiLayerMode.value) {
+        // Mode multi-calques : toujours utiliser la popup multi-calques
+        multiLayerPopupData.value = {
+          lng: e.lngLat.lng,
+          lat: e.lngLat.lat,
+          layers: layerData
+        }
+        popupData.value = undefined
+      } else {
+        // Mode mono-calque
+        const singleLayer = layerData[0]
+        popupData.value = {
+          id: singleLayer.id,
+          lng: e.lngLat.lng,
+          lat: e.lngLat.lat,
+          properties: singleLayer.properties,
+          score: singleLayer.score
+        }
+        multiLayerPopupData.value = undefined
+      }
+
+      // Ajouter les highlights pour tous les calques avec des données
+      layerData.forEach((data) => {
+        const geoLevel = DataTypeToGeolevel[data.dataType]
+        const layerId = getLayerId(data.dataType, geoLevel)
+        highlightFeature(map, layerId, data.id)
+      })
+
+      // S'assurer que l'élément popup est visible avant de l'utiliser
+      if (popupDomElement.value) {
+        // Forcer la visibilité de l'élément DOM
+        popupDomElement.value.style.display = "block"
+        popupDomElement.value.style.visibility = "visible"
+
+        const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
+        activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
+      }
+
+      const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
+      closeButton?.addEventListener("click", () => {
+        // Nettoyer les highlights pour tous les calques avec des données
+        layerData.forEach((data) => {
+          const geoLevel = DataTypeToGeolevel[data.dataType]
+          const layerId = getLayerId(data.dataType, geoLevel)
+          clearHighlight(map, layerId)
+        })
+        contextData.removeData()
+      })
+
+      // Mettre à jour les données de contexte avec le premier élément
+      if (contextData.data.value && layerData.length > 0) {
+        contextData.setData(layerData[0].id)
+      }
+    }
+  }
+
   return {
     mapInstancesByIds,
     initMap,
     popupData,
+    multiLayerPopupData,
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
@@ -370,6 +696,16 @@ export const useMapStore = defineStore("map", () => {
     toggleFilter,
     activeFiltersCount,
     toggleAndApplyFilter,
-    resetFilters
+    resetFilters,
+    // Nouvelles propriétés et méthodes multi-calques
+    activeLayers,
+    isMultiLayerMode,
+    toggleMultiLayerMode,
+    addLayer,
+    removeLayer,
+    toggleLayerVisibility,
+    setLayerOpacity,
+    updateMapLayers,
+    createMultiLayerPopup
   }
 })

@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
+    Checkbox: typeof import('primevue/checkbox')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     ClimateContextDataMetrics: typeof import('./src/components/contextData/climate/ClimateContextDataMetrics.vue')['default']
@@ -35,6 +36,12 @@ declare module 'vue' {
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
+    MultiLayerClimateZoneLegend: typeof import('./src/components/map/legend/MultiLayerClimateZoneLegend.vue')['default']
+    MultiLayerLegend: typeof import('./src/components/map/legend/MultiLayerLegend.vue')['default']
+    MultiLayerPlantabilityLegend: typeof import('./src/components/map/legend/MultiLayerPlantabilityLegend.vue')['default']
+    MultiLayerScorePopup: typeof import('./src/components/map/popup/MultiLayerScorePopup.vue')['default']
+    MultiLayerSwitcher: typeof import('./src/components/layerSwitcher/MultiLayerSwitcher.vue')['default']
+    MultiLayerVulnerabilityLegend: typeof import('./src/components/map/legend/MultiLayerVulnerabilityLegend.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PlantabilityContextDataAccordionItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue')['default']
     PlantabilityContextDataItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataItem.vue')['default']
@@ -47,6 +54,7 @@ declare module 'vue' {
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
     ScoreTag: typeof import('./src/components/map/score/ScoreTag.vue')['default']
     Select: typeof import('primevue/select')['default']
+    Slider: typeof import('primevue/slider')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
