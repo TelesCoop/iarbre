@@ -36,9 +36,6 @@ const sidebarVisible = computed({
         <map-filters-status />
       </div>
       <div class="mb-4">
-        <map-zoom-controls />
-      </div>
-      <div class="mb-4">
         <map-layer-switcher />
       </div>
       <div class="mb-4">
