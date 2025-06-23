@@ -2,6 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
+import { Sidebar, useAppStore } from "@/stores/app"
 
 const props = defineProps({
   mapId: {
@@ -19,6 +20,7 @@ const emit = defineEmits<{
   "update:modelValue": [value: MapParams]
 }>()
 
+const appStore = useAppStore()
 const mapStore = useMapStore()
 
 onMounted(() => {
@@ -56,6 +58,10 @@ onMounted(() => {
       <map-context-tools class="ml-auto" />
     </div>
   </div>
+  <!-- Mobile version of legend -->
+  <div class="minify-map-legend">
+    <map-legend is-minify @click="appStore.setSidebarVisible(Sidebar.MAP_CONFIG, true)" />
+  </div>
   <div
     class="absolute hidden lg:flex top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
   >
@@ -72,6 +78,11 @@ onMounted(() => {
 
 <style>
 @reference "@/styles/main.css";
+
+.minify-map-legend {
+  @apply absolute bottom-0 left-0 mb-15 ml-2 lg:hidden;
+  max-width: calc(100vw - 3rem);
+}
 
 .legend-container {
   position: absolute;

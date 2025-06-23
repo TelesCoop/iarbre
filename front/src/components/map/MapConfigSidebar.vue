@@ -14,7 +14,7 @@ const sidebarVisible = computed({
 <template>
   <AppSidebar
     v-model:visible="sidebarVisible"
-    position="left"
+    position="right"
     header-icon="pi pi-cog"
     header-title="Carte"
     class="map-config-sidebar"

@@ -8,17 +8,19 @@
         <ClimateZoneScoreLabel :zone="zone" size="compact" @click="handleZoneClick(zone)" />
       </div>
     </div>
-    <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
-    <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-1">
-      <div
-        v-for="(zone, index) in zones"
-        :key="'vertical-' + index"
-        class="flex items-center gap-2"
-      >
-        <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
-        <span class="text-[0.9rem]">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+    <template v-if="!isMinify">
+      <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
+      <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-1">
+        <div
+          v-for="(zone, index) in zones"
+          :key="'vertical-' + index"
+          class="flex items-center gap-2"
+        >
+          <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
+          <span class="text-[0.9rem]">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -29,6 +31,9 @@ import { useMapStore } from "@/stores/map"
 import ClimateZoneScoreLabel from "@/components/map/score/ClimateZoneScoreLabel.vue"
 import ExpandToggle from "../../toggle/ExpandToggle.vue"
 
+defineProps<{
+  isMinify?: boolean
+}>()
 const isExpanded = ref(false)
 const mapStore = useMapStore()
 
