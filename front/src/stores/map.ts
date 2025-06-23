@@ -20,6 +20,7 @@ import {
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
+import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -52,6 +53,7 @@ export const useMapStore = defineStore("map", () => {
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
+  const showQPVLayer = ref<boolean>(false)
 
   const {
     clearAllFilters,
@@ -316,6 +318,56 @@ export const useMapStore = defineStore("map", () => {
     setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
   }
 
+  // TODO: display loading during the async execution
+  const addQPVLayer = async (mapInstance: Map) => {
+    if (!mapInstance.getSource("qpv-source")) {
+      const data = await getQPVData()
+      if (!data) {
+        return
+      }
+
+      mapInstance.addSource("qpv-source", {
+        type: "geojson",
+        data: data
+      })
+    }
+
+    if (!mapInstance.getLayer("qpv-border")) {
+      mapInstance.addLayer({
+        id: "qpv-border",
+        type: "line",
+        source: "qpv-source",
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 3
+        }
+      })
+    }
+  }
+
+  const removeQPVLayer = (mapInstance: Map) => {
+    if (mapInstance.getLayer("qpv-border")) {
+      mapInstance.removeLayer("qpv-border")
+    }
+    if (mapInstance.getSource("qpv-source")) {
+      mapInstance.removeSource("qpv-source")
+    }
+  }
+
+  const toggleQPVLayer = async () => {
+    showQPVLayer.value = !showQPVLayer.value
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      if (showQPVLayer.value) {
+        await addQPVLayer(mapInstance)
+      } else {
+        removeQPVLayer(mapInstance)
+      }
+    }
+  }
+
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
 
@@ -370,6 +422,8 @@ export const useMapStore = defineStore("map", () => {
     toggleFilter,
     activeFiltersCount,
     toggleAndApplyFilter,
-    resetFilters
+    resetFilters,
+    showQPVLayer,
+    toggleQPVLayer
   }
 })
