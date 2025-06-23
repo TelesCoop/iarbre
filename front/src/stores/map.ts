@@ -22,7 +22,7 @@ import type { MapScorePopupData, LayerConfig } from "@/types/map"
 import { LayerRenderMode } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
-
+import { configureLayersProperties } from "@/utils/layers"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
@@ -36,9 +36,11 @@ import {
   extractFeatureProperty,
   getLayerId,
   getSourceId,
-  highlightFeature
+  highlightFeature,
+  setupMapIcons
 } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
+import { useLayers } from "@/composables/useLayers"
 import { addCenterControl } from "@/utils/mapControls"
 
 export const useMapStore = defineStore("map", () => {
@@ -54,21 +56,17 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
 
-  // Nouvelle gestion multi-calques avec modes de mélange
-  const activeLayers = ref<LayerConfig[]>([
-    {
-      dataType: DataType.PLANTABILITY,
-      visible: true,
-      opacity: 0.7,
-      zIndex: 1,
-      filters: [],
-      renderMode: LayerRenderMode.FILL
-    }
-  ])
+  const multiLayers = useLayers()
+  const {
+    activeLayers,
+    isMultiLayerMode,
+    addLayer,
+    addLayerWithMode,
+    removeLayer,
+    setUpdateCallback
+  } = multiLayers
 
-  const isMultiLayerMode = computed(() => {
-    return activeLayers.value.length > 1
-  })
+  setUpdateCallback(() => updateMapLayers())
 
   const {
     clearAllFilters,
@@ -272,7 +270,7 @@ export const useMapStore = defineStore("map", () => {
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
-  const changeDataType = (datatype: DataType) => {
+  const switchToSingleDataType = (datatype: DataType) => {
     removeActivePopup()
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
@@ -368,6 +366,7 @@ export const useMapStore = defineStore("map", () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
+      setupMapIcons(mapInstance)
     })
 
     mapInstance.on("moveend", () => {
@@ -379,89 +378,6 @@ export const useMapStore = defineStore("map", () => {
         `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
       )
     })
-  }
-
-  const calculateZIndex = (dataType: DataType, renderMode: LayerRenderMode): number => {
-    if (
-      dataType === DataType.PLANTABILITY &&
-      (renderMode === LayerRenderMode.FILL || renderMode === LayerRenderMode.SYMBOL)
-    ) {
-      const existingHighZIndexes = activeLayers.value
-        .filter((l) => l.zIndex >= 100)
-        .map((l) => l.zIndex)
-      return existingHighZIndexes.length > 0 ? Math.max(...existingHighZIndexes) + 1 : 100
-    } else if (dataType === DataType.VULNERABILITY) {
-      const existingMidZIndexes = activeLayers.value
-        .filter((l) => l.zIndex >= 50 && l.zIndex < 100)
-        .map((l) => l.zIndex)
-      return existingMidZIndexes.length > 0 ? Math.max(...existingMidZIndexes) + 1 : 50
-    } else if (dataType === DataType.CLIMATE_ZONE) {
-      const existingLowZIndexes = activeLayers.value
-        .filter((l) => l.zIndex >= 10 && l.zIndex < 50)
-        .map((l) => l.zIndex)
-      return existingLowZIndexes.length > 0 ? Math.max(...existingLowZIndexes) + 1 : 10
-    } else {
-      // Fallback pour les autres cas : comportement par défaut
-      return Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
-    }
-  }
-
-  const addLayer = (dataType: DataType, opacity: number = 0.7) => {
-    const existingLayer = activeLayers.value.find((layer) => layer.dataType === dataType)
-    if (existingLayer) {
-      existingLayer.visible = true
-      existingLayer.opacity = opacity
-    } else {
-      const newZIndex = calculateZIndex(dataType, LayerRenderMode.FILL)
-
-      activeLayers.value.push({
-        dataType,
-        visible: true,
-        opacity,
-        zIndex: newZIndex,
-        filters: [],
-        renderMode: LayerRenderMode.FILL
-      })
-    }
-    updateMapLayers()
-  }
-
-  const addLayerWithMode = (
-    dataType: DataType,
-    renderMode: LayerRenderMode,
-    opacity: number = 0.7
-  ) => {
-    const existingLayer = activeLayers.value.find(
-      (layer) => layer.dataType === dataType && layer.renderMode === renderMode
-    )
-
-    if (existingLayer) {
-      existingLayer.visible = true
-      existingLayer.opacity = opacity
-    } else {
-      const newZIndex = calculateZIndex(dataType, renderMode)
-
-      activeLayers.value.push({
-        dataType,
-        visible: true,
-        opacity: opacity,
-        zIndex: newZIndex,
-        filters: [],
-        renderMode: renderMode
-      })
-    }
-    updateMapLayers()
-  }
-
-  const removeLayer = (dataType: DataType, renderMode?: LayerRenderMode) => {
-    const index = activeLayers.value.findIndex(
-      (layer) =>
-        layer.dataType === dataType && (renderMode ? layer.renderMode === renderMode : true)
-    )
-    if (index > -1) {
-      activeLayers.value.splice(index, 1)
-    }
-    updateMapLayers()
   }
 
   const updateMapLayers = () => {
@@ -487,9 +403,6 @@ export const useMapStore = defineStore("map", () => {
 
       const visibleLayersCount = activeLayers.value.filter((layer) => layer.visible).length
 
-      if (isMultiLayerMode.value) {
-        setupPatterns(mapInstance)
-      }
       activeLayers.value
         .filter((layer) => layer.visible)
         .sort((a, b) => a.zIndex - b.zIndex) // Ordre par zIndex
@@ -498,196 +411,19 @@ export const useMapStore = defineStore("map", () => {
           setupSource(mapInstance, layer.dataType, geoLevel)
 
           const sourceId = getSourceId(layer.dataType, geoLevel)
-          const advancedLayer = configureLayersProperties(layer, geoLevel, sourceId)
+          const advancedLayer = configureLayersProperties(
+            layer,
+            geoLevel,
+            sourceId,
+            FILL_COLOR_MAP.value,
+            vulnerabilityMode.value
+          )
           mapInstance.addLayer(advancedLayer)
           if (visibleLayersCount === 1) {
             setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
           }
         })
     })
-  }
-
-  const configureLayersProperties = (
-    layerConfig: LayerConfig,
-    geolevel: GeoLevel,
-    sourceId: string
-  ): AddLayerObject => {
-    const layerId = getLayerId(layerConfig.dataType, geolevel)
-    const renderMode = layerConfig.renderMode
-    const smartOpacity = layerConfig.opacity
-    const radiusField =
-      layerConfig.dataType === DataType.VULNERABILITY
-        ? `indice_${vulnerabilityMode.value}`
-        : "indice"
-    const maxRadius = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
-    const baseLayer = {
-      id: layerId,
-      source: sourceId,
-      "source-layer": `${geolevel}--${layerConfig.dataType}`,
-      layout: {}
-    }
-
-    switch (renderMode) {
-      case LayerRenderMode.FILL:
-        return {
-          ...baseLayer,
-          type: "fill",
-          paint: {
-            "fill-color": FILL_COLOR_MAP.value[
-              layerConfig.dataType
-            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-            "fill-outline-color": "#00000000",
-            "fill-opacity": smartOpacity
-          }
-        } as AddLayerObject
-
-      case LayerRenderMode.SYMBOL:
-        if (layerConfig.dataType === DataType.PLANTABILITY) {
-          return {
-            ...baseLayer,
-            type: "symbol",
-            layout: {
-              "symbol-placement": "point",
-              "icon-image": [
-                "case",
-                [">=", ["get", "indice"], 7],
-                "tree-icon",
-                [">=", ["get", "indice"], 4],
-                "warning-icon",
-                "tree-icon" // valeur par défaut
-              ],
-              "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 0.8, 20, 1.0],
-              "icon-allow-overlap": false,
-              "icon-ignore-placement": false,
-              "symbol-spacing": 200,
-              "symbol-avoid-edges": true
-            },
-            paint: {
-              "icon-opacity": smartOpacity
-            }
-          } as AddLayerObject
-        }
-        return {
-          ...baseLayer,
-          type: "circle",
-          layout: {
-            "circle-sort-key": ["get", radiusField]
-          },
-          paint: {
-            "circle-color": FILL_COLOR_MAP.value[
-              layerConfig.dataType
-            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-            "circle-radius": [
-              "interpolate",
-              ["linear"],
-              ["get", radiusField],
-              0,
-              4,
-              maxRadius / 2,
-              8,
-              maxRadius,
-              16
-            ],
-            "circle-opacity": Math.min(0.8, smartOpacity + 0.2),
-            "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 15, 2, 20, 3],
-            "circle-stroke-color": "#ffffff",
-            "circle-stroke-opacity": 1.0
-          }
-        } as AddLayerObject
-      case LayerRenderMode.COLOR_RELIEF: {
-        const colorReliefField =
-          layerConfig.dataType === DataType.VULNERABILITY
-            ? `indice_${vulnerabilityMode.value}`
-            : "indice"
-        const maxColorReliefValue = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
-
-        return {
-          ...baseLayer,
-          type: "fill",
-          paint: {
-            "fill-color": [
-              "interpolate",
-              ["linear"],
-              ["get", colorReliefField],
-              1,
-              "rgb(4, 0, 108)", // Bleu foncé - score 1
-              2,
-              "rgb(10, 21, 189)", // Bleu foncé - score 2
-              3,
-              "rgb(24, 69, 240)", // Bleu clair - score 3
-              4,
-              "rgb(39, 144, 116)", // Bleu-vert - score 4
-              5,
-              "rgb(111, 186, 5)", // Vert - score 5
-              6,
-              "rgb(205, 216, 2)", // Jaune-vert - score 6
-              7,
-              "rgb(251, 194, 14)", // Jaune - score 7
-              8,
-              "rgb(253, 128, 20)", // Orange - score 8
-              9,
-              "rgb(215, 5, 13)" // Rouge - score 9
-            ],
-            "fill-opacity": [
-              "interpolate",
-              ["exponential", 1.2],
-              ["get", colorReliefField],
-              0,
-              smartOpacity * 0.3,
-              maxColorReliefValue / 2,
-              smartOpacity * 0.6,
-              maxColorReliefValue,
-              smartOpacity * 0.9
-            ],
-            "fill-outline-color": [
-              "interpolate",
-              ["linear"],
-              ["get", colorReliefField],
-              0,
-              "#0080ff",
-              maxColorReliefValue / 2,
-              "#ffff00",
-              maxColorReliefValue,
-              "#990000"
-            ]
-          }
-        } as AddLayerObject
-      }
-
-      default:
-        return {
-          ...baseLayer,
-          type: "fill",
-          paint: {
-            "fill-color": FILL_COLOR_MAP.value[
-              layerConfig.dataType
-            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-            "fill-outline-color": "#00000000",
-            "fill-opacity": smartOpacity
-          }
-        } as AddLayerObject
-    }
-  }
-
-  const setupPatterns = (map: Map) => {
-    const createEmojiIcon = (name: string, emoji: string, size: number) => {
-      if (!map.hasImage(name)) {
-        const canvas = document.createElement("canvas")
-        canvas.width = size
-        canvas.height = size
-        const ctx = canvas.getContext("2d")
-
-        if (!ctx) return
-        ctx.textAlign = "center"
-        ctx.textBaseline = "middle"
-        ctx.fillText(emoji, size / 2, size / 2)
-        const imageData = ctx.getImageData(0, 0, size, size)
-        map.addImage(name, imageData)
-      }
-    }
-
-    createEmojiIcon("tree-icon", "🌳", 24)
-    createEmojiIcon("warning-icon", "⚠️", 22)
   }
 
   return {
@@ -697,7 +433,8 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
-    changeDataType,
+    switchToSingleDataType,
+    changeDataType: switchToSingleDataType,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,

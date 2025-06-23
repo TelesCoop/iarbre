@@ -51,3 +51,24 @@ export const extractFeatureProperties = (
 ) => {
   return extractFeatureProperty(features, datatype, geolevel)
 }
+
+export const setupMapIcons = (map: Map) => {
+  const createEmojiIcon = (name: string, emoji: string, size: number) => {
+    if (!map.hasImage(name)) {
+      const canvas = document.createElement("canvas")
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext("2d")
+
+      if (!ctx) return
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.fillText(emoji, size / 2, size / 2)
+      const imageData = ctx.getImageData(0, 0, size, size)
+      map.addImage(name, imageData)
+    }
+  }
+
+  createEmojiIcon("tree-icon", "🌳", 24)
+  createEmojiIcon("warning-icon", "⚠️", 22)
+}
