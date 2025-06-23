@@ -351,11 +351,17 @@ export const useMapStore = defineStore("map", () => {
         }
       })
     }
+    mapInstance.once("render", () => {
+      console.info(`cypress: QPV data loaded`)
+    })
   }
 
   const removeQPVLayer = (mapInstance: Map) => {
     if (mapInstance.getLayer("qpv-border")) {
       mapInstance.removeLayer("qpv-border")
+      mapInstance.once("render", () => {
+        console.info(`cypress: QPV data removed`)
+      })
     }
     if (mapInstance.getSource("qpv-source")) {
       mapInstance.removeSource("qpv-source")

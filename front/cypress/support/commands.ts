@@ -35,18 +35,6 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
 })
 
 Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
-  cy.window().then((win) => {
-    const { createPinia } = (win as any).Pinia
-    const { useMapStore } = win as any
-    const pinia = createPinia()
-    const mapStore = useMapStore(pinia)
-
-    if (mapStore && mapStore.mapInstancesByIds) {
-      const mapInstance = Object.values(mapStore.mapInstancesByIds)[0] as any
-      if (mapInstance && mapInstance.getLayer) {
-        const hasQPVLayer = !!mapInstance.getLayer("qpv-border")
-        expect(hasQPVLayer).to.equal(shouldExist)
-      }
-    }
-  })
+  const expectedMessage = shouldExist ? "cypress: QPV data loaded" : "cypress: QPV data removed"
+  cy.window().its("console").invoke("info").should("have.been.calledWith", expectedMessage)
 })
