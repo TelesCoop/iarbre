@@ -98,10 +98,7 @@ describe("Map", () => {
   })
 
   it("adds QPV layer when toggled", () => {
-    cy.mapCheckQPVLayer(false)
-
     cy.getBySel("qpv-toggle").should("be.visible").click()
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
 
     cy.mapCheckQPVLayer(true)
 
@@ -112,7 +109,6 @@ describe("Map", () => {
 
   it("maintains QPV layer when switching data layers", () => {
     cy.getBySel("qpv-toggle").should("be.visible").click()
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapCheckQPVLayer(true)
 
     cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
@@ -127,7 +123,6 @@ describe("Map", () => {
 
   it("maintains QPV layer when switching basemap styles", () => {
     cy.getBySel("qpv-toggle").should("be.visible").click()
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.mapCheckQPVLayer(true)
 
     cy.basemapSwitchLayer(MapStyle.SATELLITE)

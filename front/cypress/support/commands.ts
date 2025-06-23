@@ -36,5 +36,5 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
 
 Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
   const expectedMessage = shouldExist ? "cypress: QPV data loaded" : "cypress: QPV data removed"
-  cy.window().its("console").invoke("info").should("have.been.calledWith", expectedMessage)
+  cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
 })
