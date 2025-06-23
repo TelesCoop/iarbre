@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from shapely.geometry.polygon import Polygon
-from iarbre_data.models import City, Tile, Lcz, Vulnerability
+from iarbre_data.models import City, Tile, Lcz, Vulnerability, Data
 from iarbre_data.utils.database import select_city
 from api.utils.mvt_generator import MVTGenerator
 
@@ -278,6 +278,37 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
+    def _generate_qpv_data(self):
+        qpv_data = Data.objects.filter(
+            geometry__intersects=GEOSGeometry(self.city.geometry.wkt), factor="QPV"
+        )
+        if qpv_data.exists():
+            self.stdout.write("QPV data already exists")
+            return
+
+        (x, y) = self.city_center
+        qpv_size = 800
+        x_offset = x - qpv_size / 2
+        y_offset = y - qpv_size / 2
+
+        qpv_geometry = Polygon(
+            [
+                (x_offset, y_offset),
+                (x_offset + qpv_size, y_offset),
+                (x_offset + qpv_size, y_offset + qpv_size),
+                (x_offset, y_offset + qpv_size),
+                (x_offset, y_offset),
+            ]
+        )
+
+        qpv = Data(
+            geometry=qpv_geometry.wkt,
+            factor="QPV",
+            metadata="Generated QPV zone for testing",
+        )
+        qpv.save()
+        self.stdout.write(self.style.SUCCESS("> QPV data generated"))
+
     def handle(self, *args, **options):
         self._create_city_and_iris()
         self.city = City.objects.get(code=CITY_CODE)
@@ -290,4 +321,6 @@ class Command(BaseCommand):
 
         self.generate_vulnerability_zones()
         self.generate_vulnerability_mvt_tiles()
+
+        self._generate_qpv_data()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))

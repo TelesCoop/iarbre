@@ -64,6 +64,7 @@ onMounted(() => {
       on-label="Masquer les QPV"
       size="small"
       class="w-fit"
+      data-cy="qpv-toggle"
       @update:model-value="mapStore.toggleQPVLayer"
     />
     <map-context-data

@@ -263,6 +263,10 @@ export const useMapStore = defineStore("map", () => {
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
+      // Clear QPV if existing
+      if (mapInstance.getLayer("qpv-border")) {
+        removeQPVLayer(mapInstance)
+      }
       // remove existing layers and sources
       if (previousDataType !== null) {
         mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
@@ -270,6 +274,7 @@ export const useMapStore = defineStore("map", () => {
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
+      addQPVLayer(mapInstance)
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
@@ -288,7 +293,10 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-
+      // Clear QPV if existing
+      if (mapInstance.getLayer("qpv-border")) {
+        removeQPVLayer(mapInstance)
+      }
       let newStyle: maplibregl.StyleSpecification
 
       if (mapstyle === MapStyle.CADASTRE) {
@@ -307,7 +315,7 @@ export const useMapStore = defineStore("map", () => {
         setLayerZoomLimits(newStyle)
         mapInstance.setStyle(newStyle)
       }
-
+      addQPVLayer(mapInstance)
       mapInstance.fire("style.load")
     })
   }
