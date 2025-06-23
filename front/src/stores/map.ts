@@ -19,7 +19,7 @@ import {
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData, LayerConfig } from "@/types/map"
-import { BlendMode, LayerRenderMode } from "@/types/map"
+import { LayerRenderMode } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
@@ -62,7 +62,6 @@ export const useMapStore = defineStore("map", () => {
       opacity: 0.7,
       zIndex: 1,
       filters: [],
-      blendMode: BlendMode.NORMAL,
       renderMode: LayerRenderMode.FILL
     }
   ])
@@ -224,7 +223,6 @@ export const useMapStore = defineStore("map", () => {
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
 
-    // Toujours utiliser le popup simple, peu importe le mode
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
@@ -367,7 +365,7 @@ export const useMapStore = defineStore("map", () => {
             opacity: 0.7,
             zIndex: 1,
             filters: [],
-            blendMode: BlendMode.NORMAL,
+
             renderMode: LayerRenderMode.FILL
           }
         ]
@@ -466,7 +464,6 @@ export const useMapStore = defineStore("map", () => {
         opacity,
         zIndex: newZIndex,
         filters: [],
-        blendMode: BlendMode.NORMAL,
         renderMode: LayerRenderMode.FILL
       })
     }
@@ -495,7 +492,6 @@ export const useMapStore = defineStore("map", () => {
         opacity: opacity,
         zIndex: newZIndex,
         filters: [],
-        blendMode: BlendMode.NORMAL,
         renderMode: renderMode
       })
     }
