@@ -1,4 +1,4 @@
-import { computed, ref, nextTick } from "vue"
+import { computed, ref } from "vue"
 import { defineStore } from "pinia"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
@@ -24,6 +24,7 @@ import type {
   MultiLayerPopupData,
   LayerPopupData
 } from "@/types/map"
+import { BlendMode, LayerRenderMode } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
@@ -59,14 +60,16 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
 
-  // Nouvelle gestion multi-calques
+  // Nouvelle gestion multi-calques avec modes de mélange
   const activeLayers = ref<LayerConfig[]>([
     {
       dataType: DataType.PLANTABILITY,
       visible: true,
       opacity: 0.7,
       zIndex: 1,
-      filters: []
+      filters: [],
+      blendMode: BlendMode.NORMAL,
+      renderMode: LayerRenderMode.FILL
     }
   ])
 
@@ -149,7 +152,7 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: (map: Map) => {
+    onRemove: () => {
       const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
       if (controlElement) {
         controlElement.remove()
@@ -383,7 +386,9 @@ export const useMapStore = defineStore("map", () => {
             visible: true,
             opacity: 0.7,
             zIndex: 1,
-            filters: []
+            filters: [],
+            blendMode: BlendMode.NORMAL,
+            renderMode: LayerRenderMode.FILL
           }
         ]
       }
@@ -445,15 +450,49 @@ export const useMapStore = defineStore("map", () => {
         visible: true,
         opacity,
         zIndex: newZIndex,
-        filters: []
+        filters: [],
+        blendMode: BlendMode.NORMAL,
+        renderMode: LayerRenderMode.FILL
       })
     }
     isMultiLayerMode.value = true
     updateMapLayers()
   }
 
-  const removeLayer = (dataType: DataType) => {
-    const index = activeLayers.value.findIndex((layer) => layer.dataType === dataType)
+  const addLayerWithMode = (
+    dataType: DataType,
+    renderMode: LayerRenderMode,
+    opacity: number = 0.7
+  ) => {
+    const existingLayer = activeLayers.value.find(
+      (layer) => layer.dataType === dataType && layer.renderMode === renderMode
+    )
+
+    if (existingLayer) {
+      existingLayer.visible = true
+      existingLayer.opacity = opacity
+    } else {
+      const newZIndex = Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
+
+      activeLayers.value.push({
+        dataType,
+        visible: true,
+        opacity: opacity,
+        zIndex: newZIndex,
+        filters: [],
+        blendMode: BlendMode.NORMAL,
+        renderMode: renderMode
+      })
+    }
+    isMultiLayerMode.value = true
+    updateMapLayers()
+  }
+
+  const removeLayer = (dataType: DataType, renderMode?: LayerRenderMode) => {
+    const index = activeLayers.value.findIndex(
+      (layer) =>
+        layer.dataType === dataType && (renderMode ? layer.renderMode === renderMode : true)
+    )
     if (index > -1) {
       activeLayers.value.splice(index, 1)
     }
@@ -463,8 +502,10 @@ export const useMapStore = defineStore("map", () => {
     updateMapLayers()
   }
 
-  const toggleLayerVisibility = (dataType: DataType) => {
-    const layer = activeLayers.value.find((l) => l.dataType === dataType)
+  const toggleLayerVisibility = (dataType: DataType, renderMode?: LayerRenderMode) => {
+    const layer = activeLayers.value.find(
+      (l) => l.dataType === dataType && (renderMode ? l.renderMode === renderMode : true)
+    )
     if (layer) {
       layer.visible = !layer.visible
       updateMapLayers()
@@ -519,6 +560,8 @@ export const useMapStore = defineStore("map", () => {
       // Configurer le gestionnaire d'événements selon le mode
       if (isMultiLayerMode.value) {
         setupGlobalClickHandler(mapInstance)
+        // Configurer les patterns et icônes pour les modes avancés
+        setupPatterns(mapInstance)
       }
 
       // Ajouter les calques actifs visibles
@@ -528,7 +571,12 @@ export const useMapStore = defineStore("map", () => {
         .forEach((layer) => {
           const geoLevel = DataTypeToGeolevel[layer.dataType]
           setupSource(mapInstance, layer.dataType, geoLevel)
-          setupTileWithOpacity(mapInstance, layer.dataType, geoLevel, layer.opacity)
+
+          // Utiliser createAdvancedBlendLayer pour supporter les modes de rendu
+          const sourceId = getSourceId(layer.dataType, geoLevel)
+          const advancedLayer = createAdvancedBlendLayer(layer, geoLevel, sourceId)
+          mapInstance.addLayer(advancedLayer)
+          setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
         })
     })
   }
@@ -566,6 +614,281 @@ export const useMapStore = defineStore("map", () => {
         "fill-opacity": opacity
       }
     }
+  }
+
+  /**
+   * Crée un calque avec des techniques de mélange avancées
+   */
+  const createAdvancedBlendLayer = (
+    layerConfig: LayerConfig,
+    geolevel: GeoLevel,
+    sourceId: string
+  ): AddLayerObject => {
+    const layerId = getLayerId(layerConfig.dataType, geolevel)
+    const renderMode = layerConfig.renderMode
+    const smartOpacity = layerConfig.opacity
+    const radiusField =
+      layerConfig.dataType === DataType.VULNERABILITY
+        ? `indice_${vulnerabilityMode.value}`
+        : "indice"
+    const maxRadius = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
+    const baseLayer = {
+      id: layerId,
+      source: sourceId,
+      "source-layer": `${geolevel}--${layerConfig.dataType}`,
+      layout: {}
+    }
+
+    switch (renderMode) {
+      case LayerRenderMode.FILL:
+        return {
+          ...baseLayer,
+          type: "fill",
+          paint: {
+            "fill-color": FILL_COLOR_MAP.value[
+              layerConfig.dataType
+            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
+            "fill-outline-color": "#00000000",
+            "fill-opacity": smartOpacity
+          }
+        } as AddLayerObject
+
+      case LayerRenderMode.SYMBOL:
+        if (layerConfig.dataType === DataType.PLANTABILITY) {
+          return {
+            ...baseLayer,
+            type: "symbol",
+            layout: {
+              "symbol-placement": "point",
+              "icon-image": [
+                "case",
+                [">=", ["get", "indice"], 8],
+                "tree-icon",
+                [">=", ["get", "indice"], 5],
+                "warning-icon",
+                "no-plant-icon"
+              ],
+              "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 0.8, 20, 1.0],
+              "icon-allow-overlap": false,
+              "icon-ignore-placement": false,
+              "symbol-spacing": 200,
+              "symbol-avoid-edges": true
+            },
+            paint: {
+              "icon-opacity": smartOpacity
+            }
+          } as AddLayerObject
+        }
+        return {
+          ...baseLayer,
+          type: "circle",
+          layout: {
+            "circle-sort-key": ["get", radiusField]
+          },
+          paint: {
+            "circle-color": FILL_COLOR_MAP.value[
+              layerConfig.dataType
+            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["get", radiusField],
+              0,
+              4,
+              maxRadius / 2,
+              8,
+              maxRadius,
+              16
+            ],
+            "circle-opacity": Math.min(0.8, smartOpacity + 0.2),
+            "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 10, 1, 15, 2, 20, 3],
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-opacity": 1.0
+          }
+        } as AddLayerObject
+
+      case LayerRenderMode.HEATMAP: {
+        const heatmapField =
+          layerConfig.dataType === DataType.VULNERABILITY
+            ? `indice_${vulnerabilityMode.value}`
+            : "indice"
+        const maxHeatmapValue = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
+
+        return {
+          ...baseLayer,
+          type: "heatmap",
+          paint: {
+            "heatmap-weight": [
+              "interpolate",
+              ["linear"],
+              ["get", heatmapField],
+              0,
+              0,
+              maxHeatmapValue,
+              1
+            ],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 10, 1, 15, 3],
+            "heatmap-color": [
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(0,0,255,0)",
+              0.1,
+              "royalblue",
+              0.3,
+              "cyan",
+              0.5,
+              "lime",
+              0.7,
+              "yellow",
+              1,
+              "red"
+            ],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 10, 15, 15, 30],
+            "heatmap-opacity": smartOpacity
+          }
+        } as AddLayerObject
+      }
+
+      case LayerRenderMode.HILLSHADE: {
+        const hillshadeLayerId = `${layerId}-hillshade`
+        return {
+          ...baseLayer,
+          id: hillshadeLayerId,
+          type: "fill",
+          paint: {
+            "fill-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "indice"],
+              0,
+              "#e2e8f0",
+              1,
+              "#cbd5e1",
+              2,
+              "#94a3b8",
+              3,
+              "#64748b",
+              4,
+              "#475569",
+              5,
+              "#334155",
+              6,
+              "#1e293b",
+              7,
+              "#0f172a",
+              8,
+              "#020617",
+              9,
+              "#000000",
+              10,
+              "#000000"
+            ],
+            "fill-opacity": [
+              "interpolate",
+              ["exponential", 1.5],
+              ["zoom"],
+              8,
+              smartOpacity * 0.4,
+              12,
+              smartOpacity * 0.7,
+              16,
+              smartOpacity * 0.9
+            ],
+            "fill-outline-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "indice"],
+              0,
+              "#94a3b8",
+              5,
+              "#374151",
+              10,
+              "#111827"
+            ]
+          }
+        } as AddLayerObject
+      }
+
+      default:
+        return {
+          ...baseLayer,
+          type: "fill",
+          paint: {
+            "fill-color": FILL_COLOR_MAP.value[
+              layerConfig.dataType
+            ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
+            "fill-outline-color": "#00000000",
+            "fill-opacity": smartOpacity
+          }
+        } as AddLayerObject
+    }
+  }
+
+  const setupPatterns = (map: Map) => {
+    const createSimpleSVGIcon = (size: number, iconType: "tree" | "warning" | "x") => {
+      let svgContent = ""
+
+      if (iconType === "tree") {
+        svgContent = `
+          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
+            <rect x="${size / 2 - 1}" y="${size * 0.7}" width="2" height="${size * 0.25}" fill="#8b4513"/>
+            <circle cx="${size / 2}" cy="${size * 0.4}" r="${size * 0.2}" fill="#16a34a"/>
+          </svg>`
+      } else if (iconType === "warning") {
+        svgContent = `
+          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+            <text x="${size / 2}" y="${size / 2 + 2}" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="${size * 0.6}" font-weight="bold">!</text>
+          </svg>`
+      } else if (iconType === "x") {
+        svgContent = `
+          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+            <line x1="${size * 0.3}" y1="${size * 0.3}" x2="${size * 0.7}" y2="${size * 0.7}" stroke="#ffffff" stroke-width="3"/>
+            <line x1="${size * 0.7}" y1="${size * 0.3}" x2="${size * 0.3}" y2="${size * 0.7}" stroke="#ffffff" stroke-width="3"/>
+          </svg>`
+      }
+
+      return svgContent
+    }
+
+    // Créer et ajouter les icônes avec Canvas
+    const addCanvasIcon = (name: string, svgContent: string, size: number) => {
+      if (!map.hasImage(name)) {
+        const canvas = document.createElement("canvas")
+        canvas.width = size
+        canvas.height = size
+        const ctx = canvas.getContext("2d")
+
+        if (!ctx) return
+
+        const image = new Image()
+        const svgBlob = new Blob([svgContent], { type: "image/svg+xml" })
+        const url = URL.createObjectURL(svgBlob)
+
+        image.onload = () => {
+          ctx.drawImage(image, 0, 0, size, size)
+          const imageData = ctx.getImageData(0, 0, size, size)
+          map.addImage(name, imageData)
+          URL.revokeObjectURL(url)
+        }
+
+        image.onerror = () => {
+          console.error(`Failed to load icon: ${name}`)
+          URL.revokeObjectURL(url)
+        }
+
+        image.src = url
+      }
+    }
+
+    // Ajouter les icônes plantabilité
+    addCanvasIcon("tree-icon", createSimpleSVGIcon(24, "tree"), 24)
+    addCanvasIcon("warning-icon", createSimpleSVGIcon(22, "warning"), 22)
+    addCanvasIcon("no-plant-icon", createSimpleSVGIcon(20, "x"), 20)
   }
 
   const createMultiLayerPopup = (e: any, map: Map) => {
@@ -702,6 +1025,7 @@ export const useMapStore = defineStore("map", () => {
     isMultiLayerMode,
     toggleMultiLayerMode,
     addLayer,
+    addLayerWithMode,
     removeLayer,
     toggleLayerVisibility,
     setLayerOpacity,

@@ -47,9 +47,8 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <div class="legend-container">
-    <!-- Légende conditionnelle selon le mode -->
-    <multi-layer-legend v-if="mapStore.isMultiLayerMode" />
-    <map-legend v-else />
+    <!-- Légende uniquement en mode simple -->
+    <map-legend v-if="!mapStore.isMultiLayerMode" />
     <div class="flex gap-2">
       <map-filters-status />
       <map-context-tools class="ml-auto" />

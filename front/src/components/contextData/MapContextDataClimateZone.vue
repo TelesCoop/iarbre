@@ -7,7 +7,7 @@ interface ClimateDataProps {
   data: ClimateData
 }
 
-const props = defineProps<ClimateDataProps>()
+defineProps<ClimateDataProps>()
 const emit = defineEmits<{
   close: []
 }>()

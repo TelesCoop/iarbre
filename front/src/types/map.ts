@@ -21,12 +21,38 @@ export interface LayerPopupData {
   score: string
 }
 
+export enum BlendMode {
+  NORMAL = "normal",
+  MULTIPLY = "multiply",
+  SCREEN = "screen",
+  OVERLAY = "overlay",
+  DARKEN = "darken",
+  LIGHTEN = "lighten",
+  COLOR_DODGE = "color-dodge",
+  COLOR_BURN = "color-burn",
+  HARD_LIGHT = "hard-light",
+  SOFT_LIGHT = "soft-light",
+  DIFFERENCE = "difference",
+  EXCLUSION = "exclusion"
+}
+
+export enum LayerRenderMode {
+  FILL = "fill",
+  PATTERN = "pattern",
+  SYMBOL = "symbol",
+  OUTLINE = "outline",
+  HEATMAP = "heatmap",
+  HILLSHADE = "hillshade"
+}
+
 export interface LayerConfig {
   dataType: DataType
   visible: boolean
   opacity: number
   zIndex: number
   filters: (number | string)[]
+  blendMode: BlendMode
+  renderMode: LayerRenderMode
 }
 
 export interface FilterConfig {
