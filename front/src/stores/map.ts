@@ -333,28 +333,13 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const initTiles = (mapInstance: Map) => {
-    if (isMultiLayerMode.value) {
-      // Mode multi-calques : utiliser la nouvelle logique
-      activeLayers.value
-        .filter((layer) => layer.visible)
-        .sort((a, b) => a.zIndex - b.zIndex)
-        .forEach((layer) => {
-          const geoLevel = DataTypeToGeolevel[layer.dataType]
-          setupSource(mapInstance, layer.dataType, geoLevel)
-          setupTileWithOpacity(mapInstance, layer.dataType, geoLevel, layer.opacity)
-        })
-    } else {
-      // Mode mono-calque classique
-      const currentGeoLevel = getGeoLevelFromDataType()
-      setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
-      setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
-    }
+    const currentGeoLevel = getGeoLevelFromDataType()
+    setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
+    setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
-
-    // S'assurer que les activeLayers correspondent au selectedDataType initial
     if (!isMultiLayerMode.value) {
       const existingLayer = activeLayers.value.find((layer) => layer.dataType === initialDatatype)
       if (!existingLayer) {
@@ -365,7 +350,6 @@ export const useMapStore = defineStore("map", () => {
             opacity: 0.7,
             zIndex: 1,
             filters: [],
-
             renderMode: LayerRenderMode.FILL
           }
         ]
@@ -398,14 +382,6 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  // === Nouvelles fonctions multi-calques ===
-
-  /**
-   * Calcule le zIndex approprié selon les règles de superposition
-   * - PLANTABILITY (FILL, SYMBOL) : zIndex élevé (100+)
-   * - VULNERABILITY (tous modes) : zIndex moyen (50+)
-   * - CLIMATE_ZONE (tous modes) : zIndex bas (10+)
-   */
   const calculateZIndex = (dataType: DataType, renderMode: LayerRenderMode): number => {
     if (
       dataType === DataType.PLANTABILITY &&
@@ -432,22 +408,6 @@ export const useMapStore = defineStore("map", () => {
       // Fallback pour les autres cas : comportement par défaut
       return Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
     }
-  }
-
-  const toggleMultiLayerMode = () => {
-    isMultiLayerMode.value = !isMultiLayerMode.value
-
-    if (!isMultiLayerMode.value) {
-      // Retour au mode mono-calque : garder seulement le premier calque visible
-      const firstVisibleLayer = activeLayers.value.find((layer) => layer.visible)
-      if (firstVisibleLayer) {
-        activeLayers.value = [firstVisibleLayer]
-        selectedDataType.value = firstVisibleLayer.dataType
-      }
-    }
-
-    // Toujours mettre à jour les calques pour reconfigurer les gestionnaires d'événements
-    updateMapLayers()
   }
 
   const addLayer = (dataType: DataType, opacity: number = 0.7) => {
@@ -513,38 +473,8 @@ export const useMapStore = defineStore("map", () => {
     updateMapLayers()
   }
 
-  const toggleLayerVisibility = (dataType: DataType, renderMode?: LayerRenderMode) => {
-    const layer = activeLayers.value.find(
-      (l) => l.dataType === dataType && (renderMode ? l.renderMode === renderMode : true)
-    )
-    if (layer) {
-      layer.visible = !layer.visible
-      updateMapLayers()
-    }
-  }
-
-  const setLayerOpacity = (dataType: DataType, opacity: number) => {
-    const layer = activeLayers.value.find((l) => l.dataType === dataType)
-    if (layer) {
-      layer.opacity = Math.max(0, Math.min(1, opacity))
-      updateMapLayerOpacity(dataType, layer.opacity)
-    }
-  }
-
-  const updateMapLayerOpacity = (dataType: DataType, opacity: number) => {
-    const geoLevel = DataTypeToGeolevel[dataType]
-    const layerId = getLayerId(dataType, geoLevel)
-
-    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
-      if (mapInstance.getLayer(layerId)) {
-        mapInstance.setPaintProperty(layerId, "fill-opacity", opacity)
-      }
-    })
-  }
-
   const updateMapLayers = () => {
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
-      // Nettoyer tous les gestionnaires d'événements existants
       Object.keys(mapEventsListener.value).forEach((key) => {
         if (key === "global-multi-layer") {
           mapInstance.off("click", mapEventsListener.value[key])
@@ -568,7 +498,6 @@ export const useMapStore = defineStore("map", () => {
         }
       })
 
-      // Compter les layers visibles
       const visibleLayersCount = activeLayers.value.filter((layer) => layer.visible).length
 
       // Configurer le gestionnaire d'événements selon le nombre de layers actifs
@@ -578,8 +507,6 @@ export const useMapStore = defineStore("map", () => {
           setupPatterns(mapInstance)
         }
       }
-      // Si plusieurs layers actifs : pas de gestionnaire global, pas de popup
-
       // Ajouter les calques actifs visibles
       activeLayers.value
         .filter((layer) => layer.visible)
@@ -599,41 +526,6 @@ export const useMapStore = defineStore("map", () => {
           }
         })
     })
-  }
-
-  const setupTileWithOpacity = (
-    map: Map,
-    datatype: DataType,
-    geolevel: GeoLevel,
-    opacity: number
-  ) => {
-    const sourceId = getSourceId(datatype, geolevel)
-    const layer = createMapLayerWithOpacity(datatype, geolevel, sourceId, opacity)
-    map.addLayer(layer)
-    setupClickEventOnTile(map, datatype, geolevel)
-  }
-
-  const createMapLayerWithOpacity = (
-    datatype: DataType,
-    geolevel: GeoLevel,
-    sourceId: string,
-    opacity: number
-  ): AddLayerObject => {
-    const layerId = getLayerId(datatype, geolevel)
-    return {
-      id: layerId,
-      type: "fill",
-      source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
-      layout: {},
-      paint: {
-        "fill-color": FILL_COLOR_MAP.value[
-          datatype
-        ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-        "fill-outline-color": "#00000000",
-        "fill-opacity": opacity
-      }
-    }
   }
 
   const configureLayersProperties = (
@@ -848,12 +740,9 @@ export const useMapStore = defineStore("map", () => {
     // Nouvelles propriétés et méthodes multi-calques
     activeLayers,
     isMultiLayerMode,
-    toggleMultiLayerMode,
     addLayer,
     addLayerWithMode,
     removeLayer,
-    toggleLayerVisibility,
-    setLayerOpacity,
     updateMapLayers
   }
 })
