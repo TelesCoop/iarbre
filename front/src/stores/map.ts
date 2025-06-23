@@ -18,12 +18,7 @@ import {
   DataTypeToAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
-import type {
-  MapScorePopupData,
-  LayerConfig,
-  MultiLayerPopupData,
-  LayerPopupData
-} from "@/types/map"
+import type { MapScorePopupData, LayerConfig } from "@/types/map"
 import { BlendMode, LayerRenderMode } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -50,7 +45,6 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const POPUP_MAX_WIDTH = "400px"
   const popupData = ref<MapScorePopupData | undefined>(undefined)
-  const multiLayerPopupData = ref<MultiLayerPopupData | undefined>(undefined)
   const popupDomElement = ref<HTMLElement | null>(null)
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const activePopup = ref<Popup | null>(null)
@@ -165,7 +159,6 @@ export const useMapStore = defineStore("map", () => {
       activePopup.value.remove()
       activePopup.value = null
       popupData.value = undefined
-      multiLayerPopupData.value = undefined
     }
   }
 
@@ -207,12 +200,17 @@ export const useMapStore = defineStore("map", () => {
     }
 
     removeActivePopup()
+
+    // Utiliser le bon champ score selon le type de données
+    const scoreField =
+      datatype === DataType.VULNERABILITY ? `indice_${vulnerabilityMode.value}` : "indice"
+
     popupData.value = {
       id: extractFeatureProperty(e.features!, datatype, geolevel, "id"),
       lng: e.lngLat.lng,
       lat: e.lngLat.lat,
       properties: extractFeatureProperties(e.features!, datatype, geolevel),
-      score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
+      score: extractFeatureProperty(e.features!, datatype, geolevel, scoreField)
     }
     const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
     activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
@@ -226,40 +224,22 @@ export const useMapStore = defineStore("map", () => {
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
 
-    // En mode mono-calque seulement : gestionnaire spécifique par calque
-    // En mode multi-calques, le gestionnaire global est configuré dans updateMapLayers
-    if (!isMultiLayerMode.value) {
-      if (mapEventsListener.value[layerId]) {
-        map.off("click", layerId, mapEventsListener.value[layerId])
-      }
-      const clickHandler = (e: any) => {
-        const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
-        highlightFeature(map, layerId, featureId)
-        createPopup(e, map, datatype, geolevel, layerId)
-        if (contextData.data.value) {
-          contextData.setData(featureId)
-        }
-      }
-      map.on("click", layerId, clickHandler)
-      mapEventsListener.value[layerId] = clickHandler
+    // Toujours utiliser le popup simple, peu importe le mode
+    if (mapEventsListener.value[layerId]) {
+      map.off("click", layerId, mapEventsListener.value[layerId])
     }
+    const clickHandler = (e: any) => {
+      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+      highlightFeature(map, layerId, featureId)
+      createPopup(e, map, datatype, geolevel, layerId)
+      if (contextData.data.value) {
+        contextData.setData(featureId)
+      }
+    }
+    map.on("click", layerId, clickHandler)
+    mapEventsListener.value[layerId] = clickHandler
   }
 
-  const setupGlobalClickHandler = (map: Map) => {
-    const globalHandlerKey = "global-multi-layer"
-
-    // Supprimer l'ancien gestionnaire s'il existe
-    if (mapEventsListener.value[globalHandlerKey]) {
-      map.off("click", mapEventsListener.value[globalHandlerKey])
-    }
-
-    const globalClickHandler = (e: any) => {
-      createMultiLayerPopup(e, map)
-    }
-
-    map.on("click", globalClickHandler)
-    mapEventsListener.value[globalHandlerKey] = globalClickHandler
-  }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
@@ -422,6 +402,40 @@ export const useMapStore = defineStore("map", () => {
 
   // === Nouvelles fonctions multi-calques ===
 
+  /**
+   * Calcule le zIndex approprié selon les règles de superposition
+   * - PLANTABILITY (FILL, SYMBOL) : zIndex élevé (100+)
+   * - VULNERABILITY (tous modes) : zIndex moyen (50+)
+   * - CLIMATE_ZONE (tous modes) : zIndex bas (10+)
+   */
+  const calculateZIndex = (dataType: DataType, renderMode: LayerRenderMode): number => {
+    if (
+      dataType === DataType.PLANTABILITY &&
+      (renderMode === LayerRenderMode.FILL || renderMode === LayerRenderMode.SYMBOL)
+    ) {
+      // PLANTABILITY (FILL, SYMBOL) : zIndex élevé (100+)
+      const existingHighZIndexes = activeLayers.value
+        .filter((l) => l.zIndex >= 100)
+        .map((l) => l.zIndex)
+      return existingHighZIndexes.length > 0 ? Math.max(...existingHighZIndexes) + 1 : 100
+    } else if (dataType === DataType.VULNERABILITY) {
+      // VULNERABILITY (tous modes) : zIndex moyen (50+)
+      const existingMidZIndexes = activeLayers.value
+        .filter((l) => l.zIndex >= 50 && l.zIndex < 100)
+        .map((l) => l.zIndex)
+      return existingMidZIndexes.length > 0 ? Math.max(...existingMidZIndexes) + 1 : 50
+    } else if (dataType === DataType.CLIMATE_ZONE) {
+      // CLIMATE_ZONE (tous modes) : zIndex bas (10+)
+      const existingLowZIndexes = activeLayers.value
+        .filter((l) => l.zIndex >= 10 && l.zIndex < 50)
+        .map((l) => l.zIndex)
+      return existingLowZIndexes.length > 0 ? Math.max(...existingLowZIndexes) + 1 : 10
+    } else {
+      // Fallback pour les autres cas : comportement par défaut
+      return Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
+    }
+  }
+
   const toggleMultiLayerMode = () => {
     isMultiLayerMode.value = !isMultiLayerMode.value
 
@@ -444,7 +458,8 @@ export const useMapStore = defineStore("map", () => {
       existingLayer.visible = true
       existingLayer.opacity = opacity
     } else {
-      const newZIndex = Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
+      const newZIndex = calculateZIndex(dataType, LayerRenderMode.FILL)
+
       activeLayers.value.push({
         dataType,
         visible: true,
@@ -472,7 +487,7 @@ export const useMapStore = defineStore("map", () => {
       existingLayer.visible = true
       existingLayer.opacity = opacity
     } else {
-      const newZIndex = Math.max(...activeLayers.value.map((l) => l.zIndex), 0) + 1
+      const newZIndex = calculateZIndex(dataType, renderMode)
 
       activeLayers.value.push({
         dataType,
@@ -557,12 +572,17 @@ export const useMapStore = defineStore("map", () => {
         }
       })
 
-      // Configurer le gestionnaire d'événements selon le mode
-      if (isMultiLayerMode.value) {
-        setupGlobalClickHandler(mapInstance)
-        // Configurer les patterns et icônes pour les modes avancés
-        setupPatterns(mapInstance)
+      // Compter les layers visibles
+      const visibleLayersCount = activeLayers.value.filter((layer) => layer.visible).length
+
+      // Configurer le gestionnaire d'événements selon le nombre de layers actifs
+      if (visibleLayersCount === 1) {
+        // Un seul layer actif : configurer les patterns et icônes pour les modes avancés
+        if (isMultiLayerMode.value) {
+          setupPatterns(mapInstance)
+        }
       }
+      // Si plusieurs layers actifs : pas de gestionnaire global, pas de popup
 
       // Ajouter les calques actifs visibles
       activeLayers.value
@@ -572,11 +592,15 @@ export const useMapStore = defineStore("map", () => {
           const geoLevel = DataTypeToGeolevel[layer.dataType]
           setupSource(mapInstance, layer.dataType, geoLevel)
 
-          // Utiliser createAdvancedBlendLayer pour supporter les modes de rendu
+          // Utiliser configureLayersProperties pour supporter les modes de rendu
           const sourceId = getSourceId(layer.dataType, geoLevel)
-          const advancedLayer = createAdvancedBlendLayer(layer, geoLevel, sourceId)
+          const advancedLayer = configureLayersProperties(layer, geoLevel, sourceId)
           mapInstance.addLayer(advancedLayer)
-          setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
+
+          // Seulement configurer les événements de clic si un seul layer est visible
+          if (visibleLayersCount === 1) {
+            setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
+          }
         })
     })
   }
@@ -616,10 +640,7 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  /**
-   * Crée un calque avec des techniques de mélange avancées
-   */
-  const createAdvancedBlendLayer = (
+  const configureLayersProperties = (
     layerConfig: LayerConfig,
     geolevel: GeoLevel,
     sourceId: string
@@ -662,11 +683,11 @@ export const useMapStore = defineStore("map", () => {
               "symbol-placement": "point",
               "icon-image": [
                 "case",
-                [">=", ["get", "indice"], 8],
+                [">=", ["get", "indice"], 7],
                 "tree-icon",
-                [">=", ["get", "indice"], 5],
+                [">=", ["get", "indice"], 4],
                 "warning-icon",
-                "no-plant-icon"
+                "tree-icon" // valeur par défaut
               ],
               "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 0.8, 20, 1.0],
               "icon-allow-overlap": false,
@@ -706,106 +727,61 @@ export const useMapStore = defineStore("map", () => {
             "circle-stroke-opacity": 1.0
           }
         } as AddLayerObject
-
-      case LayerRenderMode.HEATMAP: {
-        const heatmapField =
+      case LayerRenderMode.COLOR_RELIEF: {
+        const colorReliefField =
           layerConfig.dataType === DataType.VULNERABILITY
             ? `indice_${vulnerabilityMode.value}`
             : "indice"
-        const maxHeatmapValue = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
+        const maxColorReliefValue = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
 
         return {
           ...baseLayer,
-          type: "heatmap",
-          paint: {
-            "heatmap-weight": [
-              "interpolate",
-              ["linear"],
-              ["get", heatmapField],
-              0,
-              0,
-              maxHeatmapValue,
-              1
-            ],
-            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 10, 1, 15, 3],
-            "heatmap-color": [
-              "interpolate",
-              ["linear"],
-              ["heatmap-density"],
-              0,
-              "rgba(0,0,255,0)",
-              0.1,
-              "royalblue",
-              0.3,
-              "cyan",
-              0.5,
-              "lime",
-              0.7,
-              "yellow",
-              1,
-              "red"
-            ],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 10, 15, 15, 30],
-            "heatmap-opacity": smartOpacity
-          }
-        } as AddLayerObject
-      }
-
-      case LayerRenderMode.HILLSHADE: {
-        const hillshadeLayerId = `${layerId}-hillshade`
-        return {
-          ...baseLayer,
-          id: hillshadeLayerId,
           type: "fill",
           paint: {
             "fill-color": [
               "interpolate",
               ["linear"],
-              ["get", "indice"],
-              0,
-              "#e2e8f0",
+              ["get", colorReliefField],
               1,
-              "#cbd5e1",
+              "rgb(4, 0, 108)", // Bleu foncé - score 1
               2,
-              "#94a3b8",
+              "rgb(10, 21, 189)", // Bleu foncé - score 2
               3,
-              "#64748b",
+              "rgb(24, 69, 240)", // Bleu clair - score 3
               4,
-              "#475569",
+              "rgb(39, 144, 116)", // Bleu-vert - score 4
               5,
-              "#334155",
+              "rgb(111, 186, 5)", // Vert - score 5
               6,
-              "#1e293b",
+              "rgb(205, 216, 2)", // Jaune-vert - score 6
               7,
-              "#0f172a",
+              "rgb(251, 194, 14)", // Jaune - score 7
               8,
-              "#020617",
+              "rgb(253, 128, 20)", // Orange - score 8
               9,
-              "#000000",
-              10,
-              "#000000"
+              "rgb(215, 5, 13)" // Rouge - score 9
             ],
             "fill-opacity": [
               "interpolate",
-              ["exponential", 1.5],
-              ["zoom"],
-              8,
-              smartOpacity * 0.4,
-              12,
-              smartOpacity * 0.7,
-              16,
+              ["exponential", 1.2],
+              ["get", colorReliefField],
+              0,
+              smartOpacity * 0.3,
+              maxColorReliefValue / 2,
+              smartOpacity * 0.6,
+              maxColorReliefValue,
               smartOpacity * 0.9
             ],
             "fill-outline-color": [
               "interpolate",
               ["linear"],
-              ["get", "indice"],
+              ["get", colorReliefField],
               0,
-              "#94a3b8",
-              5,
-              "#374151",
-              10,
-              "#111827"
+              "#0080ff",
+              maxColorReliefValue / 2,
+              "#ffff00",
+              maxColorReliefValue,
+              "#990000"
             ]
           }
         } as AddLayerObject
@@ -827,36 +803,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupPatterns = (map: Map) => {
-    const createSimpleSVGIcon = (size: number, iconType: "tree" | "warning" | "x") => {
-      let svgContent = ""
-
-      if (iconType === "tree") {
-        svgContent = `
-          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
-            <rect x="${size / 2 - 1}" y="${size * 0.7}" width="2" height="${size * 0.25}" fill="#8b4513"/>
-            <circle cx="${size / 2}" cy="${size * 0.4}" r="${size * 0.2}" fill="#16a34a"/>
-          </svg>`
-      } else if (iconType === "warning") {
-        svgContent = `
-          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
-            <text x="${size / 2}" y="${size / 2 + 2}" text-anchor="middle" fill="#ffffff" font-family="Arial" font-size="${size * 0.6}" font-weight="bold">!</text>
-          </svg>`
-      } else if (iconType === "x") {
-        svgContent = `
-          <svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 1}" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
-            <line x1="${size * 0.3}" y1="${size * 0.3}" x2="${size * 0.7}" y2="${size * 0.7}" stroke="#ffffff" stroke-width="3"/>
-            <line x1="${size * 0.7}" y1="${size * 0.3}" x2="${size * 0.3}" y2="${size * 0.7}" stroke="#ffffff" stroke-width="3"/>
-          </svg>`
-      }
-
-      return svgContent
-    }
-
-    // Créer et ajouter les icônes avec Canvas
-    const addCanvasIcon = (name: string, svgContent: string, size: number) => {
+    const createEmojiIcon = (name: string, emoji: string, size: number) => {
       if (!map.hasImage(name)) {
         const canvas = document.createElement("canvas")
         canvas.width = size
@@ -864,140 +811,22 @@ export const useMapStore = defineStore("map", () => {
         const ctx = canvas.getContext("2d")
 
         if (!ctx) return
-
-        const image = new Image()
-        const svgBlob = new Blob([svgContent], { type: "image/svg+xml" })
-        const url = URL.createObjectURL(svgBlob)
-
-        image.onload = () => {
-          ctx.drawImage(image, 0, 0, size, size)
-          const imageData = ctx.getImageData(0, 0, size, size)
-          map.addImage(name, imageData)
-          URL.revokeObjectURL(url)
-        }
-
-        image.onerror = () => {
-          console.error(`Failed to load icon: ${name}`)
-          URL.revokeObjectURL(url)
-        }
-
-        image.src = url
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.fillText(emoji, size / 2, size / 2)
+        const imageData = ctx.getImageData(0, 0, size, size)
+        map.addImage(name, imageData)
       }
     }
 
-    // Ajouter les icônes plantabilité
-    addCanvasIcon("tree-icon", createSimpleSVGIcon(24, "tree"), 24)
-    addCanvasIcon("warning-icon", createSimpleSVGIcon(22, "warning"), 22)
-    addCanvasIcon("no-plant-icon", createSimpleSVGIcon(20, "x"), 20)
-  }
-
-  const createMultiLayerPopup = (e: any, map: Map) => {
-    // Vérification de sécurité : ne pas afficher la popup multi-calques en mode simple
-    if (!isMultiLayerMode.value) {
-      return
-    }
-
-    if (!popupDomElement.value) {
-      throw new Error("Popup DOM element is not defined")
-    }
-
-    removeActivePopup()
-
-    // Collecter les données de tous les calques visibles à cette position
-    const layerData: LayerPopupData[] = []
-
-    // Obtenir toutes les features à cette position pour tous les calques actifs
-    const visibleLayerIds = activeLayers.value
-      .filter((layer) => layer.visible)
-      .map((layer) => {
-        const geoLevel = DataTypeToGeolevel[layer.dataType]
-        return getLayerId(layer.dataType, geoLevel)
-      })
-
-    const allFeatures = map.queryRenderedFeatures(e.point, { layers: visibleLayerIds })
-
-    // Grouper les features par calque
-    activeLayers.value
-      .filter((layer) => layer.visible)
-      .forEach((layer) => {
-        const geoLevel = DataTypeToGeolevel[layer.dataType]
-        const layerId = getLayerId(layer.dataType, geoLevel)
-
-        // Trouver les features pour ce calque spécifique
-        const layerFeatures = allFeatures.filter((feature) => feature.layer.id === layerId)
-
-        if (layerFeatures && layerFeatures.length > 0) {
-          layerData.push({
-            dataType: layer.dataType,
-            id: extractFeatureProperty(layerFeatures, layer.dataType, geoLevel, "id"),
-            properties: extractFeatureProperties(layerFeatures, layer.dataType, geoLevel),
-            score: extractFeatureProperty(layerFeatures, layer.dataType, geoLevel, "indice")
-          })
-        }
-      })
-
-    if (layerData.length > 0) {
-      if (isMultiLayerMode.value) {
-        // Mode multi-calques : toujours utiliser la popup multi-calques
-        multiLayerPopupData.value = {
-          lng: e.lngLat.lng,
-          lat: e.lngLat.lat,
-          layers: layerData
-        }
-        popupData.value = undefined
-      } else {
-        // Mode mono-calque
-        const singleLayer = layerData[0]
-        popupData.value = {
-          id: singleLayer.id,
-          lng: e.lngLat.lng,
-          lat: e.lngLat.lat,
-          properties: singleLayer.properties,
-          score: singleLayer.score
-        }
-        multiLayerPopupData.value = undefined
-      }
-
-      // Ajouter les highlights pour tous les calques avec des données
-      layerData.forEach((data) => {
-        const geoLevel = DataTypeToGeolevel[data.dataType]
-        const layerId = getLayerId(data.dataType, geoLevel)
-        highlightFeature(map, layerId, data.id)
-      })
-
-      // S'assurer que l'élément popup est visible avant de l'utiliser
-      if (popupDomElement.value) {
-        // Forcer la visibilité de l'élément DOM
-        popupDomElement.value.style.display = "block"
-        popupDomElement.value.style.visibility = "visible"
-
-        const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(POPUP_MAX_WIDTH)
-        activePopup.value = popup.setDOMContent(popupDomElement.value).addTo(map)
-      }
-
-      const closeButton = document.getElementsByClassName("maplibregl-popup-close-button")[0]
-      closeButton?.addEventListener("click", () => {
-        // Nettoyer les highlights pour tous les calques avec des données
-        layerData.forEach((data) => {
-          const geoLevel = DataTypeToGeolevel[data.dataType]
-          const layerId = getLayerId(data.dataType, geoLevel)
-          clearHighlight(map, layerId)
-        })
-        contextData.removeData()
-      })
-
-      // Mettre à jour les données de contexte avec le premier élément
-      if (contextData.data.value && layerData.length > 0) {
-        contextData.setData(layerData[0].id)
-      }
-    }
+    createEmojiIcon("tree-icon", "🌳", 24)
+    createEmojiIcon("warning-icon", "⚠️", 22)
   }
 
   return {
     mapInstancesByIds,
     initMap,
     popupData,
-    multiLayerPopupData,
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
@@ -1029,7 +858,6 @@ export const useMapStore = defineStore("map", () => {
     removeLayer,
     toggleLayerVisibility,
     setLayerOpacity,
-    updateMapLayers,
-    createMultiLayerPopup
+    updateMapLayers
   }
 })

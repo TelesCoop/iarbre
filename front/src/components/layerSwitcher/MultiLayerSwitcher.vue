@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { LayerRenderMode } from "@/types/map"
@@ -23,90 +23,78 @@ const availableOptions = [
 ]
 
 const activeLayers = computed(() => mapStore.activeLayers)
+const openPanels = ref<Set<DataType>>(new Set())
 
 const isLayerActive = (dataType: DataType) => {
   return activeLayers.value.some((layer) => layer.dataType === dataType && layer.visible)
 }
 
-const toggleLayerType = (dataType: DataType) => {
-  const existingLayer = activeLayers.value.find(
-    (layer) => layer.dataType === dataType && layer.visible
-  )
-
-  if (existingLayer) {
-    // Si le calque est actif, le supprimer
-    mapStore.removeLayer(dataType)
+const togglePanel = (dataType: DataType) => {
+  if (openPanels.value.has(dataType)) {
+    openPanels.value.delete(dataType)
   } else {
-    // Ajouter le calque avec le mode par défaut
-    const defaultMode = getDefaultRenderMode(dataType)
-    mapStore.addLayerWithMode(dataType, defaultMode)
+    openPanels.value.add(dataType)
   }
 }
 
-const changeLayerMode = (dataType: DataType, newMode: LayerRenderMode) => {
-  const existingLayer = activeLayers.value.find(
-    (layer) => layer.dataType === dataType && layer.visible
-  )
+const isPanelOpen = (dataType: DataType) => {
+  return openPanels.value.has(dataType)
+}
 
-  if (existingLayer && existingLayer.renderMode !== newMode) {
-    // Si on veut passer en mode FILL, vérifier que c'est autorisé
-    if (newMode === LayerRenderMode.FILL && !canUseFillMode(dataType)) {
-      // Ne rien faire si le mode FILL n'est pas disponible
-      return
+const deactivateLayer = (dataType: DataType) => {
+  mapStore.removeLayer(dataType)
+}
+
+const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode | null) => {
+  // Si mode est null/undefined, cela signifie qu'on désélectionne le mode actuel
+  if (!mode) {
+    deactivateLayer(dataType)
+    return
+  }
+
+  if (isLayerActive(dataType)) {
+    const existingLayer = activeLayers.value.find(
+      (layer) => layer.dataType === dataType && layer.visible
+    )
+    if (existingLayer && existingLayer.renderMode !== mode) {
+      // Gestion dynamique des calques pleins lors du changement de mode
+      if (mode === LayerRenderMode.FILL) {
+        const plantabilityFillLayer = activeLayers.value.find(
+          (layer) =>
+            layer.dataType === DataType.PLANTABILITY &&
+            layer.visible &&
+            layer.renderMode === LayerRenderMode.FILL
+        )
+
+        if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
+          mapStore.removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
+        }
+      }
+
+      mapStore.removeLayer(dataType)
+      mapStore.addLayerWithMode(dataType, mode)
+    }
+  } else {
+    if (mode === LayerRenderMode.FILL) {
+      const plantabilityFillLayer = activeLayers.value.find(
+        (layer) =>
+          layer.dataType === DataType.PLANTABILITY &&
+          layer.visible &&
+          layer.renderMode === LayerRenderMode.FILL
+      )
+
+      if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
+        mapStore.removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
+      }
     }
 
-    // Changer le mode du calque actuel
-    mapStore.removeLayer(dataType)
-    mapStore.addLayerWithMode(dataType, newMode)
+    mapStore.addLayerWithMode(dataType, mode)
   }
 }
 
 const getActiveLayerMode = (dataType: DataType): LayerRenderMode | null => {
   const layer = activeLayers.value.find((layer) => layer.dataType === dataType && layer.visible)
   return layer ? layer.renderMode : null
-}
-
-const getDefaultRenderMode = (dataType: DataType): LayerRenderMode => {
-  const hasFillLayer = activeLayers.value.some(
-    (layer) =>
-      layer.visible && layer.renderMode === LayerRenderMode.FILL && layer.dataType !== dataType
-  )
-
-  if (hasFillLayer) {
-    switch (dataType) {
-      case DataType.PLANTABILITY:
-        return LayerRenderMode.SYMBOL
-      case DataType.VULNERABILITY:
-        return LayerRenderMode.HEATMAP
-      case DataType.CLIMATE_ZONE:
-        return LayerRenderMode.FILL
-      default:
-        return LayerRenderMode.FILL
-    }
-  }
-
-  // Sinon, utiliser le mode FILL par défaut
-  return LayerRenderMode.FILL
-}
-
-const canUseFillMode = (dataType: DataType): boolean => {
-  // Peut utiliser FILL si :
-  // 1. C'est le calque actuel qui est déjà en mode FILL, OU
-  // 2. Aucun autre calque n'utilise le mode FILL
-  const currentLayer = activeLayers.value.find(
-    (layer) => layer.dataType === dataType && layer.visible
-  )
-
-  // Si le calque actuel est déjà en mode FILL, on peut le garder
-  if (currentLayer && currentLayer.renderMode === LayerRenderMode.FILL) {
-    return true
-  }
-
-  // Sinon, vérifier qu'aucun autre calque n'utilise FILL
-  return !activeLayers.value.some(
-    (layer) =>
-      layer.visible && layer.renderMode === LayerRenderMode.FILL && layer.dataType !== dataType
-  )
 }
 
 const getLayerIcon = (dataType: DataType) => {
@@ -128,7 +116,7 @@ const getAvailableRenderModes = (dataType: DataType): LayerRenderMode[] => {
       case DataType.CLIMATE_ZONE:
         return [LayerRenderMode.FILL]
       case DataType.VULNERABILITY:
-        return [LayerRenderMode.FILL, LayerRenderMode.HEATMAP]
+        return [LayerRenderMode.FILL, LayerRenderMode.COLOR_RELIEF]
       case DataType.PLANTABILITY:
         return [LayerRenderMode.FILL, LayerRenderMode.SYMBOL]
       default:
@@ -136,8 +124,6 @@ const getAvailableRenderModes = (dataType: DataType): LayerRenderMode[] => {
     }
   })()
 
-  // Réorganiser pour que FILL soit toujours en premier, même s'il y a conflit
-  // Cela permet de voir visuellement l'état de conflit
   return baseModes.sort((a, b) => {
     if (a === LayerRenderMode.FILL) return -1
     if (b === LayerRenderMode.FILL) return 1
@@ -149,11 +135,7 @@ const getRenderModeOptions = (dataType: DataType) => {
   return getAvailableRenderModes(dataType).map((mode) => ({
     label: getRenderModeLabel(mode),
     value: mode,
-    icon: getRenderModeIcon(mode),
-    disabled:
-      mode === LayerRenderMode.FILL &&
-      !canUseFillMode(dataType) &&
-      getActiveLayerMode(dataType) !== LayerRenderMode.FILL
+    icon: getRenderModeIcon(mode)
   }))
 }
 
@@ -161,14 +143,10 @@ const getRenderModeLabel = (mode: LayerRenderMode): string => {
   switch (mode) {
     case LayerRenderMode.FILL:
       return "Plein"
-    case LayerRenderMode.PATTERN:
-      return "Motifs"
     case LayerRenderMode.SYMBOL:
       return "Points"
-    case LayerRenderMode.HEATMAP:
-      return "Chaleur"
-    case LayerRenderMode.HILLSHADE:
-      return "Ombré"
+    case LayerRenderMode.COLOR_RELIEF:
+      return "Relief couleur"
     default:
       return "Standard"
   }
@@ -178,14 +156,10 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
   switch (mode) {
     case LayerRenderMode.FILL:
       return "pi pi-stop-fill"
-    case LayerRenderMode.PATTERN:
-      return "pi pi-th"
     case LayerRenderMode.SYMBOL:
       return "pi pi-map-marker"
-    case LayerRenderMode.HEATMAP:
-      return "pi pi-chart-scatter"
-    case LayerRenderMode.HILLSHADE:
-      return "pi pi-sun"
+    case LayerRenderMode.COLOR_RELIEF:
+      return "pi pi-image"
     default:
       return "pi pi-square-fill"
   }
@@ -204,12 +178,11 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
     <div class="unified-layer-mode">
       <div class="layers-grid">
         <div v-for="option in availableOptions" :key="option.value" class="layer-section">
-          <!-- En-tête du type de calque avec toggle -->
           <div class="layer-type-header">
             <button
               :class="{ active: isLayerActive(option.value) }"
               class="layer-toggle-button"
-              @click="toggleLayerType(option.value)"
+              @click="togglePanel(option.value)"
             >
               <div class="layer-type-info">
                 <div class="layer-type-icon">
@@ -225,21 +198,17 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
                 </div>
               </div>
               <div class="layer-type-status">
-                <div v-if="isLayerActive(option.value)" class="status-badge active">
-                  <i class="pi pi-check text-xs"></i>
-                </div>
-                <div v-else class="status-badge inactive">
-                  <i class="pi pi-plus text-xs"></i>
+                <div :class="{ active: isPanelOpen(option.value) }" class="status-badge">
+                  <i
+                    :class="isPanelOpen(option.value) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                    class="text-xs"
+                  ></i>
                 </div>
               </div>
             </button>
           </div>
 
-          <!-- Sélecteur de mode de rendu avec SelectButton (visible seulement si calque actif et multiple modes) -->
-          <div
-            v-if="isLayerActive(option.value) && getAvailableRenderModes(option.value).length > 1"
-            class="render-mode-selector"
-          >
+          <div v-if="isPanelOpen(option.value)" class="render-mode-selector">
             <SelectButton
               :model-value="getActiveLayerMode(option.value)"
               :options="getRenderModeOptions(option.value)"
@@ -247,7 +216,8 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
               option-disabled="disabled"
               option-label="label"
               option-value="value"
-              @update:model-value="(value) => changeLayerMode(option.value, value)"
+              size="small"
+              @update:model-value="(value) => activateLayerWithMode(option.value, value)"
             >
               <template #option="{ option }">
                 <div class="render-mode-option-content">
@@ -292,17 +262,11 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
   @apply text-sm;
 }
 
-.header-subtitle {
-  @apply text-xs opacity-90 mt-1;
-}
-
-/* Contenu unifié - Style compact */
 .unified-layer-mode {
   @apply p-1;
   @apply flex flex-col gap-1;
 }
 
-/* Grille des calques avec modes de rendu */
 .layers-grid {
   @apply space-y-1;
 }
@@ -366,51 +330,35 @@ const getRenderModeIcon = (mode: LayerRenderMode): string => {
   @apply bg-primary-500 text-white;
 }
 
-.status-badge.inactive {
+.status-badge:not(.active) {
   @apply bg-gray-300 text-gray-600 hover:bg-gray-400;
+}
+
+.mode-activation-prompt {
+  @apply p-2 text-center;
+}
+
+.prompt-text {
+  @apply text-xs text-gray-600 font-medium;
+  @apply mb-2;
+}
+
+.layer-controls {
+  @apply p-2 border-b border-gray-200;
+}
+
+.deactivate-button {
+  @apply flex items-center gap-2;
+  @apply w-full px-3 py-2;
+  @apply bg-red-50 hover:bg-red-100;
+  @apply border border-red-200 hover:border-red-300;
+  @apply text-red-600 hover:text-red-700;
+  @apply rounded transition-all duration-200;
+  @apply text-xs font-medium;
 }
 
 .render-mode-selector {
   @apply mt-1 bg-gray-50 rounded overflow-hidden;
   @apply border border-gray-200;
-}
-
-/* Personnalisation du SelectButton PrimeVue */
-.render-mode-select {
-  @apply w-full;
-}
-
-:deep(.p-selectbutton) {
-  @apply w-full;
-}
-
-:deep(.p-selectbutton .p-button) {
-  @apply flex-1 py-1 px-2 text-xs;
-  @apply border-gray-200;
-  min-height: auto;
-}
-
-:deep(.p-selectbutton .p-button:not(.p-highlight)) {
-  @apply bg-white text-gray-700;
-}
-
-:deep(.p-selectbutton .p-button.p-highlight) {
-  @apply bg-primary-50 text-primary-700 border-primary-200;
-}
-
-:deep(.p-selectbutton .p-button:disabled) {
-  @apply bg-gray-100 text-gray-400 cursor-not-allowed opacity-60;
-}
-
-.render-mode-option-content {
-  @apply flex items-center gap-1;
-}
-
-.render-mode-option-content i {
-  @apply text-xs;
-}
-
-.render-mode-option-content span {
-  @apply text-xs;
 }
 </style>

@@ -8,19 +8,6 @@ export interface MapScorePopupData {
   score: string
 }
 
-export interface MultiLayerPopupData {
-  lng: number
-  lat: number
-  layers: LayerPopupData[]
-}
-
-export interface LayerPopupData {
-  dataType: DataType
-  id: string
-  properties: any
-  score: string
-}
-
 export enum BlendMode {
   NORMAL = "normal",
   MULTIPLY = "multiply",
@@ -42,7 +29,8 @@ export enum LayerRenderMode {
   SYMBOL = "symbol",
   OUTLINE = "outline",
   HEATMAP = "heatmap",
-  HILLSHADE = "hillshade"
+  HILLSHADE = "hillshade",
+  COLOR_RELIEF = "color-relief"
 }
 
 export interface LayerConfig {
