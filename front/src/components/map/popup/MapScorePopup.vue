@@ -7,14 +7,11 @@ import { computed } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
 import { useToast } from "primevue/usetoast"
 import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
-import MultiLayerScorePopup from "@/components/map/popup/MultiLayerScorePopup.vue"
 
 const mapStore = useMapStore()
 const toast = useToast()
 
 const popupData = computed(() => mapStore.popupData)
-const multiLayerPopupData = computed(() => mapStore.multiLayerPopupData)
-const isMultiLayerMode = computed(() => mapStore.isMultiLayerMode)
 
 const coords = computed(
   () => `${popupData.value?.lat.toFixed(5)}° N, ${popupData.value?.lng.toFixed(5)}° E`
@@ -33,11 +30,7 @@ const copy = (text: string) => {
 
 <template>
   <div class="popup-container">
-    <!-- Popup multi-calques -->
-    <MultiLayerScorePopup v-if="multiLayerPopupData" />
-
-    <!-- Popup mono-calque (existant) -->
-    <div v-else-if="popupData" class="max-w-xs" data-cy="score-popup">
+    <div v-if="popupData" class="max-w-xs" data-cy="score-popup">
       <div class="flex justify-between">
         <plantability-score-popup
           v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
