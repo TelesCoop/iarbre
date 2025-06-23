@@ -5,6 +5,7 @@ import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateC
 
 interface ClimateDataProps {
   data: ClimateData
+  hideCloseButton?: boolean
 }
 
 const props = defineProps<ClimateDataProps>()
@@ -27,6 +28,7 @@ const handleClose = () => {
     <map-context-header
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
       title="Zones climatiques locales"
+      :hide-close-button="props.hideCloseButton"
       @close="handleClose"
     />
     <div class="map-context-panel-content">

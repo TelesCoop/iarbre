@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppSidebar: typeof import('./src/components/AppSidebar.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
@@ -22,8 +23,11 @@ declare module 'vue' {
     FilterIndicator: typeof import('./src/components/map/legend/FilterIndicator.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
     LayerSwitcher: typeof import('./src/components/layerSwitcher/LayerSwitcher.vue')['default']
+    LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
     MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
+    MapConfigSidebar: typeof import('./src/components/map/MapConfigSidebar.vue')['default']
+    MapConfigSidebarToggle: typeof import('./src/components/map/MapConfigSidebarToggle.vue')['default']
     MapContextData: typeof import('./src/components/contextData/MapContextData.vue')['default']
     MapContextDataClimateZone: typeof import('./src/components/contextData/MapContextDataClimateZone.vue')['default']
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
@@ -34,6 +38,7 @@ declare module 'vue' {
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
+    MapScoresSidebar: typeof import('./src/components/map/MapScoresSidebar.vue')['default']
     MapSidebar: typeof import('./src/components/map/MapSidebar.vue')['default']
     MapSidebarToggle: typeof import('./src/components/map/MapSidebarToggle.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']

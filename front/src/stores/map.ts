@@ -53,7 +53,6 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
-  const isLegendVisible = ref<boolean>(false)
   const contextData = useContextData()
 
   const {
@@ -349,10 +348,6 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const toggleLegendVisibility = () => {
-    isLegendVisible.value = !isLegendVisible.value
-  }
-
   return {
     mapInstancesByIds,
     initMap,
@@ -364,8 +359,6 @@ export const useMapStore = defineStore("map", () => {
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
-    isLegendVisible,
-    toggleLegendVisibility,
     contextData: {
       data: contextData.data,
       setData: contextData.setData,

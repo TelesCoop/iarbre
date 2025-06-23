@@ -1,6 +1,5 @@
 export enum Layout {
-  Default = "Default",
-  Map = "Map"
+  Default = "Default"
 }
 
 export const MIN_ZOOM = 10

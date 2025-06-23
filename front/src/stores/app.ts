@@ -2,9 +2,16 @@ import { Breakpoint, convertRemToPx } from "@/utils/breakpoints"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 
+export enum Sidebar {
+  MAP_SCORES = "map-scores",
+  MAP_CONFIG = "map-config"
+}
 export const useAppStore = defineStore("app", () => {
   const windowWidth = ref(window.innerWidth)
-  const sidebarVisible = ref(false)
+  const sidebarVisible = ref({
+    [Sidebar.MAP_SCORES]: false,
+    [Sidebar.MAP_CONFIG]: false
+  })
 
   const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
   const isMobileOrTablet = computed(() => windowWidth.value < convertRemToPx(Breakpoint.MD))
@@ -23,12 +30,12 @@ export const useAppStore = defineStore("app", () => {
     window.removeEventListener("resize", refreshWindowWidth)
   }
 
-  const toggleSidebar = () => {
-    sidebarVisible.value = !sidebarVisible.value
+  const toggleSidebar = (sidebar: Sidebar) => {
+    sidebarVisible.value[sidebar] = !sidebarVisible.value[sidebar]
   }
 
-  const setSidebarVisible = (visible: boolean) => {
-    sidebarVisible.value = visible
+  const setSidebarVisible = (sidebar: Sidebar, visible: boolean) => {
+    sidebarVisible.value[sidebar] = visible
   }
 
   return {
