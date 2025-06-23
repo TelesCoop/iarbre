@@ -43,15 +43,23 @@ const isPanelOpen = (dataType: DataType) => {
 
 const deactivateLayer = (dataType: DataType) => {
   mapStore.removeLayer(dataType)
+
+  // Mettre à jour selectedDataType vers le premier layer actif restant
+  const remainingActiveLayer = activeLayers.value.find(
+    (layer) => layer.visible && layer.dataType !== dataType
+  )
+  if (remainingActiveLayer) {
+    mapStore.selectedDataType = remainingActiveLayer.dataType
+  }
 }
 
 const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode | null) => {
-  // Si mode est null/undefined, cela signifie qu'on désélectionne le mode actuel
   if (!mode) {
     deactivateLayer(dataType)
     return
   }
 
+  mapStore.selectedDataType = dataType
   if (isLayerActive(dataType)) {
     const existingLayer = activeLayers.value.find(
       (layer) => layer.dataType === dataType && layer.visible

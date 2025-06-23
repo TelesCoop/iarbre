@@ -66,7 +66,9 @@ export const useMapStore = defineStore("map", () => {
     }
   ])
 
-  const isMultiLayerMode = ref<boolean>(false)
+  const isMultiLayerMode = computed(() => {
+    return activeLayers.value.length > 1
+  })
 
   const {
     clearAllFilters,
@@ -199,11 +201,8 @@ export const useMapStore = defineStore("map", () => {
     }
 
     removeActivePopup()
-
-    // Utiliser le bon champ score selon le type de données
     const scoreField =
       datatype === DataType.VULNERABILITY ? `indice_${vulnerabilityMode.value}` : "indice"
-
     popupData.value = {
       id: extractFeatureProperty(e.features!, datatype, geolevel, "id"),
       lng: e.lngLat.lng,
@@ -229,7 +228,7 @@ export const useMapStore = defineStore("map", () => {
     const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
-      createPopup(e, map, datatype, geolevel, layerId)
+      if (!isMultiLayerMode.value) createPopup(e, map, datatype, geolevel, layerId)
       if (contextData.data.value) {
         contextData.setData(featureId)
       }
@@ -387,19 +386,16 @@ export const useMapStore = defineStore("map", () => {
       dataType === DataType.PLANTABILITY &&
       (renderMode === LayerRenderMode.FILL || renderMode === LayerRenderMode.SYMBOL)
     ) {
-      // PLANTABILITY (FILL, SYMBOL) : zIndex élevé (100+)
       const existingHighZIndexes = activeLayers.value
         .filter((l) => l.zIndex >= 100)
         .map((l) => l.zIndex)
       return existingHighZIndexes.length > 0 ? Math.max(...existingHighZIndexes) + 1 : 100
     } else if (dataType === DataType.VULNERABILITY) {
-      // VULNERABILITY (tous modes) : zIndex moyen (50+)
       const existingMidZIndexes = activeLayers.value
         .filter((l) => l.zIndex >= 50 && l.zIndex < 100)
         .map((l) => l.zIndex)
       return existingMidZIndexes.length > 0 ? Math.max(...existingMidZIndexes) + 1 : 50
     } else if (dataType === DataType.CLIMATE_ZONE) {
-      // CLIMATE_ZONE (tous modes) : zIndex bas (10+)
       const existingLowZIndexes = activeLayers.value
         .filter((l) => l.zIndex >= 10 && l.zIndex < 50)
         .map((l) => l.zIndex)
@@ -427,7 +423,6 @@ export const useMapStore = defineStore("map", () => {
         renderMode: LayerRenderMode.FILL
       })
     }
-    isMultiLayerMode.value = true
     updateMapLayers()
   }
 
@@ -455,7 +450,6 @@ export const useMapStore = defineStore("map", () => {
         renderMode: renderMode
       })
     }
-    isMultiLayerMode.value = true
     updateMapLayers()
   }
 
@@ -467,20 +461,13 @@ export const useMapStore = defineStore("map", () => {
     if (index > -1) {
       activeLayers.value.splice(index, 1)
     }
-    if (activeLayers.value.length <= 1) {
-      isMultiLayerMode.value = false
-    }
     updateMapLayers()
   }
 
   const updateMapLayers = () => {
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
       Object.keys(mapEventsListener.value).forEach((key) => {
-        if (key === "global-multi-layer") {
-          mapInstance.off("click", mapEventsListener.value[key])
-        } else {
-          mapInstance.off("click", key, mapEventsListener.value[key])
-        }
+        mapInstance.off("click", key, mapEventsListener.value[key])
       })
       mapEventsListener.value = {}
 
@@ -500,14 +487,9 @@ export const useMapStore = defineStore("map", () => {
 
       const visibleLayersCount = activeLayers.value.filter((layer) => layer.visible).length
 
-      // Configurer le gestionnaire d'événements selon le nombre de layers actifs
-      if (visibleLayersCount === 1) {
-        // Un seul layer actif : configurer les patterns et icônes pour les modes avancés
-        if (isMultiLayerMode.value) {
-          setupPatterns(mapInstance)
-        }
+      if (isMultiLayerMode.value) {
+        setupPatterns(mapInstance)
       }
-      // Ajouter les calques actifs visibles
       activeLayers.value
         .filter((layer) => layer.visible)
         .sort((a, b) => a.zIndex - b.zIndex) // Ordre par zIndex
@@ -515,12 +497,9 @@ export const useMapStore = defineStore("map", () => {
           const geoLevel = DataTypeToGeolevel[layer.dataType]
           setupSource(mapInstance, layer.dataType, geoLevel)
 
-          // Utiliser configureLayersProperties pour supporter les modes de rendu
           const sourceId = getSourceId(layer.dataType, geoLevel)
           const advancedLayer = configureLayersProperties(layer, geoLevel, sourceId)
           mapInstance.addLayer(advancedLayer)
-
-          // Seulement configurer les événements de clic si un seul layer est visible
           if (visibleLayersCount === 1) {
             setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
           }
@@ -737,7 +716,6 @@ export const useMapStore = defineStore("map", () => {
     activeFiltersCount,
     toggleAndApplyFilter,
     resetFilters,
-    // Nouvelles propriétés et méthodes multi-calques
     activeLayers,
     isMultiLayerMode,
     addLayer,
