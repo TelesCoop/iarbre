@@ -135,6 +135,100 @@ export function useLayers() {
     globalUpdateCallback = callback
   }
 
+  // Fonctions utilitaires pour les couches
+  const isLayerActive = (dataType: DataType) => {
+    return activeLayers.value.some((layer) => layer.dataType === dataType && layer.visible)
+  }
+
+  const getActiveLayerMode = (dataType: DataType): LayerRenderMode | null => {
+    const layer = activeLayers.value.find((layer) => layer.dataType === dataType && layer.visible)
+    return layer ? layer.renderMode : null
+  }
+
+  const getAvailableRenderModes = (dataType: DataType): LayerRenderMode[] => {
+    switch (dataType) {
+      case DataType.CLIMATE_ZONE:
+        return [LayerRenderMode.FILL]
+      case DataType.VULNERABILITY:
+        return [LayerRenderMode.FILL, LayerRenderMode.COLOR_RELIEF]
+      case DataType.PLANTABILITY:
+        return [LayerRenderMode.FILL, LayerRenderMode.SYMBOL]
+      default:
+        return [LayerRenderMode.FILL]
+    }
+  }
+
+  const getRenderModeLabel = (mode: LayerRenderMode): string => {
+    switch (mode) {
+      case LayerRenderMode.FILL:
+        return "Plein"
+      case LayerRenderMode.SYMBOL:
+        return "Points"
+      case LayerRenderMode.COLOR_RELIEF:
+        return "Relief couleur"
+      default:
+        return "Standard"
+    }
+  }
+
+  const getRenderModeIcon = (mode: LayerRenderMode): string => {
+    switch (mode) {
+      case LayerRenderMode.FILL:
+        return "⬛"
+      case LayerRenderMode.SYMBOL:
+        return "📍"
+      case LayerRenderMode.COLOR_RELIEF:
+        return "🎨"
+      default:
+        return "⬜"
+    }
+  }
+
+  const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
+    if (isLayerActive(dataType)) {
+      const existingLayer = activeLayers.value.find(
+        (layer) => layer.dataType === dataType && layer.visible
+      )
+      if (existingLayer && existingLayer.renderMode !== mode) {
+        // Gestion dynamique des calques pleins lors du changement de mode
+        if (mode === LayerRenderMode.FILL) {
+          const plantabilityFillLayer = activeLayers.value.find(
+            (layer) =>
+              layer.dataType === DataType.PLANTABILITY &&
+              layer.visible &&
+              layer.renderMode === LayerRenderMode.FILL
+          )
+
+          if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
+            removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
+          }
+        }
+
+        removeLayer(dataType)
+        addLayerWithMode(dataType, mode)
+      }
+    } else {
+      if (mode === LayerRenderMode.FILL) {
+        const plantabilityFillLayer = activeLayers.value.find(
+          (layer) =>
+            layer.dataType === DataType.PLANTABILITY &&
+            layer.visible &&
+            layer.renderMode === LayerRenderMode.FILL
+        )
+
+        if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
+          removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
+        }
+      }
+
+      addLayerWithMode(dataType, mode)
+    }
+  }
+
+  const deactivateLayer = (dataType: DataType) => {
+    removeLayer(dataType)
+  }
+
   return {
     activeLayers,
     isMultiLayerMode,
@@ -148,6 +242,14 @@ export function useLayers() {
     clearAllLayers,
     getVisibleLayers,
     getLayersByDataType,
-    setUpdateCallback
+    setUpdateCallback,
+    // Nouvelles fonctions utilitaires
+    isLayerActive,
+    getActiveLayerMode,
+    getAvailableRenderModes,
+    getRenderModeLabel,
+    getRenderModeIcon,
+    activateLayerWithMode,
+    deactivateLayer
   }
 }

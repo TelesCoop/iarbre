@@ -63,10 +63,36 @@ export const useMapStore = defineStore("map", () => {
     addLayer,
     addLayerWithMode,
     removeLayer,
-    setUpdateCallback
+    setUpdateCallback,
+    isLayerActive,
+    getActiveLayerMode,
+    getAvailableRenderModes,
+    getRenderModeLabel,
+    getRenderModeIcon,
+    activateLayerWithMode,
+    deactivateLayer
   } = multiLayers
 
   setUpdateCallback(() => updateMapLayers())
+
+  // Wrapper pour activateLayerWithMode qui gère selectedDataType
+  const activateLayerWithModeAndSelect = (dataType: DataType, mode: LayerRenderMode) => {
+    selectedDataType.value = dataType
+    activateLayerWithMode(dataType, mode)
+  }
+
+  // Wrapper pour deactivateLayer qui gère selectedDataType
+  const deactivateLayerAndUpdateSelection = (dataType: DataType) => {
+    deactivateLayer(dataType)
+
+    // Mettre à jour selectedDataType vers le premier layer actif restant
+    const remainingActiveLayer = activeLayers.value.find(
+      (layer) => layer.visible && layer.dataType !== dataType
+    )
+    if (remainingActiveLayer) {
+      selectedDataType.value = remainingActiveLayer.dataType
+    }
+  }
 
   const {
     clearAllFilters,
@@ -458,6 +484,14 @@ export const useMapStore = defineStore("map", () => {
     addLayer,
     addLayerWithMode,
     removeLayer,
-    updateMapLayers
+    updateMapLayers,
+    // Fonctions utilitaires pour les layers
+    isLayerActive,
+    getActiveLayerMode,
+    getAvailableRenderModes,
+    getRenderModeLabel,
+    getRenderModeIcon,
+    activateLayerWithMode: activateLayerWithModeAndSelect,
+    deactivateLayer: deactivateLayerAndUpdateSelection
   }
 })

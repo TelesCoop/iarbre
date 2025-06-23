@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue"
+import { ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
-import { LayerRenderMode } from "@/types/map"
 
 const mapStore = useMapStore()
 
@@ -27,106 +26,14 @@ const dataTypeOptions = [
   }
 ]
 
-const activeLayers = computed(() => mapStore.activeLayers)
 const expandedLayers = ref<Record<DataType, boolean>>({
   [DataType.PLANTABILITY]: false,
   [DataType.VULNERABILITY]: false,
   [DataType.CLIMATE_ZONE]: false
 })
 
-const isLayerActive = (dataType: DataType) => {
-  return activeLayers.value.some((layer) => layer.dataType === dataType && layer.visible)
-}
-
 const toggleLayer = (dataType: DataType) => {
   expandedLayers.value[dataType] = !expandedLayers.value[dataType]
-}
-
-const getActiveLayerMode = (dataType: DataType): LayerRenderMode | null => {
-  const layer = activeLayers.value.find((layer) => layer.dataType === dataType && layer.visible)
-  return layer ? layer.renderMode : null
-}
-
-const getAvailableRenderModes = (dataType: DataType): LayerRenderMode[] => {
-  switch (dataType) {
-    case DataType.CLIMATE_ZONE:
-      return [LayerRenderMode.FILL]
-    case DataType.VULNERABILITY:
-      return [LayerRenderMode.FILL, LayerRenderMode.COLOR_RELIEF]
-    case DataType.PLANTABILITY:
-      return [LayerRenderMode.FILL, LayerRenderMode.SYMBOL]
-    default:
-      return [LayerRenderMode.FILL]
-  }
-}
-
-const getRenderModeLabel = (mode: LayerRenderMode): string => {
-  switch (mode) {
-    case LayerRenderMode.FILL:
-      return "Plein"
-    case LayerRenderMode.SYMBOL:
-      return "Points"
-    case LayerRenderMode.COLOR_RELIEF:
-      return "Relief couleur"
-    default:
-      return "Standard"
-  }
-}
-
-const getRenderModeIcon = (mode: LayerRenderMode): string => {
-  switch (mode) {
-    case LayerRenderMode.FILL:
-      return "⬛"
-    case LayerRenderMode.SYMBOL:
-      return "📍"
-    case LayerRenderMode.COLOR_RELIEF:
-      return "🎨"
-    default:
-      return "⬜"
-  }
-}
-
-const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
-  mapStore.selectedDataType = dataType
-
-  if (isLayerActive(dataType)) {
-    const existingLayer = activeLayers.value.find(
-      (layer) => layer.dataType === dataType && layer.visible
-    )
-    if (existingLayer && existingLayer.renderMode !== mode) {
-      // Gestion dynamique des calques pleins lors du changement de mode
-      if (mode === LayerRenderMode.FILL) {
-        const plantabilityFillLayer = activeLayers.value.find(
-          (layer) =>
-            layer.dataType === DataType.PLANTABILITY &&
-            layer.visible &&
-            layer.renderMode === LayerRenderMode.FILL
-        )
-
-        if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
-          mapStore.removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
-        }
-      }
-
-      mapStore.removeLayer(dataType)
-      mapStore.addLayerWithMode(dataType, mode)
-    }
-  } else {
-    if (mode === LayerRenderMode.FILL) {
-      const plantabilityFillLayer = activeLayers.value.find(
-        (layer) =>
-          layer.dataType === DataType.PLANTABILITY &&
-          layer.visible &&
-          layer.renderMode === LayerRenderMode.FILL
-      )
-
-      if (plantabilityFillLayer && dataType !== DataType.PLANTABILITY) {
-        mapStore.removeLayer(DataType.PLANTABILITY, LayerRenderMode.FILL)
-      }
-    }
-
-    mapStore.addLayerWithMode(dataType, mode)
-  }
 }
 </script>
 
@@ -137,7 +44,7 @@ const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
     <div v-for="option in dataTypeOptions" :key="option.dataType" class="overflow-hidden">
       <button
         :class="{
-          'bg-primary-50 border-l-4 border-primary-500': isLayerActive(option.dataType)
+          'bg-primary-50 border-l-4 border-primary-500': mapStore.isLayerActive(option.dataType)
         }"
         class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between text-left"
         @click="toggleLayer(option.dataType)"
@@ -148,15 +55,18 @@ const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
             <h3 class="font-medium text-gray-900 text-sm">{{ option.label }}</h3>
             <p class="text-xs text-gray-600 mt-0.5">
               {{ option.description }}
-              <span v-if="isLayerActive(option.dataType)" class="ml-1 text-primary-600 font-medium">
-                • {{ getRenderModeLabel(getActiveLayerMode(option.dataType)!) }}
+              <span
+                v-if="mapStore.isLayerActive(option.dataType)"
+                class="ml-1 text-primary-600 font-medium"
+              >
+                • {{ mapStore.getRenderModeLabel(mapStore.getActiveLayerMode(option.dataType)!) }}
               </span>
             </p>
           </div>
         </div>
         <div class="flex items-center gap-2">
           <div
-            v-if="isLayerActive(option.dataType)"
+            v-if="mapStore.isLayerActive(option.dataType)"
             class="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center"
           >
             <svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -188,28 +98,31 @@ const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
 
       <div v-if="expandedLayers[option.dataType]" class="divide-y divide-gray-100 bg-white">
         <div
-          v-for="(mode, index) in getAvailableRenderModes(option.dataType)"
+          v-for="(mode, index) in mapStore.getAvailableRenderModes(option.dataType)"
           :key="mode"
           :class="{
             'bg-primary-50 border-l-4 border-primary-500':
-              isLayerActive(option.dataType) && getActiveLayerMode(option.dataType) === mode
+              mapStore.isLayerActive(option.dataType) &&
+              mapStore.getActiveLayerMode(option.dataType) === mode
           }"
           class="p-4 hover:bg-primary-100 transition-colors duration-150 cursor-pointer"
-          @click="activateLayerWithMode(option.dataType, mode)"
+          @click="mapStore.activateLayerWithMode(option.dataType, mode)"
         >
           <div class="grid grid-cols-12 gap-3 items-center">
             <div class="col-span-2">
               <div
                 :class="{
                   'from-primary-500 to-primary-600 text-white':
-                    isLayerActive(option.dataType) && getActiveLayerMode(option.dataType) === mode,
+                    mapStore.isLayerActive(option.dataType) &&
+                    mapStore.getActiveLayerMode(option.dataType) === mode,
                   'text-gray-600': !(
-                    isLayerActive(option.dataType) && getActiveLayerMode(option.dataType) === mode
+                    mapStore.isLayerActive(option.dataType) &&
+                    mapStore.getActiveLayerMode(option.dataType) === mode
                   )
                 }"
                 class="w-6 h-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center text-xs"
               >
-                {{ getRenderModeIcon(mode) }}
+                {{ mapStore.getRenderModeIcon(mode) }}
               </div>
             </div>
             <div class="col-span-8">
@@ -217,15 +130,16 @@ const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
                 <span
                   :class="{
                     'text-primary-700':
-                      isLayerActive(option.dataType) &&
-                      getActiveLayerMode(option.dataType) === mode,
+                      mapStore.isLayerActive(option.dataType) &&
+                      mapStore.getActiveLayerMode(option.dataType) === mode,
                     'text-gray-800': !(
-                      isLayerActive(option.dataType) && getActiveLayerMode(option.dataType) === mode
+                      mapStore.isLayerActive(option.dataType) &&
+                      mapStore.getActiveLayerMode(option.dataType) === mode
                     )
                   }"
                   class="font-medium text-sm leading-tight"
                 >
-                  {{ getRenderModeLabel(mode) }}
+                  {{ mapStore.getRenderModeLabel(mode) }}
                 </span>
                 <span class="text-xs text-gray-500 mt-1"> Mode {{ index + 1 }} • {{ mode }} </span>
               </div>
@@ -233,7 +147,8 @@ const activateLayerWithMode = (dataType: DataType, mode: LayerRenderMode) => {
             <div class="col-span-2 flex justify-end">
               <div
                 v-if="
-                  isLayerActive(option.dataType) && getActiveLayerMode(option.dataType) === mode
+                  mapStore.isLayerActive(option.dataType) &&
+                  mapStore.getActiveLayerMode(option.dataType) === mode
                 "
                 class="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center"
               >
