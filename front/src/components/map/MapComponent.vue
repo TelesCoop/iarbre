@@ -46,6 +46,9 @@ onMounted(() => {
 
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
+  <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
+    <map-config-sidebar-toggle />
+  </div>
   <div class="legend-container hidden lg:flex">
     <map-legend />
     <div class="flex gap-2">

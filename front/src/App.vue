@@ -5,14 +5,12 @@ import { Layout } from "@/utils/constants"
 import DefaultLayout from "@/layouts/DefaultLayout.vue"
 import { useAppStore } from "@/stores/app"
 import { onBeforeUnmount } from "vue"
-import MapLayout from "./layouts/MapLayout.vue"
 
 const route = useRoute()
 const appStore = useAppStore()
 
 const LAYOUTS: Record<Layout, Component> = {
-  [Layout.Default]: DefaultLayout,
-  [Layout.Map]: MapLayout
+  [Layout.Default]: DefaultLayout
 }
 const layout = computed(() => {
   const layoutName = (route.meta.layout || Layout.Default) as Layout

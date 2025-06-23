@@ -9,18 +9,12 @@ const router = createRouter({
     {
       path: "/",
       name: "map",
-      component: MapView,
-      meta: {
-        layout: Layout.Map
-      }
+      component: MapView
     },
     {
       path: "/:dataType(plantability|lcz|vulnerability)/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
       name: "mapWithUrlParams",
-      component: MapView,
-      meta: {
-        layout: Layout.Map
-      }
+      component: MapView
     },
     {
       path: "/:zoom(\\d+)/:lat(\\d+\\.\\d+)/:lng(\\d+\\.\\d+)",
