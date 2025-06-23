@@ -47,7 +47,6 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <div class="legend-container">
-    <!-- Légende uniquement en mode simple -->
     <map-legend v-if="!mapStore.isMultiLayerMode" />
     <div class="flex gap-2">
       <map-filters-status />
@@ -57,7 +56,6 @@ onMounted(() => {
   <div
     class="absolute top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 flex gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
   >
-    <!-- Utilisation du nouveau multi-layer-switcher -->
     <multi-layer-switcher />
     <map-bg-switcher />
     <map-context-data
