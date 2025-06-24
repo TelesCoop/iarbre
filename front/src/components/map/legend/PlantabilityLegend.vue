@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 
-defineProps<{
-  isMinify?: boolean
-}>()
-
 const mapStore = useMapStore()
 
 const handleScoreClick = (score: number) => {
@@ -31,7 +27,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
     data-cy="plantability-legend"
   >
     <div class="flex items-center flex-col lg:flex-row justify-center gap-2 lg:gap-[7px] px-2">
-      <span v-if="!isMinify" class="text-xs lg:text-sm leading-3">Non plantable</span>
+      <span class="text-xs lg:text-sm leading-3">Non plantable</span>
       <div class="flex align-items-center gap-2">
         <score-label
           v-for="index in [0, 2, 4, 6, 8, 10]"
@@ -46,7 +42,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
         />
       </div>
 
-      <span v-if="!isMinify" class="text-xs lg:text-sm leading-3">Plantable</span>
+      <span class="text-xs lg:text-sm leading-3">Plantable</span>
     </div>
   </div>
 </template>
