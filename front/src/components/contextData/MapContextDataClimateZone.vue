@@ -6,6 +6,7 @@ import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateC
 interface ClimateDataProps {
   data: ClimateData
   hideCloseButton?: boolean
+  fullHeight?: boolean
 }
 
 const props = defineProps<ClimateDataProps>()
@@ -32,7 +33,7 @@ const handleClose = () => {
       @close="handleClose"
     />
     <div class="map-context-panel-content">
-      <climate-context-data-metrics :data="data" />
+      <climate-context-data-metrics :data="data" :full-height="props.fullHeight" />
     </div>
   </div>
 </template>
