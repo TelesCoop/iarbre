@@ -113,6 +113,18 @@ onMounted(() => {
 .maplibregl-ctrl-geocoder--suggestions {
   width: 100%;
 }
+.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed,
+.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--input {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+}
+.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--icon {
+  width: 25px;
+  height: 25px;
+  top: 3px;
+  left: 3px;
+}
 
 .maplibregl-ctrl-geocoder--input {
   @apply text-primary-500;
