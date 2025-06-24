@@ -19,8 +19,8 @@ const drawerVisible = computed({
     header-title="Carte"
     class="map-config-drawer"
   >
-    <map-layer-switcher />
-    <map-bg-switcher />
+    <map-layer-switcher :with-border="false" />
+    <map-bg-switcher :with-border="false" />
     <map-legend />
     <map-filters-status />
   </AppDrawer>
