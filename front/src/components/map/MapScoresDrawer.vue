@@ -20,7 +20,7 @@ const drawerVisible = computed({
     class="map-drawer"
   >
     <div class="mb-4">
-      <map-context-data hide-close-button />
+      <map-context-data hide-close-button full-height />
     </div>
   </AppDrawer>
 </template>

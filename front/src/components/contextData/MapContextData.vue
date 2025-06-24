@@ -11,6 +11,10 @@ defineProps({
   hideCloseButton: {
     type: Boolean,
     default: false
+  },
+  fullHeight: {
+    type: Boolean,
+    default: false
   }
 })
 </script>
@@ -30,12 +34,14 @@ defineProps({
     <map-context-data-vulnerability
       v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
       :data="mapStore.contextData.data as VulnerabilityData"
+      :full-height="fullHeight"
       :hide-close-button="hideCloseButton"
       @close="() => mapStore.contextData.removeData()"
     />
     <map-context-data-climate-zone
       v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
       :data="mapStore.contextData.data as ClimateData"
+      :full-height="fullHeight"
       :hide-close-button="hideCloseButton"
       @close="() => mapStore.contextData.removeData()"
     />
