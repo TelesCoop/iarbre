@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
-import { Sidebar, useAppStore } from "@/stores/app"
+import { Drawer, useAppStore } from "@/stores/app"
 
 const props = defineProps({
   mapId: {
@@ -49,7 +49,7 @@ onMounted(() => {
 <template>
   <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
-    <map-config-sidebar-toggle />
+    <map-config-drawer-toggle />
   </div>
   <div class="legend-container hidden lg:flex">
     <map-legend />
@@ -60,7 +60,7 @@ onMounted(() => {
   </div>
   <!-- Mobile version of legend -->
   <div class="minify-map-legend">
-    <map-legend is-minify @click="appStore.setSidebarVisible(Sidebar.MAP_CONFIG, true)" />
+    <map-legend is-minify @click="appStore.setDrawerVisible(Drawer.MAP_CONFIG, true)" />
   </div>
   <div
     class="absolute hidden lg:flex top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"

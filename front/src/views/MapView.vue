@@ -36,9 +36,9 @@ if (route.name === "mapWithUrlParams") {
       "
     />
 
-    <!-- Sidebar -->
-    <map-config-sidebar />
-    <map-scores-sidebar />
+    <!-- Drawer -->
+    <map-config-drawer />
+    <map-scores-drawer />
   </div>
 </template>
 

@@ -8,7 +8,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AppSidebar: typeof import('./src/components/AppSidebar.vue')['default']
+    AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
+    AppSidebar: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
@@ -16,6 +17,7 @@ declare module 'vue' {
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
+    Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
     FeedbackForm: typeof import('./src/components/forms/FeedbackForm.vue')['default']
@@ -26,6 +28,8 @@ declare module 'vue' {
     LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
     MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
+    MapConfigDrawer: typeof import('./src/components/map/MapConfigDrawer.vue')['default']
+    MapConfigDrawerToggle: typeof import('./src/components/map/MapConfigDrawerToggle.vue')['default']
     MapConfigSidebar: typeof import('./src/components/map/MapConfigSidebar.vue')['default']
     MapConfigSidebarToggle: typeof import('./src/components/map/MapConfigSidebarToggle.vue')['default']
     MapContextData: typeof import('./src/components/contextData/MapContextData.vue')['default']
@@ -38,6 +42,7 @@ declare module 'vue' {
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
+    MapScoresDrawer: typeof import('./src/components/map/MapScoresDrawer.vue')['default']
     MapScoresSidebar: typeof import('./src/components/map/MapScoresSidebar.vue')['default']
     MapSidebar: typeof import('./src/components/map/MapSidebar.vue')['default']
     MapSidebarToggle: typeof import('./src/components/map/MapSidebarToggle.vue')['default']

@@ -4,8 +4,11 @@ import { computed } from "vue"
 interface Props {
   visible: boolean
   position?: "left" | "right" | "top" | "bottom"
-  width?: string
-  maxWidth?: string
+  customStyles?: {
+    width?: string
+    maxWidth?: string
+    height?: string
+  }
   headerIcon?: string
   headerTitle?: string
 }
@@ -16,31 +19,32 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   position: "left",
-  width: "90%",
-  maxWidth: "25rem",
+  customStyles: () => ({}),
   headerIcon: "",
   headerTitle: ""
 })
 
+const drawerStyle = computed(() => {
+  const defaultvalue = ["top", "bottom"].includes(props.position)
+    ? { height: "90vh" }
+    : { width: "90%", maxWidth: "25rem" }
+
+  return { ...defaultvalue, ...props.customStyles }
+})
 const emit = defineEmits<Emits>()
 
-const sidebarVisible = computed({
+const drawerVisible = computed({
   get: () => props.visible,
   set: (value: boolean) => emit("update:visible", value)
 })
-
-const sidebarStyle = computed(() => ({
-  width: props.width,
-  "max-width": props.maxWidth
-}))
 </script>
 
 <template>
-  <Sidebar
-    v-model:visible="sidebarVisible"
+  <Drawer
+    v-model:visible="drawerVisible"
     :position="position"
-    class="app-sidebar"
-    :style="sidebarStyle"
+    class="app-drawer"
+    :style="drawerStyle"
   >
     <template #header>
       <slot name="header">
@@ -51,14 +55,14 @@ const sidebarStyle = computed(() => ({
       </slot>
     </template>
 
-    <div class="sidebar-content">
+    <div class="drawer-content">
       <slot></slot>
     </div>
-  </Sidebar>
+  </Drawer>
 </template>
 
 <style scoped>
-.app-sidebar .sidebar-content {
+.app-drawer .drawer-content {
   display: flex;
   flex-direction: column;
   gap: 1rem;

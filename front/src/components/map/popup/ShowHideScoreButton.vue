@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Sidebar, useAppStore } from "@/stores/app"
+import { Drawer, useAppStore } from "@/stores/app"
 import { useMapStore } from "@/stores/map"
 import { computed } from "vue"
 
@@ -16,7 +16,7 @@ const onClick = () => {
     mapStore.contextData.toggleContextData(props.featureId)
   } else {
     mapStore.contextData.setData(props.featureId)
-    appStore.setSidebarVisible(Sidebar.MAP_SCORES, true)
+    appStore.setDrawerVisible(Drawer.MAP_SCORES, true)
   }
 }
 </script>

@@ -2,15 +2,15 @@ import { Breakpoint, convertRemToPx } from "@/utils/breakpoints"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 
-export enum Sidebar {
+export enum Drawer {
   MAP_SCORES = "map-scores",
   MAP_CONFIG = "map-config"
 }
 export const useAppStore = defineStore("app", () => {
   const windowWidth = ref(window.innerWidth)
-  const sidebarVisible = ref({
-    [Sidebar.MAP_SCORES]: false,
-    [Sidebar.MAP_CONFIG]: false
+  const drawerVisible = ref({
+    [Drawer.MAP_SCORES]: false,
+    [Drawer.MAP_CONFIG]: false
   })
 
   const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
@@ -30,24 +30,24 @@ export const useAppStore = defineStore("app", () => {
     window.removeEventListener("resize", refreshWindowWidth)
   }
 
-  const toggleSidebar = (sidebar: Sidebar) => {
-    sidebarVisible.value[sidebar] = !sidebarVisible.value[sidebar]
+  const toggleDrawer = (drawer: Drawer) => {
+    drawerVisible.value[drawer] = !drawerVisible.value[drawer]
   }
 
-  const setSidebarVisible = (sidebar: Sidebar, visible: boolean) => {
-    sidebarVisible.value[sidebar] = visible
+  const setDrawerVisible = (drawer: Drawer, visible: boolean) => {
+    drawerVisible.value[drawer] = visible
   }
 
   return {
     windowWidth,
-    sidebarVisible,
+    drawerVisible,
     isMobile,
     isMobileOrTablet,
     isDesktop,
     refreshWindowWidth,
     mountDetectResize,
     unmountDetectResize,
-    toggleSidebar,
-    setSidebarVisible
+    toggleDrawer,
+    setDrawerVisible
   }
 })
