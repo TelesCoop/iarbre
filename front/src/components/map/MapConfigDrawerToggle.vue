@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Sidebar, useAppStore } from "@/stores/app"
+import { Drawer, useAppStore } from "@/stores/app"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
@@ -10,19 +10,19 @@ const mapStore = useMapStore()
 const layerName = computed(
   () => DataTypeToLabel[mapStore.selectedDataType] ?? "Aucune couche sélectionnée"
 )
-const toggleSidebar = () => {
-  appStore.toggleSidebar(Sidebar.MAP_CONFIG)
+const toggleDrawer = () => {
+  appStore.toggleDrawer(Drawer.MAP_CONFIG)
 }
 </script>
 
 <template>
   <Button
-    @click="toggleSidebar"
+    @click="toggleDrawer"
     icon="pi pi-cog"
     severity="secondary"
     size="small"
-    :aria-label="appStore.sidebarVisible ? 'Close sidebar config' : 'Open sidebar config'"
-    data-cy="sidebar-toggle"
+    :aria-label="appStore.drawerVisible ? 'Close drawer config' : 'Open drawer config'"
+    data-cy="drawer-toggle"
     :label="layerName"
   />
 </template>
