@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { M } from "node_modules/vite/dist/node/types.d-aGj9QkWt"
 import { computed } from "vue"
 
 interface Props {

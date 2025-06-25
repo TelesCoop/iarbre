@@ -1,10 +1,17 @@
 #!/bin/bash
 include .env
 
+# Install front
+install_front:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm install
 
 # Run dev server
 run_front:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run dev
+
+# Run dev server
+build_front:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run build
 
 # Run backend server
 run_back:
@@ -17,3 +24,7 @@ back_migrate:
 # Recover db and media
 back_recover_db_and_media:
 	cd back/ && pew in ${PEW_ENV} python manage.py backup_db recover_db_and_media
+
+# Run dev server
+lint_front:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
