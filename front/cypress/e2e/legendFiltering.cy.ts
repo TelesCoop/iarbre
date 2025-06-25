@@ -68,13 +68,13 @@ describe("Legend Filtering", () => {
 
       // Filter status now be visible
       cy.getBySel("map-filters-status").should("be.visible")
-      cy.getBySel("filter-summary").should("contain", "1 score")
+      cy.getBySel("filter-summary").should("contain", "1\u00A0score")
 
       // Add another filter
       cy.getBySel("plantability-legend").find('[data-score="10"]').click()
 
       // Status update
-      cy.getBySel("filter-summary").should("contain", "2 scores")
+      cy.getBySel("filter-summary").should("contain", "2\u00A0scores")
 
       // Test reset button
       cy.getBySel("reset-filters-button").should("be.visible").click()
@@ -92,14 +92,14 @@ describe("Legend Filtering", () => {
     it("show correct filter labels and styling", () => {
       // Test plantability filter labels
       cy.getBySel("plantability-legend").find('[data-score="6"]').click()
-      cy.getBySel("filter-summary").should("contain", "1 score")
+      cy.getBySel("filter-summary").should("contain", "1\u00A0score")
 
       cy.getBySel("plantability-legend").find('[data-score="8"]').click()
-      cy.getBySel("filter-summary").should("contain", "2 scores")
+      cy.getBySel("filter-summary").should("contain", "2\u00A0scores")
 
       // Check component structure and accessibility
       cy.getBySel("map-filters-status").should("be.visible")
-      cy.getBySel("map-filters-status").should("contain", "Filtres actifs :")
+      cy.getBySel("map-filters-status").should("contain", "Filtres")
       cy.getBySel("reset-filters-button")
         .should("be.visible")
         .should("have.attr", "title", "Supprimer tous les filtres")

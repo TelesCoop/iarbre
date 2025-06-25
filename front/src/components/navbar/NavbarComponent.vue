@@ -37,7 +37,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       <img alt="Logo I-Arbre" class="h-8 sm:h-10 w-auto" src="/images/logo-iarbre.png" />
     </a>
   </div>
-  <nav class="header-nav">
+  <nav class="header-nav ml-auto hidden sm:block">
     <ul class="nav-list">
       <li>
         <Button
@@ -67,7 +67,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 <style scoped>
 @reference "@/styles/main.css";
 .header-logo {
-  @apply pl-4 md:pl-0;
+  @apply pl-2 lg:pl-0;
 }
 
 .nav-list {

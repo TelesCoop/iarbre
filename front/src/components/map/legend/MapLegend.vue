@@ -6,7 +6,7 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="map-legend">
+  <div v-if="mapStore.selectedDataType" class="map-legend">
     <div class="mb-2 text-sm font-semibold font-accent text-primary-900" data-cy="map-legend-title">
       {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
     </div>

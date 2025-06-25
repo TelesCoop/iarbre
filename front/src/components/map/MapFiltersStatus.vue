@@ -10,7 +10,7 @@ const nbFilters = computed(() => {
 
 const filterSummary = computed(() => {
   if (nbFilters.value === 0) return ""
-  return `${nbFilters.value} ${nbFilters.value === 1 ? "score" : "scores"}`
+  return `${nbFilters.value}\u00A0${nbFilters.value === 1 ? "score" : "scores"}`
 })
 </script>
 
@@ -18,7 +18,7 @@ const filterSummary = computed(() => {
   <div v-if="mapStore.hasActiveFilters" class="map-tool-container" data-cy="map-filters-status">
     <div class="flex items-center justify-between gap-3 w-full">
       <div class="flex items-center gap-2 flex-1">
-        <span class="font-medium text-xs">Filtres actifs :</span>
+        <span class="font-medium text-xs">Filtres&nbsp;:</span>
         <Chip
           v-if="nbFilters > 0"
           :label="filterSummary"

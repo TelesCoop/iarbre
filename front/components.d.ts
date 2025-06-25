@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
@@ -15,6 +16,7 @@ declare module 'vue' {
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
+    Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
     FeedbackForm: typeof import('./src/components/forms/FeedbackForm.vue')['default']
@@ -22,8 +24,11 @@ declare module 'vue' {
     FilterIndicator: typeof import('./src/components/map/legend/FilterIndicator.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
     LayerSwitcher: typeof import('./src/components/layerSwitcher/LayerSwitcher.vue')['default']
+    LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
     MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
+    MapConfigDrawer: typeof import('./src/components/map/MapConfigDrawer.vue')['default']
+    MapConfigDrawerToggle: typeof import('./src/components/map/MapConfigDrawerToggle.vue')['default']
     MapContextData: typeof import('./src/components/contextData/MapContextData.vue')['default']
     MapContextDataClimateZone: typeof import('./src/components/contextData/MapContextDataClimateZone.vue')['default']
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
@@ -34,6 +39,7 @@ declare module 'vue' {
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
+    MapScoresDrawer: typeof import('./src/components/map/MapScoresDrawer.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PlantabilityContextDataAccordionItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue')['default']
@@ -47,6 +53,7 @@ declare module 'vue' {
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
     ScoreTag: typeof import('./src/components/map/score/ScoreTag.vue')['default']
     Select: typeof import('primevue/select')['default']
+    ShowHideScoreButton: typeof import('./src/components/map/popup/ShowHideScoreButton.vue')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
