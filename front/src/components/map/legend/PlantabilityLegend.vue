@@ -28,7 +28,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
   >
     <div class="flex items-center flex-col lg:flex-row justify-center gap-2 lg:gap-[7px] px-2">
       <span class="text-xs lg:text-sm leading-3">Non plantable</span>
-      <div class="flex align-items-center gap-2">
+      <div class="flex items-center gap-2">
         <score-label
           v-for="index in [0, 2, 4, 6, 8, 10]"
           :key="index"
