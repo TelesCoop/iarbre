@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { M } from "node_modules/vite/dist/node/types.d-aGj9QkWt"
 import { computed } from "vue"
 
 interface Props {
@@ -26,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const drawerStyle = computed(() => {
   const defaultvalue = ["top", "bottom"].includes(props.position)
-    ? { height: "90vh" }
+    ? { height: "auto", maxHeight: "90%" }
     : { width: "90%", maxWidth: "25rem" }
 
   return { ...defaultvalue, ...props.customStyles }
