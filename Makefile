@@ -28,3 +28,11 @@ back_recover_db_and_media:
 # Run dev server
 lint_front:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
+
+# Tests cypress dev
+tests_cypress:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test:cypress
+
+# Test cypress dev
+tests_cypress_dev:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test:cypress:dev
