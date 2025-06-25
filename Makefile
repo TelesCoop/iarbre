@@ -29,6 +29,10 @@ back_recover_db_and_media:
 lint_front:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
 
+# Tests unit
+tests_unit:
+	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test
+
 # Tests cypress dev
 tests_cypress:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test:cypress

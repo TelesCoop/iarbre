@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
-import { Drawer, useAppStore } from "@/stores/app"
+import { useAppStore } from "@/stores/app"
 
 const props = defineProps({
   mapId: {
@@ -20,7 +20,6 @@ const emit = defineEmits<{
   "update:modelValue": [value: MapParams]
 }>()
 
-const appStore = useAppStore()
 const mapStore = useMapStore()
 
 onMounted(() => {

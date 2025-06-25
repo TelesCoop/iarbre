@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 interface Props {
-  withBorder: boolean
+  withBorder?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
