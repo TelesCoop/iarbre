@@ -15,6 +15,7 @@ describe("MapScorePopup", () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.PLANTABILITY
     mapStore.popupData = {
+      id: "e",
       score: "8",
       lat: 45.76,
       lng: 4.85
@@ -31,6 +32,7 @@ describe("MapScorePopup", () => {
     const mapStore = useMapStore()
     mapStore.selectedDataType = DataType.CLIMATE_ZONE
     mapStore.popupData = {
+      id: "E",
       score: "E",
       lat: 12.34,
       lng: 56.78

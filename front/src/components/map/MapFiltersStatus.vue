@@ -10,7 +10,7 @@ const nbFilters = computed(() => {
 
 const filterSummary = computed(() => {
   if (nbFilters.value === 0) return ""
-  return `${nbFilters.value} ${nbFilters.value === 1 ? "score" : "scores"}`
+  return `${nbFilters.value}\u00A0${nbFilters.value === 1 ? "score" : "scores"}`
 })
 </script>
 

@@ -28,14 +28,10 @@ const showDetails = computed(() => mapStore.currentZoom > 16)
       <h3 class="font-accent text-sm" data-cy="plantability-score-label">{{ label }}</h3>
     </div>
     <div class="flex w-full items-center justify-center">
-      <Button
+      <show-hide-score-button
         v-if="showDetails"
-        :label="mapStore.contextData.data ? 'Masquer les détails' : 'Voir les détails'"
-        class="font-accent"
+        :feature-id="popupData.id"
         data-cy="toggle-plantability-score-details"
-        severity="secondary"
-        size="small"
-        @click="mapStore.contextData.toggleContextData(props.popupData.id)"
       />
       <p v-else class="text-sm font-sans text-center">
         Zoomez davantage pour consulter le détail de l'occupation des sols.
