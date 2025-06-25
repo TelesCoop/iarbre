@@ -75,11 +75,6 @@ onMounted(() => {
 <style>
 @reference "@/styles/main.css";
 
-.minify-map-legend {
-  @apply absolute bottom-0 left-0 mb-15 ml-2 lg:hidden;
-  max-width: calc(100vw - 3rem);
-}
-
 .legend-container {
   position: absolute;
   margin-top: 1rem;
