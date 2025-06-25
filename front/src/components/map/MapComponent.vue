@@ -58,7 +58,6 @@ onMounted(() => {
       <map-context-tools class="ml-auto" />
     </div>
   </div>
-  <!-- Mobile version of legend -->
   <div
     class="absolute hidden lg:flex top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
   >
