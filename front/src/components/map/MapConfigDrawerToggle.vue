@@ -20,7 +20,7 @@ const toggleDrawer = () => {
     icon="pi pi-cog"
     severity="secondary"
     size="small"
-    :aria-label="appStore.drawerVisible ? 'Close drawer config' : 'Open drawer config'"
+    :aria-label="appStore.drawerVisible[Drawer.MAP_CONFIG] ? 'Close drawer config' : 'Open drawer config'"
     data-cy="drawer-toggle"
     :label="layerName"
     @click="toggleDrawer"
