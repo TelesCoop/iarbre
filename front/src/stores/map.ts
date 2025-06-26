@@ -284,13 +284,6 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const setLayerZoomLimits = (style: maplibregl.StyleSpecification) => {
-    for (const layer of style.layers) {
-      layer.minzoom = MIN_ZOOM
-      layer.maxzoom = MAX_ZOOM
-    }
-  }
-
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -315,7 +308,6 @@ export const useMapStore = defineStore("map", () => {
       }
 
       if (newStyle!) {
-        setLayerZoomLimits(newStyle)
         mapInstance.setStyle(newStyle)
       }
       addQPVLayer(mapInstance)
