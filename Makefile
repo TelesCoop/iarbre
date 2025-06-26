@@ -1,37 +1,35 @@
 #!/bin/bash
 include .env
 
+FRONT_CMD = cd front/ && . ~/.nvm/nvm.sh && nvm use
+BACK_CMD = cd back/ && pew in ${PEW_ENV} python manage.py
 # Install front
 install_front:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm install
+	${FRONT_CMD} && npm install
 
 # Run dev server
 run_front:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run dev
+	${FRONT_CMD} && npm run dev
 
 # Run dev server
 build_front:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run build
+	${FRONT_CMD} && npm run build
 
 # Run backend server
 run_back:
-	cd back/ && pew in ${PEW_ENV} python manage.py runserver
-
+	${BACK_CMD} runserver
 # Migrate db
 back_migrate:
-	cd back/ && pew in ${PEW_ENV} python manage.py migrate
-
+	${BACK_CMD} migrate
 # Recover db and media without deleting some models 
 safe_recovery:
-	cd back/ && pew in ${PEW_ENV} python manage.py safe_recovery
-
+	${BACK_CMD} safe_recovery
 # Recover db and media
 back_recover_db_and_media:
-	cd back/ && pew in ${PEW_ENV} python manage.py backup_db recover_db_and_media
-
+	${BACK_CMD} backup_db recover_db_and_media
 # Shell in back
 back_shell:
-	cd back/ && pew in ${PEW_ENV} python manage.py shell
+	${BACK_CMD} shell
 # Run dev server
 lint_front:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
