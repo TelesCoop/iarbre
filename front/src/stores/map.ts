@@ -70,25 +70,28 @@ export const useMapStore = defineStore("map", () => {
     getRenderModeLabel,
     getRenderModeIcon,
     activateLayerWithMode,
-    deactivateLayer
+    getVisibleLayers
   } = multiLayers
 
   setUpdateCallback(() => updateMapLayers())
 
-  // Wrapper pour activateLayerWithMode qui gère selectedDataType
   const activateLayerWithModeAndSelect = (dataType: DataType, mode: LayerRenderMode) => {
+    const wasActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
+
     selectedDataType.value = dataType
     activateLayerWithMode(dataType, mode)
+
+    if (wasActive && !isLayerActive(dataType)) {
+      const remainingActiveLayer = getVisibleLayers().find((layer) => layer.dataType !== dataType)
+      if (remainingActiveLayer) {
+        selectedDataType.value = remainingActiveLayer.dataType
+      }
+    }
   }
 
-  // Wrapper pour deactivateLayer qui gère selectedDataType
   const deactivateLayerAndUpdateSelection = (dataType: DataType) => {
-    deactivateLayer(dataType)
-
-    // Mettre à jour selectedDataType vers le premier layer actif restant
-    const remainingActiveLayer = activeLayers.value.find(
-      (layer) => layer.visible && layer.dataType !== dataType
-    )
+    removeLayer(dataType)
+    const remainingActiveLayer = getVisibleLayers().find((layer) => layer.dataType !== dataType)
     if (remainingActiveLayer) {
       selectedDataType.value = remainingActiveLayer.dataType
     }
@@ -364,8 +367,7 @@ export const useMapStore = defineStore("map", () => {
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
     if (!isMultiLayerMode.value) {
-      const existingLayer = activeLayers.value.find((layer) => layer.dataType === initialDatatype)
-      if (!existingLayer) {
+      if (!isLayerActive(initialDatatype)) {
         activeLayers.value = [
           {
             dataType: initialDatatype,
@@ -427,10 +429,10 @@ export const useMapStore = defineStore("map", () => {
         }
       })
 
-      const visibleLayersCount = activeLayers.value.filter((layer) => layer.visible).length
+      const visibleLayers = getVisibleLayers()
+      const visibleLayersCount = visibleLayers.length
 
-      activeLayers.value
-        .filter((layer) => layer.visible)
+      visibleLayers
         .sort((a, b) => a.zIndex - b.zIndex) // Ordre par zIndex
         .forEach((layer) => {
           const geoLevel = DataTypeToGeolevel[layer.dataType]
@@ -485,7 +487,6 @@ export const useMapStore = defineStore("map", () => {
     addLayerWithMode,
     removeLayer,
     updateMapLayers,
-    // Fonctions utilitaires pour les layers
     isLayerActive,
     getActiveLayerMode,
     getAvailableRenderModes,
