@@ -65,7 +65,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"Successfully backed up models to {backup_file}")
         except subprocess.CalledProcessError as e:
-            self.stdout.write(
+            self.stderr.write(
                 self.style.ERROR(f"Error backing up database: {e.stderr.decode()}")
             )
 
