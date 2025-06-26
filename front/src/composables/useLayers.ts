@@ -162,7 +162,6 @@ export function useLayers() {
     const existingLayer = findVisibleLayer(dataType)
 
     if (existingLayer) {
-      // Si c'est le même mode, on désactive la couche
       if (existingLayer.renderMode === mode) {
         removeLayer(dataType)
         return
