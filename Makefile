@@ -15,6 +15,22 @@ run_front:
 build_front:
 	${FRONT_CMD} && npm run build
 
+# Run dev server
+lint_front:
+	${FRONT_CMD} && npm run lint
+
+# Tests unit
+tests_unit:
+	${FRONT_CMD} && npm run test
+
+# Tests cypress dev
+tests_cypress:
+	${FRONT_CMD} && npm run test:cypress
+
+# Test cypress dev
+tests_cypress_dev:
+	${FRONT_CMD} && npm run test:cypress:dev
+
 # Run backend server
 run_back:
 	${BACK_CMD} runserver
@@ -30,18 +46,4 @@ back_recover_db_and_media:
 # Shell in back
 back_shell:
 	${BACK_CMD} shell
-# Run dev server
-lint_front:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
 
-# Tests unit
-tests_unit:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test
-
-# Tests cypress dev
-tests_cypress:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test:cypress
-
-# Test cypress dev
-tests_cypress_dev:
-	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run test:cypress:dev
