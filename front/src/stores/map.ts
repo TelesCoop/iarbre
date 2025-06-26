@@ -70,7 +70,8 @@ export const useMapStore = defineStore("map", () => {
     getRenderModeLabel,
     getRenderModeIcon,
     activateLayerWithMode,
-    getVisibleLayers
+    getVisibleLayers,
+    findLayer
   } = multiLayers
 
   setUpdateCallback(() => updateMapLayers())

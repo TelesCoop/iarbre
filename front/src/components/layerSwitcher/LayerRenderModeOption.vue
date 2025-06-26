@@ -55,7 +55,7 @@ const handleClick = () => {
           >
             {{ mapStore.getRenderModeLabel(mode) }}
           </span>
-          <span class="text-xs text-gray-500 mt-1"> Mode {{ index + 1 }} • {{ mode }} </span>
+          <span class="text-xs text-gray-500 mt-1"> Mode {{ mode }} </span>
         </div>
       </div>
       <div class="col-span-2 flex justify-end">

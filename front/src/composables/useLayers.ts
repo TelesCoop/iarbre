@@ -125,10 +125,6 @@ export function useLayers() {
     }
   }
 
-  const getLayer = (dataType: DataType, renderMode?: LayerRenderMode): LayerConfig | undefined => {
-    return findLayer(dataType, renderMode)
-  }
-
   const hasLayer = (dataType: DataType, renderMode?: LayerRenderMode): boolean => {
     return !!findLayer(dataType, renderMode)
   }
@@ -162,12 +158,10 @@ export function useLayers() {
     const existingLayer = findVisibleLayer(dataType)
 
     if (existingLayer) {
+      removeLayer(dataType)
       if (existingLayer.renderMode === mode) {
-        removeLayer(dataType)
         return
       }
-
-      removeLayer(dataType)
     }
 
     if (mode === LayerRenderMode.FILL) {
@@ -185,7 +179,7 @@ export function useLayers() {
     removeLayer,
     updateLayerOpacity,
     updateLayerVisibility,
-    getLayer,
+    findLayer,
     hasLayer,
     clearAllLayers,
     getVisibleLayers,
