@@ -277,7 +277,9 @@ export const useMapStore = defineStore("map", () => {
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
-      addQPVLayer(mapInstance)
+      if (showQPVLayer.value) {
+        addQPVLayer(mapInstance)
+      }
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")

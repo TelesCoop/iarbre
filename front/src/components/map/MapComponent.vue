@@ -62,15 +62,7 @@ onMounted(() => {
   >
     <map-layer-switcher />
     <map-bg-switcher />
-    <ToggleButton
-      :model-value="mapStore.showQPVLayer"
-      off-label="Afficher les QPV"
-      on-label="Masquer les QPV"
-      size="small"
-      class="w-fit"
-      data-cy="qpv-toggle"
-      @update:model-value="mapStore.toggleQPVLayer"
-    />
+    <map-qpv-toggle-button />
     <map-context-data
       class="max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-6rem)] p-0!"
     />
