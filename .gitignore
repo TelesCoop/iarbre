@@ -14,3 +14,4 @@ site/*
 .claude
 .env
 .clinerules
+compress.dump.*

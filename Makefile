@@ -21,10 +21,17 @@ run_back:
 back_migrate:
 	cd back/ && pew in ${PEW_ENV} python manage.py migrate
 
+# Recover db and media without deleting some models 
+safe_recovery:
+	cd back/ && pew in ${PEW_ENV} python manage.py safe_recovery
+
 # Recover db and media
 back_recover_db_and_media:
 	cd back/ && pew in ${PEW_ENV} python manage.py backup_db recover_db_and_media
 
+# Shell in back
+back_shell:
+	cd back/ && pew in ${PEW_ENV} python manage.py shell
 # Run dev server
 lint_front:
 	cd front/ && . ~/.nvm/nvm.sh && nvm use && npm run lint
