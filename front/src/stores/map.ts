@@ -20,6 +20,7 @@ import {
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
+import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -54,6 +55,7 @@ export const useMapStore = defineStore("map", () => {
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
+  const showQPVLayer = ref<boolean>(false)
 
   const {
     clearAllFilters,
@@ -264,6 +266,10 @@ export const useMapStore = defineStore("map", () => {
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
+      // Clear QPV if existing
+      if (mapInstance.getLayer("qpv-border")) {
+        removeQPVLayer(mapInstance)
+      }
       // remove existing layers and sources
       if (previousDataType !== null) {
         mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
@@ -271,6 +277,7 @@ export const useMapStore = defineStore("map", () => {
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
+      addQPVLayer(mapInstance)
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
@@ -289,7 +296,10 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-
+      // Clear QPV if existing
+      if (mapInstance.getLayer("qpv-border")) {
+        removeQPVLayer(mapInstance)
+      }
       let newStyle: maplibregl.StyleSpecification
 
       if (mapstyle === MapStyle.CADASTRE) {
@@ -308,7 +318,7 @@ export const useMapStore = defineStore("map", () => {
         setLayerZoomLimits(newStyle)
         mapInstance.setStyle(newStyle)
       }
-
+      addQPVLayer(mapInstance)
       mapInstance.fire("style.load")
     })
   }
@@ -317,6 +327,62 @@ export const useMapStore = defineStore("map", () => {
     const currentGeoLevel = getGeoLevelFromDataType()
     setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
     setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
+  }
+
+  // TODO: display loading during the async execution
+  const addQPVLayer = async (mapInstance: Map) => {
+    if (!mapInstance.getSource("qpv-source")) {
+      const data = await getQPVData()
+      if (!data) {
+        return
+      }
+
+      mapInstance.addSource("qpv-source", {
+        type: "geojson",
+        data: data
+      })
+    }
+
+    if (!mapInstance.getLayer("qpv-border")) {
+      mapInstance.addLayer({
+        id: "qpv-border",
+        type: "line",
+        source: "qpv-source",
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 3
+        }
+      })
+    }
+    mapInstance.once("render", () => {
+      console.info(`cypress: QPV data loaded`)
+    })
+  }
+
+  const removeQPVLayer = (mapInstance: Map) => {
+    if (mapInstance.getLayer("qpv-border")) {
+      mapInstance.removeLayer("qpv-border")
+      mapInstance.once("render", () => {
+        console.info(`cypress: QPV data removed`)
+      })
+    }
+    if (mapInstance.getSource("qpv-source")) {
+      mapInstance.removeSource("qpv-source")
+    }
+  }
+
+  const toggleQPVLayer = async () => {
+    showQPVLayer.value = !showQPVLayer.value
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      if (showQPVLayer.value) {
+        await addQPVLayer(mapInstance)
+      } else {
+        removeQPVLayer(mapInstance)
+      }
+    }
   }
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
@@ -373,6 +439,8 @@ export const useMapStore = defineStore("map", () => {
     toggleFilter,
     activeFiltersCount,
     toggleAndApplyFilter,
-    resetFilters
+    resetFilters,
+    showQPVLayer,
+    toggleQPVLayer
   }
 })
