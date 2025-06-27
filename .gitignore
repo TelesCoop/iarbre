@@ -12,3 +12,6 @@ __pycache__
 site/*
 .vscode
 .claude
+.env
+.clinerules
+compress.dump.*

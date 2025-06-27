@@ -33,3 +33,8 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
     cy.wait(200) // eslint-disable-line cypress/no-unnecessary-waiting
   }
 })
+
+Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist ? "cypress: QPV data loaded" : "cypress: QPV data removed"
+  cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
+})

@@ -7,6 +7,7 @@ import PlantabilityContextDataList from "@/components/contextData/plantability/P
 
 interface PlantabilityCardProps {
   data: PlantabilityData
+  hideCloseButton?: boolean
 }
 
 const props = defineProps<PlantabilityCardProps>()
@@ -27,6 +28,7 @@ const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice 
     <map-context-header
       description="Calcul basé sur la pondération de +37 paramètres"
       title="Score de plantabilité"
+      :hide-close-button="props.hideCloseButton"
       @close="emit('close')"
     />
     <div class="map-context-panel-content">

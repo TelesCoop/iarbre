@@ -1,5 +1,20 @@
 # Journal des changements
 
+## 🔖 0.11.0 (2025-06-25) : Version mobile et améliorations visuelles
+
+### ✨ feat : Version mobile
+
+Un affichage adapté est maintenant disponible sur mobile. Il permet de naviguer, changer de calque et visualiser les détails.
+
+&rarr; PR [#306](https://github.com/TelesCoop/iarbre/pull/306)
+
+### 🛠️ enhance : améliorations visuelles mineurs
+
+- Le contraste et la lisibilité de l'affichage des scores et légendes a été amélioré. Il est maintenant géré dynamiquement.
+- La position du bouton `Diurne`/`Nocturne` pour les vulnérabilité à la chaleur a été déplacé à droite pour une meilleure ergonomie.
+- Le panel de context pour la plantabilité n'est accessible que pour les forts zooms, cette information est maintenant affichée dans la popup.
+- Nous avons aussi fait quelques petits ajustements sur le site vitrine.
+
 ## 🔖 0.10.0 (2025-06-18) : Filtre, cadastre et panel d'explicabilité pour les LCZs
 
 ### ✨ feat : Filtrer les zones par score

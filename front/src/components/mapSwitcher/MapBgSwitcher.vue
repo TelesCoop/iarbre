@@ -1,7 +1,15 @@
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+interface Props {
+  withBorder?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  withBorder: true
+})
+</script>
 
 <template>
-  <div class="map-tool-container" data-cy="map-bg-switcher">
+  <div :class="{ 'map-tool-container': props.withBorder }" data-cy="map-bg-switcher">
     <map-switcher />
   </div>
 </template>

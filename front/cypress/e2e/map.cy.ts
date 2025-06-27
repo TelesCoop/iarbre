@@ -96,6 +96,44 @@ describe("Map", () => {
     cy.getBySel("close-context-data").click()
     cy.getBySel("map-context-data").should("not.exist")
   })
+
+  it("adds QPV layer when toggled", () => {
+    cy.getBySel("qpv-toggle").should("be.visible").click()
+
+    cy.mapCheckQPVLayer(true)
+
+    cy.getBySel("qpv-toggle").should("be.visible").click()
+
+    cy.mapCheckQPVLayer(false)
+  })
+
+  it("maintains QPV layer when switching data layers", () => {
+    cy.getBySel("qpv-toggle").should("be.visible").click()
+    cy.mapCheckQPVLayer(true)
+
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
+    cy.mapCheckQPVLayer(true)
+
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
+    cy.mapCheckQPVLayer(true)
+
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+    cy.mapCheckQPVLayer(true)
+  })
+
+  it("maintains QPV layer when switching basemap styles", () => {
+    cy.getBySel("qpv-toggle").should("be.visible").click()
+    cy.mapCheckQPVLayer(true)
+
+    cy.basemapSwitchLayer(MapStyle.SATELLITE)
+    cy.mapCheckQPVLayer(true)
+
+    cy.basemapSwitchLayer(MapStyle.CADASTRE)
+    cy.mapCheckQPVLayer(true)
+
+    cy.basemapSwitchLayer(MapStyle.OSM)
+    cy.mapCheckQPVLayer(true)
+  })
 })
 
 describe("Geocoder", () => {

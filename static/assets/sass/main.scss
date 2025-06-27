@@ -353,19 +353,22 @@ hr.full-width {
 
   // Style spécifique pour le conteneur du mockup
   &.mockup-container {
-    flex: 1.2; // Donne plus d'espace au mockup
+    flex: 1.3; // Donne beaucoup plus d'espace au mockup
     max-width: none;
+    width: 100%;
 
     .mockup-image {
-      max-width: 600px; // Permet une taille plus grande
+      max-width: none; // Permet une taille plus grande
       width: 100%;
       height: auto;
+      min-width: 100%;
+      object-fit: contain;
     }
   }
 }
 
 .right {
-  flex: 1.8; // Réduit légèrement pour donner plus d'espace au mockup
+  flex: 1.7; // Réduit pour donner plus d'espace au mockup
   display: flex;
   align-items: flex-start;
   position: relative;

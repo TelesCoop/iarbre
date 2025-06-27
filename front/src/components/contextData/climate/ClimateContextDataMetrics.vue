@@ -1,14 +1,20 @@
 <script lang="ts" setup>
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { type ClimateData, ClimateCategory } from "@/types/climate"
 import { useClimateZone } from "@/composables/useClimateZone"
 
 interface ClimateMetricsProps {
   data: ClimateData
+  fullHeight?: boolean
 }
 
-defineProps<ClimateMetricsProps>()
+const props = defineProps<ClimateMetricsProps>()
 
+const categoryWrapperClass = computed(() =>
+  props.fullHeight
+    ? ""
+    : "max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100 overflow-y-auto scrollbar"
+)
 const {
   climateCategoryToIcon,
   climateCategoryToDescription,
@@ -29,9 +35,7 @@ const toggleCategory = (category: ClimateCategory) => {
 </script>
 
 <template>
-  <div
-    class="max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100 overflow-y-auto scrollbar border border-gray-200 rounded-lg"
-  >
+  <div class="border border-gray-200 rounded-lg" :class="categoryWrapperClass">
     <div v-for="category in climateCategoryOrder" :key="category" class="overflow-hidden">
       <button
         :data-cy="`${climateCategoryKey[category]}`"
