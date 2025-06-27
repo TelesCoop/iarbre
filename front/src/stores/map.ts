@@ -71,32 +71,10 @@ export const useMapStore = defineStore("map", () => {
     getRenderModeIcon,
     activateLayerWithMode,
     getVisibleLayers,
-    findLayer
+    findLayerByDataType
   } = multiLayers
 
   setUpdateCallback(() => updateMapLayers())
-
-  const activateLayerWithModeAndSelect = (dataType: DataType, mode: LayerRenderMode) => {
-    const wasActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
-
-    selectedDataType.value = dataType
-    activateLayerWithMode(dataType, mode)
-
-    if (wasActive && !isLayerActive(dataType)) {
-      const remainingActiveLayer = getVisibleLayers().find((layer) => layer.dataType !== dataType)
-      if (remainingActiveLayer) {
-        selectedDataType.value = remainingActiveLayer.dataType
-      }
-    }
-  }
-
-  const deactivateLayerAndUpdateSelection = (dataType: DataType) => {
-    removeLayer(dataType)
-    const remainingActiveLayer = getVisibleLayers().find((layer) => layer.dataType !== dataType)
-    if (remainingActiveLayer) {
-      selectedDataType.value = remainingActiveLayer.dataType
-    }
-  }
 
   const {
     clearAllFilters,
@@ -120,6 +98,38 @@ export const useMapStore = defineStore("map", () => {
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
+
+  const enableLayer = (dataType: DataType, mode: LayerRenderMode) => {
+    selectedDataType.value = dataType
+    activateLayerWithMode(dataType, mode)
+
+    const wasActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
+    if (wasActive && !isLayerActive(dataType)) {
+      const remainingActiveLayer = findLayerByDataType(dataType)
+      if (remainingActiveLayer) {
+        selectedDataType.value = remainingActiveLayer.dataType
+      }
+    }
+  }
+
+  const disableLayer = (dataType: DataType) => {
+    removeLayer(dataType)
+
+    const remainingActiveLayer = findLayerByDataType(dataType)
+    if (remainingActiveLayer) {
+      selectedDataType.value = remainingActiveLayer.dataType
+    }
+  }
+
+  const toggleLayer = (dataType: DataType, mode: LayerRenderMode) => {
+    const isCurrentlyActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
+
+    if (isCurrentlyActive) {
+      disableLayer(dataType)
+    } else {
+      enableLayer(dataType, mode)
+    }
+  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -493,7 +503,6 @@ export const useMapStore = defineStore("map", () => {
     getAvailableRenderModes,
     getRenderModeLabel,
     getRenderModeIcon,
-    activateLayerWithMode: activateLayerWithModeAndSelect,
-    deactivateLayer: deactivateLayerAndUpdateSelection
+    toggleLayer
   }
 })

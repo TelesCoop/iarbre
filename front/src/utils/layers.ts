@@ -106,23 +106,23 @@ export const configureLayersProperties = (
             ["linear"],
             ["get", colorReliefField],
             1,
-            "rgb(4, 0, 108)", // très faible
+            "rgb(4, 0, 108)",
             2,
-            "rgb(10, 21, 189)", // faible
+            "rgb(10, 21, 189)",
             3,
-            "rgb(24, 69, 240)", // faible à moyenne
+            "rgb(24, 69, 240)",
             4,
-            "rgb(39, 144, 116)", // moyenne
+            "rgb(39, 144, 116)",
             5,
-            "rgb(111, 186, 5)", // moyenne à élevée
+            "rgb(111, 186, 5)",
             6,
-            "rgb(205, 216, 2)", // élevée
+            "rgb(205, 216, 2)",
             7,
-            "rgb(251, 194, 14)", // très élevée
+            "rgb(251, 194, 14)",
             8,
-            "rgb(253, 128, 20)", // critique
+            "rgb(253, 128, 20)",
             9,
-            "rgb(215, 5, 13)" // extrêmement critique
+            "rgb(215, 5, 13)"
           ],
           "fill-opacity": [
             "interpolate",

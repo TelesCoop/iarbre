@@ -137,8 +137,8 @@ export function useLayers() {
     return activeLayers.value.filter((layer) => layer.visible)
   }
 
-  const getLayersByDataType = (dataType: DataType): LayerConfig[] => {
-    return activeLayers.value.filter((layer) => layer.dataType === dataType)
+  const findLayerByDataType = (dataType: DataType): LayerConfig | undefined => {
+    return activeLayers.value.find((layer) => layer.dataType === dataType)
   }
 
   const setUpdateCallback = (callback: () => void) => {
@@ -183,7 +183,7 @@ export function useLayers() {
     hasLayer,
     clearAllLayers,
     getVisibleLayers,
-    getLayersByDataType,
+    findLayerByDataType,
     setUpdateCallback,
     isLayerActive,
     getActiveLayerMode,

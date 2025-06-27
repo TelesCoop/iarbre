@@ -20,7 +20,7 @@ const isActive = () => {
 }
 
 const handleClick = () => {
-  mapStore.activateLayerWithMode(props.dataType, props.mode)
+  mapStore.toggleLayer(props.dataType, props.mode)
 }
 </script>
 
