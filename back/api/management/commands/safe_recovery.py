@@ -13,33 +13,36 @@ class Command(BaseCommand):
     model_to_backup_before_recovery = [Feedback]
     backup_dir = os.path.join(settings.BASE_DIR, "tmp/backups", "model_backups")
 
+    def get_db_settings(self):
+        """Extract and return database settings as a dictionary"""
+        db_settings = settings.DATABASES["default"]
+        return {
+            "NAME": db_settings["NAME"],
+            "USER": db_settings["USER"],
+            "PASSWORD": db_settings.get("PASSWORD", ""),
+            "HOST": db_settings.get("HOST", "localhost"),
+            "PORT": db_settings.get("PORT", "5432"),
+        }
+
     def backup_models(self):
         """Backup specific models using pg_dump"""
 
         os.makedirs(self.backup_dir, exist_ok=True)
 
-        # Get database connection details from Django settings
-        db_settings = settings.DATABASES["default"]
-        db_name = db_settings["NAME"]
-        db_user = db_settings["USER"]
-        db_password = db_settings.get("PASSWORD", "")
-        db_host = db_settings.get("HOST", "localhost")
-        db_port = db_settings.get("PORT", "5432")
-
-        # Create a single backup file for all specified models
+        db_settings = self.get_db_settings()
         backup_file = os.path.join(self.backup_dir, "model_backup.sql")
 
         # Build the pg_dump command
         pg_dump_cmd = [
             "pg_dump",
             "-h",
-            db_host,
+            db_settings["HOST"],
             "-p",
-            db_port,
+            db_settings["PORT"],
             "-U",
-            db_user,
+            db_settings["USER"],
             "-d",
-            db_name,
+            db_settings["NAME"],
             "-t",
             ",".join(
                 [model._meta.db_table for model in self.model_to_backup_before_recovery]
@@ -52,7 +55,7 @@ class Command(BaseCommand):
 
         # Set the password environment variable
         env = os.environ.copy()
-        env["PGPASSWORD"] = db_password
+        env["PGPASSWORD"] = db_settings["PASSWORD"]
 
         try:
             # Execute the pg_dump command
@@ -80,32 +83,26 @@ class Command(BaseCommand):
             )
             return
 
-        # Get database connection details from Django settings
-        db_settings = settings.DATABASES["default"]
-        db_name = db_settings["NAME"]
-        db_user = db_settings["USER"]
-        db_password = db_settings.get("PASSWORD", "")
-        db_host = db_settings.get("HOST", "localhost")
-        db_port = db_settings.get("PORT", "5432")
+        db_settings = self.get_db_settings()
 
         # Build the psql command for restoration
         psql_cmd = [
             "psql",
             "-h",
-            db_host,
+            db_settings["HOST"],
             "-p",
-            db_port,
+            db_settings["PORT"],
             "-U",
-            db_user,
+            db_settings["USER"],
             "-d",
-            db_name,
+            db_settings["NAME"],
             "-f",
             backup_file,
         ]
 
         # Set the password environment variable
         env = os.environ.copy()
-        env["PGPASSWORD"] = db_password
+        env["PGPASSWORD"] = db_settings["PASSWORD"]
 
         try:
             # Execute the psql command

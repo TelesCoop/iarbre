@@ -37,7 +37,7 @@ run_back:
 # Migrate db
 back_migrate:
 	${BACK_CMD} migrate
-# Recover db and media without deleting some models 
+# Recover db and media without deleting some models
 safe_recovery:
 	${BACK_CMD} safe_recovery
 # Recover db and media
@@ -46,4 +46,3 @@ back_recover_db_and_media:
 # Shell in back
 back_shell:
 	${BACK_CMD} shell
-
