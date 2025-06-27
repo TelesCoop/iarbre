@@ -8,7 +8,7 @@ from api.models import Feedback
 
 
 class Command(BaseCommand):
-    help = "Safely recover database with model backup and restore using pg_dump"
+    help = "Safely recover database, we keep a backup of the models (Feeback, ...) in current database before restoring the remote database."
 
     model_to_backup_before_recovery = [Feedback]
     backup_dir = os.path.join(settings.BASE_DIR, "tmp/backups", "model_backups")
