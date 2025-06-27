@@ -14,7 +14,12 @@ const mapStore = useMapStore()
 const isExpanded = ref(false)
 
 const toggleExpanded = () => {
-  isExpanded.value = !isExpanded.value
+  const availableModes = getAvailableModes()
+  if (availableModes.length === 1) {
+    mapStore.toggleLayer(props.layerMetadata.dataType, availableModes[0])
+  } else {
+    isExpanded.value = !isExpanded.value
+  }
 }
 
 const isLayerActive = () => {
@@ -65,6 +70,7 @@ const getAvailableModes = () => {
           </svg>
         </div>
         <svg
+          v-if="getAvailableModes().length > 1"
           :class="[
             'w-5 h-5 text-gray-400 transition-transform duration-200',
             isExpanded ? 'transform rotate-180' : ''
@@ -88,8 +94,8 @@ const getAvailableModes = () => {
         v-for="(mode, index) in getAvailableModes()"
         :key="mode"
         :data-type="layerMetadata.dataType"
-        :mode="mode"
         :index="index"
+        :mode="mode"
       />
     </div>
   </div>
