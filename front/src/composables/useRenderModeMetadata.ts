@@ -7,7 +7,7 @@ export function useRenderModeMetadata() {
       case DataType.CLIMATE_ZONE:
         return [LayerRenderMode.FILL]
       case DataType.VULNERABILITY:
-        return [LayerRenderMode.FILL, LayerRenderMode.COLOR_RELIEF]
+        return [LayerRenderMode.FILL]
       case DataType.PLANTABILITY:
         return [LayerRenderMode.FILL, LayerRenderMode.SYMBOL]
       default:
@@ -21,8 +21,6 @@ export function useRenderModeMetadata() {
         return "Plein"
       case LayerRenderMode.SYMBOL:
         return "Points"
-      case LayerRenderMode.COLOR_RELIEF:
-        return "Relief couleur"
       default:
         return "Standard"
     }
@@ -34,8 +32,6 @@ export function useRenderModeMetadata() {
         return "⬛"
       case LayerRenderMode.SYMBOL:
         return "📍"
-      case LayerRenderMode.COLOR_RELIEF:
-        return "🎨"
       default:
         return "⬜"
     }

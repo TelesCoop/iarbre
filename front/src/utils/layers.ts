@@ -52,9 +52,9 @@ export const configureLayersProperties = (
               "tree-icon",
               [">=", ["get", "indice"], 4],
               "warning-icon",
-              "tree-icon"
+              "none-icon"
             ],
-            "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 0.8, 20, 1.0],
+            "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.8, 15, 1.2],
             "icon-allow-overlap": false,
             "icon-ignore-placement": false,
             "symbol-spacing": 200,
@@ -92,64 +92,6 @@ export const configureLayersProperties = (
           "circle-stroke-opacity": 1.0
         }
       } as AddLayerObject
-    case LayerRenderMode.COLOR_RELIEF: {
-      const colorReliefField =
-        layerConfig.dataType === DataType.VULNERABILITY ? `indice_${vulnerabilityMode}` : "indice"
-      const maxColorReliefValue = layerConfig.dataType === DataType.VULNERABILITY ? 9 : 10
-
-      return {
-        ...baseLayer,
-        type: "fill",
-        paint: {
-          "fill-color": [
-            "interpolate",
-            ["linear"],
-            ["get", colorReliefField],
-            1,
-            "rgb(4, 0, 108)",
-            2,
-            "rgb(10, 21, 189)",
-            3,
-            "rgb(24, 69, 240)",
-            4,
-            "rgb(39, 144, 116)",
-            5,
-            "rgb(111, 186, 5)",
-            6,
-            "rgb(205, 216, 2)",
-            7,
-            "rgb(251, 194, 14)",
-            8,
-            "rgb(253, 128, 20)",
-            9,
-            "rgb(215, 5, 13)"
-          ],
-          "fill-opacity": [
-            "interpolate",
-            ["exponential", 1.2],
-            ["get", colorReliefField],
-            0,
-            smartOpacity * 0.3,
-            maxColorReliefValue / 2,
-            smartOpacity * 0.6,
-            maxColorReliefValue,
-            smartOpacity * 0.9
-          ],
-          "fill-outline-color": [
-            "interpolate",
-            ["linear"],
-            ["get", colorReliefField],
-            0,
-            "#0080ff",
-            maxColorReliefValue / 2,
-            "#ffff00",
-            maxColorReliefValue,
-            "#990000"
-          ]
-        }
-      } as AddLayerObject
-    }
-
     default:
       return {
         ...baseLayer,

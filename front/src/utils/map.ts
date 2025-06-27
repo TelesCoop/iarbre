@@ -69,6 +69,7 @@ export const setupMapIcons = (map: Map) => {
     }
   }
 
-  createEmojiIcon("tree-icon", "🌳", 24)
-  createEmojiIcon("warning-icon", "⚠️", 22)
+  createEmojiIcon("tree-icon", "🌳", 32)
+  createEmojiIcon("warning-icon", "⚠️", 32)
+  createEmojiIcon("none-icon", "", 32)
 }

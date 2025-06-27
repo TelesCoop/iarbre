@@ -10,8 +10,7 @@ export interface MapScorePopupData {
 
 export enum LayerRenderMode {
   FILL = "fill",
-  SYMBOL = "symbol",
-  COLOR_RELIEF = "color-relief"
+  SYMBOL = "symbol"
 }
 
 export interface LayerConfig {
