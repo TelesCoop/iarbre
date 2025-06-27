@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { useMapStore } from "@/stores/map"
-import LayerRenderModeOption from "./LayerRenderModeOption.vue"
+import ModeSelector from "./ModeSelector.vue"
 import type { DataLayerMetadata } from "@/composables/useDataLayerMetadata"
+import { DataType } from "@/utils/enum"
+import { LayerRenderMode } from "@/types/map"
 
-interface DataLayerSectionProps {
+interface LayerToggleProps {
   layerMetadata: DataLayerMetadata
 }
 
-const props = defineProps<DataLayerSectionProps>()
+const props = defineProps<LayerToggleProps>()
 const mapStore = useMapStore()
 
 const isExpanded = ref(false)
@@ -32,6 +34,10 @@ const getActiveMode = () => {
 
 const getAvailableModes = () => {
   return mapStore.getAvailableRenderModes(props.layerMetadata.dataType)
+}
+
+const handleLayerToggle = (dataType: DataType, mode: LayerRenderMode) => {
+  mapStore.toggleLayer(dataType, mode)
 }
 </script>
 
@@ -90,12 +96,13 @@ const getAvailableModes = () => {
     </button>
 
     <div v-if="isExpanded" class="divide-y divide-gray-100 bg-white">
-      <LayerRenderModeOption
+      <ModeSelector
         v-for="(mode, index) in getAvailableModes()"
         :key="mode"
         :data-type="layerMetadata.dataType"
         :index="index"
         :mode="mode"
+        @toggle-layer="handleLayerToggle"
       />
     </div>
   </div>

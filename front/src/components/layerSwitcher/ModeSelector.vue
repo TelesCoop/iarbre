@@ -19,8 +19,12 @@ const isActive = () => {
   )
 }
 
+const emit = defineEmits<{
+  toggleLayer: [dataType: DataType, mode: LayerRenderMode]
+}>()
+
 const handleClick = () => {
-  mapStore.toggleLayer(props.dataType, props.mode)
+  emit("toggleLayer", props.dataType, props.mode)
 }
 </script>
 
