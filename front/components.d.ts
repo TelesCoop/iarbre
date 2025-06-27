@@ -8,6 +8,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccordionContent: typeof import('primevue/accordioncontent')['default']
+    AccordionHeader: typeof import('primevue/accordionheader')['default']
+    AccordionPanel: typeof import('primevue/accordionpanel')['default']
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chip: typeof import('primevue/chip')['default']
@@ -39,7 +42,7 @@ declare module 'vue' {
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapQpvToggleButton: typeof import('./src/components/map/panels/MapQpvToggleButton.vue')['default']
-    MapQPVToggleButton: typeof import('./src/components/map/panels/MapQPVToggleButton.vue')['default']
+    MapQPVToggleButton: typeof import("./src/components/map/panels/MapQPVToggleButton.vue")["default"]
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
     MapScoresDrawer: typeof import('./src/components/map/panels/MapScoresDrawer.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
