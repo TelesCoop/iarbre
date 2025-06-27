@@ -19,6 +19,7 @@ declare module 'vue' {
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
     DataLayerSection: typeof import('./src/components/layerSwitcher/DataLayerSection.vue')['default']
+    Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
     FeedbackForm: typeof import('./src/components/forms/FeedbackForm.vue')['default']
