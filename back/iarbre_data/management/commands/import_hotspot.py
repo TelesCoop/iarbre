@@ -16,6 +16,49 @@ class Command(BaseCommand):
             help="Path to the Excel file to import (default: file_data/hotspot/private_trees.xlsx)",
         )
 
+    def extract_first_street_number(self, address):
+        """Extract only the first street number from addresses with multiple numbers."""
+
+        parts = address.split()
+
+        first_part = parts[0]
+
+        # Handle patterns like "43,45,47,49" or "121 A,B,C,D,E,F,G,H"
+        if "," in first_part:
+            first_number = first_part.split(",")[0]
+            parts[0] = first_number
+
+        # Handle patterns like "43/45/47" or "51,53,55 / 57,59,61,63"
+        elif "/" in first_part:
+            first_number = first_part.split("/")[0]
+            parts[0] = first_number
+
+        # Handle patterns where second part might contain letters like "A,B,C,D"
+        elif (
+            len(parts) > 1
+            and "," in parts[1]
+            and all(c.isalpha() or c == "," for c in parts[1])
+        ):
+            # Keep the number, remove the letter variations
+            parts = [parts[0]] + parts[2:]
+
+        return " ".join(parts)
+
+    def clean_address(self, address):
+        """Remove everything after postal code and extract first street number."""
+        if not address:
+            return address
+
+        # First extract only the first street number
+        address = self.extract_first_street_number(address)
+
+        parts = address.split()
+        for i, part in enumerate(parts):
+            if part.isdigit() and len(part) == 5:
+                # Keep everything up to and including the postal code
+                return " ".join(parts[: i + 1])
+        return address
+
     def get_city_from_address(self, address):
         """Extract city from address and find matching City object."""
         parts = address.split()
@@ -58,7 +101,7 @@ class Command(BaseCommand):
         if commune_col and not pd.isna(row[commune_col]):
             commune = str(row[commune_col]).strip()
             if commune:
-                if "Lyon" in commune:
+                if "lyon" in commune.lower():
                     parts = commune.split()
                     arrondissement = int(parts[1])
                     commune = f"690{arrondissement:02d}"
