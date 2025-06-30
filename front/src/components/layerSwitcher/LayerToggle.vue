@@ -63,18 +63,6 @@ const handleLayerToggle = (dataType: DataType, mode: LayerRenderMode) => {
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <div
-          v-if="isLayerActive()"
-          class="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center"
-        >
-          <svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              clip-rule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              fill-rule="evenodd"
-            />
-          </svg>
-        </div>
         <svg
           v-if="getAvailableModes().length > 1"
           :class="[
@@ -92,10 +80,22 @@ const handleLayerToggle = (dataType: DataType, mode: LayerRenderMode) => {
             stroke-width="2"
           />
         </svg>
+        <div
+          v-if="isLayerActive()"
+          class="w-3 h-3 bg-primary-500 rounded-full flex items-center justify-center"
+        >
+          <svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              clip-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              fill-rule="evenodd"
+            />
+          </svg>
+        </div>
       </div>
     </button>
 
-    <div v-if="isExpanded" class="divide-y divide-gray-100 bg-white">
+    <div v-if="isExpanded" class="p-3 bg-gray-50 flex flex-wrap gap-2">
       <ModeSelector
         v-for="(mode, index) in getAvailableModes()"
         :key="mode"
