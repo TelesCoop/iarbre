@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 from django.core.management.base import BaseCommand
 from iarbre_data.models import HotSpot, City
@@ -35,77 +36,114 @@ class Command(BaseCommand):
 
         return None
 
-    def process_sheet(self, file_path, sheet_name):
-        """Process a single sheet from the Excel file."""
-        df = pd.read_excel(file_path, sheet_name=sheet_name)
-
-        address_column = None
+    def find_address_column(self, df):
+        """Find the address column in the dataframe."""
         for col in df.columns:
-            if "adresse" in col.lower() or col == "Unnamed: 0":
+            if "adresse" in col.lower():
                 if not df[col].isna().all():
-                    address_column = col
-                    break
+                    return col
+        return None
 
-        if not address_column:
-            print(f'No address column found in sheet "{sheet_name}"')
-            return 0
+    def get_full_address(self, row, address_column, df):
+        """Get full address by appending commune if it exists."""
+        address = row[address_column]
 
+        # Look for a Commune column
+        commune_col = None
+        for col in df.columns:
+            if col.strip().lower() == "commune":
+                commune_col = col
+                break
+
+        if commune_col and not pd.isna(row[commune_col]):
+            commune = str(row[commune_col]).strip()
+            if commune:
+                if "Lyon" in commune:
+                    parts = commune.split()
+                    arrondissement = int(parts[1])
+                    commune = f"690{arrondissement:02d}"
+                address = f"{address}, {commune}"
+
+        return address
+
+    def get_additional_data_columns(self, df, address_column):
+        """Get additional data columns after the address column."""
         additional_data = {}
         col_index = list(df.columns).index(address_column)
         for col in df.columns[col_index + 1 :]:
             if not df[col].isna().all():
                 additional_data[col] = col
+        return additional_data
 
+    def build_description(self, sheet_name, row, additional_data):
+        """Build description object from row data."""
+        description = {"sheet": sheet_name}
+        for col_name, col_key in additional_data.items():
+            value = row[col_name]
+            if not pd.isna(value):
+                description[col_key] = value
+        return description
+
+    def extract_city_name_from_address(self, address):
+        """Extract city name from address string."""
+        parts = address.split()
+        for i, part in enumerate(parts):
+            if part.isdigit() and len(part) == 5:
+                if i + 1 < len(parts):
+                    return " ".join(parts[i + 1 :])
+        return None
+
+    def create_or_update_hotspot(self, geometry, description, city_name, city):
+        """Create or update a HotSpot object."""
+        try:
+            hotspot, created = HotSpot.objects.get_or_create(
+                geometry=geometry,
+                defaults={
+                    "description": description,
+                    "city_name": city_name,
+                    "city": city,
+                },
+            )
+            if not created:
+                hotspot.description = description
+                hotspot.city_name = city_name
+                hotspot.city = city
+                hotspot.save()
+            return True
+        except Exception as e:
+            print(f"Error creating HotSpot: {e}")
+            return False
+
+    def process_sheet(self, file_path, sheet_name):
+        """Process a single sheet from the Excel file."""
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
+        address_column = self.find_address_column(df)
+        if not address_column:
+            print(f'No address column found in sheet "{sheet_name}"')
+            return 0
+
+        additional_data = self.get_additional_data_columns(df, address_column)
         created_count = 0
 
         for _, row in df.iterrows():
-            address = row[address_column]
-
+            address = self.get_full_address(row, address_column, df)
             if pd.isna(address) or not address.strip():
                 continue
 
-            description = {"sheet": sheet_name}
-            for col_name, col_key in additional_data.items():
-                value = row[col_name]
-                if not pd.isna(value):
-                    description[col_key] = value
-
+            description = self.build_description(sheet_name, row, additional_data)
             geometry = geocode_address(address)
-
+            time.sleep(1)  # 1 request max per second
             if not geometry:
                 print(f"Could not geocode address {address}, skipping")
                 continue
 
             city = self.get_city_from_address(address)
-            city_name = None
-            if city:
-                city_name = city.name
-            else:
-                parts = address.split()
-                for i, part in enumerate(parts):
-                    if part.isdigit() and len(part) == 5:
-                        if i + 1 < len(parts):
-                            city_name = " ".join(parts[i + 1 :])
-                            break
+            city_name = (
+                city.name if city else self.extract_city_name_from_address(address)
+            )
 
-            try:
-                hotspot, created = HotSpot.objects.get_or_create(
-                    geometry=geometry,
-                    defaults={
-                        "description": description,
-                        "city_name": city_name,
-                        "city": city,
-                    },
-                )
-                if not created:
-                    hotspot.description = description
-                    hotspot.city_name = city_name
-                    hotspot.city = city
-                    hotspot.save()
+            if self.create_or_update_hotspot(geometry, description, city_name, city):
                 created_count += 1
-
-            except Exception as e:
-                print(f"Error creating HotSpot: {e}")
 
         return created_count
 
@@ -117,7 +155,7 @@ class Command(BaseCommand):
             total_created = 0
 
             print(f"Found sheets: {xl_file.sheet_names}")
-
+            print(xl_file.sheet_names)
             for sheet_name in xl_file.sheet_names:
                 created = self.process_sheet(file_path, sheet_name)
                 total_created += created
