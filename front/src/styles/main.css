@@ -63,6 +63,7 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
   --font-accent: "Sligoil", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji";
   --font-main: var(--font-sans);
+  --breakpoint-xs: 23rem;
 }
 
 /* Define root variables */
