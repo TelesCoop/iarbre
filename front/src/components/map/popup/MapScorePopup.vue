@@ -12,6 +12,7 @@ const mapStore = useMapStore()
 const toast = useToast()
 
 const popupData = computed(() => mapStore.popupData)
+
 const coords = computed(
   () => `${popupData.value?.lat.toFixed(5)}° N, ${popupData.value?.lng.toFixed(5)}° E`
 )

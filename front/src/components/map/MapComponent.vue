@@ -2,7 +2,6 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
-import { useAppStore } from "@/stores/app"
 
 const props = defineProps({
   mapId: {
@@ -51,7 +50,7 @@ onMounted(() => {
     <map-config-drawer-toggle />
   </div>
   <div class="legend-container hidden lg:flex">
-    <map-legend />
+    <map-legend v-if="!mapStore.isMultiLayerMode" />
     <div class="flex gap-2">
       <map-filters-status />
       <map-context-tools class="ml-auto" />
@@ -107,12 +106,14 @@ onMounted(() => {
 .maplibregl-ctrl-geocoder--suggestions {
   width: 100%;
 }
+
 .maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed,
 .maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--input {
   width: 30px;
   min-width: 30px;
   height: 30px;
 }
+
 .maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--icon {
   width: 25px;
   height: 25px;

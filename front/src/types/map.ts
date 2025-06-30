@@ -8,6 +8,20 @@ export interface MapScorePopupData {
   score: string
 }
 
+export enum LayerRenderMode {
+  FILL = "fill",
+  SYMBOL = "symbol"
+}
+
+export interface LayerConfig {
+  dataType: DataType
+  visible: boolean
+  opacity: number
+  zIndex: number
+  filters: (number | string)[]
+  renderMode: LayerRenderMode
+}
+
 export interface MapParams {
   lng: number
   lat: number

@@ -19,10 +19,11 @@ import {
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
+import { LayerRenderMode } from "@/types/map"
 import { FULL_BASE_API_URL } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
-
+import { configureLayersProperties } from "@/utils/layers"
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
@@ -36,9 +37,11 @@ import {
   extractFeatureProperty,
   getLayerId,
   getSourceId,
-  highlightFeature
+  highlightFeature,
+  setupMapIcons
 } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
+import { useLayers } from "@/composables/useLayers"
 import { addCenterControl } from "@/utils/mapControls"
 import { useAppStore } from "./app"
 
@@ -56,6 +59,26 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
   const showQPVLayer = ref<boolean>(false)
+
+  const multiLayers = useLayers()
+  const {
+    activeLayers,
+    isMultiLayerMode,
+    addLayer,
+    addLayerWithMode,
+    removeLayer,
+    setUpdateCallback,
+    isLayerActive,
+    getActiveLayerMode,
+    getAvailableRenderModes,
+    getRenderModeLabel,
+    getRenderModeIcon,
+    activateLayerWithMode,
+    getVisibleLayers,
+    findLayerByDataType
+  } = multiLayers
+
+  setUpdateCallback(() => updateMapLayers())
 
   const {
     clearAllFilters,
@@ -79,6 +102,38 @@ export const useMapStore = defineStore("map", () => {
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
     }
   })
+
+  const enableLayer = (dataType: DataType, mode: LayerRenderMode) => {
+    selectedDataType.value = dataType
+    activateLayerWithMode(dataType, mode)
+
+    const wasActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
+    if (wasActive && !isLayerActive(dataType)) {
+      const remainingActiveLayer = findLayerByDataType(dataType)
+      if (remainingActiveLayer) {
+        selectedDataType.value = remainingActiveLayer.dataType
+      }
+    }
+  }
+
+  const disableLayer = (dataType: DataType) => {
+    removeLayer(dataType)
+
+    const remainingActiveLayer = findLayerByDataType(dataType)
+    if (remainingActiveLayer) {
+      selectedDataType.value = remainingActiveLayer.dataType
+    }
+  }
+
+  const toggleLayer = (dataType: DataType, mode: LayerRenderMode) => {
+    const isCurrentlyActive = isLayerActive(dataType) && getActiveLayerMode(dataType) === mode
+
+    if (isCurrentlyActive) {
+      disableLayer(dataType)
+    } else {
+      enableLayer(dataType, mode)
+    }
+  }
 
   const getAttributionSource = () => {
     const sourceCode =
@@ -134,7 +189,7 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: (map: Map) => {
+    onRemove: () => {
       const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
       if (controlElement) {
         controlElement.remove()
@@ -188,12 +243,14 @@ export const useMapStore = defineStore("map", () => {
     }
 
     removeActivePopup()
+    const scoreField =
+      datatype === DataType.VULNERABILITY ? `indice_${vulnerabilityMode.value}` : "indice"
     popupData.value = {
       id: extractFeatureProperty(e.features!, datatype, geolevel, "id"),
       lng: e.lngLat.lng,
       lat: e.lngLat.lat,
       properties: extractFeatureProperties(e.features!, datatype, geolevel),
-      score: extractFeatureProperty(e.features!, datatype, geolevel, `indice`)
+      score: extractFeatureProperty(e.features!, datatype, geolevel, scoreField)
     }
     const maxWidth = useAppStore().isMobile ? MOBILE_MAX_WIDTH : POPUP_MAX_WIDTH
     const popup = new Popup().setLngLat(e.lngLat).setMaxWidth(maxWidth)
@@ -207,13 +264,14 @@ export const useMapStore = defineStore("map", () => {
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
+
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
     const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
-      createPopup(e, map, datatype, geolevel, layerId)
+      if (!isMultiLayerMode.value) createPopup(e, map, datatype, geolevel, layerId)
       if (contextData.data.value) {
         contextData.setData(featureId)
       }
@@ -221,6 +279,7 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
   }
+
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layer = createMapLayer(datatype, geolevel, sourceId)
@@ -256,7 +315,7 @@ export const useMapStore = defineStore("map", () => {
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
-  const changeDataType = (datatype: DataType) => {
+  const switchToSingleDataType = (datatype: DataType) => {
     removeActivePopup()
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
@@ -381,6 +440,20 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+    if (!isMultiLayerMode.value) {
+      if (!isLayerActive(initialDatatype)) {
+        activeLayers.value = [
+          {
+            dataType: initialDatatype,
+            visible: true,
+            opacity: 0.7,
+            zIndex: 1,
+            filters: [],
+            renderMode: LayerRenderMode.FILL
+          }
+        ]
+      }
+    }
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId, // container id
@@ -395,6 +468,7 @@ export const useMapStore = defineStore("map", () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
+      setupMapIcons(mapInstance)
     })
 
     mapInstance.on("moveend", () => {
@@ -408,6 +482,52 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const updateMapLayers = () => {
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      Object.keys(mapEventsListener.value).forEach((key) => {
+        mapInstance.off("click", key, mapEventsListener.value[key])
+      })
+      mapEventsListener.value = {}
+
+      // Supprimer tous les calques existants
+      Object.values(DataType).forEach((dataType) => {
+        const geoLevel = DataTypeToGeolevel[dataType]
+        const layerId = getLayerId(dataType, geoLevel)
+        const sourceId = getSourceId(dataType, geoLevel)
+
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
+      })
+
+      const visibleLayers = getVisibleLayers()
+      const visibleLayersCount = visibleLayers.length
+
+      visibleLayers
+        .sort((a, b) => a.zIndex - b.zIndex) // Ordre par zIndex
+        .forEach((layer) => {
+          const geoLevel = DataTypeToGeolevel[layer.dataType]
+          setupSource(mapInstance, layer.dataType, geoLevel)
+
+          const sourceId = getSourceId(layer.dataType, geoLevel)
+          const advancedLayer = configureLayersProperties(
+            layer,
+            geoLevel,
+            sourceId,
+            FILL_COLOR_MAP.value,
+            vulnerabilityMode.value
+          )
+          mapInstance.addLayer(advancedLayer)
+          if (visibleLayersCount === 1) {
+            setupClickEventOnTile(mapInstance, layer.dataType, geoLevel)
+          }
+        })
+    })
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -415,7 +535,8 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
-    changeDataType,
+    switchToSingleDataType,
+    changeDataType: switchToSingleDataType,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
@@ -434,6 +555,18 @@ export const useMapStore = defineStore("map", () => {
     activeFiltersCount,
     toggleAndApplyFilter,
     resetFilters,
+    activeLayers,
+    isMultiLayerMode,
+    addLayer,
+    addLayerWithMode,
+    removeLayer,
+    updateMapLayers,
+    isLayerActive,
+    getActiveLayerMode,
+    getAvailableRenderModes,
+    getRenderModeLabel,
+    getRenderModeIcon,
+    toggleLayer,
     showQPVLayer,
     toggleQPVLayer
   }

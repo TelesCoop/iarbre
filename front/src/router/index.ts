@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 import MapView from "@/views/MapView.vue"
 import { DataType } from "@/utils/enum"
-import { Layout } from "@/utils/constants"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

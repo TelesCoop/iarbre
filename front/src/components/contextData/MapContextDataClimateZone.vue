@@ -9,7 +9,7 @@ interface ClimateDataProps {
   fullHeight?: boolean
 }
 
-const props = defineProps<ClimateDataProps>()
+defineProps<ClimateDataProps>()
 const emit = defineEmits<{
   close: []
 }>()
@@ -27,13 +27,13 @@ const handleClose = () => {
     role="dialog"
   >
     <map-context-header
+      :hide-close-button="hideCloseButton"
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
       title="Zones climatiques locales"
-      :hide-close-button="props.hideCloseButton"
       @close="handleClose"
     />
     <div class="map-context-panel-content">
-      <climate-context-data-metrics :data="data" :full-height="props.fullHeight" />
+      <climate-context-data-metrics :data="data" :full-height="fullHeight" />
     </div>
   </div>
 </template>

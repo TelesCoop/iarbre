@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-interface Props {
-  withBorder?: boolean
-}
+import LayerToggle from "./LayerToggle.vue"
+import { useDataLayerMetadata } from "@/composables/useDataLayerMetadata"
 
-const props = withDefaults(defineProps<Props>(), {
-  withBorder: true
-})
+const { dataLayerOptions } = useDataLayerMetadata()
 </script>
 
 <template>
-  <div :class="{ 'map-tool-container': props.withBorder }" data-cy="map-layer-switcher">
-    <layer-switcher />
-    <div class="flex-1 hidden lg:flex">
-      <layer-switcher-icon color="426A45" />
-    </div>
+  <div
+    class="max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100 overflow-y-auto scrollbar border border-gray-200 rounded-lg"
+  >
+    <LayerToggle
+      v-for="layerMetadata in dataLayerOptions"
+      :key="layerMetadata.dataType"
+      :layer-metadata="layerMetadata"
+    />
   </div>
 </template>
