@@ -54,9 +54,9 @@ export enum PlantabilityLandUseKeys {
 }
 
 export enum PlantabilityOccupationLevel {
-  FAIBLE = "faible",
-  MOYEN = "moyen",
-  FORT = "fort"
+  FAIBLE = "Surchauffe faible",
+  MOYEN = "Surchauffe moyenne",
+  FORT = "Surchauffe forte"
 }
 
 export enum PlantabilityMetaCategory {
