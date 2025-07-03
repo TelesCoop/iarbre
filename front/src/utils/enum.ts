@@ -44,7 +44,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
 
 export enum VulnerabilityCategory {
   EXPOSITION = "Exposition",
-  CAPACITY_TO_FACE = "Capacité à faire face",
+  CAPACITY_TO_FACE = "Difficulté à faire face",
   SENSIBILITY = "Sensibilité"
 }
 

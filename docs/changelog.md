@@ -1,5 +1,15 @@
 # Journal des changements
 
+## 🔖 0.12.0 (2025-07-02) : Améliorations version mobile et ajout QPV
+
+### ✨ feat : Ajout Quartiers Priotaires de la Ville (QPV)
+
+Il y a un bouton `Afficher les QPV` qui permet d'ajouter les limites des quartiers prioritaires de la ville sur tous les calques.
+
+### 🛠️ enhance : améliorations visuelles mineurs
+
+Le panneau de contexte de vulnérabilité à la chaleur a été amélioré pour les mobiles.
+
 ## 🔖 0.11.0 (2025-06-25) : Version mobile et améliorations visuelles
 
 ### ✨ feat : Version mobile

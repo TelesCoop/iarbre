@@ -62,6 +62,7 @@ onMounted(() => {
   >
     <map-layer-switcher />
     <map-bg-switcher />
+    <map-qpv-toggle-button />
     <map-context-data
       class="max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-6rem)] p-0!"
     />

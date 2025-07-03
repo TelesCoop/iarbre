@@ -45,7 +45,7 @@ const handleClick = () => {
         ? `Score ${score} - Cliquez pour ${isSelected ? 'désactiver' : 'activer'} le filtre`
         : undefined
     "
-    class="relative w-[24px] h-[24px] lg:w-[36px] lg:h-[36px] rounded-[2px] flex items-center justify-center font-accent text-sm transform"
+    class="relative w-[16px] h-[16px] xs:w-[24px] xs:h-[24px] lg:w-[36px] lg:h-[36px] rounded-[2px] flex items-center justify-center font-accent text-xs xs:text-sm transform"
     @click="handleClick"
   >
     <span class="font-bold" :class="textClass">{{ label }}</span>

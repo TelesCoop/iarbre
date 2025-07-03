@@ -188,7 +188,7 @@
 
     - name: Load database and media
       shell:
-        cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
+        cmd: "{{ project_slug }}-ctl"
       when: clonecode.changed or force_update is defined
 
     - name: Run migrations
