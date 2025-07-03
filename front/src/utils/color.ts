@@ -23,11 +23,16 @@ function getElementBackgroundColor(element: HTMLElement): string {
   return "white"
 }
 
-export function getAdaptativeColorClass(element: HTMLElement | string | null): string {
+export function getAdaptativeColorClass(
+  element: HTMLElement | string | null,
+  classPrefix: string = "text-"
+): string {
   let backgroundColor: string
 
+  const getCssClass = (color: string) => `${classPrefix}${color}`
+
   if (!element) {
-    return "text-black" // Default fallback
+    return getCssClass("black") // Default fallback
   }
 
   // If element is a string, assume it's a color value
@@ -44,9 +49,9 @@ export function getAdaptativeColorClass(element: HTMLElement | string | null): s
 
     // Return the color with the better contrast ratio
     // WCAG AA requires a minimum contrast ratio of 4.5:1 for normal text
-    return blackContrast >= whiteContrast ? "text-black" : "text-white"
+    return blackContrast >= whiteContrast ? getCssClass("black") : getCssClass("white")
   } catch (error) {
     // Fallback if color parsing fails
-    return "text-black"
+    return getCssClass("black") // Default fallback
   }
 }
