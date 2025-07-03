@@ -1,7 +1,8 @@
 from django.test import TestCase
 import geopandas as gpd
+from django.contrib.gis.geos import Point as GEOSPoint
 from iarbre_data.settings import TARGET_PROJ
-from iarbre_data.utils.data_processing import apply_actions, make_valid
+from iarbre_data.utils.data_processing import apply_actions, make_valid, geocode_address
 from shapely.geometry import Polygon, Point
 
 
@@ -52,3 +53,14 @@ class UtilsDataProcessingTestCase(TestCase):
         result = make_valid(invalid_polygon)
         self.assertTrue(result.is_valid)
         self.assertNotEqual(result, invalid_polygon)
+
+    def test_geocode_address(self):
+        address = "20 rue du lac, 69003 Lyon"
+        result = geocode_address(address)
+
+        self.assertIsInstance(result, GEOSPoint)
+        self.assertEqual(result.srid, 2154)
+
+        x, y = result.coords
+        self.assertTrue(830000 < x < 860000)
+        self.assertTrue(6510000 < y < 6530000)

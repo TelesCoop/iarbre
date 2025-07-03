@@ -3,10 +3,11 @@ from itertools import islice
 
 from shapely import unary_union
 from functools import reduce
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Point
 import shapely
 import geopandas as gpd
 from tqdm import tqdm
+import requests
 
 from iarbre_data.models import Data
 from iarbre_data.settings import TARGET_PROJ
@@ -140,3 +141,42 @@ def make_valid(
     if geometry and not geometry.is_valid:
         return geometry.buffer(0)
     return geometry
+
+
+def geocode_address(address: str) -> Point:
+    """
+    Geocode address using OpenStreetMap Nominatim API.
+
+    Args:
+        address (str): Address to geocode
+
+    Returns:
+        Point: Point geometry in Lambert-93 (EPSG:2154) or None if geocoding fails
+    """
+    base_url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "q": address,
+        "format": "json",
+        "limit": 1,
+        "countrycodes": "fr",
+    }
+    headers = {"User-Agent": "iarbre-hotspot-importer/1.0"}
+
+    try:
+        response = requests.get(base_url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        if data:
+            lat = float(data[0]["lat"])
+            lon = float(data[0]["lon"])
+            # Convert to Lambert-93 (EPSG:2154) coordinates
+            point = Point(lon, lat, srid=4326)
+            point.transform(2154)
+            return point
+        else:
+            return None
+
+    except Exception as e:
+        print(f'Geocoding error for "{address}": {e}')
+        return None
