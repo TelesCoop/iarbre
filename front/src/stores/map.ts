@@ -208,20 +208,31 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupStrippedPattern = (map: Map) => {
-    for (let value = 1; value <= 9; value++) {
-      const canvas = createStripesPattern(value)
-      const patternName = `stripes-${value}`
+    // Add stripped pattern images from public repo
+    map
+      .loadImage("/map/stripped-1.png")
+      .then((response) => {
+        map.addImage("stripes-1", response.data)
+        map.addImage("stripes-2", response.data)
+        map.addImage("stripes-3", response.data)
+        map.addImage("stripes-4", response.data)
+        map.addImage("stripes-5", response.data)
+      })
+      .catch((error) => {
+        console.error("Failed to load stripped-1.png:", error)
+      })
 
-      // Convertir le canvas en ImageData pour MapLibre
-      const ctx = canvas.getContext("2d")!
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-      // show image in console
-      console.log(`stripes-${value}`, imageData)
-
-      // Ajouter le pattern comme image dans MapLibre
-      map.addImage(patternName, imageData)
-    }
+    map
+      .loadImage("/map/stripped-2.png")
+      .then((response) => {
+        map.addImage("stripes-6", response.data)
+        map.addImage("stripes-7", response.data)
+        map.addImage("stripes-8", response.data)
+        map.addImage("stripes-9", response.data)
+      })
+      .catch((error) => {
+        console.error("Failed to load stripped-2.png:", error)
+      })
   }
 
   const createStrippedMapLayer = (
@@ -239,7 +250,7 @@ export const useMapStore = defineStore("map", () => {
       paint: {
         "fill-pattern": [
           "match",
-          ["get", "indice"],
+          ["get", `indice_${vulnerabilityMode.value}`],
           1,
           "stripes-1",
           2,
