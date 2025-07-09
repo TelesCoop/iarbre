@@ -18,3 +18,10 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
+
+
+DATA_TYPE_TO_GEOLEVEL = {
+    DataType.TILE.value: GeoLevel.TILE.value,
+    DataType.LCZ.value: GeoLevel.LCZ.value,
+    DataType.VULNERABILITY.value: GeoLevel.LCZ.value,
+}

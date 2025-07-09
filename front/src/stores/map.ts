@@ -176,6 +176,96 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  function createStripesPattern(value: number) {
+    // Calculer l'espacement des rayures (plus la valeur est élevée, plus les rayures sont proches)
+    const spacing = Math.max(2, 20 - value * 2) // Espacement de 2px à 18px
+
+    // Créer un canvas pour le pattern
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")
+
+    // Taille du pattern
+    const size = spacing * 2
+    canvas.width = size
+    canvas.height = size
+
+    // Fond transparent
+    ctx.clearRect(0, 0, size, size)
+
+    // Dessiner les rayures diagonales noires
+    ctx.strokeStyle = "black"
+    ctx.lineWidth = 1
+
+    // Rayures diagonales (45 degrés)
+    ctx.beginPath()
+    for (let i = -size; i <= size * 2; i += spacing) {
+      ctx.moveTo(i, 0)
+      ctx.lineTo(i + size, size)
+    }
+    ctx.stroke()
+
+    return canvas
+  }
+
+  const setupStrippedPattern = (map: Map) => {
+    for (let value = 1; value <= 9; value++) {
+      const canvas = createStripesPattern(value)
+      const patternName = `stripes-${value}`
+
+      // Convertir le canvas en ImageData pour MapLibre
+      const ctx = canvas.getContext("2d")!
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+      // show image in console
+      console.log(`stripes-${value}`, imageData)
+
+      // Ajouter le pattern comme image dans MapLibre
+      map.addImage(patternName, imageData)
+    }
+  }
+
+  const createStrippedMapLayer = (
+    datatype: DataType,
+    geolevel: GeoLevel,
+    sourceId: string
+  ): AddLayerObject => {
+    const layerId = getLayerId(datatype, geolevel)
+    return {
+      id: layerId,
+      type: "fill",
+      source: sourceId,
+      "source-layer": `${geolevel}--${datatype}`,
+      layout: {},
+      paint: {
+        "fill-pattern": [
+          "match",
+          ["get", "indice"],
+          1,
+          "stripes-1",
+          2,
+          "stripes-2",
+          3,
+          "stripes-3",
+          4,
+          "stripes-4",
+          5,
+          "stripes-5",
+          6,
+          "stripes-6",
+          7,
+          "stripes-7",
+          8,
+          "stripes-8",
+          9,
+          "stripes-9",
+          "stripes-1" // valeur par défaut
+        ],
+        // black
+        "fill-outline-color": "#000000"
+      }
+    }
+  }
+
   const createPopup = (
     e: any,
     map: Map,
@@ -222,20 +312,77 @@ export const useMapStore = defineStore("map", () => {
     mapEventsListener.value[layerId] = clickHandler
   }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const sourceId = getSourceId(datatype, geolevel)
-    const layer = createMapLayer(datatype, geolevel, sourceId)
-    map.addLayer(layer)
+    if (datatype === DataType.MIX_PLANTABILITY_AND_VULNERABILITY) {
+      const layer = createMapLayer(
+        DataType.PLANTABILITY,
+        DataTypeToGeolevel[DataType.PLANTABILITY],
+        getSourceId(DataType.PLANTABILITY, DataTypeToGeolevel[DataType.PLANTABILITY])
+      )
+
+      const layer2 = createStrippedMapLayer(
+        DataType.VULNERABILITY,
+        DataTypeToGeolevel[DataType.VULNERABILITY],
+        getSourceId(DataType.VULNERABILITY, DataTypeToGeolevel[DataType.VULNERABILITY])
+      )
+      map.addLayer(layer)
+      console.log("layer id", layer.id)
+      map.addLayer(layer2, layer.id)
+    } else {
+      const sourceId = getSourceId(datatype, geolevel)
+
+      const layer = createMapLayer(datatype, geolevel, sourceId)
+      map.addLayer(layer)
+    }
+
     setupClickEventOnTile(map, datatype, geolevel)
   }
 
+  const getSourceTileUrl = (datatype: DataType, geolevel: GeoLevel) => {
+    return `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+  }
+  const getSourceIds = (dataType: DataType, geoLevel: GeoLevel) => {
+    const sourceIds = []
+    if (dataType !== DataType.MIX_PLANTABILITY_AND_VULNERABILITY) {
+      sourceIds.push(getSourceId(dataType, geoLevel))
+    } else {
+      sourceIds.push(getSourceId(DataType.PLANTABILITY, DataTypeToGeolevel[DataType.PLANTABILITY]))
+      sourceIds.push(
+        getSourceId(DataType.VULNERABILITY, DataTypeToGeolevel[DataType.VULNERABILITY])
+      )
+    }
+    return sourceIds
+  }
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
-    const sourceId = getSourceId(datatype, geolevel)
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
+    let tilesUrl = []
+
+    if (datatype !== DataType.MIX_PLANTABILITY_AND_VULNERABILITY) {
+      const sourceId = getSourceId(datatype, geolevel)
+
+      tilesUrl = [getSourceTileUrl(datatype, geolevel)]
+      map.addSource(sourceId, {
+        type: "vector",
+        tiles: tilesUrl,
+        minzoom: MIN_ZOOM
+      })
+    } else {
+      const source1 = getSourceId(DataType.PLANTABILITY, DataTypeToGeolevel[DataType.PLANTABILITY])
+      const source2 = getSourceId(
+        DataType.VULNERABILITY,
+        DataTypeToGeolevel[DataType.VULNERABILITY]
+      )
+      map.addSource(source1, {
+        type: "vector",
+        tiles: [getSourceTileUrl(DataType.PLANTABILITY, DataTypeToGeolevel[DataType.PLANTABILITY])],
+        minzoom: MIN_ZOOM
+      })
+      map.addSource(source2, {
+        type: "vector",
+        tiles: [
+          getSourceTileUrl(DataType.VULNERABILITY, DataTypeToGeolevel[DataType.VULNERABILITY])
+        ],
+        minzoom: MIN_ZOOM
+      })
+    }
   }
 
   const removeControls = (map: Map) => {
@@ -256,6 +403,17 @@ export const useMapStore = defineStore("map", () => {
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
   }
 
+  const removeSources = (
+    mapInstance: Map,
+    previousDataType: DataType,
+    previousGeoLevel: GeoLevel
+  ) => {
+    const sourceIds = getSourceIds(previousDataType, previousGeoLevel)
+    sourceIds.forEach((sourceId) => {
+      mapInstance.removeSource(sourceId)
+    })
+  }
+
   const changeDataType = (datatype: DataType) => {
     removeActivePopup()
     const previousDataType = selectedDataType.value!
@@ -272,8 +430,7 @@ export const useMapStore = defineStore("map", () => {
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
-        mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
-        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+        removeSources(mapInstance, previousDataType, previousGeoLevel)
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
@@ -393,6 +550,7 @@ export const useMapStore = defineStore("map", () => {
     const mapInstance = mapInstancesByIds.value[mapId]
     mapInstance.on("style.load", () => {
       setupControls(mapInstance)
+      setupStrippedPattern(mapInstance)
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })

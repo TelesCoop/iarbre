@@ -13,6 +13,9 @@ const mapStore = useMapStore()
     <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
     <climate-zone-legend v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE" />
     <vulnerability-legend v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY" />
+    <mix-plantability-vulnerability-legend
+      v-else-if="mapStore.selectedDataType === DataType.MIX_PLANTABILITY_AND_VULNERABILITY"
+    />
   </div>
 </template>
 
