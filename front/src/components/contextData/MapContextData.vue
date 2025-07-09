@@ -45,5 +45,12 @@ defineProps({
       :hide-close-button="hideCloseButton"
       @close="() => mapStore.contextData.removeData()"
     />
+    <map-context-data-mix-plantability-vulnerability
+      v-if="mapStore.selectedDataType === DataType.MIX_PLANTABILITY_AND_VULNERABILITY"
+      :data="mapStore.contextData.data as PlantabilityData"
+      :full-height="fullHeight"
+      :hide-close-button="hideCloseButton"
+      @close="() => mapStore.contextData.removeData()"
+    />
   </div>
 </template>
