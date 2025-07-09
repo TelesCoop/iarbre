@@ -1,5 +1,11 @@
 # Journal des changements
 
+## 🔖 0.13.0 (2025-07-09) : Intégration retours sur la vulnérabilité à la chaleur
+
+### 🛠️ enhance : améliorations visuelles mineurs
+
+Dans le panel de context de vulnérabilité à la chaleur il y avait des imprécisions dans le code couleur et dans les descriptions. Nous avons corrigé ces points en suivant les retours de Maurine Di Tomasso qui a produit la donnée.
+
 ## 🔖 0.12.0 (2025-07-02) : Améliorations version mobile et ajout QPV
 
 ### ✨ feat : Ajout Quartiers Priotaires de la Ville (QPV)
