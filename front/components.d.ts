@@ -62,6 +62,7 @@ declare module 'vue' {
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
+    ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     VulnerabilityContexDataTableRow: typeof import('./src/components/contextData/vulnerability/VulnerabilityContexDataTableRow.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
     VulnerabilityContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScore.vue')['default']
