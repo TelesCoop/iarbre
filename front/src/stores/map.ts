@@ -239,42 +239,54 @@ export const useMapStore = defineStore("map", () => {
     datatype: DataType,
     geolevel: GeoLevel,
     sourceId: string
-  ): AddLayerObject => {
+  ): [AddLayerObject, AddLayerObject] => {
     const layerId = getLayerId(datatype, geolevel)
-    return {
-      id: layerId,
-      type: "fill",
-      source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
-      layout: {},
-      paint: {
-        "fill-pattern": [
-          "match",
-          ["get", `indice_${vulnerabilityMode.value}`],
-          1,
-          "stripes-1",
-          2,
-          "stripes-2",
-          3,
-          "stripes-3",
-          4,
-          "stripes-4",
-          5,
-          "stripes-5",
-          6,
-          "stripes-6",
-          7,
-          "stripes-7",
-          8,
-          "stripes-8",
-          9,
-          "stripes-9",
-          "stripes-1" // valeur par défaut
-        ],
-        // black
-        "fill-outline-color": "#000000"
+    return [
+      {
+        id: layerId,
+        type: "fill",
+        source: sourceId,
+        "source-layer": `${geolevel}--${datatype}`,
+        layout: {},
+        paint: {
+          "fill-pattern": [
+            "match",
+            ["get", `indice_${vulnerabilityMode.value}`],
+            1,
+            "stripes-1",
+            2,
+            "stripes-2",
+            3,
+            "stripes-3",
+            4,
+            "stripes-4",
+            5,
+            "stripes-5",
+            6,
+            "stripes-6",
+            7,
+            "stripes-7",
+            8,
+            "stripes-8",
+            9,
+            "stripes-9",
+            "stripes-1" // valeur par défaut
+          ]
+        }
+      },
+      {
+        id: `${layerId}-border`,
+        type: "fill",
+        source: sourceId,
+        "source-layer": `${geolevel}--${datatype}`,
+        layout: {},
+        paint: {
+          "line-width": 10,
+          // black
+          "fill-outline-color": "#000000"
+        }
       }
-    }
+    ]
   }
 
   const createPopup = (
@@ -336,8 +348,8 @@ export const useMapStore = defineStore("map", () => {
         getSourceId(DataType.VULNERABILITY, DataTypeToGeolevel[DataType.VULNERABILITY])
       )
       map.addLayer(layer)
-      console.log("layer id", layer.id)
-      map.addLayer(layer2, layer.id)
+      map.addLayer(layer2[0], layer.id)
+      map.addLayer(layer2[1], layer2[0].id)
     } else {
       const sourceId = getSourceId(datatype, geolevel)
 
