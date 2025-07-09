@@ -15,6 +15,7 @@ from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet
+from shapely.geometry import shape
 from tqdm import tqdm
 import mercantile
 import mapbox_vector_tile
@@ -113,7 +114,18 @@ class MVTGenerator:
 
     @staticmethod
     def create_grid(zone_polygon, grid_size):
-        zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=TARGET_MAP_PROJ)
+        if isinstance(zone_polygon, gpd.GeoDataFrame):
+            zone = zone_polygon
+        else:
+            if (
+                hasattr(zone_polygon, "get")
+                and zone_polygon.get("type") == "FeatureCollection"
+            ):
+                # Extract the first feature's geometry
+                geometry = zone_polygon["features"][0]["geometry"]
+                zone_polygon = shape(geometry)
+
+            zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=TARGET_MAP_PROJ)
         minx, miny, maxx, maxy = zone.total_bounds
 
         minx = np.floor(minx / grid_size) * grid_size
