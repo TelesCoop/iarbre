@@ -1,4 +1,4 @@
-export const FULL_BASE_API_URL = import.meta.env.VITE_BASE_API_URL || "http://localhost:8000/api"
+export const FULL_BASE_API_URL = import.meta?.env?.VITE_BASE_API_URL || "http://localhost:8000/api"
 
 type MyHeaders = { [key: string]: string }
 
