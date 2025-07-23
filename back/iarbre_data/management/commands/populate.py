@@ -4,7 +4,7 @@ from iarbre_data.models import City, Tile, Lcz, Vulnerability, Data
 from iarbre_data.utils.database import select_city
 from api.utils.mvt_generator import MVTGenerator
 
-from iarbre_data.utils import (
+from iarbre_data.utils.utils_populate import (
     create_tiles_for_city,
     HexTileShape,
 )
