@@ -1,4 +1,4 @@
-import { getMetadata } from "@/services/metadataService"
+import { getMetadata } from "../services/metadataService"
 
 export enum GeoLevel {
   TILE = "tile",

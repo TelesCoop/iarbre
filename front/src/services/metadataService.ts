@@ -1,4 +1,4 @@
-import { useApiGet } from "@/api"
+import { useApiGet } from "../api"
 
 export interface MetadataResponse {
   generationDate?: string
