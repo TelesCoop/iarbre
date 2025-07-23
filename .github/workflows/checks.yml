@@ -17,6 +17,7 @@ on:
 env:
   TELESCOOP_DEV: true
   IS_TESTING: true
+  VITE_BASE_API_URL: "http://localhost:8000/api"
 
 jobs:
   setup:
