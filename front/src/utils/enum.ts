@@ -1,3 +1,5 @@
+import { getMetadata } from "@/services/metadataService"
+
 export enum GeoLevel {
   TILE = "tile",
   LCZ = "lcz"
@@ -35,11 +37,24 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
 
 export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]:
-    '<a class="text-primary-500" href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA</a>',
+    '<a class="text-primary-500" href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA (2022-07)</a>',
   [DataType.PLANTABILITY]:
     '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
   [DataType.VULNERABILITY]:
-    '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon</a>'
+    '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2025-02)</a>'
+}
+
+export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
+  if (dataType === DataType.PLANTABILITY) {
+    const metadata = await getMetadata()
+    console.log(metadata)
+    console.log("metadata")
+    const dateText = metadata?.generationDate ? ` (${metadata.generationDate})` : ""
+    console.log(dateText)
+    return `<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>${dateText}`
+  }
+  console.log("default")
+  return DataTypeToAttributionSource[dataType]
 }
 
 export enum VulnerabilityCategory {

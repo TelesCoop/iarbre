@@ -15,7 +15,8 @@ import {
   DataType,
   MapStyle,
   DataTypeToGeolevel,
-  DataTypeToAttributionSource
+  DataTypeToAttributionSource,
+  getDataTypeAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
@@ -80,11 +81,12 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
-  const getAttributionSource = () => {
+  const getAttributionSource = async () => {
     const sourceCode =
       "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
     if (!selectedDataType.value) return sourceCode
-    return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
+    const attribution = await getDataTypeAttributionSource(selectedDataType.value)
+    return `${attribution} | ${sourceCode}`
   }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
@@ -92,7 +94,7 @@ export const useMapStore = defineStore("map", () => {
   const attributionControl = ref(
     new AttributionControl({
       compact: true,
-      customAttribution: getAttributionSource()
+      customAttribution: ""
     })
   )
   const navControl = ref(
@@ -244,11 +246,12 @@ export const useMapStore = defineStore("map", () => {
     map.removeControl(centerControl.value)
     map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
   }
-  const setupControls = (map: Map) => {
+  const setupControls = async (map: Map) => {
     // Add the new attribution control
+    const attribution = await getAttributionSource()
     attributionControl.value = new AttributionControl({
       compact: true,
-      customAttribution: getAttributionSource()
+      customAttribution: attribution
     })
     map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
@@ -280,7 +283,7 @@ export const useMapStore = defineStore("map", () => {
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
       }
-      setupControls(mapInstance)
+      setupControls(mapInstance).catch(console.error)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -391,8 +394,8 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-    mapInstance.on("style.load", () => {
-      setupControls(mapInstance)
+    mapInstance.on("style.load", async () => {
+      await setupControls(mapInstance)
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })

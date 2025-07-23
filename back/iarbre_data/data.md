@@ -2,6 +2,8 @@
 
 Ce calque provient d'un travail de [Exo-Dev](https://exo-dev.fr/) en 2022 qui a été documenté dans cette [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf).
 
+Les données actuellement affichées sur la [carte](https://carte.iarbre.fr/plantability) sont à jour de _juillet 2025_.
+
 ## Format données
 
 ### Structuration de la donnée

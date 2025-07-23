@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView
-from .views import FeedbackView, TileView, HealthCheckView, QPVListView
+from .views import FeedbackView, TileView, HealthCheckView, QPVListView, MetadataView
 
 router = routers.DefaultRouter()
 
@@ -21,4 +21,5 @@ urlpatterns = [
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
+    path("metadata/", MetadataView.as_view()),
 ]
