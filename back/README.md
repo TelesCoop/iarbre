@@ -127,12 +127,40 @@ Pour calculer l'indice de plantabilité, il faut au préalables lancer ces deux 
 python manage.py migrate
 python manage.py c01_insert_cities_and_iris
 python manage.py c03_import_data
+python manage.py update_data
 ```
 
 Elles vont permettre de récupérer les données d'occupation des sols et le découpage des villes.
 Pour plus de détails sur les données d'occupation des sols et leur traitement, consultez [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
 
-### Genération le calque de plantabilité raster
+### Ajout des données de cadastre
+
+La commande :
+
+```bash
+python manage.py import_cadastre
+```
+
+va permettre d'ajouter en base le cadastre, ce qui permettra plus tard de générer des MVT qui pourront être rajoutés en fond de carte.
+
+### Génération des calques de LCZ et vulnérabilité à la chaleur
+
+Les données de zones climatiques locales et de vulnérabilité à la chaleur ont été généré par ailleurs.
+Les zones climatiques locales sont calculées par le CEREMA qui met les données à disposition sur [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/).
+
+```bash
+python manage.py import_lcz
+```
+
+Permet de télécharger les données relatives au zones climatiques locales de la métropole de Lyon et les ajouter dans la DB.
+
+```bash
+python manage.py import_vulnerability
+```
+
+Permet d'ajouter en DB les résultats de l'étude menée par la Métropole de Lyon à partir du GeoPackage fourni. Les données, sans le détail des sous-facteurs, sont disponibles en open-data sur [data.grandlyon](https://data.grandlyon.com/portail/fr/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info).
+
+### Genération du calque de plantabilité raster
 
 A partir des données géographiques d'occupation des sols de `Data` :
 
