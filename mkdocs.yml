@@ -16,19 +16,43 @@ extra:
 copyright: Copyright &copy; 2020 - 2025 TELESCOOP
 markdown_extensions:
   - admonition
+  - attr_list
   - codehilite
   - footnotes
+  - md_in_html
   - meta
+  - pymdownx.emoji:
+      emoji_generator: "twemoji"
+      options:
+        custom_icons: []
   - toc:
       permalink: true
-  - pymdownx.superfences
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
   - pymdownx.magiclink
+  - pymdownx.mark
   - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: "!!fence_code_format"
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.mark
-  - pymdownx.keys
 
 plugins:
   - search:
@@ -74,16 +98,38 @@ theme:
   name: "material"
   language: "fr"
   features:
-    - instant
-    - tabs
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
     - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+    - toc.integrate
   custom_dir: "docs/theme/"
   logo: "assets/images/banner.png"
   favicon: "assets/images/logo.png"
   palette:
-    primary: custom
-    accent: custom
-    icon:
-      repo: fontawesome/brands/square-github
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Passer au mode sombre
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Passer au mode clair
+  icon:
+    repo: fontawesome/brands/square-github
 
 extra_css: [assets/stylesheets/extra.css]
