@@ -1,4 +1,4 @@
 [submodule "static/content"]
 	path = static/content
 	url = git@github.com:TelesCoop/iarbre-showcase-content.git
-        branch = main
+    branch = main
