@@ -231,8 +231,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const FULL_BASE_API_URL = getFullBaseApiUrl()
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+    const fullBaseApiUrl = getFullBaseApiUrl()
+    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
       type: "vector",
@@ -302,9 +302,9 @@ export const useMapStore = defineStore("map", () => {
       let newStyle: maplibregl.StyleSpecification
 
       if (mapstyle === MapStyle.CADASTRE) {
-        const FULL_BASE_API_URL = getFullBaseApiUrl()
+        const fullBaseApiUrl = getFullBaseApiUrl()
         newStyle = JSON.parse(
-          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", FULL_BASE_API_URL)
+          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", fullBaseApiUrl)
         ) as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.SATELLITE) {
         // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
