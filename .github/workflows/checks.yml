@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: setup
     env:
-      BASE_API_URL: https://localhost:8000/api
+      VITE_BASE_API_URL: https://localhost:8000/api
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -200,6 +200,8 @@ jobs:
         run: npm install
         working-directory: ./front
       - name: Build front
+        env:
+          VITE_BASE_API_URL: https://localhost:8000/api
         run: npm run build
         working-directory: "./front"
       - name: Run e2e tests
