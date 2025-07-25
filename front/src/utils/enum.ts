@@ -47,13 +47,9 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
   if (dataType === DataType.PLANTABILITY) {
     const metadata = await getMetadata()
-    console.log(metadata)
-    console.log("metadata")
     const dateText = metadata?.generationDate ? ` (${metadata.generationDate})` : ""
-    console.log(dateText)
     return `<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>${dateText}`
   }
-  console.log("default")
   return DataTypeToAttributionSource[dataType]
 }
 

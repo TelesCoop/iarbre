@@ -3,7 +3,7 @@
 ## Origine des données
 
 Les données proviennent d’un travail du [CEREMA](https://www.cerema.fr/fr/actualites/cerema-publie-nouvelles-donnees-surchauffe-urbaine) et sont disponibles sur [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/).
-Les données actuellement affichées sur la [carte](https://carte.iarbre.fr/lcz) sont à jour de _juillet 2022_.
+Les données actuellement affichées sur la [carte](https://carte.iarbre.fr/lcz) ont été générée en _juillet 2022_ à l'aide de données satellites (SPOT) de 2022 et de la BDTOPO (IGN) de 2022. Des modifications dans les constructions peuvent avoir modifiés certains îlots depuis.
 
 Les zones climatiques locales sont un premier aperçu des conditions climatiques locales, basé sur la morphologie du bâti et des rues, l’occupation des sols et des indicateurs thermo-physiques. L’objectif est de repérer les quartiers les plus concernés pour ensuite pouvoir y mener des études d’îlots de chaleur urbains et décider des actions à mener en priorité.
 
