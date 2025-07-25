@@ -17,7 +17,6 @@ on:
 env:
   TELESCOOP_DEV: true
   IS_TESTING: true
-  VITE_BASE_API_URL: "http://localhost:8000/api"
 
 jobs:
   setup:
@@ -147,6 +146,8 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-22.04
     needs: setup
+    env:
+      VITE_BASE_API_URL: https://localhost:8000/api
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
