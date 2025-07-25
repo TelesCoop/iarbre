@@ -22,7 +22,7 @@ Il existe trois applications Django :
 
 ## Données requises
 
-Un dossier nommé `file_data` contenant les données nécessaires qui ne sont pas en open-data doit être présent à la racine du projet.
+Un dossier nommé `file_data` contenant les données nécessaires qui ne sont pas sous license open-data (réseaux ENEDIS, GRDF, d'assainissement et d'eau potable, signalisation lumineuse et tricolore, etc) doit être présent à la racine du projet.
 Pour obtenir ces données pour la Métropole de Lyon, veuillez envoyer un e-mail à [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
 ## Déploiement avec Ansible
