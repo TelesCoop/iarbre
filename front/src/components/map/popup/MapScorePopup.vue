@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import PlantabilityScorePopup from "@/components/map/popup/PlantabilityScorePopupContent.vue"
 import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopupContent.vue"
+import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
+import MixPlantabilityVulnerabilityScorePopup from "@/components/map/popup/MixPlantabilityVulnerabilityScorePopupContent.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import { computed } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
 import { useToast } from "primevue/usetoast"
-import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
 
 const mapStore = useMapStore()
 const toast = useToast()
@@ -40,6 +41,10 @@ const copy = (text: string) => {
       />
       <vulnerability-score-popup
         v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+        :popup-data="popupData"
+      />
+      <mix-plantability-vulnerability-score-popup
+        v-else-if="mapStore.selectedDataType === DataType.MIX_PLANTABILITY_AND_VULNERABILITY"
         :popup-data="popupData"
       />
     </div>
