@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: setup
     env:
-      VITE_BASE_API_URL: https://localhost:8000/api
+      BASE_API_URL: https://localhost:8000/api
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
