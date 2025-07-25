@@ -1,6 +1,5 @@
-export function getFullBaseApiUrl() {
-  const baseUrl = typeof import.meta !== "undefined"
-  return typeof baseUrl === "string" ? baseUrl : "http://localhost:8000/api"
+export function getFullBaseApiUrl(): string {
+  return import.meta.env.VITE_BASE_API_URL || "http://localhost:8000/api"
 }
 
 type MyHeaders = { [key: string]: string }
