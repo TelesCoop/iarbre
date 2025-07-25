@@ -20,7 +20,7 @@ import {
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
-import { FULL_BASE_API_URL } from "@/api"
+import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
@@ -231,6 +231,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    const FULL_BASE_API_URL = getFullBaseApiUrl()
     const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
@@ -301,6 +302,7 @@ export const useMapStore = defineStore("map", () => {
       let newStyle: maplibregl.StyleSpecification
 
       if (mapstyle === MapStyle.CADASTRE) {
+        const FULL_BASE_API_URL = getFullBaseApiUrl()
         newStyle = JSON.parse(
           JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", FULL_BASE_API_URL)
         ) as maplibregl.StyleSpecification

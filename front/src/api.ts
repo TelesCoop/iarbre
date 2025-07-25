@@ -1,4 +1,7 @@
-export const FULL_BASE_API_URL = import.meta.env.VITE_BASE_API_URL || "http://localhost:8000/api"
+export function getFullBaseApiUrl() {
+  const baseUrl = typeof import.meta !== "undefined"
+  return typeof baseUrl === "string" ? baseUrl : "http://localhost:8000/api"
+}
 
 type MyHeaders = { [key: string]: string }
 
@@ -33,6 +36,7 @@ async function useApiRequestWithCsrfToken<Type>(
   onErrorMessage: string = ""
 ): Promise<{ data: Type | undefined; error: unknown }> {
   try {
+    const FULL_BASE_API_URL = getFullBaseApiUrl()
     const response = await fetch(`${FULL_BASE_API_URL}/${path}`, {
       method: method,
       body: JSON.stringify(payload),
@@ -73,6 +77,7 @@ export async function useApiGet<Type>(
   onErrorMessage: string = ""
 ): Promise<{ data: Type | undefined; error: unknown }> {
   try {
+    const FULL_BASE_API_URL = getFullBaseApiUrl()
     const response = await fetch(`${FULL_BASE_API_URL}/${path}`, {
       method: "GET",
       credentials: "include",
