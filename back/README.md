@@ -8,8 +8,8 @@ Le backend utilise [Django](https://www.djangoproject.com/) et une base de donn�
 Il existe trois applications Django :
 
 - `iarbre_data` pour les calculs d’occupation des sols ;
-- `plantability` pour le calcul de l'indice de plantabilité. Le développement correspond à une réplication de [l'implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) réalisée par [Exo-dev](https://exo-dev.fr/).
-- `api` pour rendre accessible ces résultats par à une API rest ;
+- `plantability` pour le calcul de l'indice de plantabilité. Le développement correspond à une réplication de [l'implémentation V1](https://forge.grandlyon.com/erasme/script-recalcul-calque) réalisée par [Exo-dev](https://exo-dev.fr/);
+- `api` pour la génération de tuiles MVT qui vont pouvoir être servis par l'API REST.
 
 ## Contenu
 
@@ -22,7 +22,7 @@ Il existe trois applications Django :
 
 ## Données requises
 
-Un dossier nommé `file_data` contenant les données nécessaires doit être présent à la racine du projet.
+Un dossier nommé `file_data` contenant les données nécessaires qui ne sont pas sous license open-data (réseaux ENEDIS, GRDF, d'assainissement et d'eau potable, signalisation lumineuse et tricolore, etc) doit être présent à la racine du projet.
 Pour obtenir ces données pour la Métropole de Lyon, veuillez envoyer un e-mail à [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
 ## Déploiement avec Ansible
@@ -121,39 +121,55 @@ pew workon <nom_projet>
 > Avant de lancer les commandes suivantes, assurez-vous que les données nécessaires sont bien présentes dans le dossier `file_data`. Si vous n'avez pas ces données, veuillez envoyer un e-mail à
 > [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
-Il existe 2 méthodes permettant de calculer l'indice de plantabilité, soit à l'aide d'images rasters soit à l'aide de géométries. Pour ces deux méthodes il faut au préalables lancer ces commandes :
+Pour calculer l'indice de plantabilité, il faut au préalables lancer ces deux commandes :
 
 ```bash
 python manage.py migrate
 python manage.py c01_insert_cities_and_iris
 python manage.py c03_import_data
+python manage.py update_data
 ```
 
+Elles vont permettre de récupérer les données d'occupation des sols et le découpage des villes.
 Pour plus de détails sur les données d'occupation des sols et leur traitement, consultez [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
 
-### Génération à l'aide de géométries
+### Ajout des données de cadastre
+
+La commande :
 
 ```bash
-python manage.py c02_init_grid --grid-size 20 --grid-type 2
-python manage.py c04_compute_factors
-python manage.py c01_compute_plantability_indice
+python manage.py import_cadastre
 ```
 
-> En taille 5x5m il faut faut compter de l'ordre de 3j pour le calcul au total et 1/2 journée en 15x15m.
-> La partie la plus longue est `c04_compute_factors`.
+va permettre d'ajouter en base le cadastre, ce qui permettra plus tard de générer des MVT qui pourront être rajoutés en fond de carte.
 
-### Genération à l'aide de raster
+### Génération des calques de LCZ et vulnérabilité à la chaleur
 
-En utilisant le process en raster :
+Les données de zones climatiques locales et de vulnérabilité à la chaleur ont été généré par ailleurs.
+Les zones climatiques locales sont calculées par le CEREMA qui met les données à disposition sur [data.gouv.fr](https://www.data.gouv.fr/fr/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/).
 
-1. Convertion des données de `Data` pour tous les facteurs en raster haute résolution (1x1m)
-2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Les pixels des rasters de résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
-3. Somme pondérée des rasters d'OCS, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité
-4. On crée des geoms qui sont des carrés 5x5m qui vont être insérées dans une DB PostGIS. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+```bash
+python manage.py import_lcz
+```
 
-En base nous n'avons que des géoms qui correspondent au score de plantabilité. Nous n'avons pas de géoms qui correspondent à l'occupation des sols par chaque facteur.
+Permet de télécharger les données relatives au zones climatiques locales de la métropole de Lyon et les ajouter dans la DB.
 
-> Le calcul est beaucoup plus rapide, de l'ordre de 3h pour du 5x5m.
+```bash
+python manage.py import_vulnerability
+```
+
+Permet d'ajouter en DB les résultats de l'étude menée par la Métropole de Lyon à partir du GeoPackage fourni. Les données, sans le détail des sous-facteurs, sont disponibles en open-data sur [data.grandlyon](https://data.grandlyon.com/portail/fr/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info).
+
+### Genération du calque de plantabilité raster
+
+A partir des données géographiques d'occupation des sols de `Data` :
+
+1. Conversion des données de `Data` pour tous les facteurs en raster haute résolution (1x1m)
+2. Convolution des rasters, individuellement, avec un noyau carré 5x5. Le raster en résultat contiennent le pourcentage de chaque facteur sur des tuiles carrés 5x5m.
+3. Somme pondérée des rasters, avec les poids relatifs aux facteurs, pour produire un raster de plantabilité.
+4. Vectorisation : ronversion des pixels du raster de plantabilié en géométries pour insérer dans notre base PostGIS. Des carrés 5x5m vont être créés. On utilise les valeurs des pixels dans le raster de plantabilité pour remplir le champ correspondant à la plantabilité et à la plantabilité seuillée.
+
+> Le calcul est rapide, de l'ordre de 3h pour du 5x5m pour les 3 premières étapes. La dernière étape de vectorisation est la plus longue (~24h).
 
 ```bash
 python manage.py data_to_raster
@@ -163,8 +179,8 @@ python manage.py raster_plantability_to_geom
 
 ### Génération des tuiles MVT
 
-Pour les deux méthodes de calcul, [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),
-génère des tuiles vectorielles Mapbox ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) pour différents niveaux de zoom.
+[`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),
+génère des tuiles vectorielles Mapbox/MapLibre ([MVT](https://gdal.org/en/stable/drivers/vector/mvt.html)) pour différents niveaux de zoom.
 Ces tuiles sont accessibles via l'[API](https://github.com/TelesCoop/iarbre/blob/main/back/api/views.py) et peuvent être
 affichées avec [MapLibre](https://maplibre.org/).
 

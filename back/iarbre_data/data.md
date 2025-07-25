@@ -56,3 +56,7 @@ Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été ré
 
 La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
 organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.
+
+## Génération calque de plantabilité
+
+Voir [ici](https://docs.iarbre.fr/back/backend/) pour la génération du calque de plantabilité.
