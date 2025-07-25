@@ -15,11 +15,12 @@ import {
   DataType,
   MapStyle,
   DataTypeToGeolevel,
-  DataTypeToAttributionSource
+  DataTypeToAttributionSource,
+  getDataTypeAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
 import type { MapScorePopupData } from "@/types/map"
-import { FULL_BASE_API_URL } from "@/api"
+import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
@@ -80,11 +81,12 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
-  const getAttributionSource = () => {
+  const getAttributionSource = async () => {
     const sourceCode =
       "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
     if (!selectedDataType.value) return sourceCode
-    return `${DataTypeToAttributionSource[selectedDataType.value]} | ${sourceCode}`
+    const attribution = await getDataTypeAttributionSource(selectedDataType.value)
+    return `${attribution} | ${sourceCode}`
   }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
@@ -92,7 +94,7 @@ export const useMapStore = defineStore("map", () => {
   const attributionControl = ref(
     new AttributionControl({
       compact: true,
-      customAttribution: getAttributionSource()
+      customAttribution: ""
     })
   )
   const navControl = ref(
@@ -229,7 +231,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const tileUrl = `${FULL_BASE_API_URL}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+    const fullBaseApiUrl = getFullBaseApiUrl()
+    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
       type: "vector",
@@ -244,11 +247,12 @@ export const useMapStore = defineStore("map", () => {
     map.removeControl(centerControl.value)
     map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
   }
-  const setupControls = (map: Map) => {
+  const setupControls = async (map: Map) => {
     // Add the new attribution control
+    const attribution = await getAttributionSource()
     attributionControl.value = new AttributionControl({
       compact: true,
-      customAttribution: getAttributionSource()
+      customAttribution: attribution
     })
     map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
@@ -280,7 +284,7 @@ export const useMapStore = defineStore("map", () => {
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
       }
-      setupControls(mapInstance)
+      setupControls(mapInstance).catch(console.error)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -298,8 +302,9 @@ export const useMapStore = defineStore("map", () => {
       let newStyle: maplibregl.StyleSpecification
 
       if (mapstyle === MapStyle.CADASTRE) {
+        const fullBaseApiUrl = getFullBaseApiUrl()
         newStyle = JSON.parse(
-          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", FULL_BASE_API_URL)
+          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", fullBaseApiUrl)
         ) as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.SATELLITE) {
         // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
@@ -391,8 +396,8 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-    mapInstance.on("style.load", () => {
-      setupControls(mapInstance)
+    mapInstance.on("style.load", async () => {
+      await setupControls(mapInstance)
       initTiles(mapInstance)
       popupDomElement.value = document.getElementById(`popup-${mapId}`)
     })
