@@ -101,7 +101,7 @@ class Command(BaseCommand):
             zoom_levels=(13, 13),
             datatype=datatype,
             geolevel=geolevel,
-            number_of_thread=4,
+            number_of_thread=1,
         )
         mvt_generator.generate_tiles(ignore_existing=False)
 
@@ -263,10 +263,10 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for LCZ computed"))
 
     def generate_plantability_mvt_tiles(self):
-        tiles = Tile.objects.filter(
+        tiles_plantability = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
-        self._generate_mvt(tiles, Tile.datatype, Tile.geolevel)
+        self._generate_mvt(tiles_plantability, Tile.datatype, Tile.geolevel)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for plantability computed"))
 
     def generate_vulnerability_mvt_tiles(self):

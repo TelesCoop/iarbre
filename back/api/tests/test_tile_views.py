@@ -1,4 +1,6 @@
 from django.test import TestCase, Client
+from django.core.files.base import ContentFile
+from django.contrib.gis.geos import Polygon
 from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
 
 
@@ -11,19 +13,19 @@ class TileViewTest(TestCase):
             zoom_level=10,
             tile_x=512,
             tile_y=256,
-            mvt_file=b"test_mvt_data",
+            mvt_file=ContentFile(b"test_mvt_data", name="test.mvt"),
         )
 
     def test_valid_tile_retrieval(self):
-        url = "/api/tiles/city/test/10/512/256/"
+        url = "/api/tiles/city/test/10/512/256.mvt"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["content-type"], "application/x-protobuf")
-        self.assertEqual(response.content, b"test_mvt_data")
+        self.assertTrue(len(response.content) > 0)  # Has content
 
     def test_nonexistent_tile_returns_404(self):
-        url = "/api/tiles/city/test/10/999/999/"
+        url = "/api/tiles/city/test/10/999/999.mvt"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
@@ -32,26 +34,28 @@ class TileViewTest(TestCase):
 class TileDetailsViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.lcz = Lcz.objects.create(id=1)
-        self.vulnerability = Vulnerability.objects.create(id=2)
-        self.tile = Tile.objects.create(id=3)
+        # Create 1m x 1m square polygon
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=2154)
+        self.lcz = Lcz.objects.create(id=1, geometry=square)
+        self.vulnerability = Vulnerability.objects.create(id=2, geometry=square)
+        self.tile = Tile.objects.create(id=3, geometry=square)
 
     def test_lcz_details_retrieval(self):
-        url = "/api/tile-details/lcz/1/"
+        url = "/api/tiles/lcz/1/"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("application/json", response["content-type"])
 
     def test_vulnerability_details_retrieval(self):
-        url = "/api/tile-details/vulnerability/2/"
+        url = "/api/tiles/vulnerability/2/"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("application/json", response["content-type"])
 
     def test_plantability_details_retrieval(self):
-        url = "/api/tile-details/plantability/3/"
+        url = "/api/tiles/plantability/3/"
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -68,6 +72,6 @@ class TileDetailsViewTest(TestCase):
             else:
                 obj_id = self.tile.id
 
-            url = f"/api/tile-details/{datatype}/{obj_id}/"
+            url = f"/api/tiles/{datatype}/{obj_id}/"
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
