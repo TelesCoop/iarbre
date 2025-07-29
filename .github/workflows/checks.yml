@@ -14,6 +14,11 @@ on:
       - reopened
       - synchronize
       - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   TELESCOOP_DEV: true
   IS_TESTING: true
@@ -92,6 +97,33 @@ jobs:
           DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
           PGSERVICE: ${{ steps.postgres.outputs.service-name }}
         uses: pre-commit/action@v3.0.1
+
+      - name: Generate coverage report
+        run: |
+          cd back
+          coverage run manage.py test
+          coverage json
+          COVERAGE=$(python3 -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered'])")
+          echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+
+          # Choose badge color based on coverage percentage
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            echo "BADGE_COLOR=brightgreen" >> $GITHUB_ENV
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            echo "BADGE_COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "BADGE_COLOR=red" >> $GITHUB_ENV
+          fi
+
+      - name: Create coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.COVERAGE_GIST_ID }}
+          filename: coverage-badge.json
+          label: coverage
+          message: ${{ env.COVERAGE_PERCENT }}%
+          color: ${{ env.BADGE_COLOR }}
 
   node-setup:
     runs-on: ubuntu-22.04
