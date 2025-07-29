@@ -98,7 +98,7 @@ jobs:
           cd back
           coverage run manage.py test
           coverage json
-          COVERAGE=$(python3 -c "import json; print(json.load(open('coverage.json'))['totals']['percent_covered'])")
+          COVERAGE=$(python3 -c "import json; print(int(json.load(open('coverage.json'))['totals']['percent_covered']))")
           echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
 
           # Choose badge color based on coverage percentage
