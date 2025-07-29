@@ -317,7 +317,9 @@ export const useMapStore = defineStore("map", () => {
       if (newStyle!) {
         mapInstance.setStyle(newStyle)
       }
-      addQPVLayer(mapInstance)
+      if (showQPVLayer.value) {
+        addQPVLayer(mapInstance)
+      }
       mapInstance.fire("style.load")
     })
   }
