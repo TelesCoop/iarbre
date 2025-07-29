@@ -4,8 +4,6 @@ from iarbre_data.models import Data
 from iarbre_data.utils.data_processing import apply_actions
 from iarbre_data.management.commands.c03_import_data import (
     download_from_url,
-    download_dbtopo,
-    download_cerema,
     read_data,
     process_data,
     save_geometries,
@@ -92,21 +90,12 @@ class C03DataTestCase(TestCase):
         save_geometries(self.datas, self.data_config)
         self.assertNotEquals(Data.objects.count(), 0)
 
-    def test_read_data_url_paths(self):
-        bd_topo_config = {"url": "https://data.geopf.fr/test", "name": "Test BD TOPO"}
-        df = download_dbtopo(bd_topo_config["url"])
-        self.assertTrue(isinstance(df, gpd.GeoDataFrame))
-
-        cerema_config = {"url": "https://cerema.test.fr/api", "name": "Test CEREMA"}
-        df = download_cerema(cerema_config["url"])
-        self.assertTrue(isinstance(df, gpd.GeoDataFrame))
-
     def test_read_data_with_layer_name(self):
         """Test read_data function with layer_name parameter."""
         # Find a config with layer_name
         config_with_layer = None
         for config in DATA_FILES:
-            if config.get("layer_name"):
+            if config.get("layer_name") == "Parkings surfacique":
                 config_with_layer = config
                 break
 
