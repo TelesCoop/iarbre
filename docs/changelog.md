@@ -2,6 +2,10 @@
 
 ## 🔖 0.14.0 (2025-07-30) : 2volutions couleurs vulnérabilité chaleur, ajout documentation
 
+### ✨ feat : Ajout de Plausible sur la cartographie
+
+Nous avions Plausible sur [iarbre.fr](https://iarbre.fr) pour suivre le nombre de visites, il est maintenant aussi sur [carte.iarbre.fr](https://carte.iarbre.fr).
+
 ### 🛠️ enhance : couleurs du calque de vulnérabilité à la chaleur
 
 Nous avons fait évolué les couleurs afin d'améliorer la sémantique et la lisibilité : des nuances de bleus pour 1 à3, de verts pour 4-6 et de rouge pour 7-9. Des bugs mineurs ont été corrigés.
