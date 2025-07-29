@@ -1,5 +1,7 @@
 # Backend IArbre
 
+![Coverage](https://img.shields.io/badge/coverage-79%25-yellowgreen)
+
 ## Aperçu
 
 Le backend d'IArbre calcule l'occupation des sols et les différents indices (plantabilité, etc.).
