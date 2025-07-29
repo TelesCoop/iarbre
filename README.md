@@ -24,6 +24,8 @@ IArbre/
 
 ### **back/**
 
+![Coverage](https://img.shields.io/badge/coverage-77%25-yellowgreen)
+
 Ce répertoire contient le backend d'IArbre, construit avec **Django** 🐍.
 Il traite les données SIG pour calculer l'occupation des sols (OCS). Il existe ensuite diverses applications Django
 pour calculer les indices (plantabilité, etc.) et servir ces données à travers des APIs.
