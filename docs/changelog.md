@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.14.0 (2025-07-30) : 2volutions couleurs vulnérabilité chaleur, ajout documentation
+## 🔖 0.14.0 (2025-07-30) : Evolutions couleurs vulnérabilité chaleur, ajout documentation
 
 ### ✨ feat : Ajout de Plausible sur la cartographie
 
