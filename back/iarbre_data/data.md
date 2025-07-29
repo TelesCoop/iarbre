@@ -2,6 +2,8 @@
 
 Ce calque provient d'un travail de [Exo-Dev](https://exo-dev.fr/) en 2022 qui a été documenté dans cette [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf).
 
+Les scores actuellement affichées sur la [carte](https://carte.iarbre.fr/plantability) ont été calculés en _juillet 2025_ à l'aide des dernières données présentes sur data.grandlyon. Seulement les données de réseaux GRDF/ENEDIS (2022) et d'espaces verts (EVA 2015) ne sont pas à jour de 2025.
+
 ## Format données
 
 ### Structuration de la donnée
@@ -56,3 +58,7 @@ Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été ré
 
 La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
 organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.
+
+## Génération calque de plantabilité
+
+Voir [ici](https://docs.iarbre.fr/back/backend/) pour la génération du calque de plantabilité.
