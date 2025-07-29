@@ -1,6 +1,6 @@
 # Backend IArbre
 
-![Coverage](https://img.shields.io/badge/coverage-77%25-yellowgreen)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
 
 ## Aperçu
 
