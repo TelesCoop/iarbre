@@ -9,13 +9,40 @@ class ImportCadastreCommandTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Create test city using factory
+        # Create test cities using factory
         cls.test_city = CityFactory(code="69001", name="Lyon 1er")
+        cls.test_city_2 = CityFactory(code="69002", name="Lyon 2e")
 
     def setUp(self):
         self.command = Command()
         # Clean cadastre data before each test
         Cadastre.objects.all().delete()
+
+    def test_cadastre_model_creation(self):
+        initial_count = Cadastre.objects.count()
+
+        cadastre = Cadastre.objects.create(
+            parcel_id="690010000A0001",
+            city_code="69001",
+            city_name="Lyon 1er",
+            city=self.test_city,
+            section="A",
+            numero="0001",
+            surface=500,
+            geometry=GEOSGeometry(
+                "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
+                srid=2154,
+            ),
+        )
+
+        self.assertEqual(Cadastre.objects.count(), initial_count + 1)
+        self.assertEqual(cadastre.parcel_id, "690010000A0001")
+        self.assertEqual(cadastre.city_code, "69001")
+        self.assertEqual(cadastre.city_name, "Lyon 1er")
+        self.assertEqual(cadastre.section, "A")
+        self.assertEqual(cadastre.numero, "0001")
+        self.assertEqual(cadastre.surface, 500)
+        self.assertEqual(cadastre.city, self.test_city)
 
     def test_cadastre_duplicate_prevention(self):
         # Create first cadastre
@@ -37,55 +64,28 @@ class ImportCadastreCommandTest(TestCase):
         duplicate_check = Cadastre.objects.filter(parcel_id="690010000A0001").exists()
         self.assertTrue(duplicate_check)
 
-    def test_command_url_construction(self):
-        expected_base_url = (
-            "https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes"
-        )
-        city_code = self.test_city.code
-        expected_suffix = "geojson/parcelles"
-
-        expected_url = f"{expected_base_url}/{city_code}/{expected_suffix}"
-
-        # This is the URL pattern used in the import_cadastre_for_city method
-        constructed_url = f"https://cadastre.data.gouv.fr/bundler/cadastre-etalab/communes/{city_code}/geojson/parcelles"
-
-        self.assertEqual(constructed_url, expected_url)
-
-    def test_geometry_transformation_setup(self):
-        # Test that we can create geometries in both coordinate systems
-        # Source SRID (from API)
-        source_srid = 4326
-
-        # Target SRID (from settings)
-        from iarbre_data.settings import TARGET_PROJ
-
-        # Create geometry in source CRS
-        geom_4326 = GEOSGeometry(
-            "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-            srid=source_srid,
+    def test_cadastre_creation_with_all_fields(self):
+        # Create cadastre with all possible fields from the API
+        cadastre = Cadastre.objects.create(
+            parcel_id="690010000A0001",
+            city_code="69001",
+            city_name="Lyon 1er",
+            city=self.test_city,
+            section="A",
+            numero="0001",
+            surface=1500,  # contenance from API
+            geometry=GEOSGeometry(
+                "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
+                srid=2154,
+            ),
         )
 
-        # Transform to target CRS
-        if source_srid != TARGET_PROJ:
-            geom_4326.transform(TARGET_PROJ)
-
-        # Verify transformation worked
-        self.assertEqual(geom_4326.srid, TARGET_PROJ)
-
-    def test_geometry_validation_buffer_fix(self):
-        # Create a potentially invalid geometry
-        geom = GEOSGeometry(
-            "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))", srid=2154
-        )
-
-        # Test validation logic (from the command)
-        if not geom.valid:
-            try:
-                fixed_geom = geom.buffer(0)
-                self.assertTrue(fixed_geom.valid)
-            except Exception as e:
-                # This is what the command does - log and continue
-                print("Geometry not valid", e)
-        else:
-            # Geometry is already valid
-            self.assertTrue(geom.valid)
+        # Verify all fields are properly set
+        self.assertEqual(cadastre.parcel_id, "690010000A0001")
+        self.assertEqual(cadastre.city_code, "69001")
+        self.assertEqual(cadastre.city_name, "Lyon 1er")
+        self.assertEqual(cadastre.city, self.test_city)
+        self.assertEqual(cadastre.section, "A")
+        self.assertEqual(cadastre.numero, "0001")
+        self.assertEqual(cadastre.surface, 1500)
+        self.assertIsNotNone(cadastre.geometry)

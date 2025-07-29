@@ -14,7 +14,7 @@ class GenerateMVTCommandTest(TestCase):
         populate_cmd._create_city_and_iris()
         populate_cmd.city = City.objects.get(code="38250")
         populate_cmd._generate_plantability_tiles()
-        populate_cmd.generate_plantability_mvt_tiles()
+        populate_cmd.generate_plantability_mvt_tiles(n_threads=1)
 
     def setUp(self):
         self.command = GenerateMVTCommand()
