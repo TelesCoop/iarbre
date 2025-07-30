@@ -7,8 +7,9 @@ export default defineConfig({
     experimentalRunAllSpecs: true,
     viewportWidth: 1440,
     viewportHeight: 900,
-    setupNodeEvents(on, config) {
-      require("@cypress/code-coverage/task")(on, config)
+    async setupNodeEvents(on, config) {
+      const codeCoverageTask = await import("@cypress/code-coverage/task")
+      codeCoverageTask.default(on, config)
       return config
     }
   },
