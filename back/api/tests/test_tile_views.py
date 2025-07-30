@@ -75,3 +75,33 @@ class TileDetailsViewTest(TestCase):
             url = f"/api/tiles/{datatype}/{obj_id}/"
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
+
+    def test_plantability_details_with_json_string(self):
+        # Create tile with JSON string details
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=2154)
+        tile_with_json = Tile.objects.create(
+            geometry=square, details='{"plantabilityNormalizedIndice": 5, "id": 42}'
+        )
+
+        url = f"/api/tiles/plantability/{tile_with_json.id}/"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertEqual(
+            response_data["details"], {"plantabilityNormalizedIndice": 5, "id": 42}
+        )
+
+    def test_plantability_details_with_invalid_json_string(self):
+        # Create tile with invalid JSON string details
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=2154)
+        tile_with_invalid_json = Tile.objects.create(
+            geometry=square, details="invalid json string"
+        )
+
+        url = f"/api/tiles/plantability/{tile_with_invalid_json.id}/"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertIsNone(response_data["details"])

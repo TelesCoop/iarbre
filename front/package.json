@@ -17,10 +17,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.28.0",
     "@maplibre/maplibre-gl-geocoder": "^1.8.0",
     "@primeuix/themes": "^1.0.3",
     "@tailwindcss/vite": "^4.0.17",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
     "maplibre-gl": "^5.4.0",
     "pinia": "^3.0.0",
     "polished": "^4.3.1",

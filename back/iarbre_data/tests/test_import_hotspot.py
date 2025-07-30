@@ -228,6 +228,37 @@ class ImportHotspotCommandTest(TestCase):
 
             os.unlink(tmp_file.name)
 
+    def test_process_sheet_with_valid_data(self):
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp_file:
+            df = pd.DataFrame(
+                {
+                    "Adresse": [
+                        "1 Place Bellecour 69002 Lyon",
+                        "10 Rue de la République 69001 Lyon",
+                    ],
+                    "type": ["tree", "ree"],
+                    "notes": ["Beautiful Large tree near park", "Large oak tree"],
+                }
+            )
+            df.to_excel(tmp_file.name, sheet_name="TestSheet", index=False)
+
+            result = self.command.process_sheet(tmp_file.name, "TestSheet")
+
+            # The function should attempt to process 2 addresses
+            # Result depends on geocoding success, but should be >= 0
+            self.assertGreaterEqual(result, 0)
+            self.assertLessEqual(result, 2)
+
+            # Check that any created hotspots have the expected structure
+            created_hotspots = HotSpot.objects.filter(description__sheet="TestSheet")
+            for hotspot in created_hotspots:
+                self.assertIn("sheet", hotspot.description)
+                self.assertEqual(hotspot.description["sheet"], "TestSheet")
+                self.assertIn("type", hotspot.description)
+                self.assertIn("notes", hotspot.description)
+
+            os.unlink(tmp_file.name)
+
     def test_hotspot_model_fields(self):
         geometry = Point(4.85, 45.75, srid=4326)
         description = {
