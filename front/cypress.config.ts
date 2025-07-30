@@ -7,5 +7,14 @@ export default defineConfig({
     experimentalRunAllSpecs: true,
     viewportWidth: 1440,
     viewportHeight: 900
+  },
+
+  component: {
+    devServer: {
+      framework: "vue",
+      bundler: "vite"
+    },
+    viewportWidth: 1440,
+    viewportHeight: 900
   }
 })
