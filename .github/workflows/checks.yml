@@ -161,14 +161,44 @@ jobs:
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ./front
-      - name: Run vitest
-        run: npm run test
+      - name: Run vitest with coverage
+        run: npm run test -- --coverage
         working-directory: ./front
       - name: Run cypress component tests
         uses: cypress-io/github-action@v6
         with:
           component: true
           working-directory: ./front
+
+      - name: Generate frontend coverage report
+        run: |
+          cd front
+          # Get coverage percentage from vitest coverage
+          if [ -f coverage/coverage-summary.json ]; then
+            COVERAGE=$(node -e "console.log(Math.round(JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.lines.pct))")
+          else
+            COVERAGE=0
+          fi
+          echo "FRONTEND_COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+
+          # Choose badge color based on coverage percentage
+          if [ "$COVERAGE" -ge 80 ]; then
+            echo "FRONTEND_BADGE_COLOR=brightgreen" >> $GITHUB_ENV
+          elif [ "$COVERAGE" -ge 60 ]; then
+            echo "FRONTEND_BADGE_COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "FRONTEND_BADGE_COLOR=red" >> $GITHUB_ENV
+          fi
+
+      - name: Create frontend coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 767df5613fc8e7b99ac2a773f5253463
+          filename: coverage-front-badge.json
+          label: frontend coverage
+          message: ${{ env.FRONTEND_COVERAGE_PERCENT }}%
+          color: ${{ env.FRONTEND_BADGE_COLOR }}
 
   e2e-tests:
     runs-on: ubuntu-22.04

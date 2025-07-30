@@ -6,7 +6,11 @@ export default defineConfig({
     baseUrl: "http://localhost:4173",
     experimentalRunAllSpecs: true,
     viewportWidth: 1440,
-    viewportHeight: 900
+    viewportHeight: 900,
+    setupNodeEvents(on, config) {
+      require("@cypress/code-coverage/task")(on, config)
+      return config
+    }
   },
 
   component: {

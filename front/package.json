@@ -17,10 +17,13 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@cypress/code-coverage": "^3.14.5",
     "@maplibre/maplibre-gl-geocoder": "^1.8.0",
     "@primeuix/themes": "^1.0.3",
     "@tailwindcss/vite": "^4.0.17",
+    "@vitest/coverage-v8": "^3.2.4",
     "maplibre-gl": "^5.4.0",
+    "nyc": "^17.1.0",
     "pinia": "^3.0.0",
     "polished": "^4.3.1",
     "primeicons": "^7.0.0",

@@ -32,6 +32,8 @@ pour calculer les indices (plantabilité, etc.) et servir ces données à traver
 
 ### **front/**
 
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/767df5613fc8e7b99ac2a773f5253463/raw/coverage-front-badge.json)
+
 Le frontend est construit avec **Vue.js** 🌟. Principalement ce frontend sert la carte..
 
 ### **static/**
