@@ -1,6 +1,4 @@
-# Backend IArbre
-
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
+# Backend IArbre ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
 
 ## Aperçu
 
@@ -197,6 +195,14 @@ python manage.py runserver --nostatic
 ```
 
 Le backend est maintenant en cours d'exécution, et l'API est prête pour le frontend.
+
+## Générer le code coverage
+
+```bash
+coverage run manage.py test && coverage report
+```
+
+Cette commande va exécuter tous les tests et générer un report pour mesurer si toutes les lignes sont testées. Si il n'existe aucun test pour un script, ce script ne sera pas inclus dans le report.
 
 ## Aide
 

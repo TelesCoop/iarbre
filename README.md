@@ -1,4 +1,4 @@
-# 🌳 IA.rbre [![Action status][ci-badge]][ci-workflow]
+# 🌳 IA.rbre [![Action status][ci-badge]][ci-workflow] ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
 
 Bienvenue sur la documentation de IA.rbre !
 
@@ -24,15 +24,11 @@ IArbre/
 
 ### **back/**
 
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
-
 Ce répertoire contient le backend d'IArbre, construit avec **Django** 🐍.
 Il traite les données SIG pour calculer l'occupation des sols (OCS). Il existe ensuite diverses applications Django
 pour calculer les indices (plantabilité, etc.) et servir ces données à travers des APIs.
 
 ### **front/**
-
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/767df5613fc8e7b99ac2a773f5253463/raw/coverage-front-badge.json)
 
 Le frontend est construit avec **Vue.js** 🌟. Principalement ce frontend sert la carte..
 

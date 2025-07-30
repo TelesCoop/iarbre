@@ -1,7 +1,5 @@
 # Frontend IA.rbre
 
-![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/767df5613fc8e7b99ac2a773f5253463/raw/coverage-front-badge.json)
-
 Ces instructions vont vous aider à installer et servir le frontend.
 
 ## Configuration IDE recommandée

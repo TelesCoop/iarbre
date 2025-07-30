@@ -14,7 +14,6 @@
 // ***********************************************************
 
 import "./commands"
-import "@cypress/code-coverage/support"
 
 import "@/styles/main.css"
 import Primevue from "primevue/config"
