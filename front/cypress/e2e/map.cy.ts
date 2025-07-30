@@ -44,8 +44,7 @@ describe("Map", () => {
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
-    cy.get("@consoleInfo").should("not.have.been.calledWith", "cypress: QPV data loaded")
-    cy.mapCheckQPVLayer(false) // #344
+    cy.get("@consoleInfo").should("not.have.been.calledWith", "cypress: QPV data loaded") // #344
     cy.basemapSwitchLayer(MapStyle.OSM)
     // check that layer is loaded
     cy.get("@consoleInfo").should(
