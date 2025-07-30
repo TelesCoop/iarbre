@@ -1,4 +1,4 @@
-name: Run basic checks
+name: CI tests
 
 on:
   push:
@@ -161,14 +161,13 @@ jobs:
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ./front
-      - name: Run vitest with coverage
-        run: npm run test -- --coverage
-        working-directory: ./front
-      - name: Run cypress component tests
+      - name: Run Cypress tests with coverage
         uses: cypress-io/github-action@v6
         with:
           component: true
           working-directory: ./front
+        env:
+          CYPRESS_COVERAGE: true
 
       - name: Generate frontend coverage report
         run: |
