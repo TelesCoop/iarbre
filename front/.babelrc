@@ -1,0 +1,7 @@
+{
+  "parserOpts": {
+    "plugins": ["typescript", "jsx"]
+  },
+  "plugins": ["istanbul"],
+  "presets": ["@babel/preset-env"]
+}

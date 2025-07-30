@@ -1,4 +1,7 @@
 import { defineConfig } from "cypress"
+import codeCoverageTask from "@cypress/code-coverage/task"
+import istanbul from "vite-plugin-istanbul"
+import vue from "@vitejs/plugin-vue"
 
 export default defineConfig({
   e2e: {
@@ -9,9 +12,8 @@ export default defineConfig({
     viewportHeight: 900,
 
     // Register code coverage task in e2e mode
-    async setupNodeEvents(on, config) {
-      const codeCoverage = await import("@cypress/code-coverage/task")
-      codeCoverage.default(on, config)
+    setupNodeEvents(on, config) {
+      codeCoverageTask(on, config)
       return config
     }
   },

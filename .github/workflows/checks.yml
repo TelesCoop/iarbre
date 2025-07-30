@@ -116,7 +116,7 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 86d9b33a236f4e03bca8799858fc7f6d
           filename: coverage-badge.json
-          label: coverage
+          label: backend coverage
           message: ${{ env.COVERAGE_PERCENT }}%
           color: ${{ env.BADGE_COLOR }}
 
@@ -172,7 +172,7 @@ jobs:
       - name: Generate frontend coverage report
         run: |
           cd front
-          # Get coverage percentage from vitest coverage
+          # Get coverage percentage from Cypress coverage
           if [ -f coverage/coverage-summary.json ]; then
             COVERAGE=$(node -e "console.log(Math.round(JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json')).total.lines.pct))")
           else

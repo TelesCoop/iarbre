@@ -1,4 +1,4 @@
-exclude: ^(.*\/migrations|.*package.json|.*package-lock.json|Pipfile*)
+exclude: ^(.*\/migrations|.*package.json|.*package-lock.json|Pipfile*|.*\.babelrc)
 repos:
   - hooks:
       - id: check-added-large-files
