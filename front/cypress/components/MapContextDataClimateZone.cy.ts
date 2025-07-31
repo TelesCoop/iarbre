@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { createPinia } from "pinia"
 import { mount } from "cypress/vue"
 import MapContextDataClimateZone from "@/components/contextData/MapContextDataClimateZone.vue"

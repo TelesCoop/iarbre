@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import ClimateZoneLegend from "@/components/map/legend/ClimateZoneLegend.vue"

@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 

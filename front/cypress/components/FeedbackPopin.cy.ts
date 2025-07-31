@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 
 describe("FeedbackPopin", () => {
