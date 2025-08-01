@@ -187,7 +187,7 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 767df5613fc8e7b99ac2a773f5253463
           filename: coverage-front-badge.json
-          label: frontend coverage
+          label: Frontend coverage
           message: ${{ env.FRONTEND_COVERAGE_PERCENT }}%
           color: ${{ env.FRONTEND_BADGE_COLOR }}
 
