@@ -19,45 +19,40 @@ Voir [Référence de configuration Vite](https://vitejs.dev/config/).
 ## Configuration du projet
 
 ```sh
-yarn
+
 ```
 
 ### Compiler et rechargement à chaud pour le développement
 
 ```sh
-yarn dev
+npm run dev
 ```
 
 ### Vérification des types, compilation pour la production
 
 ```sh
-yarn build
+npm run  type-check
 ```
 
 ### Exécuter des tests unitaires avec [Vitest](https://vitest.dev/)
 
 ```sh
-yarn test:unit
+npx cypress run --component
 ```
 
 ### Exécuter des tests end to end avec [Cypress](https://www.cypress.io/)
 
 ```sh
-yarn test:e2e:dev
+cd ../back && python manage.py runserver && cd ../front && npx vite --port=4173 && npx cypress run --e2e
 ```
 
-Cela exécute les tests end to end avec le serveur de développement Vite.
-C'est beaucoup plus rapide que la version de production.
+#### Code coverage
 
-Il est tout de même recommandé de tester la version de production avec `test:e2e` avant le déploiement (par exemple dans les environnements CI) :
-
-```sh
-yarn build
-yarn test:e2e
-```
+Pour générer le rapport de coverage, ajouter `CYPRESS_COVERAGE=true` avant `npx cypress run --e2e`
+Un dossier `coverage` va être généré.
 
 ### Lint avec [ESLint](https://eslint.org/)
 
 ```sh
-yarn lint
+npm run lint
 ```
