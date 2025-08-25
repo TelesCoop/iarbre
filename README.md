@@ -1,4 +1,4 @@
-# 🌳 IA.rbre
+# 🌳 IA.rbre [![Action status][ci-badge]][ci-workflow] ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
 
 Bienvenue sur la documentation de IA.rbre !
 
@@ -82,3 +82,8 @@ Vous pouvez également contribuer directement en proposant de nouvelles fonction
 3. **Valider vos modifications** : `git commit -m "Ajouter une fonctionnalité géniale"`
 4. **Pousser votre branche** : `git push origin ma-fonctionnalite-geniale`
 5. **Ouvrir une Pull Request**
+
+<!-- badge links follow -->
+
+[ci-badge]: https://github.com/TelesCoop/iarbre/actions/workflows/checks.yml/badge.svg
+[ci-workflow]: https://github.com/TelesCoop/iarbre/actions/workflows/checks.yml

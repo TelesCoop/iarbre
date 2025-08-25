@@ -13,14 +13,16 @@ import geopandas as gpd
 
 
 class C03DataTestCase(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
         for idx, dic in enumerate(DATA_FILES):
             if dic["name"] == "Espaces publics":
                 idc = idx
                 break
 
-        self.data_config = DATA_FILES[idc]
-        self.data_config["actions"] = [
+        cls.data_config = DATA_FILES[idc]
+        cls.data_config["actions"] = [
             {
                 "filters": [
                     {
@@ -34,8 +36,8 @@ class C03DataTestCase(TestCase):
                 ]
             }
         ]
-        self.df = read_data(self.data_config)
-        self.datas = process_data(self.df, self.data_config)
+        cls.df = read_data(cls.data_config)
+        cls.datas = process_data(cls.df, cls.data_config)
 
     def test_download_from_url(self):
         for idx, dic in enumerate(URL_FILES):
@@ -87,3 +89,64 @@ class C03DataTestCase(TestCase):
     def test_save_geometries(self):
         save_geometries(self.datas, self.data_config)
         self.assertNotEquals(Data.objects.count(), 0)
+
+    def test_read_data_with_layer_name(self):
+        """Test read_data function with layer_name parameter."""
+        # Find a config with layer_name
+        config_with_layer = None
+        for config in DATA_FILES:
+            if config.get("layer_name") == "Parkings surfacique":
+                config_with_layer = config
+                break
+
+        if config_with_layer:
+            df = read_data(config_with_layer)
+            self.assertTrue(isinstance(df, gpd.GeoDataFrame))
+            self.assertEqual(df.crs, TARGET_PROJ)
+
+    def test_read_data_without_layer_name(self):
+        """Test read_data function without layer_name parameter."""
+        # Find a config without layer_name
+        config_without_layer = None
+        for config in DATA_FILES:
+            if not config.get("layer_name") and not config.get("url"):
+                config_without_layer = config
+                break
+
+        if config_without_layer:
+            df = read_data(config_without_layer)
+            self.assertTrue(isinstance(df, gpd.GeoDataFrame))
+            self.assertEqual(df.crs, TARGET_PROJ)
+
+    def test_read_data_geometry_validation(self):
+        df = read_data(self.data_config)
+        # All geometries should be valid and non-null
+        self.assertTrue(df.geometry.notnull().all())
+        self.assertTrue(df.geometry.is_valid.all())
+        # Geometries should be 2D
+        self.assertTrue(
+            all(geom.has_z is False for geom in df.geometry if geom is not None)
+        )
+
+    def test_crs_conversion(self):
+        df = read_data(self.data_config)
+        self.assertEqual(df.crs, TARGET_PROJ)
+
+    def test_process_data_returns_list(self):
+        result = process_data(self.df, self.data_config)
+        self.assertIsInstance(result, list)
+        if result:  # If list is not empty
+            # Each item should be a data object that can be saved
+            self.assertIsInstance(result[0], dict)
+
+    def test_save_geometries_with_existing_data(self):
+        # Save data first time
+        save_geometries(self.datas, self.data_config)
+        Data.objects.filter(metadata=self.data_config["name"]).count()
+
+        # Save same data again
+        save_geometries(self.datas, self.data_config)
+        final_count = Data.objects.filter(metadata=self.data_config["name"]).count()
+
+        # Should have data (either kept or replaced)
+        self.assertGreater(final_count, 0)
