@@ -132,8 +132,6 @@ class Command(BaseCommand):
 
     def create_or_update_hotspot(self, geometry, description, city_name, city):
         """Create or update a HotSpot object."""
-        if city is None:
-            breakpoint()
         try:
             hotspot, created = HotSpot.objects.get_or_create(
                 geometry=geometry,
@@ -166,15 +164,17 @@ class Command(BaseCommand):
         created_count = 0
 
         for _, row in df.iterrows():
+            print(row[address_column])
             address = self.get_full_address(row, address_column, df)
             if pd.isna(address) or not address.strip():
                 continue
             description = self.build_description(sheet_name, row, additional_data)
-            geometry = geocode_address(self.clean_address(address))
+            cleaned_address = self.clean_address(address)
+            geometry = geocode_address(cleaned_address)
             time.sleep(1)  # 1 request max per second
             if not geometry:
                 print("*" * 10)
-                print(f"Could not geocode address {address}, skipping")
+                print(f"Could not geocode address {cleaned_address}, skipping")
                 print("*" * 10)
                 continue
             city = self.get_city_from_address(address)
@@ -201,6 +201,8 @@ class Command(BaseCommand):
             print(f"Found sheets: {xl_file.sheet_names}")
             print(xl_file.sheet_names)
             for sheet_name in xl_file.sheet_names:
+                if sheet_name != "Don darbres 2024":
+                    continue
                 print(f'Sheet "{sheet_name}"')
                 created = self.process_sheet(file_path, sheet_name)
                 total_created += created
