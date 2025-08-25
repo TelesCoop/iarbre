@@ -103,7 +103,7 @@ class ImportHotspotCommandTest(TestCase):
             }
         )
 
-        result = self.command.find_address_column(df)
+        result = self.command.find_column(df, "adresse")
         self.assertEqual(result, "Adresse Complète")
 
     def test_find_address_column_case_insensitive(self):
@@ -111,13 +111,13 @@ class ImportHotspotCommandTest(TestCase):
             {"Name": ["Test"], "ADRESSE": ["123 Rue de la Paix"], "Other": ["data"]}
         )
 
-        result = self.command.find_address_column(df)
+        result = self.command.find_column(df, "adresse")
         self.assertEqual(result, "ADRESSE")
 
     def test_find_address_column_empty_values(self):
         df = pd.DataFrame({"Name": ["Test"], "Adresse": [pd.NA], "Other": ["data"]})
 
-        result = self.command.find_address_column(df)
+        result = self.command.find_column(df, "adresse")
         self.assertIsNone(result)
 
     def test_get_full_address_with_commune(self):

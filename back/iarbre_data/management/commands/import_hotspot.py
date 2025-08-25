@@ -68,21 +68,22 @@ class Command(BaseCommand):
             if part.isdigit() and len(part) == 5:
                 if i + 1 < len(parts):
                     city_name = " ".join(parts[i + 1 :])
+                    if city_name.lower() == "lyon":
+                        arrondissement = part[-2:]
+                        city_name = f"{city_name} {arrondissement.lstrip('0')}"
                     break
-
         if city_name:
             try:
                 return City.objects.filter(name__icontains=city_name).first()
             except Exception as e:
                 print(f"Can't find City {city_name}: {e}.")
                 return None
-
         return None
 
-    def find_address_column(self, df):
-        """Find the address column in the dataframe."""
+    def find_column(self, df: pd.DataFrame, regex: str):
+        """Find the a column in the dataframe based on regex."""
         for col in df.columns:
-            if "adresse" in col.lower():
+            if regex in col.lower():
                 if not df[col].isna().all():
                     return col
         return None
@@ -160,7 +161,7 @@ class Command(BaseCommand):
     def process_sheet(self, file_path, sheet_name):
         """Process a single sheet from the Excel file."""
         df = pd.read_excel(file_path, sheet_name=sheet_name)
-        address_column = self.find_address_column(df)
+        address_column = self.find_column(df, "adresse")
         if not address_column:
             print(f'No address column found in sheet "{sheet_name}"')
             return 0
@@ -172,7 +173,6 @@ class Command(BaseCommand):
             address = self.get_full_address(row, address_column, df)
             if pd.isna(address) or not address.strip():
                 continue
-
             description = self.build_description(sheet_name, row, additional_data)
             geometry = geocode_address(address)
             time.sleep(1)  # 1 request max per second
