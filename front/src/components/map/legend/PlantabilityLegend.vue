@@ -26,14 +26,14 @@ const SCORE_BG_CLASSES: Record<number, string> = {
     class="font-accent flex items-center justify-center text-xs leading-3 gap-2"
     data-cy="plantability-legend"
   >
-    <div class="flex items-center flex-col lg:flex-row justify-center gap-2 lg:gap-[7px] px-2">
-      <div class="flex justify-between lg:hidden gap-2">
+    <div class="flex items-center flex-col lg:flex-row justify-center lg:gap-[7px] px-2">
+      <div class="flex justify-between lg:hidden">
         <span class="font-bold">-</span>
         <span>Plantable</span>
         <span class="font-bold">+</span>
       </div>
       <span class="hidden lg:block text-sm leading-3">Non plantable</span>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center">
         <score-label
           v-for="index in [0, 2, 4, 6, 8, 10]"
           :key="index"

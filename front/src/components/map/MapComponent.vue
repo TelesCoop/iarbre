@@ -54,7 +54,6 @@ onMounted(() => {
     <map-legend />
     <div class="flex gap-2">
       <map-filters-status />
-      <map-context-tools class="ml-auto" />
     </div>
   </div>
   <div
@@ -63,6 +62,7 @@ onMounted(() => {
     <map-layer-switcher />
     <map-bg-switcher />
     <map-qpv-toggle-button />
+    <map-context-tools />
     <map-context-data
       class="max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-6rem)] p-0!"
     />

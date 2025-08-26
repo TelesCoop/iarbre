@@ -3,8 +3,8 @@
     class="font-accent flex flex-col items-center justify-center text-xs leading-3 gap-2"
     data-cy="climate-zones-legend"
   >
-    <div class="flex p-2 flex-wrap justify-center gap-2">
-      <div v-for="(zone, index) in zones" :key="index" class="flex items-center gap-1">
+    <div class="flex p-2 flex-wrap justify-center">
+      <div v-for="(zone, index) in zones" :key="index" class="flex items-center">
         <ClimateZoneScoreLabel :zone="zone" size="compact" @click="handleZoneClick(zone)" />
       </div>
     </div>
