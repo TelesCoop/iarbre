@@ -27,6 +27,7 @@
     "polished": "^4.3.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.3.3",
+    "strip-ansi": "^7.1.0",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"

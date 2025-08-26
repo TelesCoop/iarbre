@@ -33,14 +33,23 @@ jobs:
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
 
-      - name: Install front js dependencies
-        run: npm install
-        working-directory: ./front
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
+      - name: Configure npm
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: |
+          npm config set fetch-retries 3
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+        working-directory: ./front
+
+      - name: Install front js dependencies
+        run: npm ci --prefer-offline --no-audit
+        working-directory: ./front
 
   pre-commit:
     runs-on: ubuntu-22.04
