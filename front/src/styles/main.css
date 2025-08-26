@@ -85,9 +85,7 @@
 
 .map-tool-container {
   @apply flex items-center gap-2 sm:gap-4;
-  @apply rounded-md;
   @apply bg-white z-10;
-  @apply border-primary-500 border-0.5;
   @apply p-2 md:p-4;
   @apply max-w-full;
 }

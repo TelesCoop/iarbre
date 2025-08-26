@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-primary-500 rounded-lg shadow-md"
+    class="bg-primary-500 shadow-md"
     style="
       display: flex;
       height: 10.25rem;
