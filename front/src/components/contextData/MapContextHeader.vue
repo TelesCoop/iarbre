@@ -12,7 +12,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <header class="bg-primary-500 text-white relative">
+  <header class="relative">
     <div class="absolute right-0 mb-2 pr-4">
       <button
         v-if="!hideCloseButton"
@@ -25,7 +25,7 @@ const emit = defineEmits<{
       </button>
     </div>
     <div class="p-2 md:p-4">
-      <h2 id="plantability-title" class="text-md mb-2 pr-4">{{ title }}</h2>
+      <h2 id="plantability-title" class="text-md mb-2 pr-4 text-center">{{ title }}</h2>
 
       <p v-if="description" id="plantability-description" class="text-xs">
         <i aria-hidden="true" class="pi pi-info-circle mr-2"></i>
