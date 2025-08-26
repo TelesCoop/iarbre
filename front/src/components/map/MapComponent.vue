@@ -71,10 +71,10 @@ onMounted(() => {
   margin-top: 1rem;
   z-index: 30;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   pointer-events: none;
-  @apply gap-2;
-  @apply top-0 right-0;
+  @apply gap-2 left-130;
+  @apply top-0;
   @apply mx-1;
 }
 
