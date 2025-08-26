@@ -20,37 +20,56 @@ class Command(BaseCommand):
 
     @staticmethod
     def extract_first_street_number(address):
-        """Extract only the first street number and the first street name from the address."""
+        """Extract only the first street number and the street name from the address."""
+        if not address:
+            return address
+
         # Find the first number in the address
         match = re.search(r"\d+", address)
         if not match:
             return address  # No number found, return as-is
 
         first_number = match.group()
-
         first_number_index = address.find(first_number)
-        rest_of_address = address[first_number_index + len(first_number) :]
 
-        # Remove everything before the actual street name (keep everything from first proper word)
-        match = re.search(r"[A-Z][A-Z]+(?:\s+[A-Z]+)*", rest_of_address)
-        if match:
-            rest_of_address = rest_of_address[match.start() :]
+        # Get everything after the first number
+        rest_of_address = address[first_number_index + len(first_number) :].strip()
 
-        rest_of_address = re.sub(r"/\s*", " ", rest_of_address)
-        parts = rest_of_address.split(",")
-        if len(parts) > 1:
-            result_parts = [parts[0]]
-            for part in parts[1:]:
-                if re.match(r"\s*\d", part):  # Part starts with digits (postal code)
-                    result_parts.append("," + part)
+        # Handle comma-separated numbers: "43,45,47,49 Rue" -> "43 Rue"
+        if rest_of_address.startswith(","):
+            # Remove everything until we find a non-number, non-comma, non-space character
+            rest_of_address = re.sub(r"^[,\d\s]+", "", rest_of_address).strip()
+
+        # Handle slash-separated numbers: "43/45/47 Avenue" -> "43 Avenue"
+        elif "/" in rest_of_address:
+            # For patterns like "/45/47 Avenue", remove all numbers after slashes until we hit the street name
+            # For patterns like ",53,55 / 57,59,61,63 Avenue", preserve the " / " format
+            if rest_of_address.strip().startswith("/"):
+                # Simple case: "/45/47 Avenue" -> " Avenue"
+                # Remove everything that's a slash or number until we hit letters
+                rest_of_address = re.sub(r"^[/\d\s]+", " ", rest_of_address).strip()
+            else:
+                # Complex case like ",53,55 / 57,59,61,63 Avenue" where we want to preserve the " / " format
+                parts = rest_of_address.split("/")
+                if len(parts) > 1 and re.match(r"^[,\d\s]+$", parts[0].strip()):
+                    # Keep the slash and everything after it
+                    rest_of_address = " / " + "/".join(parts[1:])
                 else:
-                    result_parts.append(" " + part)
-            rest_of_address = "".join(result_parts)
-        rest_of_address = " ".join(rest_of_address.split())
+                    # Just remove everything until the street name
+                    rest_of_address = re.sub(r"^[/\d\s]+", " ", rest_of_address).strip()
 
-        modified_address = f"{first_number} {rest_of_address}"
+        # Handle complex patterns with letters: "121 A,B,C,D,E,F,G,H Rue" -> "121 Rue"
+        elif re.match(r"^\s*[A-Z,\s]+[A-Za-z]", rest_of_address):
+            # Remove letter patterns at the beginning but keep the street name
+            rest_of_address = re.sub(
+                r"^\s*[A-Z,\s]+(?=[A-Z][a-z])", "", rest_of_address
+            ).strip()
 
-        return modified_address.strip()
+        # Ensure we have proper spacing
+        if rest_of_address:
+            return f"{first_number} {rest_of_address}"
+        else:
+            return first_number
 
     def clean_address(self, address):
         """Remove everything after postal code and extract first street number."""
@@ -159,6 +178,8 @@ class Command(BaseCommand):
         if not address_column:
             print(f'No address column found in sheet "{sheet_name}"')
             return 0
+        if not commune_column:
+            commune_column = ""
 
         additional_data = self.get_additional_data_columns(df, address_column)
         created_count = 0
@@ -179,12 +200,17 @@ class Command(BaseCommand):
                 continue
             city = self.get_city_from_address(address)
 
-            if city is None:
+            if city is None and commune_column and not pd.isna(row[commune_column]):
                 city = City.objects.filter(
                     name__icontains=unidecode(
                         row[commune_column].replace("-", " ").strip()
                     )
                 ).first()
+
+            if city is None:
+                print(f"Could not find city for address {address}, skipping")
+                continue
+
             city_name = city.name
             if self.create_or_update_hotspot(geometry, description, city_name, city):
                 created_count += 1

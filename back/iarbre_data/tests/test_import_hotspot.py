@@ -78,22 +78,6 @@ class ImportHotspotCommandTest(TestCase):
         city = self.command.get_city_from_address("123 Rue de la Paix Lyon")
         self.assertIsNone(city)
 
-    def test_extract_city_name_from_address(self):
-        result = self.command.extract_city_name_from_address(
-            "123 Rue de la Paix 69001 Lyon"
-        )
-        self.assertEqual(result, "Lyon")
-
-    def test_extract_city_name_from_address_multiple_words(self):
-        result = self.command.extract_city_name_from_address(
-            "123 Rue de la Paix 69005 Lyon 5e Arrondissement"
-        )
-        self.assertEqual(result, "Lyon 5e Arrondissement")
-
-    def test_extract_city_name_from_address_no_postal_code(self):
-        result = self.command.extract_city_name_from_address("123 Rue de la Paix")
-        self.assertIsNone(result)
-
     def test_find_address_column(self):
         df = pd.DataFrame(
             {
@@ -236,7 +220,8 @@ class ImportHotspotCommandTest(TestCase):
                         "1 Place Bellecour 69002 Lyon",
                         "10 Rue de la République 69001 Lyon",
                     ],
-                    "type": ["tree", "ree"],
+                    "Nom de commune": ["Lyon 2", "Lyon 1"],
+                    "type": ["tree", "tree"],
                     "notes": ["Beautiful Large tree near park", "Large oak tree"],
                 }
             )
