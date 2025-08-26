@@ -11,6 +11,6 @@ const mapStore = useMapStore()
       data-cy="qpv-toggle"
       @update:model-value="mapStore.toggleQPVLayer"
     />
-    <span class="text-sm font-medium">Quartier Prioritaires de la Ville</span>
+  <span class="text-sm font-medium">QPV</span>
   </div>
 </template>
