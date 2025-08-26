@@ -1,4 +1,5 @@
 """Utils to process GEOJSON and GeoPackage to add them in the DB."""
+
 from itertools import islice
 
 from shapely import unary_union
@@ -48,7 +49,7 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
             )
         ]
     if actions.get("exclude"):
-        if type(actions["exclude"]["value"]) == list:
+        if type(actions["exclude"]["value"]) is list:
             df = df[~df[actions["exclude"]["name"]].isin(actions["exclude"]["value"])]
         else:
             df = df[df[actions["exclude"]["name"]] != actions["exclude"]["value"]]

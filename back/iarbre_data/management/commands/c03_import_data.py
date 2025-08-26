@@ -1,4 +1,5 @@
 """Save all land occupancy data to the database."""
+
 import time
 import os
 from datetime import datetime
