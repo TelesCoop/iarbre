@@ -45,6 +45,8 @@ declare module 'vue' {
     MapQPVToggleButton: typeof import("./src/components/map/panels/MapQPVToggleButton.vue")["default"]
     MapScorePopup: typeof import('./src/components/map/popup/MapScorePopup.vue')['default']
     MapScoresDrawer: typeof import('./src/components/map/panels/MapScoresDrawer.vue')['default']
+    MapSidePanel: typeof import('./src/components/map/panels/MapSidePanel.vue')['default']
+    MapSidePanelHeader: typeof import('./src/components/map/panels/MapSidePanelHeader.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PlantabilityContextDataAccordionItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue')['default']
