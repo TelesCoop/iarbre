@@ -90,6 +90,14 @@
   @apply max-w-full;
 }
 
+.map-bg-tool-container {
+  @apply flex flex-col items-start gap-2 sm:gap-4;
+  @apply bg-gray-100 z-10;
+  @apply p-6;
+  @apply max-w-full;
+  @apply rounded-md border border-gray-200;
+}
+
 .map-context-data-container {
   @apply flex flex-col;
   @apply bg-white z-10;
