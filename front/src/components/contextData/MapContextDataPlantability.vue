@@ -4,6 +4,7 @@ import { type PlantabilityData } from "@/types/plantability"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
+import { DataType, DataTypeToLabel } from "@/utils/enum"
 
 interface PlantabilityCardProps {
   data: PlantabilityData
@@ -27,7 +28,7 @@ const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice 
   >
     <map-context-header
       description="Calcul basé sur la pondération de +37 paramètres"
-      title="Score de plantabilité"
+      :title="DataTypeToLabel[DataType.PLANTABILITY]"
       :hide-close-button="props.hideCloseButton"
       @close="emit('close')"
     />

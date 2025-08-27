@@ -2,6 +2,7 @@
 import type { ClimateData } from "@/types/climate"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
+import { DataType, DataTypeToLabel } from "@/utils/enum"
 
 interface ClimateDataProps {
   data: ClimateData
@@ -28,7 +29,7 @@ const handleClose = () => {
   >
     <map-context-header
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
-      title="Zones climatiques locales"
+      :title="DataTypeToLabel[DataType.CLIMATE_ZONE]"
       :hide-close-button="props.hideCloseButton"
       @close="handleClose"
     />

@@ -24,9 +24,9 @@ export const MapStyleToLabel: Record<MapStyle, string> = {
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {
-  [DataType.PLANTABILITY]: "Score de plantabilité",
-  [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
-  [DataType.VULNERABILITY]: "Vulnérabilité chaleur"
+  [DataType.PLANTABILITY]: "🌳 Score de plantabilité",
+  [DataType.CLIMATE_ZONE]: "🌆 Zones climatiques locales",
+  [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {

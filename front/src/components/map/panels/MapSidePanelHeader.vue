@@ -1,37 +1,19 @@
 <template>
   <div
-    class="bg-primary-500 shadow-md"
-    style="
-      display: flex;
-      height: 10.25rem;
-      padding: 1.0625rem 1.25rem 2.1875rem 1.25rem;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.625rem;
-      flex-shrink: 0;
-      align-self: stretch;
-    "
+    class="bg-primary-500 shadow-md font-sans flex h-[164px] px-5 pt-[17px] pb-[35px] flex-col items-start gap-[10px] flex-shrink-0 self-stretch"
   >
-    <h2 class="text-lg text-white font-semibold font-accent">🏙️ Agglomération de Lyon</h2>
-    <div class="flex gap-2 flex-row items-start self-stretch">
-      <div class="stat-card bg-primary-200 text-white px-3 py-2 text-sm text-center font-medium==">
-        1.44M<br /><span style="font-size: 0.75rem">habitants</span>
+    <h2 class="text-lg text-white font-semibold">🏙️ Agglomération de Lyon</h2>
+    <div class="flex gap-2 flex-row items-start self-stretch text-center text-white text-sm">
+      <div
+        class="bg-primary-200 flex-1 flex flex-col items-center justify-center gap-1 h-[73px] rounded-md text-lg font-bold"
+      >
+        1.44M<br /><span class="text-xs">habitants</span>
       </div>
-      <div class="stat-card bg-primary-200 text-white px-3 py-2 text-sm text-center font-medium">
-        240 km²<br /><span style="font-size: 0.75rem">superficie</span>
+      <div
+        class="bg-primary-200 flex-1 flex flex-col items-center justify-center gap-1 h-[73px] rounded-md text-lg font-bold"
+      >
+        240 km²<br /><span class="text-xs">superficie</span>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5625rem;
-  align-self: stretch;
-  height: 4.5625rem;
-  border-radius: 0.375rem;
-}
-</style>
