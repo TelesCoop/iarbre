@@ -45,8 +45,8 @@ const handleClick = () => {
         ? `Score ${score} - Cliquez pour ${isSelected ? 'désactiver' : 'activer'} le filtre`
         : undefined
     "
-    class="relative rounded-[2px] flex items-center justify-center font-accent text-xs xs:text-sm transform flex-shrink-0"
-    style="width: 10px; height: 27px"
+    class="relative flex items-center justify-center font-accent text-xs xs:text-sm transform flex-shrink-0"
+    style="width: 11px; height: 27px"
     @click="handleClick"
   >
     <FilterIndicator :is-visible="isSelected" />

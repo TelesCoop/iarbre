@@ -6,6 +6,8 @@ const mapStore = useMapStore()
 const handleScoreClick = (score: number) => {
   mapStore.toggleAndApplyFilter(score)
 }
+
+const scoreIndices = [0, 2, 4, 6, 8, 10]
 const SCORE_BG_CLASSES: Record<number, string> = {
   0: "bg-scale-0",
   1: "bg-scale-1",
@@ -32,22 +34,26 @@ const SCORE_BG_CLASSES: Record<number, string> = {
         <span>Plantable</span>
         <span class="font-bold">+</span>
       </div>
-      <span class="hidden lg:block text-sm leading-3">Non plantable</span>
+      <span class="hidden lg:block text-xs leading-3 text-center">Non plantable</span>
       <div class="flex items-center">
         <score-label
-          v-for="index in [0, 2, 4, 6, 8, 10]"
-          :key="index"
+          v-for="(scoreIndex, arrayIndex) in scoreIndices"
+          :key="scoreIndex"
           :clickable="true"
-          :is-selected="mapStore.isFiltered(index)"
-          :label="`${index}`"
-          :score="index"
-          class="flex items-center justify-center"
-          :background-color-class="SCORE_BG_CLASSES[index]"
+          :is-selected="mapStore.isFiltered(scoreIndex)"
+          :label="`${scoreIndex}`"
+          :score="scoreIndex"
+          :class="[
+            'flex items-center justify-center',
+            arrayIndex === 0 ? 'rounded-l-[3px]' : '',
+            arrayIndex === scoreIndices.length - 1 ? 'rounded-r-[3px]' : ''
+          ]"
+          :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
           @click="handleScoreClick"
         />
       </div>
 
-      <span class="hidden lg:block text-sm leading-3">Plantable</span>
+      <span class="hidden lg:block text-xs leading-3">Plantable</span>
     </div>
   </div>
 </template>

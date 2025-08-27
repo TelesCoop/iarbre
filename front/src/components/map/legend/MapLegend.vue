@@ -8,7 +8,7 @@ const mapStore = useMapStore()
 <template>
   <div v-if="mapStore.selectedDataType" class="map-legend">
     <div
-      class="mb-2 text-sm font-semibold font-accent text-primary-900 text-center"
+      class="text-sm font-semibold font-accent text-primary-900 text-center"
       data-cy="map-legend-title"
     >
       {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
@@ -33,7 +33,7 @@ const mapStore = useMapStore()
 .map-legend {
   @apply bg-white;
   display: flex;
-  width: 221px;
+  width: 244px;
   padding: 12px 10px 10px 10px;
   flex-direction: column;
   justify-content: center;
