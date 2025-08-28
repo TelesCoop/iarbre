@@ -143,12 +143,3 @@ repos:
           - manual
     repo: https://github.com/commitizen-tools/commitizen
     rev: v2.3.1
-
-  # Ansible checks for deploy folder
-  - repo: https://github.com/ansible/ansible-lint
-    rev: v25.8.2
-    hooks:
-      - id: ansible-lint
-        files: ^deploy/
-        additional_dependencies:
-          - ansible

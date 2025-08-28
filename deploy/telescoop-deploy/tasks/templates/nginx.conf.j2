@@ -1,5 +1,17 @@
 {{ ansible_managed | comment }}
 
+{% if has_backend %}
+upstream app_servers_{{ project_slug }} {
+  server 127.0.0.1:{{ backend_application_port }};
+}
+{% endif %}
+
+{% if frontend_mode == "SSR" -%}
+upstream app_frontend_{{ project_slug }} {
+  server 127.0.0.1:{{ frontend_application_port }};
+}
+{% endif %}
+
 server {
 
     listen 443 ssl;
@@ -36,7 +48,34 @@ server {
     gzip_vary on;
     gzip_types application/json application/javascript application/xml text/css text/javascript text/plain text/xml image/svg+xml;
 
-    # Static file serving
+    {% if has_backend %}
+    # backend static stuff
+    location /static  {
+        autoindex off;
+        alias {{ backend_static_path }};
+    }
+
+    proxy_read_timeout {{ requests_timeout }};
+    proxy_connect_timeout {{ requests_timeout }};
+    proxy_send_timeout {{ requests_timeout }};
+    send_timeout {{ requests_timeout }};
+
+
+    {% for uri in server_uris_passed_to_backend -%}
+    location /{{ uri }}/ {
+        proxy_pass         http://app_servers_{{ project_slug }};
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+    {% endfor %}
+    {% endif %}
+
+    # send all the rest to the frontend
+    {% if frontend_mode is none or frontend_mode == "static" -%}
     location / {
         try_files $uri $uri/ $uri.html /index.html =404;
         root {{ static_path }};
@@ -53,6 +92,16 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "no-referrer-when-downgrade" always;
     }
+    {% elif frontend_mode == "SSR" -%}
+    location / {
+        proxy_pass         http://app_frontend_{{ project_slug }}/;
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+    }
+    {% endif %}
 
 }
 

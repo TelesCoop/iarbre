@@ -1,7 +1,33 @@
 ---
-- hosts:
-    - prod
-    - preprod
-    - feature
-  roles:
-    - frontend
+- name: Deploy vuejs frontend on all hosts
+  hosts: all
+  vars:
+    clone_path: "{{ project_dir }}/front"
+    vue_path: "{{ project_dir }}/front/front"
+    current_path: "{{ vue_path }}"
+    repo: "{{ backend_repo }}"
+    identity_file_path: "{{ backend_identity_file_path }}"
+    git_track_submodules: false
+    static_path: "{{ project_dir }}/frontend_static"
+    branch: "{{ frontend_branch }}"
+    has_backend: true
+    use_password: false
+    server_uris_passed_to_backend:
+      - admin
+      - api
+      - backup
+      - hijack
+      - cms
+  handlers:
+    - import_tasks: telescoop-deploy/handlers/nginx.yml
+  tasks:
+    - import_tasks: telescoop-deploy/tasks/create-https-certificate.yml
+    - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
+    - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
+    - import_tasks: telescoop-deploy/tasks/setup-node-dependencies.yml
+    - name: add environment variable file
+      template:
+        src: frontend.env
+        dest: "{{ vue_path }}/.env"
+    - import_tasks: telescoop-deploy/tasks/build-vue.yml
+    - import_tasks: telescoop-deploy/tasks/setup-nginx-for-static.yml
