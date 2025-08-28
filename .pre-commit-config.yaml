@@ -80,11 +80,10 @@ repos:
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
   - hooks:
-      - args:
-          - "-d {rules: {line-length: {max: 999}}}"
+      - args: ["-c", ".yamllint"]
         id: yamllint
     repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.24.2
+    rev: v1.37.1
   - hooks:
       - id: check-yaml
       - id: sort-simple-yaml
@@ -144,3 +143,12 @@ repos:
           - manual
     repo: https://github.com/commitizen-tools/commitizen
     rev: v2.3.1
+
+  # Ansible checks for deploy folder
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v25.8.2
+    hooks:
+      - id: ansible-lint
+        files: ^deploy/
+        additional_dependencies:
+          - ansible

@@ -47,7 +47,7 @@
   when: clonecode.changed or force_update is defined
 
 - name: Collect backend static files
-  command:
+  ansible.builtin.command:
     cmd: "{{ project_slug }}-ctl collectstatic --no-input"
   when: clonecode.changed or force_update is defined
 

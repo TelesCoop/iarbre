@@ -10,7 +10,7 @@
 #  - static_path
 ---
 - name: Install passlib python package, required by community.general.htpasswd
-  apt:
+  ansible.builtin.apt:
     name:
       - python3-passlib
   when: use_password == true

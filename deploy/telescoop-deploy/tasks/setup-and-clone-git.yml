@@ -33,20 +33,16 @@
     msg: "{{ backend_command_output.stdout }}"
   when: new_ssh_key.changed
 
-- name: get latest code from {{ repo }}, banch {{ branch }}
-  git:
+- name: Get latest code from {{ repo }}, banch {{ branch }}
+  ansible.builtin.git:
     repo: "{{ repo }}"
     dest: "{{ clone_path }}"
     key_file: "{{ identity_file_path }}"
     accept_hostkey: true
     force: true
     version: "{{ branch }}"
-    # # git submodule should have master branch
+    # git submodule should have master branch
     track_submodules: "{{ git_track_submodules }}"
     remote: origin
   become_user: "{{ main_user }}"
   register: clonecode
-
-- name:
-  command: "echo hello world"
-  when: clonecode.changed

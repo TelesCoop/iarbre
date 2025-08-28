@@ -12,7 +12,7 @@
     shell: /bin/bash
 
 - name: Create directories and set permissions
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.owner }}"
