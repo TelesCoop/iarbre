@@ -4,11 +4,27 @@ import ClimateZoneScorePopup from "@/components/map/popup/ClimateZoneScorePopupC
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import { computed } from "vue"
+import { copyToClipboard } from "@/utils/clipboard"
+import { useToast } from "primevue/usetoast"
 import VulnerabilityScorePopup from "@/components/map/popup/VulnerabilityScorePopupContent.vue"
 
 const mapStore = useMapStore()
+const toast = useToast()
 
 const popupData = computed(() => mapStore.popupData)
+const coords = computed(
+  () => `${popupData.value?.lat.toFixed(5)}° N, ${popupData.value?.lng.toFixed(5)}° E`
+)
+
+const copy = (text: string) => {
+  copyToClipboard(text)
+  toast.add({
+    severity: "success",
+    summary: "Coordonnées copiées",
+    life: 3000,
+    group: "br"
+  })
+}
 </script>
 
 <template>
