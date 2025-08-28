@@ -16,6 +16,7 @@ declare module 'vue' {
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     ClimateContextDataMetrics: typeof import('./src/components/contextData/climate/ClimateContextDataMetrics.vue')['default']
+    ClimateContextDataScore: typeof import('./src/components/contextData/climate/ClimateContextDataScore.vue')['default']
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
     ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']

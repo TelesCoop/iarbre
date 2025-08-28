@@ -20,11 +20,7 @@ defineProps({
 </script>
 
 <template>
-  <div
-    v-if="mapStore.contextData.data"
-    class="map-context-data-container w-full"
-    data-cy="map-context-data"
-  >
+  <div class="map-context-data-container w-full" data-cy="map-context-data">
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
       :data="mapStore.contextData.data as PlantabilityData"

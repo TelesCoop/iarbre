@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, withDefaults } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
@@ -7,23 +7,29 @@ import PlantabilityContextDataList from "@/components/contextData/plantability/P
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 
 interface PlantabilityCardProps {
-  data: PlantabilityData
+  data?: PlantabilityData | null
   hideCloseButton?: boolean
 }
 
-const props = defineProps<PlantabilityCardProps>()
+const props = withDefaults(defineProps<PlantabilityCardProps>(), {
+  data: null,
+  hideCloseButton: false
+})
+
 const emit = defineEmits<{
   close: []
 }>()
 
-const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice * 10)
+const scorePercentage = computed(() =>
+  props.data?.plantabilityNormalizedIndice ? props.data.plantabilityNormalizedIndice * 10 : null
+)
 </script>
 
 <template>
   <div
     aria-describedby="plantability-description"
     aria-labelledby="plantability-title"
-    class="map-context-panel"
+    class="map-context-panel item-center"
     role="dialog"
   >
     <map-context-header
@@ -34,10 +40,12 @@ const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice 
     />
     <div class="map-context-panel-content">
       <plantability-context-data-score
+        v-if="props.data && scorePercentage !== null"
         :percentage="scorePercentage"
-        :score="data.plantabilityNormalizedIndice"
+        :score="props.data.plantabilityNormalizedIndice"
       />
-      <plantability-context-data-list :data="data" />
+      <empty-message v-else data-cy="empty-message" message="Cliquez sur un carreau" />
+      <plantability-context-data-list v-if="props.data" :data="props.data" />
     </div>
   </div>
 </template>

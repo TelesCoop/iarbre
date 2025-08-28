@@ -35,7 +35,7 @@ const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
       </template>
 
       <template v-else>
-        <empty-message data-cy="empty-message" message="Aucune donnée connue" />
+        <empty-message data-cy="empty-message" message="Cliquez sur un carreau." />
       </template>
     </div>
   </div>
