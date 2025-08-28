@@ -17,7 +17,7 @@
     mode: 0644
   become: true
   notify:
-    - reload nginx
+    - Reload nginx
   when: not ssl_exists.stat.exists
 
 - name: Create certificate
@@ -35,5 +35,5 @@
   ansible.builtin.command: rm /etc/nginx/sites-enabled/https-{{ main_hostname }}
   become: true
   notify:
-    - reload nginx
+    - Reload nginx
   when: not ssl_exists.stat.exists

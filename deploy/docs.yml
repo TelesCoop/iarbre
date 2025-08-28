@@ -1,5 +1,26 @@
 ---
-- hosts:
-    - prod
-  roles:
-    - docs
+- name: Setup docs on prod only
+  hosts: prod
+  vars:
+    main_hostname: "docs.iarbre.fr"
+    clone_path: "{{ project_dir }}/docs/"
+    repo: "{{ backend_repo }}"
+    requirements: "{{ docs_path }}/mkdocs-requirements.txt"
+    identity_file_path: "{{ backend_identity_file_path }}"
+    branch: "{{ docs_branch }}"
+    git_track_submodules: false
+    venv:
+      path: /usr/local/{{ organization_slug }}/{{ project_slug }}/docs/venv
+    docs_static_path: "{{ project_dir }}/docs_static"
+    static_path: "{{ docs_static_path }}"
+    mkdocs_path: "{{ clone_path }}/docs"
+    mkdocs_static_path: "{{ static_path }}"
+  handlers:
+    - import_tasks: telescoop-deploy/handlers/nginx.yml
+  tasks:
+    - import_tasks: telescoop-deploy/tasks/create-https-certificate.yml
+    - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
+    - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
+    - import_tasks: telescoop-deploy/tasks/install-python-venv.yml
+    - import_tasks: telescoop-deploy/tasks/build-mkdocs.yml
+    - import_tasks: telescoop-deploy/tasks/setup-nginx-for-static.yml

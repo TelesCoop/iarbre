@@ -18,7 +18,7 @@
   become_user: "{{ main_user }}"
 
 - name: Install python dependencies
-  command:
-    cmd: "{{ venv.path }}/bin/pip install -r requirements.txt"
-    chdir: "{{ working_dir }}"
+  pip:
+    requirements: "{{ requirements if requirements is not none else 'requirements.txt' }}"
+    virtualenv: "{{ venv.path }}"
   when: clonecode.changed or force_update is defined
