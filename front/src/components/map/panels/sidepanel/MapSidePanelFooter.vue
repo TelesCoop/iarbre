@@ -7,9 +7,9 @@ import { useToast } from "primevue/usetoast"
 const mapStore = useMapStore()
 const toast = useToast()
 
-const popupData = computed(() => mapStore.popupData)
+const clickCoordinates = computed(() => mapStore.clickCoordinates)
 const coords = computed(
-  () => `${popupData.value?.lat.toFixed(5)}° N, ${popupData.value?.lng.toFixed(5)}° E`
+  () => `${clickCoordinates.value.lat.toFixed(5)}° N, ${clickCoordinates.value.lng.toFixed(5)}° E`
 )
 
 const copy = (text: string) => {

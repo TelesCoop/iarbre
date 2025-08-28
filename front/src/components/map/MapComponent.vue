@@ -58,9 +58,6 @@ onMounted(() => {
     </div>
   </div>
   <map-side-panel />
-  <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
-    <map-score-popup />
-  </div>
 </template>
 
 <style>
