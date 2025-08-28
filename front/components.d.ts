@@ -19,7 +19,7 @@ declare module 'vue' {
     ClimateContextDataScore: typeof import('./src/components/contextData/climate/ClimateContextDataScore.vue')['default']
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
-    ClimateZoneScorePopupContent: typeof import('./src/components/map/popup/ClimateZoneScorePopupContent.vue')['default']
+    ClimateZoneScorePopupContent: typeof import('./src/components/map/panels/sidepanel/score/ClimateZoneScorePopupContent.vue')['default']
     Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
@@ -57,7 +57,7 @@ declare module 'vue' {
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']
     PlantabilityContextDataScore: typeof import('./src/components/contextData/plantability/PlantabilityContextDataScore.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
-    PlantabilityScorePopupContent: typeof import('./src/components/map/popup/PlantabilityScorePopupContent.vue')['default']
+    PlantabilityScorePopupContent: typeof import('./src/components/map/panels/sidepanel/score/PlantabilityScorePopupContent.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
@@ -78,8 +78,8 @@ declare module 'vue' {
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
     VulnerabilityScoreContent: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScoreContent.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
-    VulnerabilityScorePopupContent: typeof import('./src/components/map/popup/VulnerabilityScorePopupContent.vue')['default']
-    VulnerabilityScorePopupItem: typeof import('./src/components/map/popup/VulnerabilityScorePopupItem.vue')['default']
+    VulnerabilityScorePopupContent: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScorePopupContent.vue')['default']
+    VulnerabilityScorePopupItem: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScorePopupItem.vue')['default']
   }
   export interface ComponentCustomProperties {
     Tooltip: typeof import('primevue/tooltip')['default']

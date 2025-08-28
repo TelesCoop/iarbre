@@ -44,7 +44,7 @@ const scorePercentage = computed(() =>
         :percentage="scorePercentage"
         :score="props.data.plantabilityNormalizedIndice"
       />
-      <empty-message v-else data-cy="empty-message" message="Cliquez sur un carreau" />
+      <empty-message v-else data-cy="empty-message" message="Zommez et cliquez sur un carreau" />
       <plantability-context-data-list v-if="props.data" :data="props.data" />
     </div>
   </div>

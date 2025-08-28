@@ -216,9 +216,8 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       highlightFeature(map, layerId, featureId)
       createPopup(e, map, datatype, geolevel, layerId)
-      if (contextData.data.value) {
-        contextData.setData(featureId)
-      }
+      // Always load context data for the selected data type
+      contextData.setData(featureId)
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
