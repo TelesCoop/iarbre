@@ -23,4 +23,6 @@
     - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
     - import_tasks: telescoop-deploy/tasks/install-python-venv.yml
     - import_tasks: telescoop-deploy/tasks/build-mkdocs.yml
-    - import_tasks: telescoop-deploy/tasks/setup-nginx-for-static.yml
+    - import_tasks: telescoop-deploy/tasks/setup-nginx.yml
+      vars:
+        nginx_conf_filename: "{{ project_slug }}-docs"

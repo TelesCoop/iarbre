@@ -18,7 +18,10 @@
     - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
     - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
     - import_tasks: telescoop-deploy/tasks/install-hugo.yml
-    - import_tasks: telescoop-deploy/tasks/setup-nginx-for-static.yml
+    - import_tasks: telescoop-deploy/tasks/setup-nginx.yml
+      vars:
+        nginx_conf_filename: "{{ project_slug }}-showcase"
+
     - name: Build showcase code for static rendering
       # yamllint disable-line rule:line-length
       shell: "hugo build {{ hugo_build_flags }}"

@@ -1,0 +1,13 @@
+---
+- name: Clean everything
+  hosts: all
+  vars:
+    dedicated_database: true
+    database_name: "{{ project_slug }}"
+    database_user: "{{ project_slug }}"
+  handlers:
+    - import_tasks: telescoop-deploy/handlers/nginx.yml
+  tasks:
+    - import_tasks: telescoop-deploy/tasks/clean-django.yml
+    - import_tasks: telescoop-deploy/tasks/clean-nginx.yml
+    - import_tasks: telescoop-deploy/tasks/clean-user-and-directories.yml

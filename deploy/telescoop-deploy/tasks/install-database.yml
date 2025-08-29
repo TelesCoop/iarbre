@@ -34,10 +34,19 @@
       pip:
         name: psycopg2
 
-    - name: Create database user {{ project_slug }}
+    - name: Create database user {{ database_user }}
       community.postgresql.postgresql_user:
-        name: "{{ project_slug }}"
+        name: "{{ database_user }}"
         password: "{{ database_password }}"
       become: true
       become_user: postgres
+
+    - name: Create database {{ database_name }}
+      community.postgresql.postgresql_db:
+        name: "{{ database_name }}"
+        owner: "{{ database_user }}"
+      become: true
+      become_user: postgres
+      when: database_provider == "postgresql"
+
   when: database_provider == "postgresql"

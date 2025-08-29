@@ -1,4 +1,4 @@
-- name: Install misc packages
+- name: Install supervisor package
   apt:
     name:
       - supervisor

@@ -6,7 +6,7 @@
 #  - project_slug
 ---
 - name: Create main user {{ main_user }}
-  user:
+  ansible.builtin.user:
     name: "{{ main_user }}"
     uid: "{{ main_user_uid }}"
     shell: /bin/bash

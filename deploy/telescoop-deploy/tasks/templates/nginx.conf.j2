@@ -1,6 +1,6 @@
 {{ ansible_managed | comment }}
 
-{% if has_backend %}
+{% if has_backend is defined and has_backend %}
 upstream app_servers_{{ project_slug }} {
   server 127.0.0.1:{{ backend_application_port }};
 }
@@ -48,7 +48,7 @@ server {
     gzip_vary on;
     gzip_types application/json application/javascript application/xml text/css text/javascript text/plain text/xml image/svg+xml;
 
-    {% if has_backend %}
+    {% if has_backend is defined and has_backend %}
     # backend static stuff
     location /static  {
         autoindex off;
