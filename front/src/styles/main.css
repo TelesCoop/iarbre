@@ -111,7 +111,7 @@
   @apply bg-white w-full max-w-full;
   @apply transition-all duration-200;
   @apply items-center;
-  @apply p-1 sm:p-2 md:p-4;
+  @apply px-4;
 }
 
 .map-context-panel-content {
