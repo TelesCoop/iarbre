@@ -28,14 +28,14 @@ defineProps({
       @close="() => mapStore.contextData.removeData()"
     />
     <map-context-data-vulnerability
-      v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+      v-if="mapStore.selectedDataType === DataType.VULNERABILITY && mapStore.contextData.data"
       :data="mapStore.contextData.data as VulnerabilityData"
       :full-height="fullHeight"
       :hide-close-button="hideCloseButton"
       @close="() => mapStore.contextData.removeData()"
     />
     <map-context-data-climate-zone
-      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE && mapStore.contextData.data"
       :data="mapStore.contextData.data as ClimateData"
       :full-height="fullHeight"
       :hide-close-button="hideCloseButton"
