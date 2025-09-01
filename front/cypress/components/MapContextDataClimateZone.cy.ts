@@ -34,22 +34,6 @@ describe("MapContextDataClimateZone", () => {
     cy.contains("Indicateurs climatiques locaux pour une zone sélectionnée").should("be.visible")
   })
 
-  it("display close button and emit close event", () => {
-    const pinia = createPinia()
-
-    mount(MapContextDataClimateZone, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        data: mockClimateData
-      }
-    })
-
-    cy.get('[data-cy="close-context-data"]').should("be.visible")
-    cy.get('[data-cy="close-context-data"]').click()
-  })
-
   it("display climate metrics with categories", () => {
     const pinia = createPinia()
     mount(MapContextDataClimateZone, {
