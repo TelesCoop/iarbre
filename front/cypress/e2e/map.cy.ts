@@ -59,9 +59,8 @@ describe("Map", () => {
   it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Zommez et cliquez sur un carreau")
-    cy.mapZoomTo(4)
+    cy.mapZoomTo(3)
     cy.getBySel("map-component").click("center")
-    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("map-context-data").should("contain", "Paramètres principaux")
   })
 
