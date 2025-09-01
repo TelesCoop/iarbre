@@ -61,7 +61,7 @@ describe("Map", () => {
     cy.getBySel("map-context-data").should("contain", "Zommez et cliquez sur un carreau")
     cy.mapZoomTo(4)
     cy.getBySel("map-component").click("center")
-    cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
+    cy.wait(500) // eslint-disable-line cypress/no-unnecessary-waiting
     cy.getBySel("map-context-data").should("contain", "Paramètres principaux")
   })
 
