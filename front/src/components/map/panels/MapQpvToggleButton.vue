@@ -4,7 +4,7 @@ import { useMapStore } from "@/stores/map"
 const mapStore = useMapStore()
 </script>
 <template>
-  <div class="flex items-center gap-3 p-3">
+  <div class="hidden md:flex items-center gap-3 p-3">
     <i class="pi pi-building text-primary-500" />
     <span class="text-sm">QPV</span>
     <ToggleSwitch
