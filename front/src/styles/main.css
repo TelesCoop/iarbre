@@ -101,7 +101,6 @@
 .map-context-data-container {
   @apply flex flex-col;
   @apply bg-white z-10;
-  @apply p-0;
   @apply max-w-full;
   @apply overflow-hidden;
   @apply transition-all duration-200;
