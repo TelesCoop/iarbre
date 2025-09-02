@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-primary-500 shadow-md font-sans flex h-28 px-5 pt-4 pb-9 flex-col items-start gap-2.5 flex-shrink-0 self-stretch"
+    class="bg-primary-500 shadow-md font-sans flex h-28 px-4 pt-4 pb-9 flex-col items-start gap-2.5 flex-shrink-0 self-stretch"
   >
     <h2 class="text-lg text-white font-semibold">🏙️ Agglomération de Lyon</h2>
     <div class="flex gap-2 flex-row items-start self-stretch text-center text-white text-sm">
