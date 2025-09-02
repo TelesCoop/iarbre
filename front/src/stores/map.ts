@@ -368,8 +368,6 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
-
-    // Initialize clickCoordinates with the actual map center after the map is ready
     mapInstance.on("load", () => {
       const center = mapInstance.getCenter()
       clickCoordinates.value = {

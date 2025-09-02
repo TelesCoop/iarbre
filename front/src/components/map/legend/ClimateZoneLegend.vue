@@ -22,7 +22,7 @@
         class="flex items-center gap-2"
       >
         <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
-        <span class="text-[0.9rem] text-primary-900">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+        <span class="text-sm text-primary-900">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
       </div>
     </div>
   </div>

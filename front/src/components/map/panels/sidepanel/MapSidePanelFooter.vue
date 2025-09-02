@@ -24,7 +24,9 @@ const copy = (text: string) => {
 </script>
 
 <template>
-  <div class="flex bg-gray-100 w-full font-sans text-xs py-2 rounded-md border border-gray-200">
+  <div
+    class="flex bg-gray-100 w-full font-sans text-xs px-4 py-2 rounded-md border border-gray-200"
+  >
     <div class="w-full flex flex-col items-center">
       <span>Coordonnées géographiques</span>
       <button

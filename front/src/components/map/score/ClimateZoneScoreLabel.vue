@@ -23,8 +23,8 @@ const isFiltered = computed(() => mapStore.isFiltered(props.zone))
 const zoneClasses = computed(() => [
   props.size === "compact" ? "h-7" : "h-4",
   isFiltered.value ? "ring-2 ring-primary-900 scale-105 shadow-md" : "",
-  props.isFirst ? "rounded-l-[3px]" : "",
-  props.isLast ? "rounded-r-[3px]" : ""
+  props.isFirst ? "rounded-l-sm" : "",
+  props.isLast ? "rounded-r-sm" : ""
 ])
 
 const zoneTitle = computed(

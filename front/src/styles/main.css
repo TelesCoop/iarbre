@@ -80,7 +80,7 @@
 }
 
 .card {
-  @apply bg-white rounded-[0.75rem] p-5;
+  @apply bg-white rounded-xl p-5;
 }
 
 .map-tool-container {
@@ -93,7 +93,7 @@
 .map-bg-tool-container {
   @apply flex flex-col items-start gap-2 sm:gap-4;
   @apply bg-gray-100 z-10;
-  @apply px-6 py-2;
+  @apply px-4 py-2;
   @apply max-w-full;
   @apply rounded-md border border-gray-200;
 }

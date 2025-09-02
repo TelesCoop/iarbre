@@ -12,7 +12,7 @@ defineProps<{
 <template>
   <span
     :style="{ backgroundColor: backgroundColor }"
-    class="flex justify-center items-center gap-1 rounded-[30px]"
+    class="flex justify-center items-center gap-1 rounded-4xl"
     :class="[
       getAdaptativeColorClass(backgroundColor),
       customSizeClass ?? 'w-14 h-8 p-2',

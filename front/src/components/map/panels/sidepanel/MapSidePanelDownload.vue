@@ -14,13 +14,13 @@ const handleDownload = () => {
 
 <template>
   <div
-    class="flex bg-primary-500 w-full font-sans text-white text-base text-center py-4 rounded-md border border-primary-900"
+    class="flex bg-primary-500 w-full font-sans text-white text-base text-center px-4 py-2 rounded-md border border-primary-900"
   >
     <div class="w-full flex flex-col items-center gap-4">
       <span>🌱 Collectivités, aménageurs, urbanistes</span>
       <span class="text-xs">Demandez les données pour ce calque</span>
       <button
-        class="cursor-pointer bg-white font-sans flex items-center px-[1.44rem] py-[0.62rem] rounded-3xl text-sm text-primary-500"
+        class="cursor-pointer bg-white font-sans flex items-center px-4 py-2 rounded-3xl text-sm text-primary-500"
         data-cy="download-data"
         @click="handleDownload"
       >

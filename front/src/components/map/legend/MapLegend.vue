@@ -6,7 +6,10 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div v-if="mapStore.selectedDataType" class="map-legend">
+  <div
+    v-if="mapStore.selectedDataType"
+    class="bg-white flex p-3 flex-col justify-center items-center gap-2 rounded-lg"
+  >
     <div
       class="text-sm font-semibold font-accent text-primary-900 text-center"
       data-cy="map-legend-title"
@@ -27,18 +30,3 @@ const mapStore = useMapStore()
     />
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-.map-legend {
-  @apply bg-white;
-  display: flex;
-  width: 244px;
-  padding: 12px 10px 10px 10px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  border-radius: 10px;
-}
-</style>
