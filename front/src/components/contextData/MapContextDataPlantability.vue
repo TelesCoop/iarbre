@@ -21,7 +21,9 @@ const emit = defineEmits<{
 }>()
 
 const scorePercentage = computed(() =>
-  props.data?.plantabilityNormalizedIndice ? props.data.plantabilityNormalizedIndice * 10 : null
+  props.data?.plantabilityNormalizedIndice !== undefined
+    ? props.data.plantabilityNormalizedIndice * 10
+    : null
 )
 </script>
 
