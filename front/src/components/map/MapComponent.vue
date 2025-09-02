@@ -64,15 +64,7 @@ onMounted(() => {
 @reference "@/styles/main.css";
 
 .legend-container {
-  position: absolute;
-  margin-top: 1rem;
-  z-index: 30;
-  flex-direction: column;
-  align-items: flex-start;
-  pointer-events: none;
-  @apply gap-2 left-105;
-  @apply top-0;
-  @apply mx-1;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
 }
 
 .legend-container > * {

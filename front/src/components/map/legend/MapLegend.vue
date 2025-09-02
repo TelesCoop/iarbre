@@ -11,7 +11,7 @@ const mapStore = useMapStore()
     class="bg-white flex p-3 flex-col justify-center items-center gap-2 rounded-lg"
   >
     <div
-      class="text-sm font-semibold font-accent text-primary-900 text-center"
+      class="hidden lg:block text-sm font-semibold font-accent text-primary-900 text-center"
       data-cy="map-legend-title"
     >
       {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
