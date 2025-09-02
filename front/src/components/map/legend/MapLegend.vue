@@ -8,7 +8,7 @@ const mapStore = useMapStore()
 <template>
   <div
     v-if="mapStore.selectedDataType"
-    class="bg-white flex p-3 flex-col justify-center items-center gap-2 rounded-lg"
+    class="bg-white flex px-4 py-2 flex-col justify-center items-center gap-2 rounded-lg"
   >
     <div
       class="hidden lg:block text-sm font-semibold font-accent text-primary-900 text-center"
