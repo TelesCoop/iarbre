@@ -56,6 +56,39 @@ class Iris(TileAggregateBase):
         return f"IRIS code: {self.code}"
 
 
+class Vulnerability(models.Model):
+    """Elementary element on the map with the value of the vulnerability description."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    vulnerability_index_day = models.FloatField(null=True)
+    vulnerability_index_night = models.FloatField(null=True)
+    expo_index_day = models.FloatField(null=True)
+    expo_index_night = models.FloatField(null=True)
+    capaf_index_day = models.FloatField(null=True)
+    capaf_index_night = models.FloatField(null=True)
+    sensibilty_index_day = models.FloatField(null=True)
+    sensibilty_index_night = models.FloatField(null=True)
+    details = models.JSONField(null=True, blank=True)
+
+    geolevel = GeoLevel.LCZ.value
+    datatype = DataType.VULNERABILITY.value
+
+    def get_layer_properties(self):
+        """Return the properties of the tile for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice_day": self.vulnerability_index_day,
+            "indice_night": self.vulnerability_index_night,
+            "expo_index_day": self.expo_index_day,
+            "expo_index_night": self.expo_index_night,
+            "capaf_index_day": self.capaf_index_day,
+            "capaf_index_night": self.capaf_index_night,
+            "sensibilty_index_day": self.sensibilty_index_day,
+            "sensibilty_index_night": self.sensibilty_index_night,
+        }
+
+
 class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
@@ -68,6 +101,13 @@ class Tile(models.Model):
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.TILE.value
+
+    vulnerability_idx = models.ForeignKey(
+        Vulnerability,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
 
     iris = models.ForeignKey(
         Iris, on_delete=models.CASCADE, related_name="tiles", null=True, blank=True
@@ -147,39 +187,6 @@ class Lcz(models.Model):
             "id": self.id,
             "indice": self.lcz_index,
             "description": self.lcz_description,
-        }
-
-
-class Vulnerability(models.Model):
-    """Elementary element on the map with the value of the vulnerability description."""
-
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    vulnerability_index_day = models.FloatField(null=True)
-    vulnerability_index_night = models.FloatField(null=True)
-    expo_index_day = models.FloatField(null=True)
-    expo_index_night = models.FloatField(null=True)
-    capaf_index_day = models.FloatField(null=True)
-    capaf_index_night = models.FloatField(null=True)
-    sensibilty_index_day = models.FloatField(null=True)
-    sensibilty_index_night = models.FloatField(null=True)
-    details = models.JSONField(null=True, blank=True)
-
-    geolevel = GeoLevel.LCZ.value
-    datatype = DataType.VULNERABILITY.value
-
-    def get_layer_properties(self):
-        """Return the properties of the tile for the MVT datatype."""
-        return {
-            "id": self.id,
-            "indice_day": self.vulnerability_index_day,
-            "indice_night": self.vulnerability_index_night,
-            "expo_index_day": self.expo_index_day,
-            "expo_index_night": self.expo_index_night,
-            "capaf_index_day": self.capaf_index_day,
-            "capaf_index_night": self.capaf_index_night,
-            "sensibilty_index_day": self.sensibilty_index_day,
-            "sensibilty_index_night": self.sensibilty_index_night,
         }
 
 
