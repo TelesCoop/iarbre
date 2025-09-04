@@ -1,4 +1,4 @@
-name: Run basic checks
+name: CI tests
 
 on:
   push:
@@ -33,14 +33,23 @@ jobs:
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
 
-      - name: Install front js dependencies
-        run: npm install
-        working-directory: ./front
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
+
+      - name: Configure npm
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: |
+          npm config set fetch-retries 3
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+        working-directory: ./front
+
+      - name: Install front js dependencies
+        run: npm ci --prefer-offline --no-audit
+        working-directory: ./front
 
   pre-commit:
     runs-on: ubuntu-22.04
@@ -92,6 +101,33 @@ jobs:
           DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
           PGSERVICE: ${{ steps.postgres.outputs.service-name }}
         uses: pre-commit/action@v3.0.1
+
+      - name: Generate coverage report
+        run: |
+          cd back
+          coverage run manage.py test
+          coverage json --omit="*/migrations/*"
+          COVERAGE=$(python3 -c "import json; print(int(json.load(open('coverage.json'))['totals']['percent_covered']))")
+          echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+
+          # Choose badge color based on coverage percentage
+          if (( $(echo "$COVERAGE >= 85" | bc -l) )); then
+            echo "BADGE_COLOR=brightgreen" >> $GITHUB_ENV
+          elif (( $(echo "$COVERAGE >= 75" | bc -l) )); then
+            echo "BADGE_COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "BADGE_COLOR=red" >> $GITHUB_ENV
+          fi
+
+      - name: Create coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 86d9b33a236f4e03bca8799858fc7f6d
+          filename: coverage-badge.json
+          label: backend coverage
+          message: ${{ env.COVERAGE_PERCENT }}%
+          color: ${{ env.BADGE_COLOR }}
 
   node-setup:
     runs-on: ubuntu-22.04

@@ -1,4 +1,5 @@
 """Insert cities and IRIS from geojson file and BPCE API."""
+
 import logging
 
 from django.contrib.gis.utils import LayerMapping
@@ -7,6 +8,7 @@ import requests
 from django.db.models import QuerySet
 from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
+from unidecode import unidecode
 
 from iarbre_data.models import City, Iris
 from iarbre_data.utils.database import (
@@ -92,6 +94,9 @@ class Command(BaseCommand):
         for city in City.objects.all():
             city.tiles_generated = False
             city.tiles_computed = False
+            # Remove accents from city name and replace hyphens with spaces
+            if city.name:
+                city.name = unidecode(city.name).replace("-", " ").strip()
             city.save()
 
     def handle(self, *args, **options):

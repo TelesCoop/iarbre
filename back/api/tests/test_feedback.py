@@ -1,8 +1,9 @@
 import json
-from django.test import TestCase, Client
-from iarbre_data.models import Feedback
+from django.test import TestCase, Client, override_settings
+from api.models import Feedback
 
 
+@override_settings(RECIPIENT_EMAIL="test@example.com")
 class ReceiveFeedbackViewTest(TestCase):
     def setUp(self):
         self.client = Client()

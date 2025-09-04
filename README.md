@@ -82,3 +82,8 @@ Vous pouvez également contribuer directement en proposant de nouvelles fonction
 3. **Valider vos modifications** : `git commit -m "Ajouter une fonctionnalité géniale"`
 4. **Pousser votre branche** : `git push origin ma-fonctionnalite-geniale`
 5. **Ouvrir une Pull Request**
+
+<!-- badge links follow -->
+
+[ci-badge]: https://github.com/TelesCoop/iarbre/actions/workflows/checks.yml/badge.svg
+[ci-workflow]: https://github.com/TelesCoop/iarbre/actions/workflows/checks.yml

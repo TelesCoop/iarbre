@@ -13,7 +13,6 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
 import "./commands"
 
 // Import coverage support
@@ -47,7 +46,7 @@ beforeEach(() => {
     })
 })
 afterEach(() => {
-  cy.get("@onConsoleWarn").should("have.have.not.thrown", SyntaxError)
+  cy.get("@onConsoleWarn").should("have.not.thrown", SyntaxError)
 })
 
 // Augment the Cypress namespace to include type definitions for
