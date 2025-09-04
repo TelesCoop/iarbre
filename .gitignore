@@ -15,3 +15,5 @@ site/*
 .env
 .clinerules
 compress.dump.*
+
+front/.nyc_output/

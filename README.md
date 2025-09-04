@@ -1,4 +1,4 @@
-# 🌳 IA.rbre [![Action status][ci-badge]][ci-workflow] ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/86d9b33a236f4e03bca8799858fc7f6d/raw/coverage-badge.json)
+# 🌳 IA.rbre ![Frontend coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ludovicdmt/767df5613fc8e7b99ac2a773f5253463/raw/coverage-front-badge.json)
 
 Bienvenue sur la documentation de IA.rbre !
 

@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { createPinia } from "pinia"
 import { mount } from "cypress/vue"
 import MapContextData from "@/components/contextData/MapContextData.vue"

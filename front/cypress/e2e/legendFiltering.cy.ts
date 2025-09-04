@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 
 describe("Legend Filtering", () => {

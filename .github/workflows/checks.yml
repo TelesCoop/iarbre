@@ -170,11 +170,62 @@ jobs:
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: npm install
         working-directory: ./front
-      - name: Run Cypress component tests
-        uses: cypress-io/github-action@v6
+      - name: Install Cypress binary
+        run: npx cypress install
+        working-directory: ./front
+      - name: Run cypress component tests
+        run: CYPRESS_COVERAGE=true npx cypress run --component
+        working-directory: ./front
+
+      - name: Generate frontend coverage report
+        run: |
+          # Check if coverage files exist and create directory if needed
+          mkdir -p coverage
+
+          # List existing coverage files for debugging
+          echo "Checking for coverage files:"
+          find . -name "*.json" -path "*/coverage*" -o -name "coverage.json" -o -name ".nyc_output" -type d 2>/dev/null || true
+          find . -name "coverage-final.json" 2>/dev/null || true
+
+          # Try to merge coverage reports if they exist
+          if [ -d ".nyc_output" ] || [ -f "coverage/coverage-final.json" ]; then
+            npx nyc merge .nyc_output coverage/coverage.json 2>/dev/null || npx nyc report --reporter=json --report-dir=coverage 2>/dev/null || echo "No coverage files to merge"
+          fi
+
+          # Generate summary report
+          if [ -f "coverage/coverage.json" ]; then
+            npx nyc report --reporter=json-summary --report-dir=coverage
+            COVERAGE=$(node -p "
+              const data = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json', 'utf8'));
+              const pct = data.total.lines.pct;
+              Math.round(typeof pct === 'number' ? pct : 0);
+            ")
+          else
+            echo "No coverage data found, setting coverage to 0"
+            COVERAGE=0
+          fi
+
+          echo "FRONTEND_COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+
+          # Choose badge color based on coverage percentage
+          if [ "$COVERAGE" -ge 80 ]; then
+            echo "FRONTEND_BADGE_COLOR=brightgreen" >> $GITHUB_ENV
+          elif [ "$COVERAGE" -ge 70 ]; then
+            echo "FRONTEND_BADGE_COLOR=yellow" >> $GITHUB_ENV
+          else
+            echo "FRONTEND_BADGE_COLOR=red" >> $GITHUB_ENV
+          fi
+        working-directory: ./front
+
+      - name: Create frontend coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
-          component: true
-          working-directory: ./front
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 767df5613fc8e7b99ac2a773f5253463
+          filename: coverage-front-badge.json
+          label: Frontend coverage
+          message: ${{ env.FRONTEND_COVERAGE_PERCENT }}%
+          color: ${{ env.FRONTEND_BADGE_COLOR }}
 
   e2e-tests:
     runs-on: ubuntu-22.04
@@ -240,6 +291,8 @@ jobs:
           browser: chrome
           config-file: cypress.config.ts
           working-directory: ./front
+        env:
+          CYPRESS_COVERAGE: true
       - name: Upload cypress screenshots
         uses: actions/upload-artifact@v4
         if: failure()

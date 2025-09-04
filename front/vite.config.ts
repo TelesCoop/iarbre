@@ -5,6 +5,7 @@ import vue from "@vitejs/plugin-vue"
 import tailwindcss from "@tailwindcss/vite"
 import Components from "unplugin-vue-components/vite"
 import { PrimeVueResolver } from "@primevue/auto-import-resolver"
+import istanbul from "vite-plugin-istanbul"
 
 export default defineConfig({
   plugins: [
@@ -16,7 +17,17 @@ export default defineConfig({
     // vueDevTools(),
     Components({
       resolvers: [PrimeVueResolver()]
-    })
+    }),
+    ...(process.env.CYPRESS_COVERAGE
+      ? [
+          istanbul({
+            include: "src/**/*",
+            exclude: ["node_modules", "tests/**/*", "cypress/**/*"],
+            extension: [".ts", ".vue"],
+            requireEnv: false
+          })
+        ]
+      : [])
   ],
   server: {
     port: 3000,
