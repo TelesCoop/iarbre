@@ -2,26 +2,26 @@
 - name: Deploy showcase on all hosts
   hosts: all
   vars:
-    main_hostname: "{{ showcase_hostname }}"
-    redirect_hostnames: "{{showcase_redirect_hostnames}}"
-    clone_path: "{{ project_dir }}/showcase"
-    hugo_path: "{{ clone_path }}/static"
-    repo: "{{ backend_repo }}"
-    identity_file_path: "{{ backend_identity_file_path }}"
-    git_track_submodules: true
+    hugo_path: "{{ project_dir }}/showcase/static"
     static_path: "{{ project_dir }}/showcase_static"
-    branch: "{{ showcase_branch }}"
   handlers:
     - import_tasks: telescoop-deploy/handlers/nginx.yml
   tasks:
     - import_tasks: telescoop-deploy/tasks/create-https-certificate.yml
     - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
     - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
+      vars:
+        clone_path: "{{ hugo_path }}/.."
+        repo: "{{ backend_repo }}"
+        identity_file_path: "{{ backend_identity_file_path }}"
+        git_track_submodules: true
+        branch: "{{ showcase_branch }}"
     - import_tasks: telescoop-deploy/tasks/install-hugo.yml
     - import_tasks: telescoop-deploy/tasks/setup-nginx.yml
       vars:
         nginx_conf_filename: "{{ project_slug }}-showcase"
-
+        main_hostname: "{{ showcase_hostname }}"
+        redirect_hostnames: "{{showcase_redirect_hostnames}}"
     - name: Build showcase code for static rendering
       # yamllint disable-line rule:line-length
       shell: "hugo build {{ hugo_build_flags }}"

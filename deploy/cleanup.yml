@@ -22,13 +22,13 @@
     - import_tasks: telescoop-deploy/handlers/nginx.yml
   tasks:
     - import_tasks: telescoop-deploy/tasks/clean-django.yml
-- name: Remove directories for feature branch
-  file:
-    path: "{{ item }}"
-    state: absent
-  loop:
-    - "/{{ organization_slug }}/{{ project_slug }}"
-    - "/etc/{{ organization_slug }}/{{ project_slug }}"
-    - "{{ var_log_path }}"
-    - "{{ venv.path }}"
-    - "/etc/nginx/sites-enabled/{{ project_slug }}"
+    - name: Remove directories for feature branch
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/{{ organization_slug }}/{{ project_slug }}"
+        - "/etc/{{ organization_slug }}/{{ project_slug }}"
+        - "{{ var_log_path }}"
+        - "{{ venv.path }}"
+        - "/etc/nginx/sites-enabled/{{ project_slug }}"

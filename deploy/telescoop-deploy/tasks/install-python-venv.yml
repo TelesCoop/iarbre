@@ -19,6 +19,6 @@
 
 - name: Install python dependencies
   pip:
-    requirements: "{{ requirements if requirements is not none else 'requirements.txt' }}"
+    requirements: "{{ requirements }}"
     virtualenv: "{{ venv.path }}"
   when: clonecode.changed or force_update is defined

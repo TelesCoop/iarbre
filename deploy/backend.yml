@@ -2,28 +2,27 @@
 - name: Setup and launch django backend
   hosts: all
   vars:
-    identity_file_path: "{{ backend_identity_file_path }}"
-    repo: "{{ backend_repo }}"
-    clone_path: "{{ project_dir }}/backend/"
-    database_password: "{{ vault_database_password }}"
-    django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
-    django_path: "{{ clone_path }}/back"
-    working_dir: "{{ django_path }}"
-    django_workers: 1
-    database_backup:
-      hour: 2
-      minute: 0
-    git_track_submodules: false
+    django_path: "{{ project_dir }}/backend/back"
   handlers:
     - import_tasks: telescoop-deploy/handlers/nginx.yml
   tasks:
     - import_tasks: telescoop-deploy/tasks/create-https-certificate.yml
     - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
     - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
+      vars:
+        identity_file_path: "{{ backend_identity_file_path }}"
+        repo: "{{ backend_repo }}"
+        git_track_submodules: false
+        clone_path: "{{ django_path }}/../"
     - import_tasks: telescoop-deploy/tasks/install-python-venv.yml
+      vars:
+        requirements: "{{ django_path }}/requirements.txt"
     - name: Install and setup database for prod and preprod only
       block:
         - import_tasks: telescoop-deploy/tasks/install-database.yml
+          vars:
+            database_password: "{{ vault_database_password }}"
+
         - name: Install and setup postgis to postgresql
           block:
             - name: Install postgis
@@ -33,11 +32,11 @@
             - name: Adds postgis extension to the database {{ project_slug }}
               community.postgresql.postgresql_ext:
                 name: postgis
-                login_db: "{{ project_slug }}"
+                login_db: "{{ database_user }}"
               become: true
               become_user: postgres
           when: database_provider == "postgresql"
-      when: dedicated_database == true
+      when: branch is not defined
     - name: Create symbolic link from feature mvt_files to preprod mvt_files
       file:
         src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
@@ -57,3 +56,9 @@
           when: clonecode.changed or force_update is defined
       when: branch is not defined
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
+      vars:
+        django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
+        django_workers: 1
+        dedicated_database: "{{ branch is not defined }}"
+        allow_backup: false
+        database_password: "{{ vault_database_password }}"

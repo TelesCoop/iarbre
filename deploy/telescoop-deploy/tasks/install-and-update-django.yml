@@ -3,12 +3,6 @@
     name:
       - supervisor
 
-- name: Install python dependencies
-  command:
-    cmd: "{{ venv.path }}/bin/pip install -r requirements.txt"
-    chdir: "{{ django_path }}"
-  when: clonecode.changed or force_update is defined
-
 - name: Install {{ project_slug }}-ctl
   template:
     src: django-ctl.j2
@@ -44,7 +38,7 @@
       {{ project_slug }}-ctl migrate
     }
   become: true
-  when: clonecode.changed or force_update is defined
+  when: dedicated_database == true and (clonecode.changed or force_update is defined)
 
 - name: Collect backend static files
   ansible.builtin.command:
@@ -64,4 +58,4 @@
     hour: "{{ database_backup.hour }}"
     minute: "{{ database_backup.minute }}"
     job: "{{ project_slug }}-ctl backup_db backup"
-  when: group_names[0] == 'prod'
+  when: (allow_backup is defined and allow_backup == true) or group_names[0] == 'prod'
