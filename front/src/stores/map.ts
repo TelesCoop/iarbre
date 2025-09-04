@@ -145,13 +145,14 @@ export const useMapStore = defineStore("map", () => {
     return mapInstancesByIds.value[mapId]
   }
 
-  const createMapLayer = (
+  const createMapLayers = (
     datatype: DataType,
     geolevel: GeoLevel,
     sourceId: string
-  ): AddLayerObject => {
+  ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
-    return {
+
+    const fillLayer: AddLayerObject = {
       id: layerId,
       type: "fill",
       source: sourceId,
@@ -161,16 +162,33 @@ export const useMapStore = defineStore("map", () => {
         "fill-color": FILL_COLOR_MAP.value[
           datatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-        "fill-outline-color": "#00000000",
-        "fill-opacity": 0.5
+        "fill-opacity": 0.5,
+        "fill-outline-color": "#00000000"
       }
     }
+
+    const lineLayer: AddLayerObject = {
+      id: `${layerId}-border`,
+      type: "line",
+      source: sourceId,
+      "source-layer": `${geolevel}--${datatype}`,
+      layout: {},
+      paint: {
+        "line-color": "#00000000",
+        "line-width": 0
+      }
+    }
+
+    return [fillLayer, lineLayer]
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
+    }
+    if (mapEventsListener.value[`${layerId}-border`]) {
+      map.off("click", `${layerId}-border`, mapEventsListener.value[`${layerId}-border`])
     }
     const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
@@ -185,11 +203,14 @@ export const useMapStore = defineStore("map", () => {
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
+    map.on("click", `${layerId}-border`, clickHandler)
+    mapEventsListener.value[`${layerId}-border`] = clickHandler
   }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
-    const layer = createMapLayer(datatype, geolevel, sourceId)
-    map.addLayer(layer)
+    const layers = createMapLayers(datatype, geolevel, sourceId)
+    layers.forEach((layer) => map.addLayer(layer))
+
     setupClickEventOnTile(map, datatype, geolevel)
   }
 
@@ -238,7 +259,9 @@ export const useMapStore = defineStore("map", () => {
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
-        mapInstance.removeLayer(getLayerId(previousDataType, previousGeoLevel))
+        const layerId = getLayerId(previousDataType, previousGeoLevel)
+        mapInstance.removeLayer(layerId)
+        mapInstance.removeLayer(`${layerId}-border`)
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
       }
       removeControls(mapInstance)

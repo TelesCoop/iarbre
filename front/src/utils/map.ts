@@ -2,17 +2,19 @@ import { DataType, GeoLevel } from "@/utils/enum"
 import { Map } from "maplibre-gl"
 
 export const highlightFeature = (map: Map, layerId: string, featureId: string) => {
-  map.setPaintProperty(layerId, "fill-outline-color", [
+  map.setPaintProperty(`${layerId}-border`, "line-width", ["match", ["get", "id"], featureId, 3, 0])
+  map.setPaintProperty(`${layerId}-border`, "line-color", [
     "match",
     ["get", "id"],
     featureId,
-    "#000000",
+    "#FFFFFF",
     "#00000000"
   ])
 }
 
 export const clearHighlight = (map: Map, layerId: string) => {
-  map.setPaintProperty(layerId, "fill-outline-color", "#00000000")
+  map.setPaintProperty(`${layerId}-border`, "line-width", 0)
+  map.setPaintProperty(`${layerId}-border`, "line-color", "#00000000")
 }
 
 export const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {
