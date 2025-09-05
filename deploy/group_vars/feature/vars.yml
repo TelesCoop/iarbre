@@ -18,16 +18,9 @@ redirect_hostnames: []
 
 showcase_hostname: "feature-{{ branch_slug[:20] }}-showcase.iarbre.fr"
 showcase_redirect_hostnames: []
-showcase_certificate_hostname: iarbre.fr
 
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
-# the certificate that you see in /etc/nginx/sites-enabled/{{ project_slug }},
-# in the line like /etc/letsencrypt/live/[certificate_hostname]/fullchain.pem
-certificate_hostname: iarbre.fr
-# only change this variable after having:
-# - run the playbook at least once with the value `false`
-# - run `certbot --nginx` manually on the server
-https_enabled: true
+
 project_dir: "{{ project_base_dir }}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 
@@ -40,3 +33,4 @@ environment_name: "feature-{{ branch_slug }}"
 
 database_user: "{{ base_project_slug }}_preprod"
 database_name: "{{ base_project_slug }}_preprod"
+dedicated_database: false

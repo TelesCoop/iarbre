@@ -1,5 +1,34 @@
 ---
-- hosts:
-    - feature
-  roles:
-    - cleanup
+- name: Cleanup feature branch
+  hosts: feature
+  vars:
+    clone_path: "{{ project_dir }}/front"
+    vue_path: "{{ project_dir }}/front/front"
+    current_path: "{{ vue_path }}"
+    repo: "{{ backend_repo }}"
+    identity_file_path: "{{ backend_identity_file_path }}"
+    git_track_submodules: false
+    static_path: "{{ project_dir }}/frontend_static"
+    branch: "{{ frontend_branch }}"
+    has_backend: true
+    use_password: false
+    server_uris_passed_to_backend:
+      - admin
+      - api
+      - backup
+      - hijack
+      - cms
+  handlers:
+    - import_tasks: telescoop-deploy/handlers/nginx.yml
+  tasks:
+    - import_tasks: telescoop-deploy/tasks/clean-django.yml
+    - name: Remove directories for feature branch
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/{{ organization_slug }}/{{ project_slug }}"
+        - "/etc/{{ organization_slug }}/{{ project_slug }}"
+        - "{{ var_log_path }}"
+        - "{{ venv.path }}"
+        - "/etc/nginx/sites-enabled/{{ project_slug }}"

@@ -1,7 +1,53 @@
 ---
-- hosts:
-    - prod
-    - preprod
-    - feature
-  roles:
-    - showcase
+- name: Deploy showcase on all hosts
+  hosts: all
+  vars:
+    hugo_path: "{{ project_dir }}/showcase/static"
+    static_path: "{{ project_dir }}/showcase_static"
+    main_hostname: "{{ showcase_hostname }}"
+  handlers:
+    - import_tasks: telescoop-deploy/handlers/nginx.yml
+  tasks:
+    - import_tasks: telescoop-deploy/tasks/create-https-certificate.yml
+    - import_tasks: telescoop-deploy/tasks/setup-user-and-directories.yml
+    - import_tasks: telescoop-deploy/tasks/setup-and-clone-git.yml
+      vars:
+        clone_path: "{{ hugo_path }}/.."
+        repo: "{{ backend_repo }}"
+        identity_file_path: "{{ backend_identity_file_path }}"
+        git_track_submodules: true
+        branch: "{{ showcase_branch }}"
+    - import_tasks: telescoop-deploy/tasks/install-hugo.yml
+    - import_tasks: telescoop-deploy/tasks/setup-nginx.yml
+      vars:
+        nginx_conf_filename: "{{ project_slug }}-showcase"
+        redirect_hostnames: "{{showcase_redirect_hostnames}}"
+    - name: Build showcase code for static rendering
+      # yamllint disable-line rule:line-length
+      shell: "hugo build {{ hugo_build_flags }}"
+      args:
+        chdir: "{{ hugo_path }}"
+        executable: /bin/bash
+      when: clonecode.changed or force_update is defined
+      register: build_code
+
+    - name: Update showcase static folder
+      file:
+        path: "{{ static_path }}"
+        state: "{{ item }}"
+        owner: www-data
+        mode: "2755"
+      with_items:
+        - absent
+        - directory
+      when: clonecode.changed or force_update is defined
+
+    - name: update showcase static folder content
+      synchronize:
+        src: "{{ hugo_path }}/public/"
+        dest: "{{ static_path }}/"
+        rsync_opts:
+          - "-og"
+          - "--chown=www-data"
+      delegate_to: "{{ inventory_hostname }}"
+      when: clonecode.changed or force_update is defined

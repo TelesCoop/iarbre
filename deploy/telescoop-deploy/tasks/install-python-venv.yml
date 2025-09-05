@@ -1,0 +1,24 @@
+- name: Install venv package
+  apt:
+    name:
+      - python3-venv
+
+- name: Create venv directory and set permission
+  file:
+    path: "{{ venv.path }}"
+    mode: "0755"
+    owner: "{{ main_user }}"
+    state: directory
+
+- name: Create venv {{ venv.path }}
+  command:
+    cmd: python3 -m venv --system-site-packages {{ venv.path }}
+    creates: "{{ venv.path }}/bin/python"
+  become: true
+  become_user: "{{ main_user }}"
+
+- name: Install python dependencies
+  pip:
+    requirements: "{{ requirements }}"
+    virtualenv: "{{ venv.path }}"
+  when: clonecode.changed or force_update is defined
