@@ -1,0 +1,29 @@
+# Setup node and install npm dependencies
+#
+#
+# Required vars:
+#  - current_path: where we want to execute npm install
+---
+- name: Get node_version
+  shell: "cat {{ current_path }}/.nvmrc"
+  register: node_version
+
+- name: Install nvm
+  ansible.builtin.shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+- name: Install node version {{ node_version.stdout }}
+  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm install {{ node_version.stdout }}"
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.nvm/{{ node_version.stdout }}_installed"
+
+- name: Install project node dependencies with npm
+  # yamllint disable-line rule:line-length
+  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm ci"
+  args:
+    chdir: "{{ current_path }}"
+    executable: /bin/bash
+  when: clonecode.changed or force_update is defined

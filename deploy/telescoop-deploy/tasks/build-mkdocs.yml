@@ -1,0 +1,26 @@
+- name: Init documentation
+  shell:
+    cmd: "{{ venv.path }}/bin/mkdocs new . && touch doc_initialized"
+    creates: "{{ mkdocs_path }}/doc_initialized"
+  args:
+    chdir: "{{ mkdocs_path }}"
+  become_user: "{{ main_user }}"
+  when: clonecode.changed or force_update is defined
+
+- name: Build documentation
+  command: "{{ venv.path }}/bin/mkdocs build --clean"
+  args:
+    chdir: "{{ mkdocs_path }}"
+  become_user: "{{ main_user }}"
+  when: clonecode.changed or force_update is defined
+
+- name: update docs static folder content
+  synchronize:
+    src: "{{ mkdocs_path }}/site/"
+    dest: "{{ mkdocs_static_path }}/"
+    rsync_opts:
+      - "-a"
+      - "--delete"
+      - "--chown=www-data:www-data"
+  delegate_to: "{{ inventory_hostname }}"
+  when: clonecode.changed or force_update is defined

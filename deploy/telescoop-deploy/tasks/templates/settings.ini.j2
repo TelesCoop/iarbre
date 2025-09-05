@@ -1,0 +1,27 @@
+[security]
+secret_key={{ vault_django_secret_key }}
+allowed_hosts={{ ", ".join(public_hostnames) }}
+
+[mail]
+api_key={{ vault_mailgun_api_key }}
+
+[backup]
+backup_access={{ vault_backup_access }}
+backup_secret={{ vault_backup_secret }}
+backup_bucket={{ organization_slug }}{{ project_slug }}
+backup_host=s3.fr-par.scw.cloud
+
+[bugs]
+rollbar_access_token={{ vault_rollbar_access_token }}
+
+[staticfiles]
+static_root={{ backend_static_path }}
+
+[database]
+engine=postgresql
+user={{ database_user }}
+name={{ database_name }}
+password = {{ database_password|default('') }}
+
+[environment]
+environment = {{ environment_name }}

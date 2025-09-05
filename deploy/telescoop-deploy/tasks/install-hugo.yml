@@ -1,0 +1,28 @@
+# Install Hugo
+# Required vars:
+#  - organization_slug
+---
+- name: Install Hugo if required
+  block:
+    - name: check if hugo is installed
+      stat:
+        path: /etc/{{ organization_slug }}/hugo_installed
+      register: hugo_installed
+
+    - name: install hugo from URL
+      get_url:
+        url: "https://github.com/gohugoio/hugo/releases/download/v0.145.0/hugo_extended_0.145.0_linux-amd64.deb"
+        dest: "/tmp/hugo.deb"
+        mode: 0644
+      when: not hugo_installed.stat.exists
+
+    - name: install hugo
+      apt:
+        deb: "/tmp/hugo.deb"
+      when: not hugo_installed.stat.exists
+
+    - name: create hugo installed file
+      file:
+        path: /etc/{{ organization_slug }}/hugo_installed
+        state: touch
+      when: not hugo_installed.stat.exists
