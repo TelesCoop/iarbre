@@ -1,0 +1,39 @@
+# Setup https certificate if it does not exist
+# Required vars:
+#  - main_hostname
+---
+- name: Check that the ssl exists.conf exists for {{ main_hostname }}
+  ansible.builtin.stat:
+    path: /etc/letsencrypt/live/{{ main_hostname }}/fullchain.pem
+  become: true
+  register: ssl_exists
+
+- name: Copy http nginx config
+  ansible.builtin.template:
+    src: nginx.http.conf.j2
+    dest: /etc/nginx/sites-enabled/https-{{ main_hostname }}
+    owner: root
+    group: root
+    mode: 0644
+  become: true
+  notify:
+    - Reload nginx
+  when: not ssl_exists.stat.exists
+
+- name: Create certificate
+  ansible.builtin.command: "certbot -n --nginx certonly -d {{ main_hostname }}"
+  args:
+    creates: "/etc/letsencrypt/live/{{ main_hostname }}"
+  ignore_errors: false
+  become: true
+  tags:
+    - nginx
+    - certbot
+  when: not ssl_exists.stat.exists
+
+- name: Remove nginx config
+  ansible.builtin.command: rm /etc/nginx/sites-enabled/https-{{ main_hostname }}
+  become: true
+  notify:
+    - Reload nginx
+  when: not ssl_exists.stat.exists

@@ -1,0 +1,52 @@
+# Install db dependencies and setup db user
+# Required vars:
+#  - database_provider: "sqlite" | "postgresql"
+---
+- name: Install sqlite
+  apt:
+    name:
+      - sqlite3
+  when: database_provider == "sqlite"
+
+- name: "Setup postgresql"
+  block:
+    - name: Install postgresql
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+          - libpq-dev
+          - python3-pip # for psycopg2
+
+    - name: Find postgresql auth config file to configure authentication
+      find: paths="/etc/postgresql/" recurse=yes patterns="pg_hba.conf"
+      register: hba_files
+
+    - name: Configure postgres authentication for using passwords
+      ansible.builtin.lineinfile:
+        path: "{{ item.path }}"
+        regexp: '^(local\s+all\s+all\s+)peer$'
+        line: '\1md5'
+        backrefs: true
+      with_items: "{{ hba_files.files }}"
+
+    - name: Install psycopg2 on system
+      pip:
+        name: psycopg2
+
+    - name: Create database user {{ database_user }}
+      community.postgresql.postgresql_user:
+        name: "{{ database_user }}"
+        password: "{{ database_password }}"
+      become: true
+      become_user: postgres
+
+    - name: Create database {{ database_name }}
+      community.postgresql.postgresql_db:
+        name: "{{ database_name }}"
+        owner: "{{ database_user }}"
+      become: true
+      become_user: postgres
+      when: database_provider == "postgresql"
+
+  when: database_provider == "postgresql"

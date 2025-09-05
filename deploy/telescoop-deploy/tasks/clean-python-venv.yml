@@ -1,0 +1,6 @@
+# Clean python venv
+---
+- name: Remove venv directory
+  file:
+    path: "{{ venv.path }}"
+    state: absent

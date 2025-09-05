@@ -1,0 +1,75 @@
+###############################
+# STATIC CONFIG
+- name: Static config
+  block:
+    - name: Build frontend code for static rendering
+      # yamllint disable-line rule:line-length
+      shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm run build-only"
+      args:
+        chdir: "{{ vue_path }}"
+        executable: /bin/bash
+      when: clonecode.changed or force_update is defined
+      register: build_code
+
+    - debug: msg="{{ build_code.stdout }}"
+      when: clonecode.changed  or force_update is defined
+
+    - name: Update frontend static folder
+      file:
+        path: "{{ static_path }}"
+        state: "{{ item }}"
+        owner: www-data
+        mode: "2755"
+      with_items:
+        - absent
+        - directory
+      when: clonecode.changed or force_update is defined
+
+    - name: update frontend static folder content
+      synchronize:
+        src: "{{ vue_path }}/dist/"
+        dest: "{{ static_path }}/"
+        rsync_opts:
+          - "-og"
+          - "--chown=www-data"
+      delegate_to: "{{ inventory_hostname }}"
+      when: clonecode.changed or force_update is defined
+
+  when: frontend_mode == 'static'
+
+###############################
+# SSR CONFIG
+- name: SSR config
+  block:
+    - name: Build frontend code for SSR
+      # yamllint disable-line rule:line-length
+      shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm build"
+      args:
+        chdir: "{{ vue_path }}"
+        executable: /bin/bash
+      register: build_code
+      when: clonecode.changed or force_update is defined
+
+    - debug: msg="{{ build_code.stdout }}"
+      when: clonecode.changed or force_update is defined
+
+    - name: Copy supervisord config to {{ supervisor_conf }}/{{ project_slug }}_backend.conf
+      template:
+        src: frontend-supervisor.conf.j2
+        dest: "{{ supervisor_conf }}/{{ project_slug }}_frontend.conf"
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install {{ project_slug }}-frontend supervisor
+      supervisorctl:
+        name: "{{ project_slug }}-frontend"
+        state: present
+
+    - name: Restart {{ project_slug }}-frontend supervisor
+      supervisorctl:
+        name: "{{ project_slug }}-frontend"
+        state: restarted
+      when: clonecode.changed or force_update is defined
+
+  when: frontend_mode == 'SSR'

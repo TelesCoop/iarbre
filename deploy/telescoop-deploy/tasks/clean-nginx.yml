@@ -1,0 +1,9 @@
+- name: Remove user password file if unset
+  ansible.builtin.file:
+    path: "{{ project_dir }}/passwdfile"
+    state: absent
+
+- name: Remove nginx config
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/{{ main_hostname }}
+    state: absent

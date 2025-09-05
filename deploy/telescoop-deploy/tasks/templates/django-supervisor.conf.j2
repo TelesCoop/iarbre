@@ -1,0 +1,7 @@
+[program:{{ project_slug }}-backend]
+directory = {{ django_path }} ;
+command = {{ venv.path }}/bin/gunicorn {{ django_project_name }}.wsgi --name "{{ project_slug }}" --timeout {{ requests_timeout }} --workers={{ django_workers }} --bind=localhost:{{ backend_application_port }} --user="{{ main_user }}"
+user = {{ main_user }} ; User to run as
+stdout_logfile = {{ var_log_path }}/gunicorn_supervisor.log        ; Where to write log messages
+redirect_stderr = true                                                ; Save stderr in the same log
+environment=LANG="en_US.UTF-8",LC_ALL="en_US.UTF-8",PYTHONIOENCODING="utf8",CONFIG_PATH="{{ django_settings_path }}"

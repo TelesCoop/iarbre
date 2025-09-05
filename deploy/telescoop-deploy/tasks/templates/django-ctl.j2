@@ -1,0 +1,19 @@
+#!/bin/bash
+. "{{ venv.path }}/bin/activate"
+
+export DJANGO_SETTINGS_MODULE={{ django_project_name }}.settings
+export CONFIG_PATH="{{ django_settings_path }}"
+
+pushd {{ django_path }} > /dev/null
+if [ "$(id -u)" -eq 0 ]; then
+  # If run as root, execute command as main_user while preserving environment variables
+  exec su {{ main_user }} -c "DJANGO_SETTINGS_MODULE='$DJANGO_SETTINGS_MODULE' CONFIG_PATH='$CONFIG_PATH' {{ venv.path }}/bin/python manage.py $*"
+elif [ "$(whoami)" = "{{ main_user }}" ]; then
+  # If run as main_user, execute command normally
+  exec {{ venv.path }}/bin/python manage.py $*
+else
+  # If run as neither root nor main_user, display warning and exit
+  echo "Error: This script must be run as root or {{ main_user }}. You can use sudo."
+  exit 1
+fi
+popd > /dev/null

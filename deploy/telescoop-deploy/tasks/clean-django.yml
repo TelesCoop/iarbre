@@ -1,0 +1,37 @@
+- name: Remove supervisor configuration
+  file:
+    path: "{{ supervisor_conf }}/{{ project_slug }}_backend.conf"
+    state: absent
+
+- name: Stop supervisor process
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove supervisor process
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: absent
+
+- name: Remove control script
+  file:
+    path: "/usr/local/bin/{{ project_slug }}-ctl"
+    state: absent
+
+- name: Clean database
+  block:
+    - name: Clean database {{ database_name }}
+      community.postgresql.postgresql_db:
+        name: "{{ database_name }}"
+        state: absent
+      become: true
+      become_user: postgres
+
+    - name: Clean database user {{ database_user }}
+      community.postgresql.postgresql_user:
+        name: "{{ database_user }}"
+        state: absent
+      become: true
+      become_user: postgres
+  when: database_provider == "postgresql" and dedicated_database == true
