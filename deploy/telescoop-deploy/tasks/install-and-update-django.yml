@@ -11,7 +11,7 @@
 
 - name: Create django settings to {{ django_settings_path }}
   template:
-    src: settings.ini.j2
+    src: "{{ template_django_settings_name|default('settings.ini.j2')}}"
     dest: "{{ django_settings_path }}"
     owner: "{{ main_user }}"
     group: devops

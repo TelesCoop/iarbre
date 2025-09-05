@@ -55,6 +55,7 @@
             cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
           when: clonecode.changed or force_update is defined
       when: branch is not defined
+
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
@@ -62,3 +63,5 @@
         dedicated_database: "{{ branch is not defined }}"
         allow_backup: false
         database_password: "{{ vault_database_password }}"
+        # If you use custom template, do not name it settings.j2
+        template_django_settings_name: "settings-custom.ini.j2"
