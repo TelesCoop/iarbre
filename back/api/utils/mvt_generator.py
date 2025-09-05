@@ -410,6 +410,14 @@ class MVTGenerator:
                     obj.source_values if hasattr(obj, "source_values") else []
                 ),
             }
+
+            if hasattr(obj, "vulnerability_idx") and obj.vulnerability_idx:
+                vulnerability_properties = (
+                    obj.vulnerability_idx.get_layer_properties()
+                )  # Use ForeignKey
+                for key, value in vulnerability_properties.items():
+                    if key != "id":  # Skip id to avoid duplication
+                        properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
