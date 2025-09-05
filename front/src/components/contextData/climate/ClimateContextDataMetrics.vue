@@ -11,9 +11,7 @@ interface ClimateMetricsProps {
 const props = defineProps<ClimateMetricsProps>()
 
 const categoryWrapperClass = computed(() =>
-  props.fullHeight
-    ? ""
-    : "max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100 overflow-y-auto scrollbar"
+  props.fullHeight ? "" : "max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100"
 )
 const {
   climateCategoryToIcon,

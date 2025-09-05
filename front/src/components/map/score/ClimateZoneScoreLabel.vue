@@ -7,6 +7,8 @@ import FilterIndicator from "../legend/FilterIndicator.vue"
 interface Props {
   zone: string
   size: "compact" | "detailed"
+  isFirst?: boolean
+  isLast?: boolean
 }
 
 const props = defineProps<Props>()
@@ -19,8 +21,10 @@ const mapStore = useMapStore()
 const isFiltered = computed(() => mapStore.isFiltered(props.zone))
 
 const zoneClasses = computed(() => [
-  props.size === "compact" ? "w-4 h-7" : "w-4 h-4",
-  isFiltered.value ? "ring-2 ring-primary-900 scale-105 shadow-md" : ""
+  props.size === "compact" ? "h-7" : "h-4",
+  isFiltered.value ? "ring-2 ring-primary-900 scale-105 shadow-md" : "",
+  props.isFirst ? "rounded-l-sm" : "",
+  props.isLast ? "rounded-r-sm" : ""
 ])
 
 const zoneTitle = computed(
@@ -35,7 +39,8 @@ const zoneTitle = computed(
     :data-zone="zone"
     :style="{ backgroundColor: getZoneColor(zone) }"
     :title="zoneTitle"
-    class="rounded cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out transform relative"
+    class="cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out transform relative"
+    style="width: 11px"
     @click="$emit('click', zone)"
   >
     <FilterIndicator :is-visible="isFiltered" />

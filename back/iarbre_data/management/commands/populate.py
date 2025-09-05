@@ -98,7 +98,7 @@ class Command(BaseCommand):
     def _generate_mvt(self, queryset, datatype, geolevel, n_threads=4):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=(13, 13),
+            zoom_levels=(13, 17),
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=n_threads,

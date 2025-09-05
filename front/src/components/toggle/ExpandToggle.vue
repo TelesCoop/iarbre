@@ -1,9 +1,8 @@
 <template>
-  <button class="text-lg flex flex-col items-center" @click="$emit('toggle')">
-    <span class="text-sm">
+  <button class="flex flex-col items-center" @click="$emit('toggle')">
+    <span class="text-xs text-primary-500 font-bold underline">
       {{ isExpanded ? "Masquer les détails" : "Afficher les détails" }}
     </span>
-    <span class="text-lg"> {{ isExpanded ? "▲" : "▼" }} </span>
   </button>
 </template>
 

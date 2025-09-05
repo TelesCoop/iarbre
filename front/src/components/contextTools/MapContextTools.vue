@@ -11,7 +11,7 @@ const show = computed(() => {
 </script>
 
 <template>
-  <div v-if="show" class="map-tool-container" data-cy="map-context-tools">
+  <div v-if="show" data-cy="map-context-tools">
     <vulnerability-context-tool />
   </div>
 </template>

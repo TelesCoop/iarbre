@@ -39,6 +39,5 @@ const options = [
     option-label="label"
     option-value="value"
     placeholder="Sélection de calque"
-    show-clear
   />
 </template>

@@ -24,9 +24,9 @@ export const MapStyleToLabel: Record<MapStyle, string> = {
 }
 
 export const DataTypeToLabel: Record<DataType, string> = {
-  [DataType.PLANTABILITY]: "Score de plantabilité",
-  [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
-  [DataType.VULNERABILITY]: "Vulnérabilité chaleur"
+  [DataType.PLANTABILITY]: "🌳 Score de plantabilité",
+  [DataType.CLIMATE_ZONE]: "🌆 Zones climatiques locales",
+  [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -76,3 +76,12 @@ export const VulnerabilityCategoryOrder = [
   VulnerabilityCategory.CAPACITY_TO_FACE,
   VulnerabilityCategory.SENSIBILITY
 ]
+
+export const DataTypeToDownloadLink: Record<DataType, string> = {
+  [DataType.PLANTABILITY]:
+    "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info",
+  [DataType.CLIMATE_ZONE]:
+    "https://www.data.gouv.fr/datasets/cartographie-des-zones-climatiques-locales-lcz-des-88-aires-urbaines-de-plus-de-50-000-habitants-de-france-metropolitaine/#/resources/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
+  [DataType.VULNERABILITY]:
+    "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info"
+}

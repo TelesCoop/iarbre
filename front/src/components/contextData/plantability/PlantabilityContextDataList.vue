@@ -23,7 +23,7 @@ const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
 
     <div
       aria-label="Liste des paramètres de plantabilité par catégorie"
-      class="overflow-y-auto space-y-3 pr-2 scrollbar md:max-h-48 lg:max-60"
+      class="space-y-3 pr-2"
       role="list"
     >
       <template v-if="hasFactors">
@@ -35,7 +35,10 @@ const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
       </template>
 
       <template v-else>
-        <empty-message data-cy="empty-message" message="Aucune donnée connue" />
+        <empty-message
+          data-cy="empty-message"
+          message="Pas de données d'occupation des sols ici."
+        />
       </template>
     </div>
   </div>
