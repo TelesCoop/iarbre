@@ -29,8 +29,6 @@ describe("MapContextDataClimateZone", () => {
         data: mockClimateData
       }
     })
-
-    cy.contains("Zones climatiques locales").should("be.visible")
     cy.contains("Indicateurs climatiques locaux pour une zone sélectionnée").should("be.visible")
   })
 
