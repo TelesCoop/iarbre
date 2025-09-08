@@ -30,8 +30,6 @@ const handleClose = () => {
     <map-context-header
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
       :title="DataTypeToLabel[DataType.CLIMATE_ZONE]"
-      :hide-close-button="props.hideCloseButton"
-      @close="handleClose"
     />
     <div v-if="props.data" class="mb-4">
       <div class="text-lg font-accent">Zone climatique sélectionnée</div>

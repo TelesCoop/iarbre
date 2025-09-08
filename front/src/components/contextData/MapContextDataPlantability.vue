@@ -8,12 +8,10 @@ import { DataType, DataTypeToLabel } from "@/utils/enum"
 
 interface PlantabilityCardProps {
   data?: PlantabilityData | null
-  hideCloseButton?: boolean
 }
 
 const props = withDefaults(defineProps<PlantabilityCardProps>(), {
-  data: null,
-  hideCloseButton: false
+  data: null
 })
 
 const emit = defineEmits<{
@@ -37,8 +35,6 @@ const scorePercentage = computed(() =>
     <map-context-header
       description="Calcul basé sur la pondération de +37 paramètres"
       :title="DataTypeToLabel[DataType.PLANTABILITY]"
-      :hide-close-button="props.hideCloseButton"
-      @close="emit('close')"
     />
     <div class="map-context-panel-content">
       <plantability-context-data-score
