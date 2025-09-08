@@ -16,7 +16,7 @@
 
 - name: Add a user to a password file and ensure permissions are set
   community.general.htpasswd:
-    path: "{{ project_dir }}/passwdfile"
+    path: "{{ passwd_dir }}/passwdfile"
     name: "{{ username }}"
     password: "{{ password }}"
     group: www-data
@@ -25,7 +25,7 @@
 
 - name: Remove user password file if unset
   ansible.builtin.file:
-    path: "{{ project_dir }}/passwdfile"
+    path: "{{ passwd_dir }}/passwdfile"
     state: absent
   when: use_password == false
 

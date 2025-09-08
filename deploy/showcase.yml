@@ -22,6 +22,7 @@
       vars:
         nginx_conf_filename: "{{ project_slug }}-showcase"
         redirect_hostnames: "{{showcase_redirect_hostnames}}"
+        passwd_dir: "{{ hugo_path }}/.."
     - name: Build showcase code for static rendering
       # yamllint disable-line rule:line-length
       shell: "hugo build {{ hugo_build_flags }}"
