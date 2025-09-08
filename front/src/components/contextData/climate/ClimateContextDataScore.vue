@@ -24,8 +24,5 @@ defineProps({
       {{ popupData.score }}
       <span data-cy="lcz-score-popup-description">{{ getZoneDesc(popupData.score) }}</span>
     </div>
-    <div class="flex w-full items-center justify-center">
-      <show-hide-score-button :feature-id="popupData.id" data-cy="toggle-climate-zone-details" />
-    </div>
   </div>
 </template>

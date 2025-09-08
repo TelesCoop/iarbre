@@ -125,7 +125,7 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 86d9b33a236f4e03bca8799858fc7f6d
           filename: coverage-badge.json
-          label: backend coverage
+          label: Backend coverage
           message: ${{ env.COVERAGE_PERCENT }}%
           color: ${{ env.BADGE_COLOR }}
 

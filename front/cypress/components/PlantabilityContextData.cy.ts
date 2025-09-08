@@ -29,14 +29,13 @@ describe("MapContextData", () => {
     })
     cy.get('[data-cy="map-context-data"]').should("be.visible")
   })
-  it("should hide component when tileDetails is null", () => {
+  it("display empty message when no data is available", () => {
     cy.window().then(() => {
       const store = useMapStore()
       store.contextData.data = null
       store.selectedDataType = DataType.PLANTABILITY
     })
-
-    cy.get('[data-cy="map-context-data"]').should("not.exist")
+    cy.contains("Zommez et cliquez sur un carreau").should("be.visible")
   })
 
   it("should display informations correctly", () => {

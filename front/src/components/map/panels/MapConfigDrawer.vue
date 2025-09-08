@@ -21,10 +21,9 @@ const drawerVisible = computed({
   >
     <map-layer-switcher :with-border="false" />
     <map-bg-switcher :with-border="false" />
-    <map-qpv-toggle-button class="w-full" />
     <map-legend />
-    <map-filters-status />
-    <map-context-tools />
+    <map-qpv-toggle-button class="w-full" />
+    <map-context-data />
   </AppDrawer>
 </template>
 

@@ -6,6 +6,8 @@ const mapStore = useMapStore()
 const handleScoreClick = (score: number) => {
   mapStore.toggleAndApplyFilter(score)
 }
+
+const scoreIndices = [0, 2, 4, 6, 8, 10]
 const SCORE_BG_CLASSES: Record<number, string> = {
   0: "bg-scale-0",
   1: "bg-scale-1",
@@ -26,28 +28,35 @@ const SCORE_BG_CLASSES: Record<number, string> = {
     class="font-accent flex items-center justify-center text-xs leading-3 gap-2"
     data-cy="plantability-legend"
   >
-    <div class="flex items-center flex-col lg:flex-row justify-center gap-2 lg:gap-[7px] px-2">
-      <div class="flex justify-between lg:hidden gap-2">
+    <div class="flex items-center flex-col lg:flex-row justify-center lg:gap-1.5 px-2">
+      <div class="flex justify-between lg:hidden">
         <span class="font-bold">-</span>
         <span>Plantable</span>
         <span class="font-bold">+</span>
       </div>
-      <span class="hidden lg:block text-sm leading-3">Non plantable</span>
-      <div class="flex items-center gap-2">
+      <span class="hidden lg:block text-xs leading-3 text-center"
+        >Non<br />
+        plantable</span
+      >
+      <div class="flex items-center">
         <score-label
-          v-for="index in [0, 2, 4, 6, 8, 10]"
-          :key="index"
+          v-for="(scoreIndex, arrayIndex) in scoreIndices"
+          :key="scoreIndex"
           :clickable="true"
-          :is-selected="mapStore.isFiltered(index)"
-          :label="`${index}`"
-          :score="index"
-          class="flex items-center justify-center"
-          :background-color-class="SCORE_BG_CLASSES[index]"
+          :is-selected="mapStore.isFiltered(scoreIndex)"
+          :label="`${scoreIndex}`"
+          :score="scoreIndex"
+          :class="[
+            'flex items-center justify-center',
+            arrayIndex === 0 ? 'rounded-l-sm' : '',
+            arrayIndex === scoreIndices.length - 1 ? 'rounded-r-sm' : ''
+          ]"
+          :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
           @click="handleScoreClick"
         />
       </div>
 
-      <span class="hidden lg:block text-sm leading-3">Plantable</span>
+      <span class="hidden lg:block text-xs leading-3">Plantable</span>
     </div>
   </div>
 </template>
