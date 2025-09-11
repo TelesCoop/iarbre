@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 describe("Navbar", () => {

@@ -8,10 +8,6 @@ import type { ClimateData } from "@/types/climate"
 const mapStore = useMapStore()
 
 defineProps({
-  hideCloseButton: {
-    type: Boolean,
-    default: false
-  },
   fullHeight: {
     type: Boolean,
     default: false
@@ -20,30 +16,18 @@ defineProps({
 </script>
 
 <template>
-  <div
-    v-if="mapStore.contextData.data"
-    class="map-context-data-container w-full"
-    data-cy="map-context-data"
-  >
+  <div class="map-context-data-container w-full" data-cy="map-context-data">
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
       :data="mapStore.contextData.data as PlantabilityData"
-      :hide-close-button="hideCloseButton"
-      @close="() => mapStore.contextData.removeData()"
     />
     <map-context-data-vulnerability
-      v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+      v-if="mapStore.selectedDataType === DataType.VULNERABILITY && mapStore.contextData.data"
       :data="mapStore.contextData.data as VulnerabilityData"
-      :full-height="fullHeight"
-      :hide-close-button="hideCloseButton"
-      @close="() => mapStore.contextData.removeData()"
     />
     <map-context-data-climate-zone
-      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE && mapStore.contextData.data"
       :data="mapStore.contextData.data as ClimateData"
-      :full-height="fullHeight"
-      :hide-close-button="hideCloseButton"
-      @close="() => mapStore.contextData.removeData()"
     />
   </div>
 </template>

@@ -1,0 +1,61 @@
+- name: Install supervisor package
+  apt:
+    name:
+      - supervisor
+
+- name: Install {{ project_slug }}-ctl
+  template:
+    src: django-ctl.j2
+    dest: "/usr/local/bin/{{ project_slug }}-ctl"
+    mode: "0755"
+
+- name: Create django settings to {{ django_settings_path }}
+  template:
+    src: "{{ template_django_settings_name|default('settings.ini.j2')}}"
+    dest: "{{ django_settings_path }}"
+    owner: "{{ main_user }}"
+    group: devops
+    mode: 0660
+
+- name: Copy supervisord config to {{ supervisor_conf }}/{{ project_slug }}_backend.conf
+  template:
+    src: django-supervisor.conf.j2
+    dest: "{{ supervisor_conf }}/{{ project_slug }}_backend.conf"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install {{ project_slug }}-backend supervisor
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: present
+
+- name: Run migrations with conflict handling
+  shell: |
+    {{ project_slug }}-ctl migrate || {
+      echo "Migration failed, trying fake-initial"
+      {{ project_slug }}-ctl migrate --fake-initial
+      {{ project_slug }}-ctl migrate
+    }
+  become: true
+  when: dedicated_database == true and (clonecode.changed or force_update is defined)
+
+- name: Collect backend static files
+  ansible.builtin.command:
+    cmd: "{{ project_slug }}-ctl collectstatic --no-input"
+  when: clonecode.changed or force_update is defined
+
+- name: Restart {{ project_slug }} supervisor
+  supervisorctl:
+    name: "{{ project_slug }}-backend"
+    state: restarted
+  when: clonecode.changed or force_update is defined
+
+- name: "daily database backup"
+  cron:
+    user: "{{ main_user }}"
+    name: "daily {{ project_slug }} database backup"
+    hour: "{{ database_backup.hour }}"
+    minute: "{{ database_backup.minute }}"
+    job: "{{ project_slug }}-ctl backup_db backup"
+  when: (allow_backup is defined and allow_backup == true) and group_names[0] == 'prod'

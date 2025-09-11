@@ -1,0 +1,15 @@
+# Clean user and root project folders
+---
+- name: Clean directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop:
+    - path: "{{ project_dir }}"
+    - path: "{{ var_log_path }}"
+
+- name: Clean main user {{ main_user }}
+  ansible.builtin.user:
+    name: "{{ main_user }}"
+    uid: "{{ main_user_uid }}"
+    state: absent

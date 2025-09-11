@@ -1,0 +1,35 @@
+# Create user and root project folders
+# Required vars:
+#  - organization_slug
+#  - main_user
+#  - var_log_path
+#  - project_slug
+---
+- name: Create main user {{ main_user }}
+  ansible.builtin.user:
+    name: "{{ main_user }}"
+    uid: "{{ main_user_uid }}"
+    shell: /bin/bash
+
+- name: Create directories and set permissions
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: "/{{ organization_slug }}"
+      mode: "2775"
+      owner: "root"
+    - path: "/{{ organization_slug }}/{{ project_slug }}"
+      mode: "2775"
+      owner: "{{ main_user }}"
+    - path: "/etc/{{ organization_slug }}"
+      mode: "2775"
+      owner: "root"
+    - path: "/etc/{{ organization_slug }}/{{ project_slug }}"
+      mode: "2775"
+      owner: "{{ main_user }}"
+    - path: "{{ var_log_path }}"
+      mode: "2770"
+      owner: "{{ main_user }}"

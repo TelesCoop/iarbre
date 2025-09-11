@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 // https://on.cypress.io/api
 
 describe("Map feedback", () => {

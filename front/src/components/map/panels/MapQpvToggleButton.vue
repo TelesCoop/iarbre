@@ -4,13 +4,13 @@ import { useMapStore } from "@/stores/map"
 const mapStore = useMapStore()
 </script>
 <template>
-  <ToggleButton
-    :model-value="mapStore.showQPVLayer"
-    off-label="Afficher les QPV"
-    on-label="Masquer les QPV"
-    size="small"
-    class="w-fit"
-    data-cy="qpv-toggle"
-    @update:model-value="mapStore.toggleQPVLayer"
-  />
+  <div class="hidden md:flex items-center gap-3 p-3">
+    <i class="pi pi-building text-primary-500" />
+    <span class="text-sm">QPV</span>
+    <ToggleSwitch
+      :model-value="mapStore.showQPVLayer"
+      data-cy="qpv-toggle"
+      @update:model-value="mapStore.toggleQPVLayer"
+    />
+  </div>
 </template>

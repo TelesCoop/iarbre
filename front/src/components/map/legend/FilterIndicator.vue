@@ -20,7 +20,7 @@ const transitionProps = {
       v-if="isVisible"
       class="absolute -top-1 -right-1 w-3 h-3 bg-primary-600 rounded-full border border-white flex items-center justify-center"
     >
-      <span class="text-white text-[8px] font-bold">✓</span>
+      <span class="text-white text-xs font-bold">✓</span>
     </div>
   </Transition>
 </template>

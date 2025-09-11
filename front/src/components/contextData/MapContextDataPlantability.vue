@@ -1,42 +1,49 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, withDefaults } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
+import { DataType, DataTypeToLabel } from "@/utils/enum"
 
 interface PlantabilityCardProps {
-  data: PlantabilityData
-  hideCloseButton?: boolean
+  data?: PlantabilityData | null
 }
 
-const props = defineProps<PlantabilityCardProps>()
+const props = withDefaults(defineProps<PlantabilityCardProps>(), {
+  data: null
+})
+
 const emit = defineEmits<{
   close: []
 }>()
 
-const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice * 10)
+const scorePercentage = computed(() =>
+  props.data?.plantabilityNormalizedIndice !== undefined
+    ? props.data.plantabilityNormalizedIndice * 10
+    : null
+)
 </script>
 
 <template>
   <div
     aria-describedby="plantability-description"
     aria-labelledby="plantability-title"
-    class="map-context-panel"
+    class="map-context-panel item-center"
     role="dialog"
   >
     <map-context-header
       description="Calcul basé sur la pondération de +37 paramètres"
-      title="Score de plantabilité"
-      :hide-close-button="props.hideCloseButton"
-      @close="emit('close')"
+      :title="DataTypeToLabel[DataType.PLANTABILITY]"
     />
     <div class="map-context-panel-content">
       <plantability-context-data-score
+        v-if="props.data && scorePercentage !== null"
         :percentage="scorePercentage"
-        :score="data.plantabilityNormalizedIndice"
+        :score="props.data.plantabilityNormalizedIndice"
       />
-      <plantability-context-data-list :data="data" />
+      <empty-message v-else data-cy="empty-message" message="Zommez et cliquez sur un carreau" />
+      <plantability-context-data-list v-if="props.data" :data="props.data" />
     </div>
   </div>
 </template>

@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { createTestingPinia } from "@pinia/testing"
 import { DataType } from "@/utils/enum"
 

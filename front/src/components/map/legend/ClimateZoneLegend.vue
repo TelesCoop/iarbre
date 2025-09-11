@@ -3,9 +3,15 @@
     class="font-accent flex flex-col items-center justify-center text-xs leading-3 gap-2"
     data-cy="climate-zones-legend"
   >
-    <div class="flex p-2 flex-wrap justify-center gap-2">
-      <div v-for="(zone, index) in zones" :key="index" class="flex items-center gap-1">
-        <ClimateZoneScoreLabel :zone="zone" size="compact" @click="handleZoneClick(zone)" />
+    <div class="flex p-2 justify-center">
+      <div v-for="(zone, index) in zones" :key="index" class="flex items-center">
+        <ClimateZoneScoreLabel
+          :zone="zone"
+          size="compact"
+          :is-first="index === 0"
+          :is-last="index === zones.length - 1"
+          @click="handleZoneClick(zone)"
+        />
       </div>
     </div>
     <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
@@ -16,7 +22,7 @@
         class="flex items-center gap-2"
       >
         <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
-        <span class="text-[0.9rem]">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+        <span class="text-sm text-primary-900">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
       </div>
     </div>
   </div>

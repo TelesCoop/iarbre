@@ -1,0 +1,48 @@
+# Setup ssh key for git clone
+# and git clone the code, including submodules
+# Required vars:
+#  - main_user
+#  - identity_file_path
+#  - branch
+#  - clone_path
+---
+- name: Generate /etc/ssh/ RSA host key
+  command: 'ssh-keygen -q -t ed25519 -a 100 -f {{ identity_file_path }} -C "" -N ""'
+  become_user: "{{ main_user }}"
+  args:
+    creates: "{{ identity_file_path }}"
+  register: new_ssh_key
+
+- name: WARNING ABOUT new ssh key
+  debug:
+    msg: |
+      IMPORTANT REMINDER
+
+      A new ssh key has been generated at {{ identity_file_path }}
+      - it should be added to the project deploy keys in Gitlab/Github
+      so that we can clone it.
+  when: new_ssh_key.changed
+
+- name: Get new ssh key contents
+  command: "cat {{ identity_file_path }}.pub"
+  register: backend_command_output
+  when: new_ssh_key.changed
+
+- name: Print ssh key to console
+  debug:
+    msg: "{{ backend_command_output.stdout }}"
+  when: new_ssh_key.changed
+
+- name: Get latest code from {{ repo }}, banch {{ branch }}
+  ansible.builtin.git:
+    repo: "{{ repo }}"
+    dest: "{{ clone_path }}"
+    key_file: "{{ identity_file_path }}"
+    accept_hostkey: true
+    force: true
+    version: "{{ branch }}"
+    # git submodule should have master branch
+    track_submodules: "{{ git_track_submodules }}"
+    remote: origin
+  become_user: "{{ main_user }}"
+  register: clonecode

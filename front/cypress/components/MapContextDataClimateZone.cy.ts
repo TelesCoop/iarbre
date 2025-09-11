@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 import { createPinia } from "pinia"
 import { mount } from "cypress/vue"
 import MapContextDataClimateZone from "@/components/contextData/MapContextDataClimateZone.vue"
@@ -29,25 +30,7 @@ describe("MapContextDataClimateZone", () => {
         data: mockClimateData
       }
     })
-
-    cy.contains("Zones climatiques locales").should("be.visible")
     cy.contains("Indicateurs climatiques locaux pour une zone sélectionnée").should("be.visible")
-  })
-
-  it("display close button and emit close event", () => {
-    const pinia = createPinia()
-
-    mount(MapContextDataClimateZone, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        data: mockClimateData
-      }
-    })
-
-    cy.get('[data-cy="close-context-data"]').should("be.visible")
-    cy.get('[data-cy="close-context-data"]').click()
   })
 
   it("display climate metrics with categories", () => {

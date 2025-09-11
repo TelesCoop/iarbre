@@ -1,0 +1,40 @@
+# Setup nginx for static website
+# support http authentication
+#
+# Required vars:
+#  - use_password
+#  - username and passsword if use_password is set
+#  - main_hostname
+#  - redirect_hostnames
+#  - static_path
+---
+- name: Install passlib python package, required by community.general.htpasswd
+  ansible.builtin.apt:
+    name:
+      - python3-passlib
+  when: use_password == true
+
+- name: Add a user to a password file and ensure permissions are set
+  community.general.htpasswd:
+    path: "{{ passwd_dir }}/passwdfile"
+    name: "{{ username }}"
+    password: "{{ password }}"
+    group: www-data
+    mode: 0640
+  when: use_password == true
+
+- name: Remove user password file if unset
+  ansible.builtin.file:
+    path: "{{ passwd_dir }}/passwdfile"
+    state: absent
+  when: use_password == false and passwd_dir is defined
+
+- name: Copy nginx config
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-enabled/{{ nginx_conf_filename }}
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Reload nginx
