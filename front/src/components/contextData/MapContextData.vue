@@ -22,11 +22,11 @@ defineProps({
       :data="mapStore.contextData.data as PlantabilityData"
     />
     <map-context-data-vulnerability
-      v-if="mapStore.selectedDataType === DataType.VULNERABILITY && mapStore.contextData.data"
+      v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
       :data="mapStore.contextData.data as VulnerabilityData"
     />
     <map-context-data-climate-zone
-      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE && mapStore.contextData.data"
+      v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
       :data="mapStore.contextData.data as ClimateData"
     />
   </div>

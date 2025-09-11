@@ -4,7 +4,6 @@ import type { ClimateData } from "@/types/climate"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
-import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
 
 interface ClimateDataProps {
@@ -31,7 +30,6 @@ const zoneBackgroundColor = computed(() =>
   >
     <map-context-header
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
-      :title="DataTypeToLabel[DataType.CLIMATE_ZONE]"
     />
     <div class="map-context-panel-content">
       <div v-if="props.data">
@@ -43,7 +41,7 @@ const zoneBackgroundColor = computed(() =>
         </div>
         <climate-context-data-metrics :data="props.data" :full-height="props.fullHeight" />
       </div>
-      <empty-message v-else data-cy="empty-message" message="Zommez et cliquez sur un carreau" />
+      <empty-message v-else data-cy="empty-message" message="Cliquez sur un carreau" />
     </div>
   </div>
 </template>
