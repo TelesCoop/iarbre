@@ -44,18 +44,6 @@
         dest: "{{ django_path }}/mvt_files"
         state: link
       when: branch is defined
-    - name: Use s3 backup on non-feature branch
-      block:
-        - name: Clear cache
-          shell:
-            cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
-          when: clonecode.changed or force_update is defined
-
-        - name: Load database and media
-          shell:
-            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
-          when: clonecode.changed or force_update is defined
-      when: branch is not defined
 
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
@@ -66,3 +54,24 @@
         database_password: "{{ vault_database_password }}"
         # If you use custom template, do not name it settings.j2
         template_django_settings_name: "settings-custom.ini.j2"
+
+    - name: Use s3 backup on non-feature branch (iarbre specific)
+      block:
+        - name: Clear cache
+          shell:
+            cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
+
+        - name: Load database and media
+          shell:
+            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
+
+        - name: Run migrations with conflict handling
+          shell: |
+            {{ project_slug }}-ctl migrate || {
+              echo "Migration failed, trying fake-initial"
+              {{ project_slug }}-ctl migrate --fake-initial
+              {{ project_slug }}-ctl migrate
+            }
+          become: true
+
+      when: branch is not defined and (clonecode.changed or force_update is defined)

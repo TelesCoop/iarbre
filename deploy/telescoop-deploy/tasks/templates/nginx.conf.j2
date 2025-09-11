@@ -34,7 +34,7 @@ server {
 
     {% if use_password %}
     auth_basic "Acces restreint";
-    auth_basic_user_file "{{ project_dir }}/passwdfile";
+    auth_basic_user_file "{{ passwd_dir }}/passwdfile";
     {% endif %}
 
     # http://stackoverflow.com/questions/15238506/djangos-suspiciousoperation-invalid-http-host-header
