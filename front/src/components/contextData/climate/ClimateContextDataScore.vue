@@ -1,28 +1,29 @@
 <script lang="ts" setup>
-import { getZoneDesc, getZoneColor } from "@/utils/climateZone"
+import { computed } from "vue"
 import type { ClimateData } from "@/types/climate"
+import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
+import { getAdaptativeColorClass } from "@/utils/color"
+import { getZoneColor } from "@/utils/climateZone"
 
-interface ClimateDataProps {
+interface ClimateScoreProps {
   data: ClimateData
-  hideCloseButton?: boolean
-  fullHeight?: boolean
 }
 
-const props = defineProps<ClimateDataProps>()
+const props = defineProps<ClimateScoreProps>()
+
+const zoneBackgroundColor = computed(() =>
+  props.data?.lczIndex ? CLIMATE_ZONE_COLOR[props.data.lczIndex] || "#bcbcbc" : "#bcbcbc"
+)
 </script>
+
 <template>
-  <div data-cy="lcz-score-popup">
-    <div class="flex items-center gap-2 w-full">
-      <div
-        :style="{ backgroundColor: getZoneColor(props.data.lczIndex) }"
-        class="w-4 h-6 rounded"
-      ></div>
-      <span class="font-accent text-xl" data-cy="lcz-score-popup-title"
-        >LCZ {{ props.data.lczIndex }}</span
-      >
-    </div>
-    <div class="w-full text-md mb-2">
-      <span data-cy="lcz-score-popup-description">{{ getZoneDesc(props.data.lczIndex) }}</span>
-    </div>
+  <div
+    :class="`map-context-card text-lg ${getAdaptativeColorClass(getZoneColor(props.data.lczIndex))}`"
+    :style="{ backgroundColor: zoneBackgroundColor }"
+  >
+    <span class="text-center"
+      >Zone climatique locale : <br />
+      {{ props.data.lczDescription }}</span
+    >
   </div>
 </template>

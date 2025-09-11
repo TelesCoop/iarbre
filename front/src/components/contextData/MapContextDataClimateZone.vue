@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { withDefaults, computed } from "vue"
+import { withDefaults } from "vue"
 import type { ClimateData } from "@/types/climate"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
+import ClimateContextDataScore from "@/components/contextData/climate/ClimateContextDataScore.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
-import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
 
 interface ClimateDataProps {
   data?: ClimateData | null
@@ -15,10 +15,6 @@ interface ClimateDataProps {
 const props = withDefaults(defineProps<ClimateDataProps>(), {
   data: null
 })
-
-const zoneBackgroundColor = computed(() =>
-  props.data?.lczIndex ? CLIMATE_ZONE_COLOR[props.data.lczIndex] || "#bcbcbc" : "#bcbcbc"
-)
 </script>
 
 <template>
@@ -33,12 +29,7 @@ const zoneBackgroundColor = computed(() =>
     />
     <div class="map-context-panel-content">
       <div v-if="props.data">
-        <div class="map-context-card text-lg" :style="{ backgroundColor: zoneBackgroundColor }">
-          <span class="text-center"
-            >Zone climatique locale : <br />
-            {{ props.data.lczDescription }}</span
-          >
-        </div>
+        <climate-context-data-score :data="props.data" />
         <climate-context-data-metrics :data="props.data" :full-height="props.fullHeight" />
       </div>
       <empty-message v-else data-cy="empty-message" message="Cliquez sur un carreau" />
