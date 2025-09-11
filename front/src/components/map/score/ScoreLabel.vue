@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import FilterIndicator from "../legend/FilterIndicator.vue"
-import { getAdaptativeColorClass } from "@/utils/color"
 
 interface ScoreLabelProps {
   score: number
