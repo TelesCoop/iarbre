@@ -27,7 +27,7 @@
   ansible.builtin.file:
     path: "{{ passwd_dir }}/passwdfile"
     state: absent
-  when: use_password == false
+  when: use_password == false and passwd_dir is defined
 
 - name: Copy nginx config
   template:
