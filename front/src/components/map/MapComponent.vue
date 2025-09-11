@@ -2,7 +2,6 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
-import { useAppStore } from "@/stores/app"
 import MapSidePanel from "./panels/sidepanel/MapSidePanel.vue"
 
 const props = defineProps({

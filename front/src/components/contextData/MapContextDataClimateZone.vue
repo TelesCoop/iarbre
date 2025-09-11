@@ -1,23 +1,25 @@
 <script lang="ts" setup>
+import { withDefaults, computed } from "vue"
 import type { ClimateData } from "@/types/climate"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
+import EmptyMessage from "@/components/EmptyMessage.vue"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
+import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
+
 interface ClimateDataProps {
-  data: ClimateData
+  data?: ClimateData | null
   hideCloseButton?: boolean
   fullHeight?: boolean
 }
 
-const props = defineProps<ClimateDataProps>()
+const props = withDefaults(defineProps<ClimateDataProps>(), {
+  data: null
+})
 
-const emit = defineEmits<{
-  close: []
-}>()
-
-const handleClose = () => {
-  emit("close")
-}
+const zoneBackgroundColor = computed(() =>
+  props.data?.lczIndex ? CLIMATE_ZONE_COLOR[props.data.lczIndex] || "#bcbcbc" : "#bcbcbc"
+)
 </script>
 
 <template>
@@ -31,12 +33,17 @@ const handleClose = () => {
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
       :title="DataTypeToLabel[DataType.CLIMATE_ZONE]"
     />
-    <div v-if="props.data" class="mb-4">
-      <div class="text-lg font-accent">Zone climatique sélectionnée</div>
-    </div>
-    <empty-message v-else data-cy="empty-message" message="Cliquez sur une zone" />
     <div class="map-context-panel-content">
-      <climate-context-data-metrics :data="data" :full-height="props.fullHeight" />
+      <div v-if="props.data">
+        <div class="map-context-card text-lg" :style="{ backgroundColor: zoneBackgroundColor }">
+          <span class="text-center"
+            >Zone climatique locale : <br />
+            {{ props.data.lczDescription }}</span
+          >
+        </div>
+        <climate-context-data-metrics :data="props.data" :full-height="props.fullHeight" />
+      </div>
+      <empty-message v-else data-cy="empty-message" message="Zommez et cliquez sur un carreau" />
     </div>
   </div>
 </template>

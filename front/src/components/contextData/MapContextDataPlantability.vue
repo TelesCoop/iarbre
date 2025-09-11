@@ -14,10 +14,6 @@ const props = withDefaults(defineProps<PlantabilityCardProps>(), {
   data: null
 })
 
-const emit = defineEmits<{
-  close: []
-}>()
-
 const scorePercentage = computed(() =>
   props.data?.plantabilityNormalizedIndice !== undefined
     ? props.data.plantabilityNormalizedIndice * 10

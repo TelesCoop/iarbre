@@ -19,7 +19,6 @@ const emit = defineEmits<{
 }>()
 
 const scoreLabelRef = ref<HTMLElement | null>(null)
-const textClass = computed(() => getAdaptativeColorClass(scoreLabelRef.value))
 const isSelected = computed(() => props.isSelected || false)
 const isClickable = computed(() => props.clickable || false)
 

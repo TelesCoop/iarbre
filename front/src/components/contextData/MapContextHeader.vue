@@ -5,9 +5,6 @@ interface MapContextHeaderProps {
 }
 
 defineProps<MapContextHeaderProps>()
-const emit = defineEmits<{
-  close: []
-}>()
 </script>
 
 <template>

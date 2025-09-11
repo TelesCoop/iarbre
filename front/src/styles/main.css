@@ -112,6 +112,16 @@
   @apply items-center;
 }
 
+.map-context-card {
+  @apply flex w-full;
+  @apply font-sans;
+  @apply items-center;
+  @apply px-4 py-2 mb-4;
+  @apply py-2;
+  @apply mb-4;
+  @apply rounded-md border border-gray-200 justify-center;
+}
+
 .map-context-panel-content {
   @apply py-1 sm:py-2 md:py-4;
   @apply flex flex-col gap-1 sm:gap-2 md:gap-4;
