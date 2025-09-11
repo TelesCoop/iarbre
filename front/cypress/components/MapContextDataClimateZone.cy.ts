@@ -51,4 +51,19 @@ describe("MapContextDataClimateZone", () => {
     cy.contains("Superficie moyenne du bâti").should("be.visible")
     cy.contains("250").should("be.visible")
   })
+
+  it("hide score badges when vulnerability data is null", () => {
+    const pinia = createPinia()
+
+    mount(MapContextDataClimateZone, {
+      global: {
+        plugins: [pinia]
+      },
+      props: {
+        data: null
+      }
+    })
+
+    cy.get('[data-cy="empty-message"]').should("exist")
+  })
 })
