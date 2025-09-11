@@ -31,6 +31,7 @@
         static_path: "{{ project_dir }}/frontend_static"
         has_backend: true
         use_password: false
+        passwd_dir: "{{ project_dir }}"
         nginx_conf_filename: "{{ project_slug }}"
         server_uris_passed_to_backend:
           - admin
