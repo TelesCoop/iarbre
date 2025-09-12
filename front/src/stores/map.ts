@@ -14,7 +14,6 @@ import {
   DataType,
   MapStyle,
   DataTypeToGeolevel,
-  DataTypeToAttributionSource,
   getDataTypeAttributionSource
 } from "@/utils/enum"
 import mapStyles from "../../public/map/map-style.json"
@@ -29,17 +28,9 @@ import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
-import {
-  clearHighlight,
-  extractFeatureProperties,
-  extractFeatureProperty,
-  getLayerId,
-  getSourceId,
-  highlightFeature
-} from "@/utils/map"
+import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { addCenterControl } from "@/utils/mapControls"
-import { useAppStore } from "./app"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})

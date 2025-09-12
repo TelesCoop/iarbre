@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue"
+import { getPlantabilityTextColor } from "@/utils/color"
 
 interface PlantabilityScoreProps {
   score: number
@@ -8,14 +9,7 @@ interface PlantabilityScoreProps {
 
 const props = defineProps<PlantabilityScoreProps>()
 
-const textColor = computed(() => {
-  if (!props.percentage) return "text-gray-300"
-  return props.percentage >= 80
-    ? "text-scale-8"
-    : props.percentage >= 60
-      ? "text-scale-4"
-      : "text-scale-2"
-})
+const textColor = computed(() => getPlantabilityTextColor(props.percentage))
 </script>
 
 <template>

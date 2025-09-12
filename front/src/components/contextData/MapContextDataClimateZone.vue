@@ -1,23 +1,20 @@
 <script lang="ts" setup>
+import { withDefaults } from "vue"
 import type { ClimateData } from "@/types/climate"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
-import { DataType, DataTypeToLabel } from "@/utils/enum"
+import ClimateContextDataScore from "@/components/contextData/climate/ClimateContextDataScore.vue"
+import EmptyMessage from "@/components/EmptyMessage.vue"
+
 interface ClimateDataProps {
-  data: ClimateData
+  data?: ClimateData | null
   hideCloseButton?: boolean
   fullHeight?: boolean
 }
 
-const props = defineProps<ClimateDataProps>()
-
-const emit = defineEmits<{
-  close: []
-}>()
-
-const handleClose = () => {
-  emit("close")
-}
+const props = withDefaults(defineProps<ClimateDataProps>(), {
+  data: null
+})
 </script>
 
 <template>
@@ -29,14 +26,13 @@ const handleClose = () => {
   >
     <map-context-header
       description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
-      :title="DataTypeToLabel[DataType.CLIMATE_ZONE]"
     />
-    <div v-if="props.data" class="mb-4">
-      <div class="text-lg font-accent">Zone climatique sélectionnée</div>
-    </div>
-    <empty-message v-else data-cy="empty-message" message="Cliquez sur une zone" />
     <div class="map-context-panel-content">
-      <climate-context-data-metrics :data="data" :full-height="props.fullHeight" />
+      <div v-if="props.data">
+        <climate-context-data-score :data="props.data" />
+        <climate-context-data-metrics :data="props.data" :full-height="props.fullHeight" />
+      </div>
+      <empty-message v-else data-cy="empty-message" message="Cliquez sur un carreau" />
     </div>
   </div>
 </template>

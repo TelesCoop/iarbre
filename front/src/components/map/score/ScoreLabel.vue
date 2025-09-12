@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import FilterIndicator from "../legend/FilterIndicator.vue"
-import { getAdaptativeColorClass } from "@/utils/color"
 
 interface ScoreLabelProps {
   score: number
@@ -19,7 +18,6 @@ const emit = defineEmits<{
 }>()
 
 const scoreLabelRef = ref<HTMLElement | null>(null)
-const textClass = computed(() => getAdaptativeColorClass(scoreLabelRef.value))
 const isSelected = computed(() => props.isSelected || false)
 const isClickable = computed(() => props.clickable || false)
 

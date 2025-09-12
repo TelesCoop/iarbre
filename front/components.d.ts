@@ -73,6 +73,7 @@ declare module 'vue' {
     VulnerabilityContextDataTableHeader: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTableHeader.vue')['default']
     VulnerabilityContextTool: typeof import('./src/components/contextTools/VulnerabilityContextTool.vue')['default']
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
+    VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
     VulnerabilityScoreContent: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScoreContent.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     VulnerabilityScorePopupItem: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScorePopupItem.vue')['default']
