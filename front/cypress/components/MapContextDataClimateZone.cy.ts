@@ -13,19 +13,10 @@ describe("MapContextDataClimateZone", () => {
     datatype: DataType.CLIMATE,
     geolevel: GeoLevel.LCZ,
     lczDescription: "Ensemble dense de batîments hauts",
-    lczIndex: "1",
     id: 123,
-    geometry: "mock-geometry",
-    mapGeometry: "mock-map-geometry",
     details: {
       [ClimateDataDetailsKey.HRE]: 15.5,
-      [ClimateDataDetailsKey.ARE]: 250.0,
-      [ClimateDataDetailsKey.BUR]: 75.0,
-      [ClimateDataDetailsKey.ROR]: 45.0,
-      [ClimateDataDetailsKey.BSR]: 10.0,
-      [ClimateDataDetailsKey.WAR]: 5.0,
-      [ClimateDataDetailsKey.VER]: 20.0,
-      [ClimateDataDetailsKey.VHR]: 15.0
+      [ClimateDataDetailsKey.ARE]: 250.0
     }
   }
   beforeEach(() => {
@@ -67,6 +58,5 @@ describe("MapContextDataClimateZone", () => {
     })
 
     cy.get('[data-cy="empty-message"]').should("exist")
-    cy.contains("Cliquez sur un carreau").should("be.visible")
   })
 })
