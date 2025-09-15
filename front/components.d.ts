@@ -19,6 +19,8 @@ declare module 'vue' {
     ClimateContextDataScore: typeof import('./src/components/contextData/climate/ClimateContextDataScore.vue')['default']
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
+    ContextDataAccordionItem: typeof import('./src/components/contextData/ContextDataAccordionItem.vue')['default']
+    ContextDataItem: typeof import('./src/components/contextData/ContextDataItem.vue')['default']
     Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']

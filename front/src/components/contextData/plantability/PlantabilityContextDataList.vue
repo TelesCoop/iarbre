@@ -1,8 +1,10 @@
 <script lang="ts" setup>
-import { type PlantabilityData } from "@/types/plantability"
+import { type PlantabilityData, PlantabilityImpact } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
-import { toRef } from "vue"
-import PlantabilityAccordionItem from "@/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue"
+import { toRef, computed } from "vue"
+import ContextDataAccordionItem, {
+  type ContextDataFactorGroup
+} from "@/components/contextData/ContextDataAccordionItem.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
 interface PlantabilityFactorsProps {
@@ -12,6 +14,28 @@ interface PlantabilityFactorsProps {
 const props = defineProps<PlantabilityFactorsProps>()
 
 const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
+
+const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
+  return factorGroups.value.map((group) => ({
+    category: group.category.toString(),
+    label: group.label,
+    icon: group.icon,
+    factors: group.factors.map((factor) => ({
+      key: factor.key,
+      label: factor.label,
+      value: factor.value,
+      icon: factor.icon,
+      impact:
+        factor.impact === PlantabilityImpact.POSITIVE
+          ? "positive"
+          : factor.impact === PlantabilityImpact.NEGATIVE
+            ? "negative"
+            : null
+    })),
+    hasPositiveImpact: group.hasPositiveImpact,
+    hasNegativeImpact: group.hasNegativeImpact
+  }))
+})
 </script>
 
 <template>
@@ -27,10 +51,11 @@ const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
       role="list"
     >
       <template v-if="hasFactors">
-        <plantability-accordion-item
-          v-for="group in factorGroups"
+        <context-data-accordion-item
+          v-for="group in genericFactorGroups"
           :key="group.category"
           :group="group"
+          color-scheme="plantability"
         />
       </template>
 
