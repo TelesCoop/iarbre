@@ -1,36 +1,15 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
 import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
-
-export interface ContextDataFactor {
-  key: string
-  label: string
-  value: string
-  icon: string
-  impact?: string | null
-  description?: string
-  unit?: string
-}
-
-export interface ContextDataFactorGroup {
-  category: string
-  label: string
-  icon: string
-  factors: ContextDataFactor[]
-  hasPositiveImpact?: boolean
-  hasNegativeImpact?: boolean
-  description?: string
-}
+import type { ContextDataFactorGroup, ContextDataColorScheme } from "@/types/contextData"
 
 interface ContextDataAccordionItemProps {
   group: ContextDataFactorGroup
-  colorScheme?: "plantability" | "climate" | "vulnerability"
-  layout?: "card" | "table"
+  colorScheme?: ContextDataColorScheme
 }
 
 const props = withDefaults(defineProps<ContextDataAccordionItemProps>(), {
-  colorScheme: "plantability",
-  layout: "card"
+  colorScheme: "plantability"
 })
 
 const isExpanded = ref(false)
@@ -94,17 +73,10 @@ const impactTitle = computed(() => {
 })
 
 const expandedContentClasses = computed(() => {
-  const base = "animate-fade-in"
-  if (props.layout === "table") {
-    return `divide-y divide-gray-50 ${base}`
-  }
-  return `mt-2 ml-4 space-y-2 ${base}`
+  return "mt-2 ml-4 space-y-2 animate-fade-in"
 })
 
 const containerClasses = computed(() => {
-  if (props.layout === "table") {
-    return ""
-  }
   return "mb-2"
 })
 </script>
@@ -153,7 +125,6 @@ const containerClasses = computed(() => {
         :key="factor.key"
         :item="factor"
         :color-scheme="colorScheme"
-        :layout="layout"
       />
     </div>
   </div>

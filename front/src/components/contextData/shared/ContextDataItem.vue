@@ -1,16 +1,14 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataFactor } from "@/components/contextData/shared/ContextDataAccordionItem.vue"
+import type { ContextDataFactor, ContextDataColorScheme } from "@/types/contextData"
 
 interface ContextDataItemProps {
   item: ContextDataFactor
-  colorScheme?: "plantability" | "climate" | "vulnerability"
-  layout?: "card" | "table"
+  colorScheme?: ContextDataColorScheme
 }
 
 const props = withDefaults(defineProps<ContextDataItemProps>(), {
-  colorScheme: "plantability",
-  layout: "card"
+  colorScheme: "plantability"
 })
 
 const iconClasses = computed(() => {
@@ -53,21 +51,12 @@ const valueClasses = computed(() => {
 })
 
 const containerClasses = computed(() => {
-  if (props.layout === "table") {
-    return "flex items-center gap-3 p-4 hover:bg-primary-100 transition-colors duration-150 min-w-0"
-  }
-
   return "flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
 })
 </script>
 
 <template>
-  <div
-    v-if="layout === 'card'"
-    role="listitem"
-    :class="containerClasses"
-    :data-cy="`factor-${item.key}`"
-  >
+  <div role="listitem" :class="containerClasses" :data-cy="`factor-${item.key}`">
     <div
       v-if="item.icon"
       :class="iconClasses"
@@ -88,38 +77,6 @@ const containerClasses = computed(() => {
         {{ item.value }}
         <span v-if="item.unit" class="text-xs text-gray-500 font-normal ml-1">{{ item.unit }}</span>
       </p>
-    </div>
-  </div>
-
-  <div v-else :class="containerClasses" :data-cy="`factor-${item.key}`">
-    <div class="grid grid-cols-12 gap-3 items-center w-full">
-      <div v-if="item.icon" class="col-span-2">
-        <div
-          class="w-6 h-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-700"
-        >
-          {{ item.icon }}
-        </div>
-      </div>
-      <div class="min-w-0" :class="item.icon ? 'col-span-6' : 'col-span-8'">
-        <div class="flex flex-col">
-          <span class="text-gray-800 font-medium text-sm leading-tight truncate">
-            {{ item.label }}
-          </span>
-          <span v-if="item.description" class="text-xs text-gray-500 mt-1 line-clamp-2">
-            {{ item.description }}
-          </span>
-        </div>
-      </div>
-      <div class="col-span-4 flex justify-end">
-        <div class="text-right">
-          <div :class="valueClasses">
-            {{ item.value || "N/A" }}
-          </div>
-          <div v-if="item.unit" class="text-xs text-gray-500 font-medium">
-            {{ item.unit }}
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

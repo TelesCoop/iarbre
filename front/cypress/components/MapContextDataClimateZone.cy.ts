@@ -7,7 +7,6 @@ import type { ClimateData } from "@/types/climate"
 import { ClimateDataDetailsKey } from "@/types/climate"
 import { ClimateCategory } from "@/types/climate"
 import { useClimateZone } from "@/composables/useClimateZone"
-import { useMapStore } from "@/stores/map"
 
 describe("MapContextDataClimateZone", () => {
   const mockClimateData: ClimateData = {

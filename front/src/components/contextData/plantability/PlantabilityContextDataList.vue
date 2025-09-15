@@ -2,9 +2,8 @@
 import { type PlantabilityData, PlantabilityImpact } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
 import { toRef, computed } from "vue"
-import ContextDataAccordionItem, {
-  type ContextDataFactorGroup
-} from "@/components/contextData/shared/ContextDataAccordionItem.vue"
+import ContextDataAccordionItem from "@/components/contextData/shared/ContextDataAccordionItem.vue"
+import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
 interface PlantabilityFactorsProps {
