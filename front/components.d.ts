@@ -69,6 +69,7 @@ declare module 'vue' {
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     VulnerabilityContexDataTableRow: typeof import('./src/components/contextData/vulnerability/VulnerabilityContexDataTableRow.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
+    VulnerabilityContextDataList: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataList.vue')['default']
     VulnerabilityContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScore.vue')['default']
     VulnerabilityContextDataScoreBadge: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue')['default']
     VulnerabilityContextDataTable: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataTable.vue')['default']
