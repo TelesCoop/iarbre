@@ -71,18 +71,10 @@ const impactTitle = computed(() => {
 
   return "Impact neutre"
 })
-
-const expandedContentClasses = computed(() => {
-  return "mt-2 ml-4 space-y-2 animate-fade-in"
-})
-
-const containerClasses = computed(() => {
-  return "mb-2"
-})
 </script>
 
 <template>
-  <div :class="containerClasses">
+  <div class="mb-2">
     <button
       :class="categoryClasses"
       :aria-controls="`category-${group.category}`"
@@ -119,7 +111,11 @@ const containerClasses = computed(() => {
       </div>
     </button>
 
-    <div v-if="isExpanded" :id="`category-${group.category}`" :class="expandedContentClasses">
+    <div
+      v-if="isExpanded"
+      :id="`category-${group.category}`"
+      class="mt-2 ml-4 space-y-2 animate-fade-in"
+    >
       <context-data-item
         v-for="factor in group.factors"
         :key="factor.key"

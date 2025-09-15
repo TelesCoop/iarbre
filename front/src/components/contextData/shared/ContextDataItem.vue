@@ -49,14 +49,14 @@ const valueClasses = computed(() => {
 
   return `${base} text-gray-700`
 })
-
-const containerClasses = computed(() => {
-  return "flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
-})
 </script>
 
 <template>
-  <div role="listitem" :class="containerClasses" :data-cy="`factor-${item.key}`">
+  <div
+    role="listitem"
+    class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
+    :data-cy="`factor-${item.key}`"
+  >
     <div
       v-if="item.icon"
       :class="iconClasses"
