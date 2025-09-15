@@ -2,7 +2,7 @@
 import { type PlantabilityData, PlantabilityImpact } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
 import { toRef, computed } from "vue"
-import ContextDataAccordionItem from "@/components/contextData/shared/ContextDataAccordionItem.vue"
+import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
@@ -39,27 +39,17 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
 
 <template>
   <div aria-labelledby="factors-section">
-    <div
-      aria-label="Liste des paramètres de plantabilité par catégorie"
-      class="space-y-3 pr-2"
-      role="list"
-    >
-      <template v-if="hasFactors">
-        <context-data-accordion-item
-          v-for="group in genericFactorGroups"
-          :key="group.category"
-          :group="group"
-          color-scheme="plantability"
-        />
-      </template>
+    <template v-if="hasFactors">
+      <context-data-list-container
+        :groups="genericFactorGroups"
+        color-scheme="plantability"
+        aria-label="Liste des paramètres de plantabilité par catégorie"
+      />
+    </template>
 
-      <template v-else>
-        <empty-message
-          data-cy="empty-message"
-          message="Pas de données d'occupation des sols ici."
-        />
-      </template>
-    </div>
+    <template v-else>
+      <empty-message data-cy="empty-message" message="Pas de données d'occupation des sols ici." />
+    </template>
   </div>
 </template>
 

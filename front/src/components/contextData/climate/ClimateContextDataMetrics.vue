@@ -2,7 +2,7 @@
 import { computed } from "vue"
 import { type ClimateData } from "@/types/climate"
 import { useClimateZone } from "@/composables/useClimateZone"
-import ContextDataAccordionItem from "@/components/contextData/shared/ContextDataAccordionItem.vue"
+import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 
 interface ClimateMetricsProps {
@@ -11,12 +11,6 @@ interface ClimateMetricsProps {
 }
 
 const props = defineProps<ClimateMetricsProps>()
-
-const categoryWrapperClass = computed(() =>
-  props.fullHeight
-    ? "space-y-3 pr-2"
-    : "max-h-44 xs:max-h-48 sm:max-h-52 md:max-h-56 lg:max-h-56 xl:max-h-100 overflow-y-auto space-y-3 pr-2"
-)
 
 const {
   climateCategoryToIcon,
@@ -50,12 +44,11 @@ const climateGroups = computed((): ContextDataFactorGroup[] => {
 </script>
 
 <template>
-  <div :class="categoryWrapperClass" role="list">
-    <context-data-accordion-item
-      v-for="group in climateGroups"
-      :key="group.category"
-      :group="group"
-      color-scheme="climate"
-    />
-  </div>
+  <context-data-list-container
+    :groups="climateGroups"
+    color-scheme="climate"
+    :full-height="fullHeight"
+    :scrollable="true"
+    aria-label="Liste des indicateurs climatiques par catégorie"
+  />
 </template>
