@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
-import ContextDataItem from "@/components/contextData/ContextDataItem.vue"
+import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
 
 export interface ContextDataFactor {
   key: string

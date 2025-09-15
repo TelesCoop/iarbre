@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataFactor } from "@/components/contextData/ContextDataAccordionItem.vue"
+import type { ContextDataFactor } from "@/components/contextData/shared/ContextDataAccordionItem.vue"
 
 interface ContextDataItemProps {
   item: ContextDataFactor

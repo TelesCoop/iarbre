@@ -4,7 +4,7 @@ import { usePlantabilityData } from "@/composables/usePlantabilityData"
 import { toRef, computed } from "vue"
 import ContextDataAccordionItem, {
   type ContextDataFactorGroup
-} from "@/components/contextData/ContextDataAccordionItem.vue"
+} from "@/components/contextData/shared/ContextDataAccordionItem.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 
 interface PlantabilityFactorsProps {

@@ -4,7 +4,7 @@ import { type ClimateData } from "@/types/climate"
 import { useClimateZone } from "@/composables/useClimateZone"
 import ContextDataAccordionItem, {
   type ContextDataFactorGroup
-} from "@/components/contextData/ContextDataAccordionItem.vue"
+} from "@/components/contextData/shared/ContextDataAccordionItem.vue"
 
 interface ClimateMetricsProps {
   data: ClimateData
