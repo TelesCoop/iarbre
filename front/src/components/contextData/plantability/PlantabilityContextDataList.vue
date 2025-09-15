@@ -39,11 +39,6 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
 
 <template>
   <div aria-labelledby="factors-section">
-    <h3 id="factors-section" class="text-md font-semibold mb-4 flex items-center gap-2">
-      <i aria-hidden="true" class="pi pi-chart-bar text-blue-500"></i>
-      Paramètres principaux
-    </h3>
-
     <div
       aria-label="Liste des paramètres de plantabilité par catégorie"
       class="space-y-3 pr-2"

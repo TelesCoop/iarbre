@@ -8,9 +8,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AccordionContent: typeof import('primevue/accordioncontent')['default']
-    AccordionHeader: typeof import('primevue/accordionheader')['default']
-    AccordionPanel: typeof import('primevue/accordionpanel')['default']
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chip: typeof import('primevue/chip')['default']
@@ -21,6 +18,7 @@ declare module 'vue' {
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
     ContextDataAccordionItem: typeof import('./src/components/contextData/shared/ContextDataAccordionItem.vue')['default']
     ContextDataItem: typeof import('./src/components/contextData/shared/ContextDataItem.vue')['default']
+    ContextDataScore: typeof import('./src/components/contextData/shared/ContextDataScore.vue')['default']
     Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
@@ -44,17 +42,13 @@ declare module 'vue' {
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapQpvToggleButton: typeof import('./src/components/map/panels/MapQpvToggleButton.vue')['default']
-    MapQPVToggleButton: typeof import("./src/components/map/panels/MapQPVToggleButton.vue")["default"]
     MapScoresDrawer: typeof import('./src/components/map/panels/MapScoresDrawer.vue')['default']
     MapSidePanel: typeof import('./src/components/map/panels/sidepanel/MapSidePanel.vue')['default']
     MapSidePanelDownload: typeof import('./src/components/map/panels/sidepanel/MapSidePanelDownload.vue')['default']
     MapSidePanelFooter: typeof import('./src/components/map/panels/sidepanel/MapSidePanelFooter.vue')['default']
     MapSidePanelHeader: typeof import('./src/components/map/panels/sidepanel/MapSidePanelHeader.vue')['default']
-    MapSidePanelScore: typeof import('./src/components/map/panels/sidepanel/score/MapSidePanelScore.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
-    PlantabilityContextDataAccordionItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataAccordionItem.vue')['default']
-    PlantabilityContextDataItem: typeof import('./src/components/contextData/plantability/PlantabilityContextDataItem.vue')['default']
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']
     PlantabilityContextDataScore: typeof import('./src/components/contextData/plantability/PlantabilityContextDataScore.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
@@ -65,7 +59,6 @@ declare module 'vue' {
     Select: typeof import('primevue/select')['default']
     Textarea: typeof import('primevue/textarea')['default']
     Toast: typeof import('primevue/toast')['default']
-    ToggleButton: typeof import('primevue/togglebutton')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
     VulnerabilityContextDataList: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataList.vue')['default']
@@ -74,9 +67,7 @@ declare module 'vue' {
     VulnerabilityContextTool: typeof import('./src/components/contextTools/VulnerabilityContextTool.vue')['default']
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
     VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
-    VulnerabilityScoreContent: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScoreContent.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
-    VulnerabilityScorePopupItem: typeof import('./src/components/map/panels/sidepanel/score/VulnerabilityScorePopupItem.vue')['default']
   }
   export interface ComponentCustomProperties {
     Tooltip: typeof import('primevue/tooltip')['default']
