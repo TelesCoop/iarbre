@@ -1,10 +1,17 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataFactor, ContextDataColorScheme } from "@/types/contextData"
+import VulnerabilityContextDataScore from "@/components/contextData/vulnerability/VulnerabilityContextDataScore.vue"
+import type {
+  ContextDataFactor,
+  ContextDataColorScheme,
+  ContextDataVulnerabilityFactor
+} from "@/types/contextData"
 
 interface ContextDataItemProps {
   item: ContextDataFactor
   colorScheme?: ContextDataColorScheme
+  getScoreColor?: (score: number, factorId: string) => string
+  getScoreLabel?: (score: number, factorId: string) => string
 }
 
 const props = withDefaults(defineProps<ContextDataItemProps>(), {
@@ -45,9 +52,29 @@ const valueClasses = computed(() => {
     }
   } else if (props.colorScheme === "climate") {
     return `${base} text-primary-600`
+  } else if (props.colorScheme === "vulnerability") {
+    return `${base} text-primary-600`
   }
 
   return `${base} text-gray-700`
+})
+
+const isVulnerabilityFactor = computed(() => {
+  const item = props.item as ContextDataVulnerabilityFactor
+  return (
+    props.colorScheme === "vulnerability" &&
+    (item.dayScore !== undefined || item.nightScore !== undefined)
+  )
+})
+
+const vulnerabilityScores = computed(() => {
+  if (!isVulnerabilityFactor.value) return null
+
+  const item = props.item as ContextDataVulnerabilityFactor
+  return {
+    day: item.dayScore,
+    night: item.nightScore
+  }
 })
 </script>
 
@@ -73,7 +100,30 @@ const valueClasses = computed(() => {
       <p v-if="item.description" class="text-xs text-gray-500 mb-1">
         {{ item.description }}
       </p>
-      <p :class="valueClasses">
+      <div
+        v-if="isVulnerabilityFactor && vulnerabilityScores && getScoreColor && getScoreLabel"
+        class="flex gap-6"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-gray-600">☀️ Jour:</span>
+          <vulnerability-context-data-score
+            :score="vulnerabilityScores.day ?? null"
+            :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
+            :get-score-color="getScoreColor"
+            :get-score-label="getScoreLabel"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-gray-600">🌙 Nuit:</span>
+          <vulnerability-context-data-score
+            :score="vulnerabilityScores.night ?? null"
+            :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
+            :get-score-color="getScoreColor"
+            :get-score-label="getScoreLabel"
+          />
+        </div>
+      </div>
+      <p v-else :class="valueClasses">
         {{ item.value }}
         <span v-if="item.unit" class="text-xs text-gray-500 font-normal ml-1">{{ item.unit }}</span>
       </p>

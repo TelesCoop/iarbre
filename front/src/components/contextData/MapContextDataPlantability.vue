@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, withDefaults } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
-import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
+import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
 
@@ -21,21 +21,22 @@ const scorePercentage = computed(() =>
 </script>
 
 <template>
-  <div
-    aria-describedby="plantability-description"
-    aria-labelledby="plantability-title"
-    class="map-context-panel item-center"
-    role="dialog"
+  <context-data-main-container
+    color-scheme="plantability"
+    title="plantability"
+    description="Calcul basé sur la pondération de +37 paramètres"
+    :data="props.data"
+    empty-message="Zommez et cliquez sur un carreau"
   >
-    <map-context-header description="Calcul basé sur la pondération de +37 paramètres" />
-    <div class="map-context-panel-content">
+    <template #score="{ data: plantabilityData }">
       <plantability-context-data-score
-        v-if="props.data && scorePercentage !== null"
+        v-if="scorePercentage !== null"
         :percentage="scorePercentage"
-        :score="props.data.plantabilityNormalizedIndice"
+        :score="plantabilityData.plantabilityNormalizedIndice"
       />
-      <empty-message v-else data-cy="empty-message" message="Zommez et cliquez sur un carreau" />
-      <plantability-context-data-list v-if="props.data" :data="props.data" />
-    </div>
-  </div>
+    </template>
+    <template #content="{ data: plantabilityData }">
+      <plantability-context-data-list :data="plantabilityData" />
+    </template>
+  </context-data-main-container>
 </template>

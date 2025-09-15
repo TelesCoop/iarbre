@@ -1,11 +1,17 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
 import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
+import VulnerabilityContextDataScoreBadge from "@/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue"
 import type { ContextDataFactorGroup, ContextDataColorScheme } from "@/types/contextData"
+import type { VulnerabilityCategory } from "@/utils/enum"
+import { VulnerabilityMode } from "@/utils/vulnerability"
 
 interface ContextDataAccordionItemProps {
   group: ContextDataFactorGroup
   colorScheme?: ContextDataColorScheme
+  getCategoryScore?: (category: VulnerabilityCategory, mode: VulnerabilityMode) => number | null
+  getScoreColor?: (score: number, factorId: string) => string
+  getScoreLabel?: (score: number, factorId: string) => string
 }
 
 const props = withDefaults(defineProps<ContextDataAccordionItemProps>(), {
@@ -71,6 +77,15 @@ const impactTitle = computed(() => {
 
   return "Impact neutre"
 })
+
+const isVulnerabilityGroup = computed(() => {
+  return props.colorScheme === "vulnerability" && props.getCategoryScore !== undefined
+})
+
+const vulnerabilityCategory = computed(() => {
+  if (!isVulnerabilityGroup.value) return null
+  return props.group.category as VulnerabilityCategory
+})
 </script>
 
 <template>
@@ -98,8 +113,13 @@ const impactTitle = computed(() => {
       </div>
 
       <div class="flex items-center gap-2">
+        <vulnerability-context-data-score-badge
+          v-if="isVulnerabilityGroup && vulnerabilityCategory && getCategoryScore"
+          :category="vulnerabilityCategory"
+          :get-category-score="getCategoryScore"
+        />
         <div
-          v-if="shouldShowImpactIndicator"
+          v-else-if="shouldShowImpactIndicator"
           :class="impactIndicatorClasses"
           :title="impactTitle"
         ></div>
@@ -121,6 +141,8 @@ const impactTitle = computed(() => {
         :key="factor.key"
         :item="factor"
         :color-scheme="colorScheme"
+        :get-score-color="getScoreColor"
+        :get-score-label="getScoreLabel"
       />
     </div>
   </div>
