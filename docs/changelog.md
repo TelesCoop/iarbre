@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.15.0 (2025-07-30) : Tests, refactoring Ansible et changements UI/UX
+## 🔖 0.15.0 (2025-09-18) : Tests, refactoring Ansible et changements UI/UX
 
 ### ✅ test: Ajouts de tests front et back + calcul de la couverture.
 
