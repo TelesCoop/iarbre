@@ -1,5 +1,23 @@
 # Journal des changements
 
+## 🔖 0.15.0 (2025-07-30) : Tests, refactoring Ansible et changements UI/UX
+
+### ✅ test: Ajouts de tests front et back + calcul de la couverture.
+
+Des tests pour le back et le front ont été ajouté ainsi que des badges sur le `README` qui indiquent les taux de couverture du code.
+
+![Code coverage badge](assets/images/changelog/v0.15.0/cover.png)
+
+### 🛠️ enhance : Refacto Ansible
+
+L'ensemble des scripts Ansible ont été ré-organisé et re-découpé pour augementer la clarté et la simplicité. l'objectif est qu'une personne qui arrive sur le projet puisse plus facilement prendre en main ces scripts de deployement.
+
+### ✨ feat : Evolutions UI/UX
+
+L'ensemble des affichages et commandes ont été transférées dans un panneau latéral à gauche. Il n'y a plus de popup, quand on clique les données s'affiche de ce panneau. La navigation est plus fluide et facile avec ce regroupement de l'information et des commandes. La taille de la légende a été réduite pour laisser plus de place à l'information sur la carte.
+Less informations affichées, en particulier les tableaux et les badges de scores, pour les différents calques sont maintenant homogènes.
+![Nouvel UX/UI](assets/images/changelog/v0.15.0/context.jpg)
+
 ## 🔖 0.14.0 (2025-07-30) : Evolutions couleurs vulnérabilité chaleur, ajout documentation
 
 ### ✨ feat : Ajout de Plausible sur la cartographie
