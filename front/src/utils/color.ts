@@ -25,8 +25,12 @@ function getElementBackgroundColor(element: HTMLElement): string {
 }
 
 export function getPlantabilityTextColor(percentage: number | null): string {
-  if (!percentage) return "text-gray-300"
-  return percentage >= 80 ? "text-scale-8" : percentage >= 60 ? "text-scale-4" : "text-scale-2"
+  if (!percentage) return "text-gray-300" // Default for null/undefined
+  if (percentage >= 80) return "text-scale-8"
+  if (percentage >= 60) return "text-scale-6"
+  if (percentage >= 40) return "text-scale-4"
+  if (percentage >= 20) return "text-scale-2"
+  return "text-scale-0" //
 }
 
 export function getVulnerabilityTextColor(score: number | null): string {
