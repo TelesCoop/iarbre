@@ -1,8 +1,10 @@
 import time
 import pandas as pd
+import re
 from django.core.management.base import BaseCommand
 from iarbre_data.models import HotSpot, City
 from iarbre_data.utils.data_processing import geocode_address
+from unidecode import unidecode
 
 
 class Command(BaseCommand):
@@ -16,33 +18,58 @@ class Command(BaseCommand):
             help="Path to the Excel file to import (default: file_data/hotspot/private_trees.xlsx)",
         )
 
-    def extract_first_street_number(self, address):
-        """Extract only the first street number from addresses with multiple numbers."""
+    @staticmethod
+    def extract_first_street_number(address):
+        """Extract only the first street number and the street name from the address."""
+        if not address:
+            return address
 
-        parts = address.split()
+        # Find the first number in the address
+        match = re.search(r"\d+", address)
+        if not match:
+            return address  # No number found, return as-is
 
-        first_part = parts[0]
+        first_number = match.group()
+        first_number_index = address.find(first_number)
 
-        # Handle patterns like "43,45,47,49" or "121 A,B,C,D,E,F,G,H"
-        if "," in first_part:
-            first_number = first_part.split(",")[0]
-            parts[0] = first_number
+        # Get everything after the first number
+        rest_of_address = address[first_number_index + len(first_number) :].strip()
 
-        # Handle patterns like "43/45/47" or "51,53,55 / 57,59,61,63"
-        elif "/" in first_part:
-            first_number = first_part.split("/")[0]
-            parts[0] = first_number
+        # Handle comma-separated numbers: "43,45,47,49 Rue" -> "43 Rue"
+        if rest_of_address.startswith(","):
+            # Remove everything until we find a non-number, non-comma, non-space character
+            rest_of_address = re.sub(r"^[,\d\s]+", "", rest_of_address).strip()
 
-        # Handle patterns where second part might contain letters like "A,B,C,D"
-        elif (
-            len(parts) > 1
-            and "," in parts[1]
-            and all(c.isalpha() or c == "," for c in parts[1])
-        ):
-            # Keep the number, remove the letter variations
-            parts = [parts[0]] + parts[2:]
+        # Handle slash-separated numbers: "43/45/47 Avenue" -> "43 Avenue"
+        elif "/" in rest_of_address:
+            # For patterns like "/45/47 Avenue", remove all numbers after slashes until we hit the street name
+            # For patterns like ",53,55 / 57,59,61,63 Avenue", preserve the " / " format
+            if rest_of_address.strip().startswith("/"):
+                # Simple case: "/45/47 Avenue" -> " Avenue"
+                # Remove everything that's a slash or number until we hit letters
+                rest_of_address = re.sub(r"^[/\d\s]+", " ", rest_of_address).strip()
+            else:
+                # Complex case like ",53,55 / 57,59,61,63 Avenue" where we want to preserve the " / " format
+                parts = rest_of_address.split("/")
+                if len(parts) > 1 and re.match(r"^[,\d\s]+$", parts[0].strip()):
+                    # Keep the slash and everything after it
+                    rest_of_address = " / " + "/".join(parts[1:])
+                else:
+                    # Just remove everything until the street name
+                    rest_of_address = re.sub(r"^[/\d\s]+", " ", rest_of_address).strip()
 
-        return " ".join(parts)
+        # Handle complex patterns with letters: "121 A,B,C,D,E,F,G,H Rue" -> "121 Rue"
+        elif re.match(r"^\s*[A-Z,\s]+[A-Za-z]", rest_of_address):
+            # Remove letter patterns at the beginning but keep the street name
+            rest_of_address = re.sub(
+                r"^\s*[A-Z,\s]+(?=[A-Z][a-z])", "", rest_of_address
+            ).strip()
+
+        # Ensure we have proper spacing
+        if rest_of_address:
+            return f"{first_number} {rest_of_address}"
+        else:
+            return first_number
 
     def clean_address(self, address):
         """Remove everything after postal code and extract first street number."""
@@ -51,7 +78,6 @@ class Command(BaseCommand):
 
         # First extract only the first street number
         address = self.extract_first_street_number(address)
-
         parts = address.split()
         for i, part in enumerate(parts):
             if part.isdigit() and len(part) == 5:
@@ -63,26 +89,27 @@ class Command(BaseCommand):
         """Extract city from address and find matching City object."""
         parts = address.split()
         city_name = None
-
         for i, part in enumerate(parts):
             if part.isdigit() and len(part) == 5:
                 if i + 1 < len(parts):
                     city_name = " ".join(parts[i + 1 :])
+                    city_name = city_name.replace("-", " ").strip()
+                    if city_name.lower() == "lyon":
+                        arrondissement = part[-2:]
+                        city_name = f"{city_name} {arrondissement.lstrip('0')}"
                     break
-
         if city_name:
             try:
-                return City.objects.filter(name__icontains=city_name).first()
+                return City.objects.filter(name__icontains=unidecode(city_name)).first()
             except Exception as e:
                 print(f"Can't find City {city_name}: {e}.")
                 return None
-
         return None
 
-    def find_address_column(self, df):
-        """Find the address column in the dataframe."""
+    def find_column(self, df: pd.DataFrame, regex: str):
+        """Find the a column in the dataframe based on regex."""
         for col in df.columns:
-            if "adresse" in col.lower():
+            if regex in col.lower():
                 if not df[col].isna().all():
                     return col
         return None
@@ -90,23 +117,18 @@ class Command(BaseCommand):
     def get_full_address(self, row, address_column, df):
         """Get full address by appending commune if it exists."""
         address = row[address_column]
-
-        # Look for a Commune column
-        commune_col = None
-        for col in df.columns:
-            if col.strip().lower() == "commune":
-                commune_col = col
-                break
+        commune_col = self.find_column(df, "commune")
 
         if commune_col and not pd.isna(row[commune_col]):
             commune = str(row[commune_col]).strip()
             if commune:
-                if "lyon" in commune.lower():
+                if ("lyon" in commune.lower()) and not (
+                    "foy" in commune.lower()
+                ):  # Sainte-For-lès-lyon
                     parts = commune.split()
                     arrondissement = int(parts[1])
                     commune = f"690{arrondissement:02d}"
                 address = f"{address}, {commune}"
-
         return address
 
     def get_additional_data_columns(self, df, address_column):
@@ -126,15 +148,6 @@ class Command(BaseCommand):
             if not pd.isna(value):
                 description[col_key] = value
         return description
-
-    def extract_city_name_from_address(self, address):
-        """Extract city name from address string."""
-        parts = address.split()
-        for i, part in enumerate(parts):
-            if part.isdigit() and len(part) == 5:
-                if i + 1 < len(parts):
-                    return " ".join(parts[i + 1 :])
-        return None
 
     def create_or_update_hotspot(self, geometry, description, city_name, city):
         """Create or update a HotSpot object."""
@@ -160,31 +173,45 @@ class Command(BaseCommand):
     def process_sheet(self, file_path, sheet_name):
         """Process a single sheet from the Excel file."""
         df = pd.read_excel(file_path, sheet_name=sheet_name)
-        address_column = self.find_address_column(df)
+        address_column = self.find_column(df, "adresse")
+        commune_column = self.find_column(df, "commune")
         if not address_column:
             print(f'No address column found in sheet "{sheet_name}"')
             return 0
+        if not commune_column:
+            commune_column = ""
 
         additional_data = self.get_additional_data_columns(df, address_column)
         created_count = 0
 
         for _, row in df.iterrows():
+            print(row[address_column])
             address = self.get_full_address(row, address_column, df)
             if pd.isna(address) or not address.strip():
                 continue
-
             description = self.build_description(sheet_name, row, additional_data)
-            geometry = geocode_address(address)
+            cleaned_address = self.clean_address(address)
+            geometry = geocode_address(cleaned_address)
             time.sleep(1)  # 1 request max per second
             if not geometry:
-                print(f"Could not geocode address {address}, skipping")
+                print("*" * 10)
+                print(f"Could not geocode address {cleaned_address}, skipping")
+                print("*" * 10)
+                continue
+            city = self.get_city_from_address(address)
+
+            if city is None and commune_column and not pd.isna(row[commune_column]):
+                city = City.objects.filter(
+                    name__icontains=unidecode(
+                        row[commune_column].replace("-", " ").strip()
+                    )
+                ).first()
+
+            if city is None:
+                print(f"Could not find city for address {address}, skipping")
                 continue
 
-            city = self.get_city_from_address(address)
-            city_name = (
-                city.name if city else self.extract_city_name_from_address(address)
-            )
-
+            city_name = city.name
             if self.create_or_update_hotspot(geometry, description, city_name, city):
                 created_count += 1
 
@@ -200,6 +227,9 @@ class Command(BaseCommand):
             print(f"Found sheets: {xl_file.sheet_names}")
             print(xl_file.sheet_names)
             for sheet_name in xl_file.sheet_names:
+                if sheet_name != "Don darbres 2024":
+                    continue
+                print(f'Sheet "{sheet_name}"')
                 created = self.process_sheet(file_path, sheet_name)
                 total_created += created
                 print(f'Sheet "{sheet_name}": {created} HotSpots created')

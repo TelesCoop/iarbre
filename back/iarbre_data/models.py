@@ -223,10 +223,8 @@ class HotSpot(models.Model):
     geometry = PointField(srid=2154)
     map_geometry = PointField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     description = models.JSONField(null=True, blank=True)
-    city_name = models.CharField(max_length=200, null=True, blank=True)
-    city = models.ForeignKey(
-        City, on_delete=models.CASCADE, related_name="hotspot", null=True, blank=True
-    )
+    city_name = models.CharField(max_length=200)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="hotspot")
 
     geolevel = GeoLevel.CADASTRE.value
     datatype = DataType.CADASTRE.value

@@ -14,6 +14,7 @@
 // ***********************************************************
 
 import "./commands"
+import "@cypress/code-coverage/support"
 
 Cypress.on("window:before:load", (win) => {
   cy.spy(win.console, "info").as("consoleInfo")

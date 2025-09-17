@@ -1,4 +1,5 @@
 import { getContrast } from "polished"
+import { getVulnerabilityColor } from "./vulnerability"
 
 function getElementBackgroundColor(element: HTMLElement): string {
   let currentElement: HTMLElement | null = element
@@ -21,6 +22,29 @@ function getElementBackgroundColor(element: HTMLElement): string {
 
   // Fallback to white if no background color is found
   return "white"
+}
+
+export function getPlantabilityTextColor(percentage: number | null): string {
+  if (!percentage) return "text-gray-300"
+  return percentage >= 80 ? "text-scale-8" : percentage >= 60 ? "text-scale-4" : "text-scale-2"
+}
+
+export function getVulnerabilityTextColor(score: number | null): string {
+  if (!score) return "text-gray-300"
+  const colorCode = getVulnerabilityColor(score)
+  const colorMap: Record<string, string> = {
+    "#4474b5": "text-blue-600",
+    "#75add1": "text-blue-400",
+    "#aad9e9": "text-blue-200",
+    "#5aaf7b": "text-green-600",
+    "#9cbf4e": "text-green-500",
+    "#d7e360": "text-green-300",
+    "#fdae60": "text-orange-300",
+    "#f56c43": "text-orange-500",
+    "#d73026": "text-red-600",
+    grey: "text-gray-500"
+  }
+  return colorMap[colorCode] || "text-gray-500"
 }
 
 export function getAdaptativeColorClass(

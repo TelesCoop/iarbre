@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
-import { useAppStore } from "@/stores/app"
+import MapSidePanel from "./panels/sidepanel/MapSidePanel.vue"
 
 const props = defineProps({
   mapId: {
@@ -54,37 +54,16 @@ onMounted(() => {
     <map-legend />
     <div class="flex gap-2">
       <map-filters-status />
-      <map-context-tools class="ml-auto" />
     </div>
   </div>
-  <div
-    class="absolute hidden lg:flex top-0 left-0 ml-1 sm:ml-2 lg:ml-8 mt-4 mr-1 sm:mr-2 gap-2 flex-col z-1 w-[20rem] md:w-[24rem] lg:w-[26rem] xl:w-[30rem] 2xl:w-[32rem] max-w-[calc(100vw-0.5rem)]"
-  >
-    <map-layer-switcher />
-    <map-bg-switcher />
-    <map-qpv-toggle-button />
-    <map-context-data
-      class="max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-6rem)] p-0!"
-    />
-  </div>
-  <div :id="`popup-${mapId}`" :style="{ display: mapStore.popupData ? 'block' : 'none' }">
-    <map-score-popup />
-  </div>
+  <map-side-panel />
 </template>
 
 <style>
 @reference "@/styles/main.css";
 
 .legend-container {
-  position: absolute;
-  margin-top: 1rem;
-  z-index: 30;
-  flex-direction: column;
-  align-items: flex-end;
-  pointer-events: none;
-  @apply gap-2;
-  @apply top-0 right-0;
-  @apply mx-1;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
 }
 
 .legend-container > * {

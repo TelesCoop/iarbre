@@ -80,24 +80,27 @@
 }
 
 .card {
-  @apply bg-white rounded-[0.75rem] p-5;
+  @apply bg-white rounded-xl p-5;
 }
 
 .map-tool-container {
   @apply flex items-center gap-2 sm:gap-4;
-  @apply rounded-md;
   @apply bg-white z-10;
-  @apply border-primary-500 border-0.5;
-  @apply p-2 md:p-4;
+  @apply md:pt-4;
   @apply max-w-full;
+}
+
+.map-bg-tool-container {
+  @apply flex flex-col items-start gap-2 sm:gap-4;
+  @apply bg-gray-100 z-10;
+  @apply px-4 py-2;
+  @apply max-w-full;
+  @apply rounded-md border border-gray-200;
 }
 
 .map-context-data-container {
   @apply flex flex-col;
-  @apply rounded-lg;
   @apply bg-white z-10;
-  @apply border border-primary-500;
-  @apply p-0;
   @apply max-w-full;
   @apply overflow-hidden;
   @apply transition-all duration-200;
@@ -106,10 +109,21 @@
 .map-context-panel {
   @apply bg-white w-full max-w-full;
   @apply transition-all duration-200;
+  @apply items-center;
+}
+
+.map-context-card {
+  @apply flex w-full;
+  @apply font-sans;
+  @apply items-center;
+  @apply px-4 py-2 mb-4;
+  @apply py-2;
+  @apply mb-4;
+  @apply rounded-md border border-gray-200 justify-center;
 }
 
 .map-context-panel-content {
-  @apply p-1 sm:p-2 md:p-4;
+  @apply py-1 sm:py-2 md:py-4;
   @apply flex flex-col gap-1 sm:gap-2 md:gap-4;
   @apply text-xs min-h-0;
 }

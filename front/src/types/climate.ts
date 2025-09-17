@@ -37,4 +37,7 @@ export interface ClimateData {
 
   geometry: string
   mapGeometry: string
+
+  lczIndex: string | number
+  lczDescription: string
 }

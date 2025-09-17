@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import FilterIndicator from "../legend/FilterIndicator.vue"
-import { getAdaptativeColorClass } from "@/utils/color"
 
 interface ScoreLabelProps {
   score: number
@@ -19,7 +18,6 @@ const emit = defineEmits<{
 }>()
 
 const scoreLabelRef = ref<HTMLElement | null>(null)
-const textClass = computed(() => getAdaptativeColorClass(scoreLabelRef.value))
 const isSelected = computed(() => props.isSelected || false)
 const isClickable = computed(() => props.clickable || false)
 
@@ -45,10 +43,10 @@ const handleClick = () => {
         ? `Score ${score} - Cliquez pour ${isSelected ? 'désactiver' : 'activer'} le filtre`
         : undefined
     "
-    class="relative w-[16px] h-[16px] xs:w-[24px] xs:h-[24px] lg:w-[36px] lg:h-[36px] rounded-[2px] flex items-center justify-center font-accent text-xs xs:text-sm transform"
+    class="relative flex items-center justify-center font-accent text-xs xs:text-sm transform flex-shrink-0"
+    style="width: 11px; height: 27px"
     @click="handleClick"
   >
-    <span class="font-bold" :class="textClass">{{ label }}</span>
     <FilterIndicator :is-visible="isSelected" />
   </div>
 </template>

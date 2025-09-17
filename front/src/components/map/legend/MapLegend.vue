@@ -6,23 +6,27 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div v-if="mapStore.selectedDataType" class="map-legend">
-    <div class="mb-2 text-sm font-semibold font-accent text-primary-900" data-cy="map-legend-title">
+  <div
+    v-if="mapStore.selectedDataType"
+    class="bg-white flex px-4 py-2 flex-col justify-center items-center gap-2 rounded-lg"
+  >
+    <div
+      class="hidden lg:block text-sm font-semibold font-accent text-primary-900 text-center"
+      data-cy="map-legend-title"
+    >
       {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
     </div>
-    <plantability-legend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" />
-    <climate-zone-legend v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE" />
-    <vulnerability-legend v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY" />
+    <plantability-legend
+      v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
+      class="w-full"
+    />
+    <climate-zone-legend
+      v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+      class="w-full"
+    />
+    <vulnerability-legend
+      v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+      class="w-full"
+    />
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-.map-legend {
-  @apply bg-white;
-  @apply p-2 md:p-4;
-  @apply top-0 right-0;
-  @apply flex flex-col items-center;
-  @apply rounded-md border-primary-500 border-0.5;
-}
-</style>

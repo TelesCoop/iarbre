@@ -15,6 +15,7 @@ ipython==8.26.0
 mapbox_vector_tile==2.1.0
 mercantile==1.2.1
 numpy==2.0.1
+openpyxl==3.1.5
 protobuf==5.29.5
 psycopg2==2.9.9
 pyproj==3.7.0
@@ -25,3 +26,4 @@ scipy==1.14.1
 shapely==2.0.5
 telescoop_backup==0.5.3
 tqdm==4.66.5
+Unidecode==1.4.0

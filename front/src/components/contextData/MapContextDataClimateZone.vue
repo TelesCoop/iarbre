@@ -1,39 +1,36 @@
 <script lang="ts" setup>
+import { withDefaults } from "vue"
 import type { ClimateData } from "@/types/climate"
-import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
+import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
+import ClimateContextDataScore from "@/components/contextData/climate/ClimateContextDataScore.vue"
 
 interface ClimateDataProps {
-  data: ClimateData
+  data?: ClimateData | null
   hideCloseButton?: boolean
   fullHeight?: boolean
 }
 
-const props = defineProps<ClimateDataProps>()
-const emit = defineEmits<{
-  close: []
-}>()
-
-const handleClose = () => {
-  emit("close")
-}
+const props = withDefaults(defineProps<ClimateDataProps>(), {
+  data: null
+})
 </script>
 
 <template>
-  <div
-    aria-describedby="climate-description"
-    aria-labelledby="climate-title"
-    class="map-context-panel"
-    role="dialog"
+  <context-data-main-container
+    color-scheme="climate"
+    title="climate"
+    description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
+    :data="props.data"
+    :full-height="props.fullHeight"
+    :hide-close-button="props.hideCloseButton"
+    empty-message="Cliquez sur un carreau"
   >
-    <map-context-header
-      description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
-      title="Zones climatiques locales"
-      :hide-close-button="props.hideCloseButton"
-      @close="handleClose"
-    />
-    <div class="map-context-panel-content">
-      <climate-context-data-metrics :data="data" :full-height="props.fullHeight" />
-    </div>
-  </div>
+    <template #score="{ data: climateData }">
+      <climate-context-data-score :data="climateData" />
+    </template>
+    <template #content="{ data: climateData, fullHeight: isFullHeight }">
+      <climate-context-data-metrics :data="climateData" :full-height="isFullHeight" />
+    </template>
+  </context-data-main-container>
 </template>

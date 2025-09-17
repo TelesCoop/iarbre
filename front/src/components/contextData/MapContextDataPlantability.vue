@@ -1,42 +1,42 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, withDefaults } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
-import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
+import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
 
 interface PlantabilityCardProps {
-  data: PlantabilityData
-  hideCloseButton?: boolean
+  data?: PlantabilityData | null
 }
 
-const props = defineProps<PlantabilityCardProps>()
-const emit = defineEmits<{
-  close: []
-}>()
+const props = withDefaults(defineProps<PlantabilityCardProps>(), {
+  data: null
+})
 
-const scorePercentage = computed(() => props.data?.plantabilityNormalizedIndice * 10)
+const scorePercentage = computed(() =>
+  props.data?.plantabilityNormalizedIndice !== undefined
+    ? props.data.plantabilityNormalizedIndice * 10
+    : null
+)
 </script>
 
 <template>
-  <div
-    aria-describedby="plantability-description"
-    aria-labelledby="plantability-title"
-    class="map-context-panel"
-    role="dialog"
+  <context-data-main-container
+    color-scheme="plantability"
+    title="plantability"
+    description="Calcul basé sur la pondération de +37 paramètres"
+    :data="props.data"
+    empty-message="Zommez et cliquez sur un carreau"
   >
-    <map-context-header
-      description="Calcul basé sur la pondération de +37 paramètres"
-      title="Score de plantabilité"
-      :hide-close-button="props.hideCloseButton"
-      @close="emit('close')"
-    />
-    <div class="map-context-panel-content">
+    <template #score="{ data: plantabilityData }">
       <plantability-context-data-score
+        v-if="scorePercentage !== null"
         :percentage="scorePercentage"
-        :score="data.plantabilityNormalizedIndice"
+        :score="plantabilityData.plantabilityNormalizedIndice"
       />
-      <plantability-context-data-list :data="data" />
-    </div>
-  </div>
+    </template>
+    <template #content="{ data: plantabilityData }">
+      <plantability-context-data-list :data="plantabilityData" />
+    </template>
+  </context-data-main-container>
 </template>
