@@ -41,16 +41,12 @@ const chartData = computed(() => {
   if (!props.data?.details) return null
 
   let values: number[]
-  try {
-    // Handle case where details is a JSON string containing an array
-    if (typeof props.data.details === "string") {
-      const parsed = JSON.parse(props.data.details)
-      values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
-    } else {
-      // Handle case where details is the expected object structure
-      return null // For now, only handle the array case
-    }
-  } catch {
+  if (typeof props.data.details === "string") {
+    const parsed = JSON.parse(props.data.details)
+    values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
+  } else {
+    // For zoom >= 17 it is props.data.top5LandUse.
+    // Can never happend here but because of type checking need the else
     return null
   }
 
@@ -60,7 +56,6 @@ const chartData = computed(() => {
     frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
   })
 
-  // Convert to arrays for chart and map colors correctly
   const scores = Array.from(frequencyMap.keys())
   const labels = scores.map((key) => `Score ${key}`)
   const data = Array.from(frequencyMap.values())
@@ -70,7 +65,7 @@ const chartData = computed(() => {
     const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(score)
     return colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
       ? PLANTABILITY_COLOR_MAP[colorIndex + 1]
-      : "#C4C4C4" // fallback gray
+      : "#C4C4C4"
   })
 
   return {
@@ -92,11 +87,16 @@ const chartOptions = computed(() => ({
   plugins: {
     legend: {
       display: true,
-      position: "bottom"
+      position: "bottom",
+      onClick: null // don't allow filtering onClick
     },
     title: {
       display: true,
       text: "Distribution des scores de plantabilité sur la zone."
+    },
+    font: {
+      size: 34,
+      family: "IBM Plex Mono"
     }
   }
 }))
