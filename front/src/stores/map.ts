@@ -247,6 +247,8 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = datatype
     // Clear filters when changing data type
     clearAllFilters()
+    // Clear context data when changing data type
+    contextData.removeData()
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
