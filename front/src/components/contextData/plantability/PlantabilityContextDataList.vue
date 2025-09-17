@@ -5,6 +5,7 @@ import { toRef, computed } from "vue"
 import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
+import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 
 interface PlantabilityFactorsProps {
   data: PlantabilityData
@@ -35,6 +36,70 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
     hasNegativeImpact: group.hasNegativeImpact
   }))
 })
+
+const chartData = computed(() => {
+  if (!props.data?.details) return null
+
+  let values: number[]
+  try {
+    // Handle case where details is a JSON string containing an array
+    if (typeof props.data.details === "string") {
+      const parsed = JSON.parse(props.data.details)
+      values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
+    } else {
+      // Handle case where details is the expected object structure
+      return null // For now, only handle the array case
+    }
+  } catch {
+    return null
+  }
+
+  // Count frequency of each unique value
+  const frequencyMap = new Map<number, number>()
+  values.forEach((value) => {
+    frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
+  })
+
+  // Convert to arrays for chart and map colors correctly
+  const scores = Array.from(frequencyMap.keys())
+  const labels = scores.map((key) => `Score ${key}`)
+  const data = Array.from(frequencyMap.values())
+
+  // Map each score to its corresponding color from PLANTABILITY_COLOR_MAP
+  const backgroundColor = scores.map((score) => {
+    const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(score)
+    return colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
+      ? PLANTABILITY_COLOR_MAP[colorIndex + 1]
+      : "#C4C4C4" // fallback gray
+  })
+
+  return {
+    labels,
+    datasets: [
+      {
+        data,
+        backgroundColor,
+        borderWidth: 2,
+        borderColor: "#fff"
+      }
+    ]
+  }
+})
+
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: "bottom"
+    },
+    title: {
+      display: true,
+      text: "Distribution des scores de plantabilité sur la zone."
+    }
+  }
+}))
 </script>
 
 <template>
@@ -48,7 +113,18 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
     </template>
 
     <template v-else>
-      <empty-message data-cy="empty-message" message="Pas de données d'occupation des sols ici." />
+      <div v-if="chartData" class="p-4">
+        <Chart type="pie" :data="chartData" :options="chartOptions" class="w-full h-64" />
+        <empty-message
+          data-cy="empty-message"
+          message="Zoomez plus pour obtenir l'occupation des sols."
+        />
+      </div>
+      <empty-message
+        v-else
+        data-cy="empty-message"
+        message="Pas de données d'occupation des sols ici."
+      />
     </template>
   </div>
 </template>

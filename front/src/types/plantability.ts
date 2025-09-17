@@ -115,7 +115,7 @@ export interface PlantabilityData {
   id: string
   plantabilityNormalizedIndice: number
   plantabilityIndice: number
-  details?: PlantabilityDataDetails
+  details?: PlantabilityDataDetails | string
   geolevel: GeoLevel
   datatype: DataType
   iris: number
