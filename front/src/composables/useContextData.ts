@@ -4,7 +4,7 @@ import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
-import { DataType } from "@/utils/enum"
+import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
 export function useContextData() {
   const data = ref<PlantabilityData | VulnerabilityData | ClimateData | null>(null)
@@ -29,11 +29,23 @@ export function useContextData() {
     if (
       indexValue !== undefined &&
       source_values !== undefined &&
-      data.value &&
-      data.value.datatype === DataType.PLANTABILITY
+      mapStore.selectedDataType === DataType.PLANTABILITY
     ) {
-      ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
-      ;(data.value as PlantabilityData).details = source_values
+      if (!data.value) {
+        data.value = {
+          id: stringId,
+          plantabilityNormalizedIndice: +indexValue,
+          plantabilityIndice: +indexValue,
+          details: source_values,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.PLANTABILITY,
+          iris: 0,
+          city: 0
+        } as PlantabilityData
+      } else if (data.value.datatype === DataType.PLANTABILITY) {
+        ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
+        ;(data.value as PlantabilityData).details = source_values
+      }
     }
   }
   const removeData = () => {
