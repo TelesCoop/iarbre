@@ -12,15 +12,6 @@ describe("Map", () => {
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
-  it.skip("shows vulnerability context data", () => {
-    cy.getBySel("map-context-data").should("not.exist")
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
-
-    cy.getBySel("map-context-data").should("satisfy", ($el) => {
-      const text = $el.text()
-      return text.includes("Vulnérabilité chaleur") || text.includes("Cliquez sur une zone")
-    })
-  })
   it("loads with plantability layer", () => {
     cy.getBySel("plantability-legend").should("exist")
     cy.getBySel("map-component").should("exist")
@@ -62,13 +53,20 @@ describe("Map", () => {
     cy.getBySel("map-context-data").should("contain", "Zommez et cliquez sur un carreau")
     cy.mapZoomTo(3)
     cy.getBySel("map-component").click("center")
-    cy.getBySel("map-context-data").should("contain", "Paramètres principaux")
   })
+  it("shows vulnerability context data", () => {
+    cy.getBySel("map-context-data").should("exist")
+    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
 
-  it.skip("shows climate zone context data", () => {
+    cy.getBySel("map-context-data").should(
+      "contain",
+      "Calcul basé sur l'exposition, la difficulté à faire face et la sensibilité."
+    )
+  })
+  it("shows climate zone context data", () => {
     cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
     cy.getBySel("map-context-data").should("exist")
-    cy.getBySel("map-context-data").should("contain", "Zones climatiques locales")
+    cy.getBySel("map-context-data").should("contain", "Indicateurs climatiques locaux")
   })
 
   it("adds QPV layer when toggled", () => {

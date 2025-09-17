@@ -12,14 +12,14 @@ describe("MapContextDataClimateZone", () => {
   const mockClimateData: ClimateData = {
     datatype: DataType.CLIMATE,
     geolevel: GeoLevel.LCZ,
+    lczDescription: "Ensemble dense de batîments hauts",
     id: 123,
     details: {
       [ClimateDataDetailsKey.HRE]: 15.5,
       [ClimateDataDetailsKey.ARE]: 250.0
     }
   }
-
-  it("display climate zone data correctly", () => {
+  beforeEach(() => {
     const pinia = createPinia()
 
     mount(MapContextDataClimateZone, {
@@ -30,34 +30,27 @@ describe("MapContextDataClimateZone", () => {
         data: mockClimateData
       }
     })
+  })
+
+  it("display climate zone data correctly", () => {
+    cy.contains("Ensemble dense de batîments hauts").should("be.visible")
     cy.contains("Indicateurs climatiques locaux pour une zone sélectionnée").should("be.visible")
   })
 
   it("display climate metrics with categories", () => {
-    const pinia = createPinia()
-    mount(MapContextDataClimateZone, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        data: mockClimateData
-      }
-    })
     const { climateCategoryKey } = useClimateZone()
     cy.contains(ClimateCategory.BUILDING).should("be.visible")
-    cy.getBySel(climateCategoryKey[ClimateCategory.BUILDING]).click()
+    cy.getBySel(`category-${climateCategoryKey[ClimateCategory.BUILDING]}`).click()
     cy.contains("Hauteur moyenne du bâti").should("be.visible")
     cy.contains("15.5").should("be.visible")
     cy.contains("Superficie moyenne du bâti").should("be.visible")
     cy.contains("250").should("be.visible")
   })
 
-  it("hide score badges when vulnerability data is null", () => {
-    const pinia = createPinia()
-
+  it("display empty message when climate data is null", () => {
     mount(MapContextDataClimateZone, {
       global: {
-        plugins: [pinia]
+        plugins: [createPinia()]
       },
       props: {
         data: null
