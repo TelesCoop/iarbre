@@ -186,15 +186,22 @@ hr.full-width {
   .navbar-left {
     display: flex;
     align-items: center;
+    padding-left: 0;
+
+    @media (min-width: 1024px) {
+      padding-left: 0;
+    }
   }
 
   .navbar-logo {
     height: 32px;
     width: auto;
-    transition: transform $transition-fast;
+    display: block;
+    margin: 0;
+    padding: 0;
 
-    &:hover {
-      transform: scale(1.05);
+    @media (min-width: 640px) {
+      height: 40px;
     }
   }
 
