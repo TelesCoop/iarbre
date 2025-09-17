@@ -1,6 +1,16 @@
 # Journal des changements
 
-## 🔖 0.15.0 (2025-09-18) : Tests, refactoring Ansible et changements UI/UX
+## 🔖 0.15.0 (2025-09-17) : Tests, refactoring Ansible et changements UI/UX
+
+### ✨ feat : Evolutions UI/UX
+
+L'ensemble des affichages et commandes ont été transférées dans un panneau latéral à gauche. Il n'y a plus de popup, quand on clique les données s'affiche de ce panneau. La navigation est plus fluide et facile avec ce regroupement de l'information et des commandes. La taille de la légende a été réduite pour laisser plus de place à l'information sur la carte.
+Less informations affichées, en particulier les tableaux et les badges de scores, pour les différents calques sont maintenant homogènes.
+
+![Nouvel UX/UI](assets/images/changelog/v0.15.0/context.jpg)
+
+&rarr; PR [#371](https://github.com/TelesCoop/iarbre/pull/371)
+&rarr; PR [#366](https://github.com/TelesCoop/iarbre/pull/366)
 
 ### ✅ test: Ajouts de tests front et back + calcul de la couverture.
 
@@ -8,15 +18,14 @@ Des tests pour le back et le front ont été ajouté ainsi que des badges sur le
 
 ![Code coverage badge](assets/images/changelog/v0.15.0/cover.png)
 
+&rarr; Commit [bc66cd3](https://github.com/TelesCoop/iarbre/commit/bc66cd32bbf7d08de2a1312c12c40d5e3ec2a2df)
+&rarr; Commit [7c863d4](https://github.com/TelesCoop/iarbre/commit/7c863d4fa11f8848a4fd866cc78ccb02de5214cb)
+
 ### 🛠️ enhance : Refacto Ansible
 
 L'ensemble des scripts Ansible ont été ré-organisé et re-découpé pour augementer la clarté et la simplicité. l'objectif est qu'une personne qui arrive sur le projet puisse plus facilement prendre en main ces scripts de deployement.
 
-### ✨ feat : Evolutions UI/UX
-
-L'ensemble des affichages et commandes ont été transférées dans un panneau latéral à gauche. Il n'y a plus de popup, quand on clique les données s'affiche de ce panneau. La navigation est plus fluide et facile avec ce regroupement de l'information et des commandes. La taille de la légende a été réduite pour laisser plus de place à l'information sur la carte.
-Less informations affichées, en particulier les tableaux et les badges de scores, pour les différents calques sont maintenant homogènes.
-![Nouvel UX/UI](assets/images/changelog/v0.15.0/context.jpg)
+&rarr; Commit [91d2ed6](https://github.com/TelesCoop/iarbre/commit/91d2ed6cbb9479bd58dd1c83f5887413a017f680)
 
 ## 🔖 0.14.0 (2025-07-30) : Evolutions couleurs vulnérabilité chaleur, ajout documentation
 
