@@ -57,7 +57,7 @@ const chartData = computed(() => {
   })
 
   const scores = Array.from(frequencyMap.keys())
-  const labels = scores.map((key) => `Score ${key}`)
+  const labels = scores.map((key) => `${key}/10`)
   const data = Array.from(frequencyMap.values())
 
   // Map each score to its corresponding color from PLANTABILITY_COLOR_MAP
@@ -115,6 +115,9 @@ const chartOptions = computed(() => ({
     <template v-else>
       <div v-if="chartData" class="p-4">
         <Chart type="pie" :data="chartData" :options="chartOptions" class="w-full h-64" />
+        <p class="text-sm font-sans text-center m-2">
+          0/10 signifie non plantable et 10/10 plantable
+        </p>
         <empty-message
           data-cy="empty-message"
           message="Zoomez plus pour obtenir l'occupation des sols."
