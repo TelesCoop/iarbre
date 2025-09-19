@@ -1,0 +1,26 @@
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: false
+  commit_status: false
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  suggested_labels: false
+  suggested_reviewers: false
+  poem: false
+
+  auto_review:
+    enabled: false
+    drafts: false
+
+chat:
+  art: false
+  auto_reply: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "./CODING_STANDARDS.md"
