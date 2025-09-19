@@ -15,7 +15,6 @@ from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet
-from django.db import close_old_connections
 from shapely.geometry import shape
 from tqdm import tqdm
 import mercantile
@@ -243,7 +242,6 @@ class MVTGenerator:
         Returns:
             None
         """
-        close_old_connections()
         try:
             # Get common tile data for MapLibre
             tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
@@ -315,8 +313,6 @@ class MVTGenerator:
             }
             # Save the MVT data
             self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
-        finally:
-            close_old_connections()
 
     def _compute_mvt_features(
         self, queryset, mvt_polygon, grid_size, all_features, side_length, tile, zoom
