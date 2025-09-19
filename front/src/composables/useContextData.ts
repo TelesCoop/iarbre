@@ -18,15 +18,13 @@ export function useContextData() {
     if (!featureId) return null
     const stringId = String(featureId)
     if (indexValue === undefined) {
-      const tile = await getTileDetails(stringId, mapStore.selectedDataType)
-      data.value = tile
+      data.value = await getTileDetails(stringId, mapStore.selectedDataType)
 
-      if (!tile) {
+      if (!data.value) {
         data.value = null
         return
       }
-    }
-    if (
+    } else if (
       indexValue !== undefined &&
       source_values !== undefined &&
       mapStore.selectedDataType === DataType.PLANTABILITY
