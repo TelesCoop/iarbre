@@ -9,17 +9,11 @@ reviews:
   estimate_code_review_effort: false
   suggested_labels: false
   suggested_reviewers: false
+  poem: false
 
   auto_review:
     enabled: false
     drafts: false
-    ignore_title_keywords:
-      - "wip"
-      - "draft"
-
-  pre_merge_checks:
-  docstrings:
-    mode: "off"
 
 chat:
   art: false
