@@ -104,7 +104,7 @@ class Tile(models.Model):
 
     vulnerability_idx = models.ForeignKey(
         Vulnerability,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )

@@ -15,13 +15,14 @@ from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet
+from django.db import close_old_connections
 from shapely.geometry import shape
 from tqdm import tqdm
 import mercantile
 import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
-from iarbre_data.models import MVTTile
+from iarbre_data.models import MVTTile, Vulnerability
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
@@ -242,52 +243,65 @@ class MVTGenerator:
         Returns:
             None
         """
-        # Get common tile data for MapLibre
-        tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
+        close_old_connections()
+        try:
+            # Get common tile data for MapLibre
+            tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
 
-        def _compute_plantability_tile_side_lenght(tile_geom):
-            coords = list(tile_geom.coords[0])
-            point1 = coords[0]
-            point2 = coords[1]
-            return math.sqrt(
-                (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+            def _compute_plantability_tile_side_lenght(tile_geom):
+                coords = list(tile_geom.coords[0])
+                point1 = coords[0]
+                point2 = coords[1]
+                return math.sqrt(
+                    (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
+                )
+
+            side_length = _compute_plantability_tile_side_lenght(
+                self.queryset.first().geometry
             )
 
-        side_length = _compute_plantability_tile_side_lenght(
-            self.queryset.first().geometry
-        )
+            grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
 
-        grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
+            # Filter queryset to MVT tile extent
+            base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
 
-        # Filter queryset to MVT tile extent
-        base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
+            if not base_queryset.exists():
+                return
 
-        if not base_queryset.exists():
-            return
+            west, south, east, north = tile_polygon.extent
+            mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
 
-        west, south, east, north = tile_polygon.extent
-        mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
+            all_features = []
+            use_batch_processing = zoom < 13 and side_length < 10
+            if (
+                use_batch_processing
+            ):  # Process in batch to avoid OOM with zoom <13 for small tiles
+                batch_grid_size = (
+                    grid_size * 100
+                )  # *100 for a balance between mem and speed
+                batch_grid = self.create_grid(mvt_tile, batch_grid_size)
+                for batch_cell in tqdm(
+                    batch_grid.itertuples(),
+                    desc=f"Processing batches for MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+                ):
+                    batch_polygon = batch_cell.geometry
+                    batch_queryset = base_queryset.filter(
+                        map_geometry__intersects=GEOSGeometry(batch_polygon.wkt)
+                    )
+                    all_features = self._compute_mvt_features(
+                        batch_queryset,
+                        batch_polygon,
+                        grid_size,
+                        all_features,
+                        side_length,
+                        tile,
+                        zoom,
+                    )
 
-        all_features = []
-        use_batch_processing = zoom < 13 and side_length < 10
-        if (
-            use_batch_processing
-        ):  # Process in batch to avoid OOM with zoom <13 for small tiles
-            batch_grid_size = (
-                grid_size * 100
-            )  # *100 for a balance between mem and speed
-            batch_grid = self.create_grid(mvt_tile, batch_grid_size)
-            for batch_cell in tqdm(
-                batch_grid.itertuples(),
-                desc=f"Processing batches for MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-            ):
-                batch_polygon = batch_cell.geometry
-                batch_queryset = base_queryset.filter(
-                    map_geometry__intersects=GEOSGeometry(batch_polygon.wkt)
-                )
+            else:  # Load directly all data for the MVT tile
                 all_features = self._compute_mvt_features(
-                    batch_queryset,
-                    batch_polygon,
+                    base_queryset,
+                    mvt_tile,
                     grid_size,
                     all_features,
                     side_length,
@@ -295,23 +309,14 @@ class MVTGenerator:
                     zoom,
                 )
 
-        else:  # Load directly all data for the MVT tile
-            all_features = self._compute_mvt_features(
-                base_queryset,
-                mvt_tile,
-                grid_size,
-                all_features,
-                side_length,
-                tile,
-                zoom,
-            )
-
-        transformed_geometries = {
-            "name": f"{self.geolevel}--{self.datatype}",
-            "features": all_features,
-        }
-        # Save the MVT data
-        self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+            transformed_geometries = {
+                "name": f"{self.geolevel}--{self.datatype}",
+                "features": all_features,
+            }
+            # Save the MVT data
+            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+        finally:
+            close_old_connections()
 
     def _compute_mvt_features(
         self, queryset, mvt_polygon, grid_size, all_features, side_length, tile, zoom
@@ -320,7 +325,12 @@ class MVTGenerator:
             return all_features
         gdf = load_geodataframe_from_db(
             queryset,
-            ["plantability_normalized_indice", "map_geometry", "id"],
+            [
+                "plantability_normalized_indice",
+                "map_geometry",
+                "id",
+                "vulnerability_idx_id",
+            ],
         )
         mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
         df_clipped = gpd.clip(gdf, mvt_gdf)
@@ -399,6 +409,18 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
+        # Bulk load vulnerability data
+        vuln_ids = [
+            getattr(obj, "vulnerability_idx_id", None)
+            for obj in df_clipped.itertuples()
+            if getattr(obj, "vulnerability_idx_id", None) is not None
+        ]
+        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
+        vuln_props = {
+            vuln_id: {k: v for k, v in vuln.get_layer_properties().items() if k != "id"}
+            for vuln_id, vuln in vulnerabilities.items()
+        }
+
         for obj in tqdm(
             df_clipped.itertuples(),
             desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
@@ -411,13 +433,11 @@ class MVTGenerator:
                 ),
             }
 
-            if hasattr(obj, "vulnerability_idx") and obj.vulnerability_idx:
-                vulnerability_properties = (
-                    obj.vulnerability_idx.get_layer_properties()
-                )  # Use ForeignKey
+            v_id = getattr(obj, "vulnerability_idx_id", None)
+            if v_id:
+                vulnerability_properties = vuln_props.get(v_id, {})
                 for key, value in vulnerability_properties.items():
-                    if key != "id":  # Skip id to avoid duplication
-                        properties[f"vulnerability_{key}"] = value
+                    properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
@@ -440,37 +460,45 @@ class MVTGenerator:
         Reference:
         https://makina-corpus.com/django/generer-des-tuiles-vectorielles-sur-mesure-avec-django
         """
-        # Get common tile data
-        tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
+        close_old_connections()
+        try:
+            # Get common tile data
+            tile_polygon, bounds, pixel, filename = self._generate_tile_common(
+                tile, zoom
+            )
 
-        # Filter queryset to tile extent and then clip it
-        clipped_queryset = self.queryset.filter(
-            map_geometry__intersects=tile_polygon
-        ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
+            # Filter queryset to tile extent and then clip it
+            clipped_queryset = self.queryset.filter(
+                map_geometry__intersects=tile_polygon
+            ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if clipped_queryset.exists():
-            transformed_geometries = {
-                "name": f"{self.geolevel}--{self.datatype}",
-                "features": [],
-            }
+            if clipped_queryset.exists():
+                transformed_geometries = {
+                    "name": f"{self.geolevel}--{self.datatype}",
+                    "features": [],
+                }
 
-            for obj in tqdm(
-                clipped_queryset,
-                desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-            ):
-                properties = obj.get_layer_properties()
-                clipped_geom = obj.clipped_geometry
-                transformed_geometries["features"].append(
-                    {
-                        "geometry": clipped_geom.make_valid()
-                        .simplify(pixel, preserve_topology=True)
-                        .wkt,
-                        "properties": properties,
-                    }
+                for obj in tqdm(
+                    clipped_queryset,
+                    desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+                ):
+                    properties = obj.get_layer_properties()
+                    clipped_geom = obj.clipped_geometry
+                    transformed_geometries["features"].append(
+                        {
+                            "geometry": clipped_geom.make_valid()
+                            .simplify(pixel, preserve_topology=True)
+                            .wkt,
+                            "properties": properties,
+                        }
+                    )
+
+                # Save the MVT data
+                self._save_mvt_data(
+                    transformed_geometries, bounds, filename, tile, zoom
                 )
-
-            # Save the MVT data
-            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+        finally:
+            close_old_connections()
 
     @staticmethod
     def pixel_length(zoom):
