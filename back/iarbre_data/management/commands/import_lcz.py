@@ -141,7 +141,6 @@ def load_data() -> geopandas.GeoDataFrame:
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
     # Resolve overlaps - smaller geometries take priority over larger ones
-    log_progress("Resolving geometric overlaps")
     gdf_filtered = resolve_overlaps(gdf_filtered)
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
