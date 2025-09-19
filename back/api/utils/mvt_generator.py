@@ -155,7 +155,7 @@ class MVTGenerator:
             enumerate(rows), enumerate(cols)
         ):
             polygons.append(box(x, y, x + grid_size, y + grid_size))
-            grid_ids.append(f"{col_idx}_{row_idx}")
+            grid_ids.append(f"{int(x)}_{int(y)}")
 
         grid_gdf = gpd.GeoDataFrame(
             {"grid_id": grid_ids, "geometry": polygons}, crs=zone.crs

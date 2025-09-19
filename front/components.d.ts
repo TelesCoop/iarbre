@@ -13,6 +13,7 @@ declare module 'vue' {
     AccordionPanel: typeof import('primevue/accordionpanel')['default']
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
+    Chart: typeof import('primevue/chart')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     ClimateContextDataMetrics: typeof import('./src/components/contextData/climate/ClimateContextDataMetrics.vue')['default']
