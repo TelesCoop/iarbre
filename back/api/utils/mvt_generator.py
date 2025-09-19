@@ -242,64 +242,52 @@ class MVTGenerator:
         Returns:
             None
         """
-        try:
-            # Get common tile data for MapLibre
-            tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
+        # Get common tile data for MapLibre
+        tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
 
-            def _compute_plantability_tile_side_lenght(tile_geom):
-                coords = list(tile_geom.coords[0])
-                point1 = coords[0]
-                point2 = coords[1]
-                return math.sqrt(
-                    (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
-                )
-
-            side_length = _compute_plantability_tile_side_lenght(
-                self.queryset.first().geometry
+        def _compute_plantability_tile_side_lenght(tile_geom):
+            coords = list(tile_geom.coords[0])
+            point1 = coords[0]
+            point2 = coords[1]
+            return math.sqrt(
+                (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
             )
 
-            grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
+        side_length = _compute_plantability_tile_side_lenght(
+            self.queryset.first().geometry
+        )
 
-            # Filter queryset to MVT tile extent
-            base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
+        grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
 
-            if not base_queryset.exists():
-                return
+        # Filter queryset to MVT tile extent
+        base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
 
-            west, south, east, north = tile_polygon.extent
-            mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
+        if not base_queryset.exists():
+            return
 
-            all_features = []
-            use_batch_processing = zoom < 13 and side_length < 10
-            if (
-                use_batch_processing
-            ):  # Process in batch to avoid OOM with zoom <13 for small tiles
-                batch_grid_size = (
-                    grid_size * 100
-                )  # *100 for a balance between mem and speed
-                batch_grid = self.create_grid(mvt_tile, batch_grid_size)
-                for batch_cell in tqdm(
-                    batch_grid.itertuples(),
-                    desc=f"Processing batches for MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-                ):
-                    batch_polygon = batch_cell.geometry
-                    batch_queryset = base_queryset.filter(
-                        map_geometry__intersects=GEOSGeometry(batch_polygon.wkt)
-                    )
-                    all_features = self._compute_mvt_features(
-                        batch_queryset,
-                        batch_polygon,
-                        grid_size,
-                        all_features,
-                        side_length,
-                        tile,
-                        zoom,
-                    )
+        west, south, east, north = tile_polygon.extent
+        mvt_tile = ShapelyPolygon.from_bounds(west, south, east, north)
 
-            else:  # Load directly all data for the MVT tile
+        all_features = []
+        use_batch_processing = zoom < 13 and side_length < 10
+        if (
+            use_batch_processing
+        ):  # Process in batch to avoid OOM with zoom <13 for small tiles
+            batch_grid_size = (
+                grid_size * 100
+            )  # *100 for a balance between mem and speed
+            batch_grid = self.create_grid(mvt_tile, batch_grid_size)
+            for batch_cell in tqdm(
+                batch_grid.itertuples(),
+                desc=f"Processing batches for MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+            ):
+                batch_polygon = batch_cell.geometry
+                batch_queryset = base_queryset.filter(
+                    map_geometry__intersects=GEOSGeometry(batch_polygon.wkt)
+                )
                 all_features = self._compute_mvt_features(
-                    base_queryset,
-                    mvt_tile,
+                    batch_queryset,
+                    batch_polygon,
                     grid_size,
                     all_features,
                     side_length,
@@ -307,12 +295,23 @@ class MVTGenerator:
                     zoom,
                 )
 
-            transformed_geometries = {
-                "name": f"{self.geolevel}--{self.datatype}",
-                "features": all_features,
-            }
-            # Save the MVT data
-            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+        else:  # Load directly all data for the MVT tile
+            all_features = self._compute_mvt_features(
+                base_queryset,
+                mvt_tile,
+                grid_size,
+                all_features,
+                side_length,
+                tile,
+                zoom,
+            )
+
+        transformed_geometries = {
+            "name": f"{self.geolevel}--{self.datatype}",
+            "features": all_features,
+        }
+        # Save the MVT data
+        self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     def _compute_mvt_features(
         self, queryset, mvt_polygon, grid_size, all_features, side_length, tile, zoom
@@ -456,45 +455,37 @@ class MVTGenerator:
         Reference:
         https://makina-corpus.com/django/generer-des-tuiles-vectorielles-sur-mesure-avec-django
         """
-        close_old_connections()
-        try:
-            # Get common tile data
-            tile_polygon, bounds, pixel, filename = self._generate_tile_common(
-                tile, zoom
-            )
+        # Get common tile data
+        tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
 
-            # Filter queryset to tile extent and then clip it
-            clipped_queryset = self.queryset.filter(
-                map_geometry__intersects=tile_polygon
-            ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
+        # Filter queryset to tile extent and then clip it
+        clipped_queryset = self.queryset.filter(
+            map_geometry__intersects=tile_polygon
+        ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-            if clipped_queryset.exists():
-                transformed_geometries = {
-                    "name": f"{self.geolevel}--{self.datatype}",
-                    "features": [],
-                }
+        if clipped_queryset.exists():
+            transformed_geometries = {
+                "name": f"{self.geolevel}--{self.datatype}",
+                "features": [],
+            }
 
-                for obj in tqdm(
-                    clipped_queryset,
-                    desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-                ):
-                    properties = obj.get_layer_properties()
-                    clipped_geom = obj.clipped_geometry
-                    transformed_geometries["features"].append(
-                        {
-                            "geometry": clipped_geom.make_valid()
-                            .simplify(pixel, preserve_topology=True)
-                            .wkt,
-                            "properties": properties,
-                        }
-                    )
-
-                # Save the MVT data
-                self._save_mvt_data(
-                    transformed_geometries, bounds, filename, tile, zoom
+            for obj in tqdm(
+                clipped_queryset,
+                desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
+            ):
+                properties = obj.get_layer_properties()
+                clipped_geom = obj.clipped_geometry
+                transformed_geometries["features"].append(
+                    {
+                        "geometry": clipped_geom.make_valid()
+                        .simplify(pixel, preserve_topology=True)
+                        .wkt,
+                        "properties": properties,
+                    }
                 )
-        finally:
-            close_old_connections()
+
+            # Save the MVT data
+            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     @staticmethod
     def pixel_length(zoom):
