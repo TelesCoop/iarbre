@@ -9,12 +9,69 @@ import os
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
+from shapely.strtree import STRtree
 
 from iarbre_data.data_config import URL_FILES, LCZ
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
 from iarbre_data.utils.data_processing import make_valid
+
+
+def resolve_overlaps(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
+    """Remove overlaps by giving priority to smaller geometries.
+
+    Smaller LCZ zones are more specific and should take priority over
+    large background zones that may intersect with multiple smaller ones.
+
+    Args:
+        gdf (geopandas.GeoDataFrame): GeoDataFrame with potentially overlapping geometries
+
+    Returns:
+        geopandas.GeoDataFrame: GeoDataFrame with non-overlapping geometries
+    """
+    if len(gdf) <= 1:
+        return gdf
+
+    gdf = gdf.copy()
+    gdf["area"] = gdf.geometry.area
+    # Sort by area ascending - smallest geometries get priority
+    gdf_sorted = gdf.sort_values("area", ascending=True).reset_index(drop=True)
+
+    geometries = gdf_sorted.geometry.tolist()
+    processed = []
+
+    for i, geom in enumerate(geometries):
+        if i == 0:
+            # First (smallest) geometry is kept as-is
+            processed.append(geom)
+            continue
+
+        # For each subsequent geometry, subtract all previously processed (smaller) geometries
+        current = geom
+        if len(processed) > 0:
+            tree = STRtree(processed)
+            candidates = tree.query(current)
+
+            for idx in candidates:
+                if current.intersects(processed[idx]):
+                    current = current.difference(processed[idx])
+                    current = make_valid(current)
+                    # If geometry becomes empty or invalid, skip it
+                    if current.is_empty or not current.is_valid:
+                        current = None
+                        break
+
+        if current is not None and not current.is_empty:
+            processed.append(current)
+        else:
+            # Add empty geometry to maintain index alignment
+            processed.append(gdf_sorted.geometry.iloc[i].buffer(0).buffer(-1))
+
+    gdf_sorted.geometry = processed
+    # Remove empty geometries and reset index
+    gdf_sorted = gdf_sorted[~gdf_sorted.geometry.is_empty].reset_index(drop=True)
+    return gdf_sorted.drop("area", axis=1)
 
 
 def download_data() -> None:
@@ -83,6 +140,9 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
+    # Resolve overlaps - smaller geometries take priority over larger ones
+    log_progress("Resolving geometric overlaps")
+    gdf_filtered = resolve_overlaps(gdf_filtered)
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
