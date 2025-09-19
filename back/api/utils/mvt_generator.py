@@ -21,7 +21,7 @@ import mercantile
 import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
-from iarbre_data.models import MVTTile
+from iarbre_data.models import MVTTile, Vulnerability
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
@@ -155,7 +155,7 @@ class MVTGenerator:
             enumerate(rows), enumerate(cols)
         ):
             polygons.append(box(x, y, x + grid_size, y + grid_size))
-            grid_ids.append(f"{col_idx}_{row_idx}")
+            grid_ids.append(f"{int(x)}_{int(y)}")
 
         grid_gdf = gpd.GeoDataFrame(
             {"grid_id": grid_ids, "geometry": polygons}, crs=zone.crs
@@ -320,7 +320,12 @@ class MVTGenerator:
             return all_features
         gdf = load_geodataframe_from_db(
             queryset,
-            ["plantability_normalized_indice", "map_geometry", "id"],
+            [
+                "plantability_normalized_indice",
+                "map_geometry",
+                "id",
+                "vulnerability_idx_id",
+            ],
         )
         mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
         df_clipped = gpd.clip(gdf, mvt_gdf)
@@ -399,6 +404,18 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
+        # Bulk load vulnerability data
+        vuln_ids = [
+            getattr(obj, "vulnerability_idx_id", None)
+            for obj in df_clipped.itertuples()
+            if getattr(obj, "vulnerability_idx_id", None) is not None
+        ]
+        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
+        vuln_props = {
+            vuln_id: {k: v for k, v in vuln.get_layer_properties().items() if k != "id"}
+            for vuln_id, vuln in vulnerabilities.items()
+        }
+
         for obj in tqdm(
             df_clipped.itertuples(),
             desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
@@ -410,6 +427,12 @@ class MVTGenerator:
                     obj.source_values if hasattr(obj, "source_values") else []
                 ),
             }
+
+            v_id = getattr(obj, "vulnerability_idx_id", None)
+            if v_id:
+                vulnerability_properties = vuln_props.get(v_id, {})
+                for key, value in vulnerability_properties.items():
+                    properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
