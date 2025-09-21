@@ -409,6 +409,10 @@ class MVTGenerator:
             getattr(obj, "vulnerability_idx_id", None)
             for obj in df_clipped.itertuples()
             if getattr(obj, "vulnerability_idx_id", None) is not None
+            and not (
+                isinstance(getattr(obj, "vulnerability_idx_id", None), float)
+                and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+            )
         ]
         vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
         vuln_props = {
