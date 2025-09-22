@@ -5,7 +5,7 @@ import requests
 import zipfile
 import io
 import os
-
+from collections import defaultdict
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
@@ -16,6 +16,41 @@ from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
 from iarbre_data.utils.data_processing import make_valid
+
+
+def _find_intersections(gdf_sorted: geopandas.GeoDataFrame) -> tuple:
+    """Find intersecting geometries using spatial index."""
+    tree = STRtree(gdf_sorted.geometry)
+    print("STREEE found)")
+    intersection_graph = defaultdict(set)
+    overlapping_indices = set()
+
+    for i, geom in tqdm(enumerate(gdf_sorted.geometry)):
+        candidates = tree.query(geom)
+        for j in candidates:
+            if i != j and geom.intersects(gdf_sorted.geometry.iloc[j]):
+                intersection_graph[i].add(j)
+                overlapping_indices.add(i)
+                overlapping_indices.add(j)
+
+    print("Intersection found")
+    return intersection_graph, overlapping_indices
+
+
+def _process_overlapping_geometry(
+    current, intersection_graph, orig_idx, original_to_new, processed, i
+):
+    """Process a single overlapping geometry by removing intersections with higher priority geometries."""
+    for intersecting_orig_idx in intersection_graph[orig_idx]:
+        if intersecting_orig_idx in original_to_new:
+            intersecting_new_idx = original_to_new[intersecting_orig_idx]
+            if intersecting_new_idx < i:
+                if current.intersects(processed[intersecting_new_idx]):
+                    current = current.difference(processed[intersecting_new_idx])
+                    current = make_valid(current)
+                    if current.is_empty or not current.is_valid:
+                        return None
+    return current
 
 
 def resolve_overlaps(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
@@ -35,43 +70,47 @@ def resolve_overlaps(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
 
     gdf = gdf.copy()
     gdf["area"] = gdf.geometry.area
-    # Sort by area ascending - smallest geometries get priority
     gdf_sorted = gdf.sort_values("area", ascending=True).reset_index(drop=True)
 
-    geometries = gdf_sorted.geometry.tolist()
+    intersection_graph, overlapping_indices = _find_intersections(gdf_sorted)
+
+    if not overlapping_indices:
+        return gdf_sorted.drop("area", axis=1)
+
+    overlapping_gdf = (
+        gdf_sorted.loc[list(overlapping_indices)].copy().reset_index(drop=True)
+    )
+    non_overlapping_gdf = gdf_sorted.drop(overlapping_indices)
+    print(f"Number of overlapping {len(overlapping_gdf)}")
+
+    original_to_new = {
+        orig_idx: new_idx for new_idx, orig_idx in enumerate(overlapping_indices)
+    }
+
     processed = []
-
-    for i, geom in enumerate(geometries):
-        if i == 0:
-            # First (smallest) geometry is kept as-is
-            processed.append(geom)
-            continue
-
-        # For each subsequent geometry, subtract all previously processed (smaller) geometries
-        current = geom
-        if len(processed) > 0:
-            tree = STRtree(processed)
-            candidates = tree.query(current)
-
-            for idx in candidates:
-                if current.intersects(processed[idx]):
-                    current = current.difference(processed[idx])
-                    current = make_valid(current)
-                    # If geometry becomes empty or invalid, skip it
-                    if current.is_empty or not current.is_valid:
-                        current = None
-                        break
+    for i, (orig_idx, geom) in tqdm(
+        enumerate(zip(overlapping_indices, overlapping_gdf.geometry)),
+        total=len(overlapping_indices),
+        desc="Processing overlapping geometries",
+    ):
+        current = _process_overlapping_geometry(
+            geom, intersection_graph, orig_idx, original_to_new, processed, i
+        )
 
         if current is not None and not current.is_empty:
             processed.append(current)
         else:
-            # Add empty geometry to maintain index alignment
-            processed.append(gdf_sorted.geometry.iloc[i].buffer(0).buffer(-1))
+            processed.append(overlapping_gdf.geometry.iloc[i].buffer(0).buffer(-1))
 
-    gdf_sorted.geometry = processed
-    # Remove empty geometries and reset index
-    gdf_sorted = gdf_sorted[~gdf_sorted.geometry.is_empty].reset_index(drop=True)
-    return gdf_sorted.drop("area", axis=1)
+    overlapping_gdf.geometry = processed
+    overlapping_gdf = overlapping_gdf[~overlapping_gdf.geometry.is_empty].reset_index(
+        drop=True
+    )
+
+    result = geopandas.pd.concat(
+        [non_overlapping_gdf, overlapping_gdf], ignore_index=True
+    )
+    return result.drop("area", axis=1)
 
 
 def download_data() -> None:
