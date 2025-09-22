@@ -21,17 +21,18 @@ from iarbre_data.utils.data_processing import make_valid
 def _find_intersections(gdf_sorted: geopandas.GeoDataFrame) -> tuple:
     """Find intersecting geometries using spatial index."""
     tree = STRtree(gdf_sorted.geometry)
+    geometries = gdf_sorted.geometry.values
     print("STREEE found)")
     intersection_graph = defaultdict(set)
     overlapping_indices = set()
 
-    for i, geom in tqdm(enumerate(gdf_sorted.geometry)):
+    for i, geom in tqdm(enumerate(geometries)):
         candidates = tree.query(geom)
         for j in candidates:
-            if i != j and geom.intersects(gdf_sorted.geometry.iloc[j]):
+            if i < j and geom.intersects(geometries[j]):
                 intersection_graph[i].add(j)
-                overlapping_indices.add(i)
-                overlapping_indices.add(j)
+                intersection_graph[j].add(i)
+                overlapping_indices.update([i, j])
 
     print("Intersection found")
     return intersection_graph, overlapping_indices
