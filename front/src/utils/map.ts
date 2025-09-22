@@ -2,17 +2,6 @@ import { DataType, GeoLevel } from "@/utils/enum"
 import { Map } from "maplibre-gl"
 
 export const highlightFeature = (map: Map, layerId: string, featureId: string) => {
-  // Count features that match the featureId for debugging
-  try {
-    const renderedFeatures = map.queryRenderedFeatures(undefined, { layers: [layerId] })
-    const matchingCount = renderedFeatures.filter(
-      (feature: any) => feature.properties?.id === featureId
-    ).length
-    console.log(`Highlighting ${matchingCount} feature(s) with id: ${featureId}`)
-  } catch (error) {
-    console.log(`Could not count features for layer ${layerId}:`, error)
-  }
-
   map.setPaintProperty(`${layerId}-border`, "line-width", ["match", ["get", "id"], featureId, 3, 0])
   map.setPaintProperty(`${layerId}-border`, "line-color", [
     "match",
