@@ -184,9 +184,9 @@ def split_geometry_with_grid(
 
     # Split geometry with each grid line
     result = [geometry]
-    for line in grid_lines:
+    for line in tqdm(grid_lines, desc="Splitting a large geom") :
         new_result = []
-        for geom in tqdm(result, desc="Splitting a large geom"):
+        for geom in result:
             if geom.intersects(line):
                 split_geoms = split(geom, line)
                 if hasattr(split_geoms, "geoms"):
