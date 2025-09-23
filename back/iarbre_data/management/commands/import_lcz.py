@@ -84,7 +84,9 @@ def load_data() -> geopandas.GeoDataFrame:
         split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
         for geom in split_geoms:
             split_geometries.append({**row.to_dict(), "geometry": geom})
-    gdf_filtered = geopandas.GeoDataFrame(split_geometries)
+    gdf_filtered = geopandas.GeoDataFrame(
+        split_geometries, geometry="geometry", crs=TARGET_PROJ
+    )
 
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
