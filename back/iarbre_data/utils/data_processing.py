@@ -3,6 +3,8 @@
 from itertools import islice
 
 from shapely import unary_union
+from shapely.geometry import LineString
+from shapely.ops import split
 from functools import reduce
 from django.contrib.gis.geos import GEOSGeometry, Point
 import shapely
@@ -142,6 +144,61 @@ def make_valid(
     if geometry and not geometry.is_valid:
         return geometry.buffer(0)
     return geometry
+
+
+def split_geometry_with_grid(
+    geometry: shapely.geometry.base.BaseGeometry, grid_size: float = 100.0
+) -> list:
+    """
+    Split a geometry using a grid pattern.
+
+    Args:
+        geometry: The geometry to split
+        grid_size: Size of grid cells in meters (default 100m)
+
+    Returns:
+        List of split geometries
+    """
+    if geometry.is_empty or not geometry.is_valid:
+        return [geometry]
+
+    # Get geometry bounds
+    minx, miny, maxx, maxy = geometry.bounds
+
+    # Create grid lines
+    grid_lines = []
+
+    # Vertical lines
+    x = minx
+    while x <= maxx:
+        line = LineString([(x, miny - grid_size), (x, maxy + grid_size)])
+        grid_lines.append(line)
+        x += grid_size
+
+    # Horizontal lines
+    y = miny
+    while y <= maxy:
+        line = LineString([(minx - grid_size, y), (maxx + grid_size, y)])
+        grid_lines.append(line)
+        y += grid_size
+
+    # Split geometry with each grid line
+    result = [geometry]
+    for line in grid_lines:
+        new_result = []
+        for geom in tqdm(result, desc="Splitting a large geom"):
+            if geom.intersects(line):
+                split_geoms = split(geom, line)
+                if hasattr(split_geoms, "geoms"):
+                    new_result.extend(split_geoms.geoms)
+                else:
+                    new_result.append(split_geoms)
+            else:
+                new_result.append(geom)
+        result = new_result
+
+    # Filter out empty geometries
+    return [geom for geom in result if not geom.is_empty]
 
 
 def geocode_address(address: str) -> Point:

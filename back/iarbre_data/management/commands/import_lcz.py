@@ -5,113 +5,15 @@ import requests
 import zipfile
 import io
 import os
-from collections import defaultdict
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
-from shapely.strtree import STRtree
 
 from iarbre_data.data_config import URL_FILES, LCZ
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
-from iarbre_data.utils.data_processing import make_valid
-
-
-def _find_intersections(gdf_sorted: geopandas.GeoDataFrame) -> tuple:
-    """Find intersecting geometries using spatial index."""
-    tree = STRtree(gdf_sorted.geometry)
-    geometries = gdf_sorted.geometry.values
-    print("STREEE found)")
-    intersection_graph = defaultdict(set)
-    overlapping_indices = set()
-
-    for i, geom in tqdm(enumerate(geometries)):
-        candidates = tree.query(geom)
-        for j in candidates:
-            if i < j and geom.intersects(geometries[j]):
-                intersection_graph[i].add(j)
-                intersection_graph[j].add(i)
-                overlapping_indices.update([i, j])
-
-    print("Intersection found")
-    return intersection_graph, overlapping_indices
-
-
-def _process_overlapping_geometry(
-    current, intersection_graph, orig_idx, original_to_new, processed, i
-):
-    """Process a single overlapping geometry by removing intersections with higher priority geometries."""
-    for intersecting_orig_idx in intersection_graph[orig_idx]:
-        if intersecting_orig_idx in original_to_new:
-            intersecting_new_idx = original_to_new[intersecting_orig_idx]
-            if intersecting_new_idx < i:
-                if current.intersects(processed[intersecting_new_idx]):
-                    current = current.difference(processed[intersecting_new_idx])
-                    current = make_valid(current)
-                    if current.is_empty or not current.is_valid:
-                        return None
-    return current
-
-
-def resolve_overlaps(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
-    """Remove overlaps by giving priority to smaller geometries.
-
-    Smaller LCZ zones are more specific and should take priority over
-    large background zones that may intersect with multiple smaller ones.
-
-    Args:
-        gdf (geopandas.GeoDataFrame): GeoDataFrame with potentially overlapping geometries
-
-    Returns:
-        geopandas.GeoDataFrame: GeoDataFrame with non-overlapping geometries
-    """
-    if len(gdf) <= 1:
-        return gdf
-
-    gdf = gdf.copy()
-    gdf["area"] = gdf.geometry.area
-    gdf_sorted = gdf.sort_values("area", ascending=True).reset_index(drop=True)
-
-    intersection_graph, overlapping_indices = _find_intersections(gdf_sorted)
-
-    if not overlapping_indices:
-        return gdf_sorted.drop("area", axis=1)
-
-    overlapping_gdf = (
-        gdf_sorted.loc[list(overlapping_indices)].copy().reset_index(drop=True)
-    )
-    non_overlapping_gdf = gdf_sorted.drop(overlapping_indices)
-    print(f"Number of overlapping {len(overlapping_gdf)}")
-
-    original_to_new = {
-        orig_idx: new_idx for new_idx, orig_idx in enumerate(overlapping_indices)
-    }
-
-    processed = []
-    for i, (orig_idx, geom) in tqdm(
-        enumerate(zip(overlapping_indices, overlapping_gdf.geometry)),
-        total=len(overlapping_indices),
-        desc="Processing overlapping geometries",
-    ):
-        current = _process_overlapping_geometry(
-            geom, intersection_graph, orig_idx, original_to_new, processed, i
-        )
-
-        if current is not None and not current.is_empty:
-            processed.append(current)
-        else:
-            processed.append(overlapping_gdf.geometry.iloc[i].buffer(0).buffer(-1))
-
-    overlapping_gdf.geometry = processed
-    overlapping_gdf = overlapping_gdf[~overlapping_gdf.geometry.is_empty].reset_index(
-        drop=True
-    )
-
-    result = geopandas.pd.concat(
-        [non_overlapping_gdf, overlapping_gdf], ignore_index=True
-    )
-    return result.drop("area", axis=1)
+from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
 
 
 def download_data() -> None:
@@ -176,12 +78,19 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
     gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
 
+    # Split large geometries using 100m x 100m grid
+    split_geometries = []
+    for idx, row in gdf_filtered.iterrows():
+        split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
+        for geom in split_geoms:
+            split_geometries.append({**row.to_dict(), "geometry": geom})
+    gdf_filtered = geopandas.GeoDataFrame(split_geometries)
+
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
-    # Resolve overlaps - smaller geometries take priority over larger ones
-    gdf_filtered = resolve_overlaps(gdf_filtered)
+    gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)

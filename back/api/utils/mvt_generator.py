@@ -57,6 +57,7 @@ class MVTGenerator:
         """Generate MVT tiles for the entire geometry queryset."""
         # Get total bounds of the queryset
         bounds = self._get_queryset_bounds()
+
         for zoom in range(self.min_zoom, self.max_zoom + 1):
             # Get all tiles that cover the entire geometry bounds
             # bbox needs to be in 4326
@@ -85,7 +86,7 @@ class MVTGenerator:
                     ).count()
 
                     if (existing_count == 0) or (ignore_existing):
-                        funct = (tile, zoom)
+                        funct(tile, zoom)
             else:
                 with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
                     future_to_tiles = {}
@@ -190,7 +191,7 @@ class MVTGenerator:
 
         filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
 
-        return tile_polygon, (west, south, east, north), pixel, filename
+        return tile_polygon, (west, south, east, north), filename
 
     def _save_mvt_data(
         self,
@@ -243,7 +244,7 @@ class MVTGenerator:
             None
         """
         # Get common tile data for MapLibre
-        tile_polygon, bounds, _, filename = self._generate_tile_common(tile, zoom)
+        tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
         def _compute_plantability_tile_side_lenght(tile_geom):
             coords = list(tile_geom.coords[0])
@@ -460,7 +461,7 @@ class MVTGenerator:
         https://makina-corpus.com/django/generer-des-tuiles-vectorielles-sur-mesure-avec-django
         """
         # Get common tile data
-        tile_polygon, bounds, pixel, filename = self._generate_tile_common(tile, zoom)
+        tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
@@ -472,7 +473,6 @@ class MVTGenerator:
                 "name": f"{self.geolevel}--{self.datatype}",
                 "features": [],
             }
-
             for obj in tqdm(
                 clipped_queryset,
                 desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
@@ -481,9 +481,7 @@ class MVTGenerator:
                 clipped_geom = obj.clipped_geometry
                 transformed_geometries["features"].append(
                     {
-                        "geometry": clipped_geom.make_valid()
-                        .simplify(pixel, preserve_topology=True)
-                        .wkt,
+                        "geometry": clipped_geom.make_valid().wkt,
                         "properties": properties,
                     }
                 )
