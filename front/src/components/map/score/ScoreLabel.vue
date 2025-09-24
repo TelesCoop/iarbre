@@ -34,7 +34,7 @@ const handleClick = () => {
     :class="[
       props.backgroundColorClass,
       isClickable ? 'cursor-pointer hover:scale-110 transition-transform duration-200' : '',
-      isSelected ? 'ring-2 ring-primary-900 scale-105' : ''
+      isSelected ? 'ring-2 ring-primary-900' : ''
     ]"
     :style="{ backgroundColor: props.backgroundColor }"
     :data-score="clickable ? score : undefined"
