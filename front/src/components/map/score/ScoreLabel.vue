@@ -34,7 +34,7 @@ const handleClick = () => {
     :class="[
       props.backgroundColorClass,
       isClickable ? 'cursor-pointer hover:scale-110 transition-transform duration-200' : '',
-      isSelected ? 'ring-2 ring-primary-900' : ''
+      isSelected ? 'border-2 border-primary-900' : ''
     ]"
     :style="{ backgroundColor: props.backgroundColor }"
     :data-score="clickable ? score : undefined"
@@ -44,7 +44,7 @@ const handleClick = () => {
         : undefined
     "
     class="relative flex items-center justify-center font-accent text-xs xs:text-sm transform flex-shrink-0"
-    style="width: 11px; height: 27px"
+    style="width: 15px; height: 27px"
     @click="handleClick"
   >
     <FilterIndicator :is-visible="isSelected" />
