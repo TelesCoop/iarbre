@@ -52,9 +52,7 @@ onMounted(() => {
   </div>
   <div class="legend-container hidden lg:flex">
     <map-legend />
-    <div class="flex gap-2">
-      <map-filters-status />
-    </div>
+    <map-filters-status />
   </div>
   <map-side-panel />
 </template>

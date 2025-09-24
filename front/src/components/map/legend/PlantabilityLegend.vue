@@ -49,7 +49,8 @@ const SCORE_BG_CLASSES: Record<number, string> = {
           :class="[
             'flex items-center justify-center',
             arrayIndex === 0 ? 'rounded-l-sm' : '',
-            arrayIndex === scoreIndices.length - 1 ? 'rounded-r-sm' : ''
+            arrayIndex === scoreIndices.length - 1 ? 'rounded-r-sm' : '',
+            mapStore.isFiltered(scoreIndex) ? 'z-10 relative' : ''
           ]"
           :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
           @click="handleScoreClick"
