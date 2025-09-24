@@ -28,7 +28,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
     class="font-accent flex items-center justify-center text-xs leading-3 gap-2"
     data-cy="plantability-legend"
   >
-    <div class="flex items-center flex-col lg:flex-row justify-center lg:gap-1.5 px-2">
+    <div class="flex items-center flex-col lg:flex-row justify-center gap-2 px-2">
       <div class="flex justify-between lg:hidden">
         <span class="font-bold">-</span>
         <span>Plantable</span>

@@ -49,6 +49,6 @@ describe("Map legends", () => {
 
     // Test zone clicking for filter toggle
     cy.get('[data-zone="1"]').first().click()
-    cy.get('[data-zone="1"]').first().should("have.class", "ring-2")
+    cy.get('[data-zone="1"]').first().should("have.class", "border-2")
   })
 })
