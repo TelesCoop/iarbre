@@ -21,23 +21,25 @@ describe("Legend Filtering", () => {
       cy.getBySel("plantability-legend").find('[data-score="8"]').should("be.visible").click()
 
       // Verify the score label has the selected visual state (ring)
-      cy.getBySel("plantability-legend").find('[data-score="8"]').should("have.class", "ring-2")
+      cy.getBySel("plantability-legend").find('[data-score="8"]').should("have.class", "border-2")
 
       // Click on score 10 to add another filter
       cy.getBySel("plantability-legend").find('[data-score="10"]').should("be.visible").click()
 
       // Verify both scores are now selected
-      cy.getBySel("plantability-legend").find('[data-score="8"]').should("have.class", "ring-2")
+      cy.getBySel("plantability-legend").find('[data-score="8"]').should("have.class", "border-2")
 
-      cy.getBySel("plantability-legend").find('[data-score="10"]').should("have.class", "ring-2")
+      cy.getBySel("plantability-legend").find('[data-score="10"]').should("have.class", "border-2")
 
       // Click on score 8 again to deselect it
       cy.getBySel("plantability-legend").find('[data-score="8"]').click()
 
       // Verify score 8 is no longer selected but score 10 still is
-      cy.getBySel("plantability-legend").find('[data-score="8"]').should("not.have.class", "ring-2")
+      cy.getBySel("plantability-legend")
+        .find('[data-score="8"]')
+        .should("not.have.class", "border-2")
 
-      cy.getBySel("plantability-legend").find('[data-score="10"]').should("have.class", "ring-2")
+      cy.getBySel("plantability-legend").find('[data-score="10"]').should("have.class", "border-2")
     })
   })
 
@@ -46,7 +48,7 @@ describe("Legend Filtering", () => {
       // Start with plantability and set a filter
       cy.getBySel("plantability-legend").find('[data-score="6"]').click()
 
-      cy.getBySel("plantability-legend").find('[data-score="6"]').should("have.class", "ring-2")
+      cy.getBySel("plantability-legend").find('[data-score="6"]').should("have.class", "border-2")
 
       // Switch to vulnerability
       cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
@@ -55,7 +57,9 @@ describe("Legend Filtering", () => {
       cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
 
       // Verify the filter has been cleared
-      cy.getBySel("plantability-legend").find('[data-score="6"]').should("not.have.class", "ring-2")
+      cy.getBySel("plantability-legend")
+        .find('[data-score="6"]')
+        .should("not.have.class", "border-2")
     })
   })
 
@@ -82,10 +86,12 @@ describe("Legend Filtering", () => {
 
       // All filters be cleared
       cy.getBySel("map-filters-status").should("not.exist")
-      cy.getBySel("plantability-legend").find('[data-score="8"]').should("not.have.class", "ring-2")
+      cy.getBySel("plantability-legend")
+        .find('[data-score="8"]')
+        .should("not.have.class", "border-2")
       cy.getBySel("plantability-legend")
         .find('[data-score="10"]')
-        .should("not.have.class", "ring-2")
+        .should("not.have.class", "border-2")
     })
   })
 

@@ -15,7 +15,7 @@
       </div>
     </div>
     <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
-    <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-1">
+    <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-2">
       <div
         v-for="(zone, index) in zones"
         :key="'vertical-' + index"
