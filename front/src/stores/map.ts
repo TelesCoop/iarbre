@@ -183,14 +183,20 @@ export const useMapStore = defineStore("map", () => {
     }
     const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
+      const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
+      const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
       highlightFeature(map, layerId, featureId)
       // Store click coordinates
       clickCoordinates.value = {
         lat: e.lngLat.lat,
         lng: e.lngLat.lng
       }
-      // Always load context data for the selected data type
-      contextData.setData(featureId)
+      // Conditionally load context data based on geolevel, datatype, and zoom
+      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
+        contextData.setData(featureId, score, source_values)
+      } else {
+        contextData.setData(featureId)
+      }
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
@@ -241,6 +247,8 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = datatype
     // Clear filters when changing data type
     clearAllFilters()
+    // Clear context data when changing data type
+    contextData.removeData()
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]

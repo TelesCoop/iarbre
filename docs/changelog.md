@@ -1,5 +1,17 @@
 # Journal des changements
 
+## 🔖 0.16.0 (2025-09-24) : Contexte plantabilité et score mobile
+
+### ✨ feat : Contexte de plantabilité sur une zone
+
+On peut enfin accéder au score de plantabilité, même en ne zoomant pas complétement. Au passage on affiche aussi la distribution des scores sur la zone.
+
+![Contexte plantabilité](assets/images/changelog/v0.16.0/plantability_context.jpg)
+
+### 🐛 fix: Score sur mobile
+
+Avec les évolutions UI/UX la possiblité d'afficher le score au click sur mobile avait disparu. Cette fonctionnalité est rétablie.
+
 ## 🔖 0.15.0 (2025-09-17) : Tests, refactoring Ansible et changements UI/UX
 
 ### ✨ feat : Evolutions UI/UX

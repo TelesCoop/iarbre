@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
 import MapSidePanel from "./panels/sidepanel/MapSidePanel.vue"
+import MapContextDataMobile from "@/components/contextData/MapContextDataMobile.vue"
 
 const props = defineProps({
   mapId: {
@@ -52,9 +53,10 @@ onMounted(() => {
   </div>
   <div class="legend-container hidden lg:flex">
     <map-legend />
-    <div class="flex gap-2">
-      <map-filters-status />
-    </div>
+    <map-filters-status />
+  </div>
+  <div class="lg:hidden flex items-center justify-center">
+    <map-context-data-mobile />
   </div>
   <map-side-panel />
 </template>

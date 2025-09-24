@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Button: typeof import('primevue/button')['default']
+    Chart: typeof import('primevue/chart')['default']
     Chip: typeof import('primevue/chip')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     ClimateContextDataMetrics: typeof import('./src/components/contextData/climate/ClimateContextDataMetrics.vue')['default']
@@ -36,6 +37,7 @@ declare module 'vue' {
     MapConfigDrawerToggle: typeof import('./src/components/map/panels/MapConfigDrawerToggle.vue')['default']
     MapContextData: typeof import('./src/components/contextData/MapContextData.vue')['default']
     MapContextDataClimateZone: typeof import('./src/components/contextData/MapContextDataClimateZone.vue')['default']
+    MapContextDataMobile: typeof import('./src/components/contextData/MapContextDataMobile.vue')['default']
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
     MapContextDataVulnerability: typeof import('./src/components/contextData/MapContextDataVulnerability.vue')['default']
     MapContextHeader: typeof import('./src/components/contextData/MapContextHeader.vue')['default']
@@ -49,6 +51,7 @@ declare module 'vue' {
     MapSidePanelDownload: typeof import('./src/components/map/panels/sidepanel/MapSidePanelDownload.vue')['default']
     MapSidePanelFooter: typeof import('./src/components/map/panels/sidepanel/MapSidePanelFooter.vue')['default']
     MapSidePanelHeader: typeof import('./src/components/map/panels/sidepanel/MapSidePanelHeader.vue')['default']
+    MapSidePanelMobile: typeof import('./src/components/map/panels/sidepanel/MapSidePanelMobile.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']

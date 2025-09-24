@@ -22,7 +22,7 @@ const isFiltered = computed(() => mapStore.isFiltered(props.zone))
 
 const zoneClasses = computed(() => [
   props.size === "compact" ? "h-7" : "h-4",
-  isFiltered.value ? "ring-2 ring-primary-900 scale-105 shadow-md" : "",
+  isFiltered.value ? "border-2 border-primary-900 shadow-md" : "",
   props.isFirst ? "rounded-l-sm" : "",
   props.isLast ? "rounded-r-sm" : ""
 ])
@@ -40,7 +40,7 @@ const zoneTitle = computed(
     :style="{ backgroundColor: getZoneColor(zone) }"
     :title="zoneTitle"
     class="cursor-pointer hover:scale-110 hover:shadow-lg transition-all duration-200 ease-out transform relative"
-    style="width: 11px"
+    style="width: 0.9375rem"
     @click="$emit('click', zone)"
   >
     <FilterIndicator :is-visible="isFiltered" />

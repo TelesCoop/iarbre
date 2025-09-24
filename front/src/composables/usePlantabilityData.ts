@@ -80,28 +80,12 @@ export function usePlantabilityData(data: Ref<PlantabilityData>) {
     return `Impact ${factorImpact} ${occupationLevel}`
   }
 
-  const filterSensitiveFactors = (landUseData: PlantabilityLandUse | undefined) => {
-    if (!landUseData) return {}
-
-    const factorsToRemove = [
-      PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF,
-      PlantabilityLandUseKeys.RSX_AERIENS_ERDF,
-      PlantabilityLandUseKeys.RSX_GAZ,
-      PlantabilityLandUseKeys.ASSAINISSEMENT,
-      PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN
-    ]
-
-    return Object.entries(landUseData).reduce((acc, [key, value]) => {
-      if (factorsToRemove.includes(key as PlantabilityLandUseKeys)) {
-        return acc
-      }
-      acc[key as PlantabilityLandUseKeys] = value
-      return acc
-    }, {} as PlantabilityLandUse)
-  }
-
   const factors: ComputedRef<PlantabilityFactor[]> = computed(() => {
-    const landUseData = filterSensitiveFactors(data.value?.details?.top5LandUse)
+    if (typeof data.value?.details === "string") {
+      return [] // No land use factors for histogram data
+    }
+
+    const landUseData = data.value?.details?.top5LandUse
     if (!landUseData) return []
 
     return Object.entries(landUseData).map(([key, value]) => {
