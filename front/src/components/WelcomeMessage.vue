@@ -27,34 +27,30 @@ const closeWelcome = () => {
     :closable="false"
   >
     <div class="flex flex-col gap-4 bg-white">
-      <p class="text-gray-700 mb-2">Découvrez les fonctionnalités :</p>
+      <p class="mb-2">Découvrez les fonctionnalités :</p>
 
       <div class="space-y-4">
         <div class="welcome-functionnality">
           <span class="text-2xl">🗺️</span>
           <div>
-            <h4 class="font-medium text-gray-800">Cliquez sur la carte</h4>
-            <p class="text-sm text-gray-600">
-              pour obtenir des informations détaillées sur une zone.
-            </p>
+            <h4 class="font-medium">Cliquez sur la carte</h4>
+            <p class="text-sm">pour obtenir des informations détaillées sur une zone.</p>
           </div>
         </div>
 
         <div class="welcome-functionnality">
           <span class="text-2xl">🔍</span>
           <div>
-            <h4 class="font-medium text-gray-800">Cliquez sur la légende</h4>
-            <p class="text-sm text-gray-600">
-              pour filtrer et masquer certaines zones selon vos préférences.
-            </p>
+            <h4 class="font-medium">Cliquez sur la légende</h4>
+            <p class="text-sm">pour filtrer et masquer certaines zones selon vos préférences.</p>
           </div>
         </div>
 
         <div class="welcome-functionnality">
           <span class="text-2xl">👈</span>
           <div>
-            <h4 class="font-medium text-gray-800">Changez de calque</h4>
-            <p class="text-sm text-gray-600">
+            <h4 class="font-medium">Changez de calque</h4>
+            <p class="text-sm">
               en utilisant les menus à gauche, vous pouvez aussi changer le fond de carte.
             </p>
           </div>
@@ -63,8 +59,8 @@ const closeWelcome = () => {
         <div class="welcome-functionnality">
           <span class="text-2xl">💬</span>
           <div>
-            <h4 class="font-medium text-gray-800">Donnez votre avis</h4>
-            <p class="text-sm text-gray-600">
+            <h4 class="font-medium">Donnez votre avis</h4>
+            <p class="text-sm">
               en cliquant sur "Envoyer votre avis" pour partager vos commentaires.
             </p>
           </div>
