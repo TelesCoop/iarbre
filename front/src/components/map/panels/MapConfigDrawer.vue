@@ -22,7 +22,6 @@ const drawerVisible = computed({
     <map-layer-switcher :with-border="false" />
     <map-bg-switcher :with-border="false" />
     <map-legend />
-    <map-qpv-toggle-button class="w-full" />
     <map-context-data />
   </AppDrawer>
 </template>
