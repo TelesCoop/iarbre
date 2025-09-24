@@ -4,6 +4,7 @@ import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
 import MapSidePanel from "./panels/sidepanel/MapSidePanel.vue"
 import MapContextDataMobile from "@/components/contextData/MapContextDataMobile.vue"
+import WelcomeMessage from "@/components/WelcomeMessage.vue"
 
 const props = defineProps({
   mapId: {
@@ -59,6 +60,7 @@ onMounted(() => {
     <map-context-data-mobile />
   </div>
   <map-side-panel />
+  <welcome-message />
 </template>
 
 <style>

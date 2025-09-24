@@ -22,6 +22,7 @@ declare module 'vue' {
     ContextDataListContainer: typeof import('./src/components/contextData/shared/ContextDataListContainer.vue')['default']
     ContextDataMainContainer: typeof import('./src/components/contextData/shared/ContextDataMainContainer.vue')['default']
     ContextDataScore: typeof import('./src/components/contextData/shared/ContextDataScore.vue')['default']
+    Dialog: typeof import('primevue/dialog')['default']
     Drawer: typeof import('primevue/drawer')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
@@ -73,6 +74,7 @@ declare module 'vue' {
     VulnerabilityLegend: typeof import('./src/components/map/legend/VulnerabilityLegend.vue')['default']
     VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
+    WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
   }
   export interface ComponentCustomProperties {
     Tooltip: typeof import('primevue/tooltip')['default']

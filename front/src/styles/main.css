@@ -74,6 +74,12 @@
 }
 
 /* Component styles */
+
+.welcome-functionnality {
+  @apply flex items-start gap-2 p-2 rounded-md;
+  @apply border border-gray-200;
+}
+
 .p-button {
   @apply font-sans!;
   /* There is no way actually to override the default font in PrimeReact */
