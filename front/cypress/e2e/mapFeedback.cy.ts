@@ -1,8 +1,9 @@
 /// <reference types="cypress" />
-// https://on.cypress.io/api
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 describe("Map feedback", () => {
   beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/")
   })
 

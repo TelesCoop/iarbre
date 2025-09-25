@@ -1,8 +1,10 @@
 /// <reference types="cypress" />
-// https://on.cypress.io/api
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 describe("Navigation", () => {
   it("loads map on root url", () => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.visit("/")
     cy.visit("/")
     cy.getBySel("map-component").should("exist")
     cy.getBySel("navbar").should("exist")

@@ -1,9 +1,11 @@
 /// <reference types="cypress" />
 import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 describe("Map", () => {
   beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
