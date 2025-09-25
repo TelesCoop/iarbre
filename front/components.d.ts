@@ -32,6 +32,7 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     LayerSwitcher: typeof import('./src/components/layerSwitcher/LayerSwitcher.vue')['default']
     LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
+    LegendIcon: typeof import('./src/components/icons/LegendIcon.vue')['default']
     MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
     MapConfigDrawer: typeof import('./src/components/map/panels/MapConfigDrawer.vue')['default']

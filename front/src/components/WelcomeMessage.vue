@@ -39,14 +39,7 @@ const closeWelcome = () => {
         </div>
 
         <div class="welcome-functionnality">
-          <svg class="w-14 h-6" viewBox="0 0 240 50">
-            <path fill="#C4C4C4" d="M0 0h40v50H0z" />
-            <path fill="#BF5A16" d="M40 0h40v50H40z" />
-            <path fill="#DDAD14" d="M80 0h40v50H80z" />
-            <path fill="#A6CC4A" d="M120 0h40v50h-40z" />
-            <path fill="#55B250" d="M160 0h40v50h-40z" />
-            <path fill="#025400" d="M200 0h40v50h-40z" />
-          </svg>
+          <legend-icon />
           <div>
             <h4 class="font-medium">Cliquez sur la légende</h4>
             <p class="text-sm">pour filtrer et masquer certaines zones selon vos préférences.</p>
@@ -54,7 +47,7 @@ const closeWelcome = () => {
         </div>
 
         <div class="welcome-functionnality">
-          <span class="text-2xl">🔍</span>
+          <layer-switcher-icon />
           <div>
             <h4 class="font-medium">Changez de calque</h4>
             <p class="text-sm">
