@@ -112,6 +112,7 @@ describe("Map", () => {
 
 describe("Geocoder", () => {
   beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.5543")
   })
 
