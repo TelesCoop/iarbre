@@ -1,25 +1,52 @@
 <script lang="ts" setup>
-import { ref, onMounted } from "vue"
+import { ref, onMounted, computed } from "vue"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
+
+interface welcomeProps {
+  modelValue?: boolean
+}
+
+const props = withDefaults(defineProps<welcomeProps>(), {
+  modelValue: undefined
+})
+
+const emit = defineEmits<{
+  "update:modelValue": [value: boolean]
+}>()
 
 const showWelcome = ref(false)
 
+const isVisible = computed({
+  get: () => (props.modelValue !== undefined ? props.modelValue : showWelcome.value),
+  set: (value: boolean) => {
+    if (props.modelValue !== undefined) {
+      emit("update:modelValue", value)
+    } else {
+      showWelcome.value = value
+    }
+  }
+})
+
 onMounted(() => {
-  const hasVisited = LocalStorageHandler.getItem("hasVisitedBefore")
-  if (!hasVisited) {
-    showWelcome.value = true
+  if (props.modelValue === undefined) {
+    const hasVisited = LocalStorageHandler.getItem("hasVisitedBefore")
+    if (!hasVisited) {
+      showWelcome.value = true
+    }
   }
 })
 
 const closeWelcome = () => {
-  showWelcome.value = false
-  LocalStorageHandler.setItem("hasVisitedBefore", true)
+  isVisible.value = false
+  if (props.modelValue === undefined) {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+  }
 }
 </script>
 
 <template>
   <Dialog
-    v-model:visible="showWelcome"
+    v-model:visible="isVisible"
     :draggable="false"
     :style="{ width: '28rem' }"
     header="Bienvenue !"
