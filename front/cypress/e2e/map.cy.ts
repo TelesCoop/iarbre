@@ -125,3 +125,17 @@ describe("Geocoder", () => {
     cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
   })
 })
+
+describe("Welcome message", () => {
+  beforeEach(() => {
+    cy.visit("/plantability/13/45.07126/5.5543")
+  })
+
+  it("Close when clicked and don't show up again", () => {
+    cy.getBySel("welcome-dialog").should("be.visible")
+    cy.getBySel("welcome-click").should("be.visible").click()
+    cy.getBySel("welcome-dialog").should("not.exist")
+    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.getBySel("welcome-dialog").should("not.exist")
+  })
+})

@@ -24,6 +24,7 @@ const closeWelcome = () => {
     :style="{ width: '28rem' }"
     header="Bienvenue !"
     modal
+    data-cy="welcome-dialog"
     :closable="false"
   >
     <div class="flex flex-col gap-4 bg-white">
@@ -82,7 +83,7 @@ const closeWelcome = () => {
     </div>
 
     <template #footer>
-      <Button label="Compris !" class="w-full" @click="closeWelcome" />
+      <Button label="Compris !" data-cy="welcome-click" class="w-full" @click="closeWelcome" />
     </template>
   </Dialog>
 </template>
