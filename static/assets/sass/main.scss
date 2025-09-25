@@ -4,14 +4,14 @@
 
 // Fonts
 @font-face {
-  font-family: "Bricolage Grotesque";
-  src: url("/fonts/BricolageGrotesque-Regular.otf") format("opentype");
+  font-family: "Sligoil";
+  src: url("/fonts/Sligoil-Micro.otf") format("opentype");
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Sligoil";
-  src: url("/fonts/Sligoil-Micro.otf") format("opentype");
+  font-family: "IBMPlexMono";
+  src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
   font-display: swap;
 }
 
@@ -28,7 +28,7 @@ $gray: #666666;
 $lightGray: #f8f8f8;
 
 // Typography
-$main-font: "Bricolage Grotesque";
+$main-font: "IBMPlexMono";
 $accent-font: "Sligoil";
 
 // Spacing
@@ -179,7 +179,7 @@ hr.full-width {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 $spacing-lg;
+  padding: 0 $spacing-sm;
   z-index: 1000;
   border-bottom: 1px solid rgba($primary, 0.1);
 
@@ -189,13 +189,10 @@ hr.full-width {
   }
 
   .navbar-logo {
-    height: 32px;
+    height: 40px;
     width: auto;
-    transition: transform $transition-fast;
-
-    &:hover {
-      transform: scale(1.05);
-    }
+    display: block;
+    margin: 0;
   }
 
   .navbar-right {
