@@ -1,9 +1,11 @@
 /// <reference types="cypress" />
 import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 describe("Map", () => {
   beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.5543")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
@@ -110,6 +112,7 @@ describe("Map", () => {
 
 describe("Geocoder", () => {
   beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.5543")
   })
 
@@ -120,5 +123,19 @@ describe("Geocoder", () => {
     cy.wait("@geocoding")
     cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
     cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
+  })
+})
+
+describe("Welcome message", () => {
+  beforeEach(() => {
+    cy.visit("/plantability/13/45.07126/5.5543")
+  })
+
+  it("Close when clicked and don't show up again", () => {
+    cy.getBySel("welcome-dialog").should("be.visible")
+    cy.getBySel("welcome-click").should("be.visible").click()
+    cy.getBySel("welcome-dialog").should("not.exist")
+    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.getBySel("welcome-dialog").should("not.exist")
   })
 })
