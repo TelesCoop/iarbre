@@ -90,7 +90,7 @@
 }
 
 .map-tool-container {
-  @apply flex items-center gap-2 sm:gap-4;
+  @apply flex flex-col items-center gap-2 sm:gap-4;
   @apply bg-white z-10;
   @apply md:pt-4;
   @apply max-w-full;
