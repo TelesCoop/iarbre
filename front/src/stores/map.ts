@@ -23,6 +23,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { generateBivariateColorExpression } from "@/utils/plant_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
@@ -58,6 +59,10 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
+    const bivariateExpression = generateBivariateColorExpression()
+    console.log("Generated bivariate expression length:", bivariateExpression.length)
+    console.log("Bivariate expression sample:", bivariateExpression.slice(0, 10))
+
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
@@ -66,7 +71,7 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANT_VULNERABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP]
+      [DataType.PLANT_VULNERABILITY]: bivariateExpression
     }
   })
 
@@ -148,7 +153,7 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
@@ -163,7 +168,7 @@ export const useMapStore = defineStore("map", () => {
       id: `${layerId}-border`,
       type: "line",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "line-color": "#00000000",
