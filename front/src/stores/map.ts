@@ -65,7 +65,8 @@ export const useMapStore = defineStore("map", () => {
         ["get", `indice_${vulnerabilityMode.value}`],
         ...VULNERABILITY_COLOR_MAP
       ],
-      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.PLANT_VULNERABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP]
     }
   })
 
@@ -208,7 +209,9 @@ export const useMapStore = defineStore("map", () => {
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+    const tileDataType =
+      datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype
+    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
       type: "vector",

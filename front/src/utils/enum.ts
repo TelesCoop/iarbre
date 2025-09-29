@@ -8,7 +8,8 @@ export enum GeoLevel {
 export enum DataType {
   PLANTABILITY = "plantability",
   VULNERABILITY = "vulnerability",
-  CLIMATE_ZONE = "lcz"
+  CLIMATE_ZONE = "lcz",
+  PLANT_VULNERABILITY = "plant_vulnerability"
 }
 
 export enum MapStyle {
@@ -26,13 +27,15 @@ export const MapStyleToLabel: Record<MapStyle, string> = {
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "🌳 Score de plantabilité",
   [DataType.CLIMATE_ZONE]: "🌆 Zones climatiques locales",
-  [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur"
+  [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur",
+  [DataType.PLANT_VULNERABILITY]: "🌳🌡️ Plantabilité et chaleur"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.PLANTABILITY]: GeoLevel.TILE,
   [DataType.CLIMATE_ZONE]: GeoLevel.LCZ,
-  [DataType.VULNERABILITY]: GeoLevel.LCZ
+  [DataType.VULNERABILITY]: GeoLevel.LCZ,
+  [DataType.PLANT_VULNERABILITY]: GeoLevel.TILE
 }
 
 export const DataTypeToAttributionSource: Record<DataType, string> = {
@@ -41,7 +44,9 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.PLANTABILITY]:
     '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
   [DataType.VULNERABILITY]:
-    '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2025-02)</a>'
+    '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2025-02)</a>',
+  [DataType.PLANT_VULNERABILITY]:
+    '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>'
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
@@ -83,5 +88,7 @@ export const DataTypeToDownloadLink: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]:
     "https://www.data.gouv.fr/datasets/cartographie-des-zones-climatiques-locales-lcz-des-88-aires-urbaines-de-plus-de-50-000-habitants-de-france-metropolitaine/#/resources/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
   [DataType.VULNERABILITY]:
-    "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info"
+    "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info",
+  [DataType.PLANT_VULNERABILITY]:
+    "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info"
 }
