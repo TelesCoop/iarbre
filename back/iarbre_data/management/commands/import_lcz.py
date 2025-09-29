@@ -5,7 +5,6 @@ import requests
 import zipfile
 import io
 import os
-
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
 from tqdm import tqdm
@@ -14,7 +13,7 @@ from iarbre_data.data_config import URL_FILES, LCZ
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
-from iarbre_data.utils.data_processing import make_valid
+from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
 
 
 def download_data() -> None:
@@ -79,10 +78,21 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
     gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
 
+    # Split large geometries using 100m x 100m grid
+    split_geometries = []
+    for idx, row in gdf_filtered.iterrows():
+        split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
+        for geom in split_geoms:
+            split_geometries.append({**row.to_dict(), "geometry": geom})
+    gdf_filtered = geopandas.GeoDataFrame(
+        split_geometries, geometry="geometry", crs=TARGET_PROJ
+    )
+
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
+    gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
