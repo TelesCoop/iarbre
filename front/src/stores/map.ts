@@ -60,9 +60,6 @@ export const useMapStore = defineStore("map", () => {
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     const bivariateExpression = generateBivariateColorExpression()
-    console.log("Generated bivariate expression length:", bivariateExpression.length)
-    console.log("Bivariate expression sample:", bivariateExpression.slice(0, 10))
-
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
@@ -188,14 +185,6 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
-      const vuln_score_day =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
-          : undefined
-      const vuln_score_night =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
-          : undefined
       highlightFeature(map, layerId, featureId)
       // Store click coordinates
       clickCoordinates.value = {
@@ -206,7 +195,7 @@ export const useMapStore = defineStore("map", () => {
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
         contextData.setData(featureId, score, source_values)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
-        contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
+        contextData.setData(featureId, score, source_values)
       } else {
         contextData.setData(featureId)
       }

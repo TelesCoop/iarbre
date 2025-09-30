@@ -107,7 +107,7 @@ export interface PlantabilityLandUse {
   [PlantabilityLandUseKeys.AUTO_PARTAGE]?: number
 }
 
-export interface PlantabilityDataDetails {
+interface PlantabilityDataDetails {
   top5LandUse: PlantabilityLandUse
 }
 
