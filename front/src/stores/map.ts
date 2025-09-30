@@ -188,6 +188,20 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
+      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
+        const vuln_score_day = extractFeatureProperty(
+          e.features!,
+          datatype,
+          geolevel,
+          "vulnearability_indice_day"
+        )
+        const vuln_score_night = extractFeatureProperty(
+          e.features!,
+          datatype,
+          geolevel,
+          "vulnearability_indice_night"
+        )
+      }
       highlightFeature(map, layerId, featureId)
       // Store click coordinates
       clickCoordinates.value = {
@@ -196,6 +210,8 @@ export const useMapStore = defineStore("map", () => {
       }
       // Conditionally load context data based on geolevel, datatype, and zoom
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
+        contextData.setData(featureId, score, source_values)
+      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
         contextData.setData(featureId, score, source_values)
       } else {
         contextData.setData(featureId)
