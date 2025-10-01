@@ -9,6 +9,12 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/BricolageGrotesque-Regular.otf") format("opentype");
+  font-display: swap;
+}
+
 // Color palette
 $primary: #426a45;
 $primaryDark: #2d4a2f;
