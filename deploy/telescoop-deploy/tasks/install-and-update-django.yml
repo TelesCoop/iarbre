@@ -50,12 +50,11 @@
     name: "{{ project_slug }}-backend"
     state: restarted
   when: clonecode.changed or force_update is defined
-
-- name: "daily database backup"
-  cron:
-    user: "{{ main_user }}"
-    name: "daily {{ project_slug }} database backup"
-    hour: "{{ database_backup.hour }}"
-    minute: "{{ database_backup.minute }}"
-    job: "{{ project_slug }}-ctl backup_db backup"
-  when: (allow_backup is defined and allow_backup == true) and group_names[0] == 'prod'
+# - name: "daily database backup"
+#   cron:
+#     user: "{{ main_user }}"
+#     name: "daily {{ project_slug }} database backup"
+#     hour: "{{ database_backup.hour }}"
+#     minute: "{{ database_backup.minute }}"
+#     job: "{{ project_slug }}-ctl backup_db backup"
+#   when: (allow_backup is defined and allow_backup == true) and group_names[0] == 'prod'

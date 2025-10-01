@@ -2,7 +2,12 @@ from django.test import TestCase
 import geopandas as gpd
 from django.contrib.gis.geos import Point as GEOSPoint
 from iarbre_data.settings import TARGET_PROJ
-from iarbre_data.utils.data_processing import apply_actions, make_valid, geocode_address
+from iarbre_data.utils.data_processing import (
+    apply_actions,
+    make_valid,
+    geocode_address,
+    split_geometry_with_grid,
+)
 from shapely.geometry import Polygon, Point
 
 
@@ -64,3 +69,20 @@ class UtilsDataProcessingTestCase(TestCase):
         x, y = result.coords
         self.assertTrue(830000 < x < 860000)
         self.assertTrue(6510000 < y < 6530000)
+
+    def test_split_geometry_with_grid(self):
+        # Create a simple square polygon
+        square = Polygon([(0, 0), (10, 0), (10, 10), (0, 10)])
+
+        # Split with a 5m grid
+        result = split_geometry_with_grid(square, grid_size=5.0)
+
+        # Should return a list
+        self.assertIsInstance(result, list)
+
+        # Should have more than one geometry (splitting occurred)
+        self.assertGreater(len(result), 1)
+
+        # All results should be valid geometries
+        for geom in result:
+            self.assertTrue(geom.is_valid)

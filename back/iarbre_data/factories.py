@@ -1,6 +1,6 @@
 import factory
 from django.contrib.gis.geos import Polygon
-from iarbre_data.models import Tile, Iris, City, TileFactor
+from iarbre_data.models import Tile, Iris, City, TileFactor, Vulnerability
 import numpy as np
 
 
@@ -51,3 +51,18 @@ class TileFactorsFactory(factory.django.DjangoModelFactory):
     tile = factory.SubFactory(TileFactory)
     factor = factory.Faker("name")
     value = factory.Faker("pyfloat", min_value=0, max_value=1)
+
+
+class VulnerabilityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Vulnerability
+
+    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    vulnerability_index_day = factory.Faker("pyfloat", min_value=0, max_value=1)
+    vulnerability_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)
+    expo_index_day = factory.Faker("pyfloat", min_value=0, max_value=1)
+    expo_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)
+    capaf_index_day = factory.Faker("pyfloat", min_value=0, max_value=1)
+    capaf_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)
+    sensibilty_index_day = factory.Faker("pyfloat", min_value=0, max_value=1)
+    sensibilty_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)

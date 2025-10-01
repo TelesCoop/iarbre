@@ -178,9 +178,6 @@ export const useMapStore = defineStore("map", () => {
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
-    if (mapEventsListener.value[`${layerId}-border`]) {
-      map.off("click", `${layerId}-border`, mapEventsListener.value[`${layerId}-border`])
-    }
     const clickHandler = (e: any) => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
@@ -200,8 +197,6 @@ export const useMapStore = defineStore("map", () => {
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
-    map.on("click", `${layerId}-border`, clickHandler)
-    mapEventsListener.value[`${layerId}-border`] = clickHandler
   }
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)

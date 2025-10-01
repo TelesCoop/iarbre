@@ -2,11 +2,13 @@
 import { ref } from "vue"
 import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
+import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import type { Feedback } from "@/types/map"
 import Button from "primevue/button"
 import { useToast } from "primevue"
 
 const feedbackIsVisible = ref(false)
+const welcomeIsVisible = ref(false)
 const toast = useToast()
 
 const sendFeedbackToAPI = async (data: Feedback) => {
@@ -41,6 +43,17 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     <ul class="nav-list">
       <li>
         <Button
+          data-cy="open-features-button"
+          severity="primary"
+          size="small"
+          type="button"
+          variant="text"
+          @click="welcomeIsVisible = true"
+          >Afficher les fonctionnalités
+        </Button>
+      </li>
+      <li>
+        <Button
           data-cy="open-feedback-button"
           severity="primary"
           size="small"
@@ -52,6 +65,8 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       </li>
     </ul>
   </nav>
+
+  <welcome-message v-model="welcomeIsVisible" />
 
   <feedback-popin
     :model-value="feedbackIsVisible"
