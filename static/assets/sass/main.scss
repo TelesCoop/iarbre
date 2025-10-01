@@ -39,6 +39,7 @@ $spacing-xl: 3rem;
 $spacing-xxl: 4rem;
 
 // Breakpoints
+$mobile-small: 480px;
 $mobile: 768px;
 $tablet: 1024px;
 $desktop: 1200px;
@@ -314,19 +315,24 @@ h6 {
   .hero-content {
     max-width: $content-width-xxl;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: $spacing-xxl;
     align-items: center;
+    display: flex;
 
-    @media (max-width: $mobile) {
-      grid-template-columns: 1fr;
-      gap: $spacing-xl;
-      text-align: center;
+    @media (max-width: $tablet) {
+      display: flex;
+      flex-direction: column-reverse;
+      max-width: $content-width-lg;
+      padding: 0 $spacing-md;
     }
   }
 
   .hero-text {
+    width: 50%;
+    @media (max-width: $tablet) {
+      width: 100%;
+    }
+
     .hero-title {
       font-family: $main-font, Arial, sans-serif;
       font-size: $font-6xl;
@@ -355,9 +361,11 @@ h6 {
       display: flex;
       gap: $spacing-lg;
 
+      @media (max-width: $mobile-small) {
+        flex-direction: column;
+      }
       @media (max-width: $mobile) {
         justify-content: center;
-        flex-direction: column;
         align-items: center;
       }
     }
@@ -370,10 +378,6 @@ h6 {
       object-fit: cover;
       border-radius: $radius-xxl;
       box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
-
-      @media (max-width: $mobile) {
-        height: $image-height-xl;
-      }
     }
   }
 }
@@ -411,11 +415,16 @@ h6 {
 
   .features-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(3, minmax(350px, 1fr));
     gap: $spacing-xl;
 
-    @media (max-width: $mobile) {
-      grid-template-columns: 1fr;
+    @media (max-width: $mobile-small) {
+      grid-template-columns: repeat(1, 1fr);
+      gap: $spacing-md;
+    }
+    @media (min-width: $mobile-small) and (max-width: $tablet) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: $spacing-lg;
     }
   }
 
@@ -429,7 +438,7 @@ h6 {
     border: $border-thin solid $border-light;
 
     @media (max-width: $mobile) {
-      padding: $spacing-lg;
+      padding: $spacing-md;
     }
 
     .feature-icon {
