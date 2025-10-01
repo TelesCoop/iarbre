@@ -53,18 +53,71 @@
   <body class="">
     {{ template "_internal/navbar.html" }}
 
-    <section class="main {{.Layout}}">
+    <main class="main {{.Layout}}">
       {{ .Params.robots }} {{ .Params.robots }}
       <!-- Code that all your templates share, like a header -->
       {{ block "main" . }}
       <!-- The part of the page that begins to differ between templates -->
       {{ end }}
-    </section>
-    <footer>
-      <p>
-        <a href="/credits">crédits</a><a href="/a-propos">à propos</a>
-        <a href="mailto:contact@telescoop.fr">contact</a>
-      </p>
+    </main>
+    <footer class="main-footer">
+      <div class="footer-container">
+        <div class="footer-top">
+          <div class="footer-column footer-about">
+            <p class="footer-description">
+              Plateforme de visualisation et d'intelligence artificielle pour
+              l'analyse du patrimoine arboré urbain et périurbain.
+            </p>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Navigation</h4>
+            <nav class="footer-links">
+              <a href="/">Accueil</a>
+              <a href="/actualites">Actualités</a>
+              <a href="/a-propos">À propos</a>
+              <a href="/credits">Crédits</a>
+            </nav>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Contact</h4>
+            <nav class="footer-links">
+              <a href="mailto:contact@telescoop.fr">contact@telescoop.fr</a>
+              <a href="#newsletter">Newsletter</a>
+            </nav>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Partenaires</h4>
+            <div class="footer-partners">
+              <img
+                src="/images/logo-erasme.jpg"
+                alt="Erasme"
+                class="footer-logo"
+              />
+              <img
+                src="/images/logo-metropole-lyon.svg"
+                alt="Métropole de Lyon"
+                class="footer-logo"
+              />
+              <img
+                src="/images/logo-liris.webp"
+                alt="LIRIS"
+                class="footer-logo"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div class="footer-funding">
+            <p class="footer-copyright">
+              © {{ now.Format "2006" }} I-ARBRE. Tous droits réservés.
+            </p>
+          </div>
+        </div>
+      </div>
     </footer>
     {{ with resources.Get "js/script.js" }}
     <script src="{{ .RelPermalink}}"></script>

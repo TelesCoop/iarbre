@@ -1,38 +1,30 @@
-{{ define "main" }} {{ $currentPermalink := .RelPermalink }}
-<div class="post-container">
-  <section class="sidebar">
-    <div class="posts-list">
-      <h3 class="sidebar-title">Articles récents</h3>
-      <ul>
-        {{ $posts := sort (where site.RegularPages.ByTitle "Section"
-        "actualites") ".PublishDate" }} {{ range first 3 $posts.Reverse }}
-        <li
-          class="post-item sidebar-item{{ if eq .RelPermalink $currentPermalink }} selected{{end}}"
-        >
-          <div>
-            <span class="tag"
-              >{{ .PublishDate | time.Format "02 January 2006" }}</span
-            >
-          </div>
-          <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
-        </li>
-        {{ end }}
-      </ul>
-      <a href="/actualites/" class="cta-button center">Tous les articles</a>
-    </div>
-  </section>
-  <section class="post">
-    <a id="close-post-button" class="cta-button" href="/actualites"> X </a>
-    <article class="text-column">
-      <header class="post-header">
-        <div class="tag post-date">
-          Publié le {{ .PublishDate | time.Format "02 January 2006" }} − Par {{
-          .Params.Author }}
+{{ define "main" }}
+
+<div class="article-page">
+  <div class="article-container">
+    <article class="article-main">
+      <header class="article-header">
+        <div class="article-meta">
+          <span class="meta-author">{{ .Params.Author }}</span>
+          <span class="meta-separator">•</span>
+          <span class="meta-date"
+            >{{ .PublishDate | time.Format "02 January 2006" }}</span
+          >
         </div>
-        <h1 class="post-title">{{ .Title }}</h1>
+
+        {{ with .Params.image }}
+        <img src="{{ . }}" alt="{{ $.Title }}" class="article-image" />
+        {{ end }}
       </header>
-      <div class="post-content">{{ .Content }}</div>
+
+      <div class="article-content">{{ .Content }}</div>
+
+      <a href="/actualites/" class="article-footer back-link">
+        <span class="arrow">←</span>
+        <span>Retour aux actualités</span>
+      </a>
     </article>
-  </section>
+  </div>
 </div>
+
 {{ end }}
