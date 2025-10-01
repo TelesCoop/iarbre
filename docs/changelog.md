@@ -1,5 +1,16 @@
 # Journal des changements
 
+## 🔖 0.17.0 (2025-10-01) : Résolution de bugs et message d'accueil
+
+### ✨ feat : Message d'accueil
+
+Lors de la première visite, un message d'accueil s'affiche pour présenter les différentes **fonctionnalités**. Ce message peut être affiché de nouveau en cliquant sur `Afficher les fonctionnalités` dans la barre de navigation.
+
+### 🐛 fix: Affichage des ZCL et de la plantabilité
+
+Dans le calque des zones climatiques locales, toutes les rues formaient une seule géométrie, ce qui causait un comportement étrange lors de la sélection. Cela produisait aussi des artefacts dans les vues dézoomées. Il y a maintenant plusieurs sous-géométries pour un comportement plus fluide.
+Il y avait, avec le calque de plantabilité, un bug qui faisait qu’au clic, plusieurs tuiles étaient mises en valeur. Ces tuiles partageaient le même ID, ce qui a été corrigé.
+
 ## 🔖 0.16.0 (2025-09-24) : Contexte plantabilité et score mobile
 
 ### ✨ feat : Contexte de plantabilité sur une zone
