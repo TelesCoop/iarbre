@@ -1,38 +1,76 @@
-{{ define "main" }} {{ $currentPermalink := .RelPermalink }}
-<div class="post-container">
-  <section class="sidebar">
-    <div class="posts-list">
-      <h3 class="sidebar-title">Articles récents</h3>
-      <ul>
-        {{ $posts := sort (where site.RegularPages.ByTitle "Section"
-        "actualites") ".PublishDate" }} {{ range first 3 $posts.Reverse }}
-        <li
-          class="post-item sidebar-item{{ if eq .RelPermalink $currentPermalink }} selected{{end}}"
-        >
-          <div>
-            <span class="tag"
-              >{{ .PublishDate | time.Format "02 January 2006" }}</span
-            >
-          </div>
-          <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
-        </li>
-        {{ end }}
-      </ul>
-      <a href="/actualites/" class="cta-button center">Tous les articles</a>
-    </div>
-  </section>
-  <section class="post">
-    <a id="close-post-button" class="cta-button" href="/actualites"> X </a>
-    <article class="text-column">
-      <header class="post-header">
-        <div class="tag post-date">
-          Publié le {{ .PublishDate | time.Format "02 January 2006" }} − Par {{
-          .Params.Author }}
+{{ define "main" }}
+
+<div class="article-page">
+  <div class="article-container">
+    <nav class="breadcrumb">
+      <a href="/" class="breadcrumb-item">Accueil</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="/actualites/" class="breadcrumb-item">Actualités</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{{ .Title }}</span>
+    </nav>
+
+    <article class="article-main">
+      <header class="article-header">
+        <div class="article-meta">
+          <span class="meta-author">{{ .Params.Author }}</span>
+          <span class="meta-separator">•</span>
+          <span class="meta-date"
+            >{{ .PublishDate | time.Format "02 January 2006" }}</span
+          >
         </div>
-        <h1 class="post-title">{{ .Title }}</h1>
+
+        {{ with .Params.image }}
+        <img src="{{ . }}" alt="{{ $.Title }}" class="article-image" />
+        {{ end }}
       </header>
-      <div class="post-content">{{ .Content }}</div>
+
+      <div class="article-content">{{ .Content }}</div>
     </article>
-  </section>
+
+    {{ $currentPage := . }} {{ $posts := sort (where site.RegularPages.ByTitle
+    "Section" "actualites") ".PublishDate" }} {{ $recentPosts := first 3 (where
+    ($posts.Reverse) "Permalink" "!=" $currentPage.Permalink) }} {{ if gt (len
+    $recentPosts) 0 }}
+    <section class="related-articles-section">
+      <div class="section-header">
+        <h2 class="section-title">À lire également</h2>
+        <p class="section-subtitle">D'autres actualités du projet</p>
+      </div>
+
+      <div class="related-articles-grid">
+        {{ range $recentPosts }}
+        <article class="related-article-card">
+          <a href="{{ .RelPermalink }}" class="related-article-link">
+            <div class="related-article-meta">
+              <span class="meta-date"
+                >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
+              >
+            </div>
+            <h3 class="related-article-title">{{ .Title }}</h3>
+            <p class="related-article-summary">{{ .Summary | truncate 80 }}</p>
+            <span class="read-more">Lire →</span>
+          </a>
+        </article>
+        {{ end }}
+      </div>
+
+      <div class="back-to-news">
+        <a href="/actualites/" class="back-link">
+          <span class="arrow">←</span>
+          <span>Toutes les actualités</span>
+        </a>
+      </div>
+    </section>
+    {{ else }}
+    <div class="back-to-news standalone">
+      <a href="/actualites/" class="back-link">
+        <span class="arrow">←</span>
+        <span>Retour aux actualités</span>
+      </a>
+    </div>
+    {{ end }}
+  </div>
 </div>
+
 {{ end }}
