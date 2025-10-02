@@ -23,6 +23,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { generateBivariateColorExpression } from "@/utils/plant_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
@@ -58,6 +59,7 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
+    const bivariateExpression = generateBivariateColorExpression()
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
@@ -65,7 +67,8 @@ export const useMapStore = defineStore("map", () => {
         ["get", `indice_${vulnerabilityMode.value}`],
         ...VULNERABILITY_COLOR_MAP
       ],
-      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP]
+      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.PLANT_VULNERABILITY]: bivariateExpression
     }
   })
 
@@ -147,7 +150,7 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
@@ -162,7 +165,7 @@ export const useMapStore = defineStore("map", () => {
       id: `${layerId}-border`,
       type: "line",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "line-color": "#00000000",
@@ -191,6 +194,8 @@ export const useMapStore = defineStore("map", () => {
       // Conditionally load context data based on geolevel, datatype, and zoom
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
         contextData.setData(featureId, score, source_values)
+      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
+        contextData.setData(featureId, score, source_values)
       } else {
         contextData.setData(featureId)
       }
@@ -208,7 +213,9 @@ export const useMapStore = defineStore("map", () => {
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${datatype}/{z}/{x}/{y}.mvt`
+    const tileDataType =
+      datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype
+    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
       type: "vector",

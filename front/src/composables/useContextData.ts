@@ -43,9 +43,13 @@ export function useContextData() {
       } else if (data.value.datatype === DataType.PLANTABILITY) {
         ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
         ;(data.value as PlantabilityData).details = source_values
+      } else if (data.value.datatype === DataType.PLANT_VULNERABILITY) {
+        ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
+        ;(data.value as PlantabilityData).details = source_values
       }
     }
   }
+
   const removeData = () => {
     data.value = null
   }

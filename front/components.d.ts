@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
+    BivariateCellLabel: typeof import('./src/components/map/score/BivariateCellLabel.vue')['default']
     Button: typeof import('primevue/button')['default']
     Chart: typeof import('primevue/chart')['default']
     Chip: typeof import('primevue/chip')['default']
@@ -59,6 +60,7 @@ declare module 'vue' {
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']
     PlantabilityContextDataScore: typeof import('./src/components/contextData/plantability/PlantabilityContextDataScore.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
+    PlantVulnerabilityLegend: typeof import('./src/components/map/legend/PlantVulnerabilityLegend.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
