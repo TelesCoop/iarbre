@@ -42,7 +42,9 @@ $spacing-xxl: 4rem;
 $mobile-small: 480px;
 $mobile: 768px;
 $tablet: 1024px;
-$desktop: 1200px;
+$desktop: 1280px;
+$desktop-large: 1536px;
+$desktop-xlarge: 1920px;
 
 // Border radius
 $radius-xs: 2px;
@@ -109,11 +111,13 @@ $image-height-xl: 300px;
 $image-height-xxl: 400px;
 $image-height-xxxl: 500px;
 
-$content-width-sm: 600px;
-$content-width-md: 700px;
-$content-width-lg: 800px;
-$content-width-xxl: 900px;
-$content-width-xxl: 1200px;
+// Container max-widths (inspired by Tailwind)
+$content-width-sm: 640px;
+$content-width-md: 768px;
+$content-width-lg: 1024px;
+$content-width-xl: 1280px;
+$content-width-2xl: 1536px;
+$content-width-prose: 65ch;
 
 // Shadows
 $btn-shadow-primary: 0 8px 16px rgba($primary, 0.3);
@@ -230,9 +234,59 @@ h6 {
   justify-content: center;
 }
 
+// Container system with fluid padding
 .container {
-  max-width: $content-width-xxl;
-  margin: 0 auto;
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: $spacing-lg;
+
+  @media (min-width: $mobile) {
+    max-width: $content-width-md;
+  }
+
+  @media (min-width: $tablet) {
+    max-width: $content-width-lg;
+    padding-inline: $spacing-xl;
+  }
+
+  @media (min-width: $desktop) {
+    max-width: $content-width-xl;
+  }
+
+  @media (min-width: $desktop-large) {
+    max-width: $content-width-2xl;
+    padding-inline: $spacing-xxl;
+  }
+}
+
+.container-wide {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: $spacing-lg;
+
+  @media (min-width: $tablet) {
+    padding-inline: $spacing-xl;
+  }
+
+  @media (min-width: $desktop) {
+    max-width: calc(100% - 8rem);
+  }
+
+  @media (min-width: $desktop-large) {
+    max-width: $content-width-2xl;
+    padding-inline: $spacing-xxl;
+  }
+}
+
+.container-prose {
+  width: 100%;
+  max-width: $content-width-prose;
+  margin-inline: auto;
+  padding-inline: $spacing-lg;
+
+  @media (min-width: $tablet) {
+    padding-inline: $spacing-xl;
+  }
 }
 
 // =============================================================================
@@ -247,13 +301,26 @@ h6 {
   height: $navbar-height;
   background-color: rgba($white, 0.95);
   backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   z-index: 1000;
   border-bottom: $border-thin solid $border-medium-color;
-  max-width: $content-width-xxl;
-  margin: 0 auto;
+
+  .navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: $content-width-2xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      padding-inline: $spacing-xxl;
+    }
+  }
 
   .navbar-left {
     display: flex;
@@ -307,23 +374,31 @@ h6 {
     $white 0%,
     rgba($veryLightGreen, 0.1) 100%
   );
-  height: calc(100vh - $navbar-height);
+  min-height: 70vh;
   padding: $spacing-lg 0;
   display: flex;
   align-items: center;
 
   .hero-content {
-    max-width: $content-width-xxl;
-    margin: 0 auto;
+    display: flex;
     gap: $spacing-xxl;
     align-items: center;
-    display: flex;
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
 
     @media (max-width: $tablet) {
-      display: flex;
       flex-direction: column-reverse;
-      max-width: $content-width-lg;
-      padding: 0 $spacing-md;
+      padding-inline: $spacing-md;
     }
   }
 
@@ -387,8 +462,24 @@ h6 {
 // =============================================================================
 
 .features-grid {
-  padding: $spacing-xxl $spacing-lg;
+  padding-block: $spacing-xxl;
   background: $white;
+
+  .section-header {
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
+    margin-bottom: $spacing-xxl;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
+  }
 
   .section-title {
     font-family: $main-font, Arial, sans-serif;
@@ -415,16 +506,23 @@ h6 {
 
   .features-container {
     display: grid;
-    grid-template-columns: repeat(3, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: $spacing-xl;
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
 
     @media (max-width: $mobile-small) {
-      grid-template-columns: repeat(1, 1fr);
-      gap: $spacing-md;
+      grid-template-columns: 1fr;
     }
-    @media (min-width: $mobile-small) and (max-width: $tablet) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
     }
   }
 
@@ -493,11 +591,28 @@ h6 {
 // =============================================================================
 
 .about-section {
-  padding: $spacing-xxl $spacing-lg;
+  padding-top: $spacing-xxl;
   background: rgba($veryLightGreen, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-xxl;
+
+  > * {
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
+    margin-bottom: $spacing-xxl;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 
   .about-content {
     background: $primaryDark;
@@ -506,7 +621,6 @@ h6 {
     grid-template-columns: 1fr 1fr;
     gap: $spacing-xxl;
     align-items: center;
-    margin-bottom: $spacing-xxl;
     padding: $spacing-xxl;
 
     @media (max-width: $mobile) {
@@ -660,16 +774,12 @@ h6 {
 // =============================================================================
 
 .team-section {
-  padding: $spacing-xxl $spacing-lg;
+  padding-block: $spacing-xxl;
   background: linear-gradient(
     135deg,
     rgba($veryLightGreen, 0.03) 0%,
     $white 100%
   );
-
-  @media (max-width: $mobile) {
-    padding: $spacing-xl $spacing-md;
-  }
 
   .container {
     overflow: visible;
@@ -904,11 +1014,22 @@ h6 {
 // =============================================================================
 
 .partners-section {
-  padding: $spacing-xxl $spacing-lg;
+  padding-block: $spacing-xxl;
   background: $white;
 
-  @media (max-width: $mobile) {
-    padding: $spacing-xl $spacing-md;
+  > * {
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
   }
 
   .section-title {
@@ -1002,18 +1123,25 @@ h6 {
 // =============================================================================
 
 .newsletter-section {
-  padding: $spacing-xxl $spacing-lg;
+  padding-bottom: $spacing-xxl;
   background: rgba($veryLightGreen, 0.05);
-
-  @media (max-width: $mobile) {
-    padding: $spacing-xl $spacing-md;
-  }
 
   .newsletter-signup {
     text-align: center;
     background: rgba(199, 208, 200, 0.05);
-    padding: $spacing-xl;
     border-radius: $radius-xl;
+    max-width: $content-width-lg;
+    margin-inline: auto;
+    padding: $spacing-xl $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding: $spacing-xl $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-xl;
+      padding: $spacing-xl $spacing-xxl;
+    }
 
     h2 {
       color: $primaryDark;
@@ -1098,7 +1226,7 @@ h6 {
   font-family: $main-font, Arial, sans-serif;
   position: relative;
   overflow: hidden;
-  padding: $spacing-lg 0 $spacing-xl 0;
+  padding: $spacing-xl 0;
 
   @media (max-width: $mobile) {
     padding: $spacing-xxl 0 $spacing-lg 0;
@@ -1115,19 +1243,23 @@ h6 {
   }
 
   .footer-container {
-    max-width: $content-width-xxl;
-    margin: 0 auto;
-    padding: 0 $spacing-lg;
+    max-width: $content-width-2xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
 
-    @media (max-width: $mobile) {
-      padding: 0 $spacing-md;
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      padding-inline: $spacing-xxl;
     }
   }
 
   .footer-top {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1.5fr;
-    gap: $spacing-xxl;
+    grid-template-columns: 2.5fr 1fr 1fr 1.5fr;
+    gap: $spacing-xxl * 1.5;
     padding-bottom: $spacing-xxl;
     border-bottom: $border-thin solid rgba($white, 0.1);
 
@@ -1294,17 +1426,24 @@ h6 {
 // =============================================================================
 
 .news-page {
-  padding: $spacing-lg * 2 $spacing-lg;
+  padding-block: $spacing-xxl * 2;
   background: $white;
   min-height: calc(100vh - 80px);
 
-  @media (max-width: $mobile) {
-    padding: $spacing-xxl $spacing-md;
-  }
-
   .news-header {
-    max-width: $content-width-xxl;
-    margin: 0 auto $spacing-xxl * 2;
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    margin-bottom: $spacing-xxl * 2;
+    padding-inline: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
 
     @media (max-width: $mobile) {
       margin-bottom: $spacing-xxl;
@@ -1336,11 +1475,21 @@ h6 {
   }
 
   .news-grid {
-    max-width: $content-width-xxl;
-    margin: 0 auto;
+    max-width: $content-width-xl;
+    margin-inline: auto;
+    padding-inline: $spacing-lg;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: $spacing-xxl;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: $content-width-2xl;
+      padding-inline: $spacing-xxl;
+    }
 
     @media (max-width: $tablet) {
       grid-template-columns: repeat(2, 1fr);
@@ -1475,12 +1624,17 @@ h6 {
   min-height: calc(100vh - 80px);
 
   .article-container {
-    max-width: $content-width-lg;
-    margin: 0 auto;
-    padding: $spacing-xxl * 2 $spacing-lg;
+    max-width: $content-width-prose;
+    margin-inline: auto;
+    padding-block: $spacing-xxl * 2;
+    padding-inline: $spacing-lg;
+
+    @media (min-width: $tablet) {
+      padding-inline: $spacing-xl;
+    }
 
     @media (max-width: $mobile) {
-      padding: $spacing-xxl $spacing-md;
+      padding-block: $spacing-xxl;
     }
   }
 
@@ -1719,13 +1873,13 @@ h6 {
 }
 
 .page-content {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 $spacing-lg;
+  max-width: $content-width-prose;
+  margin-inline: auto;
+  padding-inline: $spacing-lg;
   flex-grow: 1;
 
-  @media (max-width: $mobile) {
-    padding: 0 $spacing-md;
+  @media (min-width: $tablet) {
+    padding-inline: $spacing-xl;
   }
 }
 
