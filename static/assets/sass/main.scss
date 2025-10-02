@@ -530,6 +530,15 @@ h6 {
       line-height: 1.7;
       margin-bottom: $spacing-lg;
     }
+
+    .about-description a {
+      color: $white;
+      text-decoration: underline;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
   }
 
   .about-visual {
