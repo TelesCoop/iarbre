@@ -998,79 +998,15 @@ h6 {
 }
 
 // =============================================================================
-// CONTACT SECTION
+// NEWSLETTER SECTION
 // =============================================================================
 
-.contact-section {
+.newsletter-section {
   padding: $spacing-xxl $spacing-lg;
   background: rgba($veryLightGreen, 0.05);
 
   @media (max-width: $mobile) {
     padding: $spacing-xl $spacing-md;
-  }
-
-  .contact-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $spacing-xxl;
-    margin-bottom: $spacing-xxl;
-
-    @media (max-width: $mobile) {
-      grid-template-columns: 1fr;
-      gap: $spacing-xl;
-    }
-  }
-
-  .contact-info {
-    .section-title {
-      font-family: $main-font, Arial, sans-serif;
-      font-size: $font-4xl;
-      color: $primaryDark;
-      margin-bottom: $spacing-xl;
-      font-weight: 700;
-    }
-
-    .contact-description {
-      font-size: $font-lg;
-      color: $gray;
-      line-height: 1.6;
-      margin-bottom: $spacing-xl;
-    }
-
-    .contact-details {
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-lg;
-
-      .contact-item {
-        display: flex;
-        align-items: center;
-        gap: $spacing-md;
-
-        .contact-icon {
-          width: $button-size-md;
-          height: $button-size-md;
-          background: rgba($accent, 0.1);
-          border-radius: $radius-lg;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: $accent;
-        }
-
-        .contact-text {
-          h4 {
-            color: $primaryDark;
-            margin-bottom: $spacing-xs/2;
-            font-weight: 600;
-          }
-
-          p {
-            color: $gray;
-          }
-        }
-      }
-    }
   }
 
   .newsletter-signup {
@@ -1162,7 +1098,7 @@ h6 {
   font-family: $main-font, Arial, sans-serif;
   position: relative;
   overflow: hidden;
-  padding: $spacing-xxl * 1.5 0 $spacing-xl 0;
+  padding: $spacing-lg 0 $spacing-xl 0;
 
   @media (max-width: $mobile) {
     padding: $spacing-xxl 0 $spacing-lg 0;
