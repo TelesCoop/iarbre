@@ -357,24 +357,73 @@ class MVTGenerator:
         Returns:
             gpd.GeoDataFrame: The GeoDataFrame with aggregated plantability indices.
         """
+        vuln_ids = [
+            getattr(obj, "vulnerability_idx_id", None)
+            for obj in df_clipped.itertuples()
+            if getattr(obj, "vulnerability_idx_id", None) is not None
+            and not (
+                isinstance(getattr(obj, "vulnerability_idx_id", None), float)
+                and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+            )
+        ]
+        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
+
+        # Add vulnerability indices to the dataframe
+        df_with_vuln = df_clipped.copy()
+        df_with_vuln["vulnerability_index_day"] = df_with_vuln.apply(
+            lambda row: vulnerabilities[
+                row["vulnerability_idx_id"]
+            ].vulnerability_index_day
+            if row["vulnerability_idx_id"] in vulnerabilities
+            else None,
+            axis=1,
+        )
+        df_with_vuln["vulnerability_index_night"] = df_with_vuln.apply(
+            lambda row: vulnerabilities[
+                row["vulnerability_idx_id"]
+            ].vulnerability_index_night
+            if row["vulnerability_idx_id"] in vulnerabilities
+            else None,
+            axis=1,
+        )
+
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
-        spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
+        spatial_join = gpd.sjoin(df_with_vuln, grid, how="left", predicate="intersects")
+
+        # Aggregate plantability and vulnerability indices
         aggregated = (
-            spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-            .agg(["mean", lambda x: list(x)])
+            spatial_join.groupby("grid_id")
+            .agg(
+                {
+                    "plantability_normalized_indice": ["mean", lambda x: list(x)],
+                    "vulnerability_index_day": lambda x: np.nanmean(
+                        x
+                    ),  # On map limits there is plantability but no vulnerability
+                    "vulnerability_index_night": lambda x: np.nanmean(x),
+                }
+            )
             .reset_index()
         )
+
         aggregated.columns = [
             "grid_id",
             "plantability_normalized_indice",
             "source_values",
+            "vulnerability_index_day_mean",
+            "vulnerability_index_night_mean",
         ]
 
         # Map the mean values to PLANTABILITY_NORMALIZED set of values
         aggregated["plantability_normalized_indice"] = aggregated[
             "plantability_normalized_indice"
         ].apply(self.map_to_discrete_value)
+        aggregated["vulnerability_index_day_mean"] = (
+            aggregated["vulnerability_index_day_mean"].fillna(5).round().astype(int)
+        )
+        aggregated["vulnerability_index_night_mean"] = (
+            aggregated["vulnerability_index_night_mean"].fillna(5).round().astype(int)
+        )
 
         # Store source_values in a JSON format to be added in the `details` field
         aggregated["source_values"] = aggregated["source_values"].apply(
@@ -432,6 +481,22 @@ class MVTGenerator:
                     obj.source_values if hasattr(obj, "source_values") else []
                 ),
             }
+
+            # Add aggregated vulnerability means if available (from grid aggregation)
+            if (
+                hasattr(obj, "vulnerability_index_day_mean")
+                and obj.vulnerability_index_day_mean is not None
+            ):
+                properties[
+                    "vulnerability_index_day_mean"
+                ] = obj.vulnerability_index_day_mean
+            if (
+                hasattr(obj, "vulnerability_index_night_mean")
+                and obj.vulnerability_index_night_mean is not None
+            ):
+                properties[
+                    "vulnerability_index_night_mean"
+                ] = obj.vulnerability_index_night_mean
 
             v_id = getattr(obj, "vulnerability_idx_id", None)
             if v_id:
