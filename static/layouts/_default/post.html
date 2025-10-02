@@ -2,6 +2,14 @@
 
 <div class="article-page">
   <div class="article-container">
+    <nav class="breadcrumb">
+      <a href="/" class="breadcrumb-item">Accueil</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="/actualites/" class="breadcrumb-item">Actualités</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{{ .Title }}</span>
+    </nav>
+
     <article class="article-main">
       <header class="article-header">
         <div class="article-meta">
@@ -18,12 +26,50 @@
       </header>
 
       <div class="article-content">{{ .Content }}</div>
+    </article>
 
-      <a href="/actualites/" class="article-footer back-link">
+    {{ $currentPage := . }} {{ $posts := sort (where site.RegularPages.ByTitle
+    "Section" "actualites") ".PublishDate" }} {{ $recentPosts := first 3 (where
+    ($posts.Reverse) "Permalink" "!=" $currentPage.Permalink) }} {{ if gt (len
+    $recentPosts) 0 }}
+    <section class="related-articles-section">
+      <div class="section-header">
+        <h2 class="section-title">À lire également</h2>
+        <p class="section-subtitle">D'autres actualités du projet</p>
+      </div>
+
+      <div class="related-articles-grid">
+        {{ range $recentPosts }}
+        <article class="related-article-card">
+          <a href="{{ .RelPermalink }}" class="related-article-link">
+            <div class="related-article-meta">
+              <span class="meta-date"
+                >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
+              >
+            </div>
+            <h3 class="related-article-title">{{ .Title }}</h3>
+            <p class="related-article-summary">{{ .Summary | truncate 80 }}</p>
+            <span class="read-more">Lire →</span>
+          </a>
+        </article>
+        {{ end }}
+      </div>
+
+      <div class="back-to-news">
+        <a href="/actualites/" class="back-link">
+          <span class="arrow">←</span>
+          <span>Toutes les actualités</span>
+        </a>
+      </div>
+    </section>
+    {{ else }}
+    <div class="back-to-news standalone">
+      <a href="/actualites/" class="back-link">
         <span class="arrow">←</span>
         <span>Retour aux actualités</span>
       </a>
-    </article>
+    </div>
+    {{ end }}
   </div>
 </div>
 
