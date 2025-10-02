@@ -1094,7 +1094,6 @@ h6 {
 // =============================================================================
 
 .btn {
-  display: inline-block;
   padding: $spacing-xs $spacing-xl;
   border-radius: $radius-lg;
   text-decoration: none;
@@ -1104,6 +1103,8 @@ h6 {
   border: none;
   cursor: pointer;
   font-family: inherit;
+  display: flex;
+  align-items: center;
 
   &.btn-primary {
     background: $primary;
