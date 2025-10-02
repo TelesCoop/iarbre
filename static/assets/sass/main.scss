@@ -1257,6 +1257,40 @@ h6 {
     }
   }
 
+  .footer-contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    .footer-contact-item {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      color: rgba($white, 0.8);
+      font-size: $font-base;
+
+      svg {
+        flex-shrink: 0;
+        color: $accent;
+      }
+
+      a {
+        color: rgba($white, 0.8);
+        text-decoration: none;
+        transition: all $transition-fast;
+
+        &:hover {
+          color: $white;
+          text-decoration: underline;
+        }
+      }
+
+      span {
+        color: rgba($white, 0.8);
+      }
+    }
+  }
+
   .footer-partners {
     display: flex;
     flex-direction: column;
