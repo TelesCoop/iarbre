@@ -371,19 +371,19 @@ class MVTGenerator:
         # Add vulnerability indices to the dataframe
         df_with_vuln = df_clipped.copy()
         df_with_vuln["vulnerability_index_day"] = df_with_vuln.apply(
-            lambda row: vulnerabilities[
-                row["vulnerability_idx_id"]
-            ].vulnerability_index_day
-            if row["vulnerability_idx_id"] in vulnerabilities
-            else None,
+            lambda row: (
+                vulnerabilities[row["vulnerability_idx_id"]].vulnerability_index_day
+                if row["vulnerability_idx_id"] in vulnerabilities
+                else None
+            ),
             axis=1,
         )
         df_with_vuln["vulnerability_index_night"] = df_with_vuln.apply(
-            lambda row: vulnerabilities[
-                row["vulnerability_idx_id"]
-            ].vulnerability_index_night
-            if row["vulnerability_idx_id"] in vulnerabilities
-            else None,
+            lambda row: (
+                vulnerabilities[row["vulnerability_idx_id"]].vulnerability_index_night
+                if row["vulnerability_idx_id"] in vulnerabilities
+                else None
+            ),
             axis=1,
         )
 
@@ -397,10 +397,12 @@ class MVTGenerator:
             .agg(
                 {
                     "plantability_normalized_indice": ["mean", lambda x: list(x)],
-                    "vulnerability_index_day": lambda x: np.nanmean(
-                        x
-                    ),  # On map limits there is plantability but no vulnerability
-                    "vulnerability_index_night": lambda x: np.nanmean(x),
+                    "vulnerability_index_day": lambda x: (
+                        np.nanmean(x) if not np.all(np.isnan(x)) else 5
+                    ),
+                    "vulnerability_index_night": lambda x: (
+                        np.nanmean(x) if not np.all(np.isnan(x)) else 5
+                    ),
                 }
             )
             .reset_index()
@@ -487,16 +489,16 @@ class MVTGenerator:
                 hasattr(obj, "vulnerability_index_day_mean")
                 and obj.vulnerability_index_day_mean is not None
             ):
-                properties[
-                    "vulnerability_index_day_mean"
-                ] = obj.vulnerability_index_day_mean
+                properties["vulnerability_index_day_mean"] = (
+                    obj.vulnerability_index_day_mean
+                )
             if (
                 hasattr(obj, "vulnerability_index_night_mean")
                 and obj.vulnerability_index_night_mean is not None
             ):
-                properties[
-                    "vulnerability_index_night_mean"
-                ] = obj.vulnerability_index_night_mean
+                properties["vulnerability_index_night_mean"] = (
+                    obj.vulnerability_index_night_mean
+                )
 
             v_id = getattr(obj, "vulnerability_idx_id", None)
             if v_id:
