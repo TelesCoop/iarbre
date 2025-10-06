@@ -420,6 +420,7 @@ class MVTGenerator:
         aggregated["plantability_normalized_indice"] = aggregated[
             "plantability_normalized_indice"
         ].apply(self.map_to_discrete_value)
+
         aggregated["vulnerability_index_day_mean"] = (
             aggregated["vulnerability_index_day_mean"].fillna(5).round().astype(int)
         )
@@ -435,10 +436,10 @@ class MVTGenerator:
         df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
         df_clipped = df_clipped.rename(
-            columns={"vulnerability_index_night_mean": "vulnerability_index_night"}
+            columns={"vulnerability_index_day_mean": "vulnerability_indice_day"}
         )
         df_clipped = df_clipped.rename(
-            columns={"vulnerability_index_day_mean": "vulnerability_index_day"}
+            columns={"vulnerability_index_night_mean": "vulnerability_indice_night"}
         )
 
         return df_clipped
@@ -492,19 +493,17 @@ class MVTGenerator:
 
             # Add aggregated vulnerability means if available (from grid aggregation)
             if (
-                hasattr(obj, "vulnerability_index_day_mean")
-                and obj.vulnerability_index_day_mean is not None
+                hasattr(obj, "vulnerability_indice_day")
+                and obj.vulnerability_indice_day is not None
             ):
-                properties[
-                    "vulnerability_index_day_mean"
-                ] = obj.vulnerability_index_day_mean
+                properties["vulnerability_indice_day"] = obj.vulnerability_indice_day
             if (
-                hasattr(obj, "vulnerability_index_night_mean")
-                and obj.vulnerability_index_night_mean is not None
+                hasattr(obj, "vulnerability_indice_night")
+                and obj.vulnerability_indice_night is not None
             ):
                 properties[
-                    "vulnerability_index_night_mean"
-                ] = obj.vulnerability_index_night_mean
+                    "vulnerability_indice_night"
+                ] = obj.vulnerability_indice_night
 
             v_id = getattr(obj, "vulnerability_idx_id", None)
             if v_id:
