@@ -398,10 +398,10 @@ class MVTGenerator:
                 {
                     "plantability_normalized_indice": ["mean", lambda x: list(x)],
                     "vulnerability_index_day": lambda x: (
-                        np.nanmean(x) if not np.all(np.isnan(x)) else 5
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
                     ),
                     "vulnerability_index_night": lambda x: (
-                        np.nanmean(x) if not np.all(np.isnan(x)) else 5
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
                     ),
                 }
             )
@@ -434,6 +434,12 @@ class MVTGenerator:
 
         df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
+        df_clipped = df_clipped.rename(
+            columns={"vulnerability_index_night_mean": "vulnerability_index_night"}
+        )
+        df_clipped = df_clipped.rename(
+            columns={"vulnerability_index_day_mean": "vulnerability_index_day"}
+        )
 
         return df_clipped
 
@@ -489,16 +495,16 @@ class MVTGenerator:
                 hasattr(obj, "vulnerability_index_day_mean")
                 and obj.vulnerability_index_day_mean is not None
             ):
-                properties["vulnerability_index_day_mean"] = (
-                    obj.vulnerability_index_day_mean
-                )
+                properties[
+                    "vulnerability_index_day_mean"
+                ] = obj.vulnerability_index_day_mean
             if (
                 hasattr(obj, "vulnerability_index_night_mean")
                 and obj.vulnerability_index_night_mean is not None
             ):
-                properties["vulnerability_index_night_mean"] = (
-                    obj.vulnerability_index_night_mean
-                )
+                properties[
+                    "vulnerability_index_night_mean"
+                ] = obj.vulnerability_index_night_mean
 
             v_id = getattr(obj, "vulnerability_idx_id", None)
             if v_id:
