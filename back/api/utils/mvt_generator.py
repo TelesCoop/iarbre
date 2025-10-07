@@ -215,7 +215,6 @@ class MVTGenerator:
             None
         """
         west, south, east, north = bounds
-
         mvt_data = mapbox_vector_tile.encode(
             transformed_geometries, quantize_bounds=(west, south, east, north)
         )
@@ -463,21 +462,26 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        # Bulk load vulnerability data
-        vuln_ids = [
-            getattr(obj, "vulnerability_idx_id", None)
-            for obj in df_clipped.itertuples()
-            if getattr(obj, "vulnerability_idx_id", None) is not None
-            and not (
-                isinstance(getattr(obj, "vulnerability_idx_id", None), float)
-                and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+        if zoom <= 15:
+            # Bulk load vulnerability data, not for aggregated
+            vuln_ids = [
+                getattr(obj, "vulnerability_idx_id", None)
+                for obj in df_clipped.itertuples()
+                if getattr(obj, "vulnerability_idx_id", None) is not None
+                and not (
+                    isinstance(getattr(obj, "vulnerability_idx_id", None), float)
+                    and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+                )
+            ]
+            vulnerabilities = (
+                Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
             )
-        ]
-        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
-        vuln_props = {
-            vuln_id: {k: v for k, v in vuln.get_layer_properties().items() if k != "id"}
-            for vuln_id, vuln in vulnerabilities.items()
-        }
+            vuln_props = {
+                vuln_id: {
+                    k: v for k, v in vuln.get_layer_properties().items() if k != "id"
+                }
+                for vuln_id, vuln in vulnerabilities.items()
+            }
 
         for obj in tqdm(
             df_clipped.itertuples(),
@@ -501,15 +505,15 @@ class MVTGenerator:
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
             ):
-                properties[
-                    "vulnerability_indice_night"
-                ] = obj.vulnerability_indice_night
-
-            v_id = getattr(obj, "vulnerability_idx_id", None)
-            if v_id:
-                vulnerability_properties = vuln_props.get(v_id, {})
-                for key, value in vulnerability_properties.items():
-                    properties[f"vulnerability_{key}"] = value
+                properties["vulnerability_indice_night"] = (
+                    obj.vulnerability_indice_night
+                )
+            if zoom <= 15:
+                v_id = getattr(obj, "vulnerability_idx_id", None)
+                if v_id:
+                    vulnerability_properties = vuln_props.get(v_id, {})
+                    for key, value in vulnerability_properties.items():
+                        properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
