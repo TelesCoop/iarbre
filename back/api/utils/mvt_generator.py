@@ -505,9 +505,9 @@ class MVTGenerator:
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
             ):
-                properties["vulnerability_indice_night"] = (
-                    obj.vulnerability_indice_night
-                )
+                properties[
+                    "vulnerability_indice_night"
+                ] = obj.vulnerability_indice_night
             if zoom <= 15:
                 v_id = getattr(obj, "vulnerability_idx_id", None)
                 if v_id:
