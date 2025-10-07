@@ -2,76 +2,188 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
-    <meta property="og:URL" content="{{ .Site.BaseURL }}" />
-    <meta property="og:site_name" content="{{ .Site.Title }}" />
-    <meta property="twitter:site" content="{{ .Site.Title }}" />
-    <meta property="og:type" content="website" />
+    <meta content="{{ .Site.BaseURL }}" property="og:URL" />
+    <meta content="{{ .Site.Title }}" property="og:site_name" />
+    <meta content="{{ .Site.Title }}" property="twitter:site" />
+    <meta content="website" property="og:type" />
 
     {{ if .Params.noRobots }}
-    <meta name="robots" content="noindex" />
+    <meta content="noindex" name="robots" />
     {{ end }} {{ if .Description }}
-    <meta name="description" content="{{ .Description }}" />
-    <meta property="og:description" content="{{ .Description }}" />
-    <meta property="twitter:description" content="{{ .Description }}" />
+    <meta content="{{ .Description }}" name="description" />
+    <meta content="{{ .Description }}" property="og:description" />
+    <meta content="{{ .Description }}" property="twitter:description" />
     {{ else }}
-    <meta name="description" content="{{ .Site.Params.meta.Description }}" />
+    <meta content="{{ .Site.Params.meta.Description }}" name="description" />
     <meta
-      property="og:description"
       content="{{ .Site.Params.meta.Description }}"
+      property="og:description"
     />
     <meta
-      property="twitter:description"
       content="{{ .Site.Params.meta.Description }}"
+      property="twitter:description"
     />
     {{ end }} {{ block "meta-extended" . }} {{end}} {{ if .Title }}
     <title>{{ .Title }}</title>
-    <meta property="og:title" content="{{ .Title }}" />
-    <meta property="twitter:title" content="{{ .Title }}" />
+    <meta content="{{ .Title }}" property="og:title" />
+    <meta content="{{ .Title }}" property="twitter:title" />
     {{ else }}
     <title>{{ .Site.Title }}</title>
-    <meta property="og:title" content="{{ .Site.Title }}" />
-    <meta property="twitter:title" content="{{ .Site.Title }}" />
+    <meta content="{{ .Site.Title }}" property="og:title" />
+    <meta content="{{ .Site.Title }}" property="twitter:title" />
     {{ end }}
 
     <!-- Style -->
     {{ with resources.Get "sass/main.scss" }} {{ $opts := dict "transpiler"
     "libsass" "targetPath" "css/style.css" }} {{ with . | toCSS $opts }} {{ if
     hugo.IsDevelopment }}
-    <link rel="stylesheet" href="{{ .RelPermalink }}" />
+    <link href="{{ .RelPermalink }}" rel="stylesheet" />
     {{ else }} {{ with . | minify | fingerprint }}
     <link
-      rel="stylesheet"
+      crossorigin="anonymous"
       href="{{ .RelPermalink }}"
       integrity="{{ .Data.Integrity }}"
-      crossorigin="anonymous"
+      rel="stylesheet"
     />
     {{ end }} {{ end }} {{ end }} {{ end }}
-    <link rel="icon" href="/images/picto_tree.png" type="image/png" />
+    <link href="/images/picto_tree.png" rel="icon" type="image/png" />
   </head>
   <body class="">
     {{ template "_internal/navbar.html" }}
 
-    <section class="main {{.Layout}}">
+    <main class="main {{.Layout}}">
       {{ .Params.robots }} {{ .Params.robots }}
       <!-- Code that all your templates share, like a header -->
       {{ block "main" . }}
       <!-- The part of the page that begins to differ between templates -->
       {{ end }}
-    </section>
-    <footer>
-      <p>
-        <a href="/credits">crédits</a><a href="/a-propos">à propos</a>
-        <a href="mailto:contact@telescoop.fr">contact</a>
-      </p>
+    </main>
+    <footer class="main-footer">
+      <div class="footer-container">
+        <div class="footer-top">
+          <div class="footer-column footer-about">
+            <h4 class="footer-heading">En résumé</h4>
+
+            <p class="footer-description">
+              Plateforme collaborative de production, d'analyse et de
+              visualisation de données territoriales pour accompagner les
+              décisions en faveur de l'adaptation urbaine au changement
+              climatique.
+            </p>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Navigation</h4>
+            <nav class="footer-links">
+              <a href="/">Accueil</a>
+              <a href="/actualites">Actualités</a>
+              <a href="/a-propos">À propos</a>
+              <a href="/credits">Crédits</a>
+            </nav>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Contact</h4>
+            <div class="footer-contact-details">
+              <div class="footer-contact-item">
+                <svg
+                  fill="none"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                  <polyline
+                    points="22,6 12,13 2,6"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <a href="mailto:contact@telescoop.fr">contact@telescoop.fr</a>
+              </div>
+              <div class="footer-contact-item">
+                <svg
+                  fill="none"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                  <circle
+                    cx="12"
+                    cy="10"
+                    r="3"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  />
+                </svg>
+                <span>Lyon, France</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-column">
+            <h4 class="footer-heading">Consortium</h4>
+            <div class="footer-partners">
+              <img
+                alt="Erasme"
+                class="footer-logo"
+                src="/images/logo-erasme.jpg"
+              />
+              <img
+                alt="Métropole de Lyon"
+                class="footer-logo"
+                src="/images/logo-metropole-lyon.svg"
+              />
+              <img
+                alt="LIRIS"
+                class="footer-logo"
+                src="/images/logo-liris.webp"
+              />
+              <img
+                alt="TelesCoop"
+                class="footer-logo"
+                src="/images/telescoop.png"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div class="footer-funding">
+            <p class="footer-copyright">
+              © {{ now.Format "2006" }} IA·rbre. Tous droits réservés.
+            </p>
+          </div>
+        </div>
+      </div>
     </footer>
     {{ with resources.Get "js/script.js" }}
     <script src="{{ .RelPermalink}}"></script>
     {{ end }}
     <script
-      defer
       data-domain="iarbre.fr"
+      defer
       src="https://plausible.io/js/script.outbound-links.js"
     ></script>
   </body>
