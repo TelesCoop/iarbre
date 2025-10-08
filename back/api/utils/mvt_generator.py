@@ -26,6 +26,7 @@ from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
 MVT_EXTENT = 4096
+ZOOM_AGGREGATE_BREAKPOINT = max(ZOOM_TO_GRID_SIZE.keys())
 
 
 class MVTGenerator:
@@ -333,7 +334,7 @@ class MVTGenerator:
         if len(df_clipped) == 0:
             return all_features
 
-        if zoom <= 15 and side_length < 10:
+        if zoom <= ZOOM_AGGREGATE_BREAKPOINT and side_length <= 10:
             df_grid_clipped = self._make_grid_aggregate(df_clipped, grid_size)
         else:
             df_grid_clipped = df_clipped
@@ -462,7 +463,7 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        if zoom <= 15:
+        if zoom > ZOOM_AGGREGATE_BREAKPOINT:
             # Bulk load vulnerability data, not for aggregated
             vuln_ids = [
                 getattr(obj, "vulnerability_idx_id", None)
@@ -508,7 +509,7 @@ class MVTGenerator:
                 properties[
                     "vulnerability_indice_night"
                 ] = obj.vulnerability_indice_night
-            if zoom <= 15:
+            if zoom > ZOOM_AGGREGATE_BREAKPOINT:
                 v_id = getattr(obj, "vulnerability_idx_id", None)
                 if v_id:
                     vulnerability_properties = vuln_props.get(v_id, {})
