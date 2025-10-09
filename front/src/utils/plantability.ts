@@ -181,5 +181,8 @@ export const ZoomToGridSize: Record<number, number> = {
   12: 75,
   13: 30,
   14: 15,
-  15: 10
+  15: 10,
+  16: 5,
+  17: 5,
+  18: 5
 }

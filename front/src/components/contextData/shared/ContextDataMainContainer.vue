@@ -29,11 +29,8 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 
 const gridSize = computed(() => {
   if (props.zoomLevel) {
-    const zoom = Math.round(props.zoomLevel)
-    if (zoom > 15) {
-      return 5
-    }
-    return ZoomToGridSize[zoom] || ZoomToGridSize[10]
+    const zoom = Math.floor(props.zoomLevel)
+    return ZoomToGridSize[zoom] ?? null
   }
   return null
 })
