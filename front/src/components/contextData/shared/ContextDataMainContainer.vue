@@ -32,7 +32,7 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
     :class="containerClasses"
     role="dialog"
   >
-    <map-context-header :description="description" />
+    <map-context-header :description="description" :title="title" />
     <div class="map-context-panel-content">
       <div v-if="data">
         <slot name="score" :data="data" />

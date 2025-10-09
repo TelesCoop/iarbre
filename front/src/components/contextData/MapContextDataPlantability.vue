@@ -24,7 +24,7 @@ const scorePercentage = computed(() =>
   <context-data-main-container
     color-scheme="plantability"
     title="plantability"
-    description="Calcul basé sur la pondération de +37 paramètres"
+    description="Calcul basé sur la pondération de +37 paramètres."
     :data="props.data"
     empty-message="Zommez et cliquez sur un carreau"
   >
