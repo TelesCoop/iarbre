@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<ClimateDataProps>(), {
 <template>
   <context-data-main-container
     color-scheme="climate"
-    title="climate"
+    title="lcz"
     description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
     :data="props.data"
     :full-height="props.fullHeight"
