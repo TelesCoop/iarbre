@@ -14,7 +14,7 @@ describe("MapSidePanelHeader", () => {
   })
 
   it("should render the component with correct content", () => {
-    cy.contains("Métropole de Lyon").should("be.visible")
+    cy.contains("Agglomération de Lyon").should("be.visible")
     cy.contains("habitants").should("be.visible")
     cy.contains("superficie").should("be.visible")
   })
