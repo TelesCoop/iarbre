@@ -2,10 +2,15 @@
 include .env
 
 FRONT_CMD = cd front/ && . ~/.nvm/nvm.sh && nvm use
-BACK_CMD = cd back/ && pew in ${PEW_ENV} python manage.py
+BACK_CMD_BASE = cd back/ && pew in ${PEW_ENV}
+BACK_CMD = ${BACK_CMD_BASE} python manage.py
 # Install front
 install_front:
 	${FRONT_CMD} && npm install
+
+# Install back
+install_back:
+	${BACK_CMD_BASE} pip install -r requirements.txt
 
 # Run dev server
 run_front:
