@@ -4,7 +4,7 @@ import { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
-
+import type { PlantabilityVulnerabilityData } from "@/types/vuln_plantability"
 const mapStore = useMapStore()
 
 defineProps({
@@ -28,6 +28,10 @@ defineProps({
     <map-context-data-climate-zone
       v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
       :data="mapStore.contextData.data as ClimateData"
+    />
+    <map-context-data-plant-vulnerability
+      v-if="mapStore.selectedDataType === DataType.PLANT_VULNERABILITY"
+      :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
     />
   </div>
 </template>
