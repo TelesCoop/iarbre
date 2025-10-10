@@ -45,7 +45,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
+  <div class="map-panels">
+    <map-side-panel />
+    <div :id="mapId" class="map-component" data-cy="map-component"></div>
+  </div>
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
     <map-config-drawer-toggle />
   </div>
@@ -56,12 +59,35 @@ onMounted(() => {
   <div class="lg:hidden flex items-center justify-center">
     <map-context-data-mobile />
   </div>
-  <map-side-panel />
   <welcome-message />
 </template>
 
 <style>
 @reference "@/styles/main.css";
+
+.map-panels {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: var(--sidepanel-width) 1fr;
+}
+
+.map-panels .map-component {
+  position: relative;
+  margin-left: var(--sidepanel-width);
+  width: calc(100vw - var(--sidepanel-width));
+}
+
+@media (max-width: var(--breakpoint-md)) {
+  .map-panels {
+    display: block;
+  }
+
+  .map-panels .map-component {
+    margin-left: 0;
+    width: 100vw;
+  }
+}
 
 .legend-container {
   @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
