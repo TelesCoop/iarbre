@@ -5,6 +5,7 @@
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
 @import "primeicons/primeicons.css";
+@import "@/styles/variables.css";
 
 /* Define custom fonts */
 @font-face {
