@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden md:flex absolute top-0 left-0 z-10 h-full w-100 flex-col bg-white">
+  <div class="map-sidepanel">
     <map-side-panel-header data-cy="map-side-panel-header" class="mb-0" />
     <div class="px-4 flex-1 overflow-y-auto items-center">
       <map-layer-switcher data-cy="map-layer-switcher" class="mb-4" />
@@ -10,3 +10,12 @@
     </div>
   </div>
 </template>
+
+<style>
+@reference "@/styles/main.css";
+
+.map-sidepanel {
+  @apply hidden absolute md:flex top-0 left-0 z-10 h-full flex-col bg-white;
+  width: var(--sidepanel-width);
+}
+</style>
