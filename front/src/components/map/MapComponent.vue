@@ -74,6 +74,7 @@ onMounted(() => {
 
 .map-panels .map-component {
   position: relative;
+  /* Fix weird bug with map by adding margin-left */
   margin-left: var(--sidepanel-width);
   width: calc(100vw - var(--sidepanel-width));
 }
