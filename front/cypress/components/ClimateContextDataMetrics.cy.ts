@@ -2,17 +2,34 @@
 import { createPinia } from "pinia"
 import { mount } from "cypress/vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
-import { ClimateZone } from "@/types/climate"
+import { ClimateDataDetailsKey } from "@/types/climate"
+import { DataType, GeoLevel } from "@/utils/enum"
 
 describe("ClimateContextDataMetrics", () => {
+  const createMockData = (overrides = {}) => ({
+    details: {
+      [ClimateDataDetailsKey.HRE]: 12.5,
+      [ClimateDataDetailsKey.ARE]: 150,
+      [ClimateDataDetailsKey.BUR]: 35,
+      [ClimateDataDetailsKey.ROR]: 25,
+      [ClimateDataDetailsKey.BSR]: 10,
+      [ClimateDataDetailsKey.WAR]: 5,
+      [ClimateDataDetailsKey.VER]: 25,
+      [ClimateDataDetailsKey.VHR]: 60,
+      ...overrides
+    },
+    datatype: DataType.CLIMATE,
+    geolevel: GeoLevel.TILE,
+    id: 1,
+    geometry: "POINT(0 0)",
+    mapGeometry: "POINT(0 0)",
+    lczIndex: "LCZ 5",
+    lczDescription: "Zone urbaine ouverte"
+  })
+
   it("renders with climate data", () => {
     const pinia = createPinia()
-    const mockData = {
-      zone: ClimateZone.H1a,
-      temperature: 15.5,
-      precipitation: 850,
-      humidity: 65
-    }
+    const mockData = createMockData()
 
     mount(ClimateContextDataMetrics, {
       global: {
@@ -23,17 +40,15 @@ describe("ClimateContextDataMetrics", () => {
       }
     })
 
-    cy.getBySel("climate-metrics").should("exist")
+    cy.get('[aria-label="Liste des indicateurs climatiques par catégorie"]').should("exist")
   })
 
-  it("displays temperature metric", () => {
+  it("displays building characteristics", () => {
     const pinia = createPinia()
-    const mockData = {
-      zone: ClimateZone.H1b,
-      temperature: 18.2,
-      precipitation: 900,
-      humidity: 70
-    }
+    const mockData = createMockData({
+      [ClimateDataDetailsKey.HRE]: 18.5,
+      [ClimateDataDetailsKey.ARE]: 200
+    })
 
     mount(ClimateContextDataMetrics, {
       global: {
@@ -44,18 +59,15 @@ describe("ClimateContextDataMetrics", () => {
       }
     })
 
-    cy.contains("Température").should("exist")
-    cy.contains("18.2").should("exist")
+    cy.contains("Caractéristiques du bâti").should("exist")
   })
 
-  it("displays precipitation metric", () => {
+  it("displays surface types", () => {
     const pinia = createPinia()
-    const mockData = {
-      zone: ClimateZone.H2a,
-      temperature: 16.0,
-      precipitation: 750,
-      humidity: 60
-    }
+    const mockData = createMockData({
+      [ClimateDataDetailsKey.BUR]: 40,
+      [ClimateDataDetailsKey.ROR]: 30
+    })
 
     mount(ClimateContextDataMetrics, {
       global: {
@@ -66,18 +78,15 @@ describe("ClimateContextDataMetrics", () => {
       }
     })
 
-    cy.contains("Précipitations").should("exist")
-    cy.contains("750").should("exist")
+    cy.contains("Types de surfaces").should("exist")
   })
 
-  it("displays humidity metric", () => {
+  it("displays vegetation and water metrics", () => {
     const pinia = createPinia()
-    const mockData = {
-      zone: ClimateZone.H2b,
-      temperature: 17.0,
-      precipitation: 800,
-      humidity: 68
-    }
+    const mockData = createMockData({
+      [ClimateDataDetailsKey.VER]: 35,
+      [ClimateDataDetailsKey.WAR]: 8
+    })
 
     mount(ClimateContextDataMetrics, {
       global: {
@@ -88,18 +97,12 @@ describe("ClimateContextDataMetrics", () => {
       }
     })
 
-    cy.contains("Humidité").should("exist")
-    cy.contains("68").should("exist")
+    cy.contains("Végétation et eau").should("exist")
   })
 
-  it("handles different climate zones", () => {
+  it("handles categories expansion", () => {
     const pinia = createPinia()
-    const mockData = {
-      zone: ClimateZone.H3,
-      temperature: 19.5,
-      precipitation: 650,
-      humidity: 55
-    }
+    const mockData = createMockData()
 
     mount(ClimateContextDataMetrics, {
       global: {
@@ -110,21 +113,23 @@ describe("ClimateContextDataMetrics", () => {
       }
     })
 
-    cy.getBySel("climate-metrics").should("exist")
+    cy.get('[data-cy="category-building"]').click()
+    cy.contains("12.5").should("be.visible")
   })
 
-  it("renders null data", () => {
+  it("displays all climate metrics", () => {
     const pinia = createPinia()
+    const mockData = createMockData()
 
     mount(ClimateContextDataMetrics, {
       global: {
         plugins: [pinia]
       },
       props: {
-        data: null
+        data: mockData
       }
     })
 
-    cy.getBySel("empty-message").should("exist")
+    cy.get('[aria-label="Liste des indicateurs climatiques par catégorie"]').should("exist")
   })
 })

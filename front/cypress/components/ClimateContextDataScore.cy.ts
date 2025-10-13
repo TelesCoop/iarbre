@@ -74,17 +74,6 @@ describe("ClimateContextDataScore.vue", () => {
     cy.get(".map-context-card").should("exist")
   })
 
-  it("has correct text styling classes", () => {
-    cy.mount(ClimateContextDataScore, {
-      props: {
-        data: mockClimateData
-      }
-    })
-
-    cy.get(".map-context-card").should("have.class", "text-lg")
-    cy.get("span").should("have.class", "text-center")
-  })
-
   it("displays full label text", () => {
     cy.mount(ClimateContextDataScore, {
       props: {

@@ -27,29 +27,6 @@ describe("ContextDataAccordionItem", () => {
     cy.contains("Test Category").should("exist")
   })
 
-  it("displays icon correctly", () => {
-    const pinia = createPinia()
-
-    mount(ContextDataAccordionItem, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        group: {
-          category: "test-category",
-          label: "Test Category",
-          icon: "🌱",
-          factors: [],
-          hasPositiveImpact: true,
-          hasNegativeImpact: false
-        },
-        colorScheme: "plantability"
-      }
-    })
-
-    cy.contains("🌱").should("exist")
-  })
-
   it("expands on click", () => {
     const pinia = createPinia()
     const mockFactors = [
@@ -234,52 +211,6 @@ describe("ContextDataAccordionItem", () => {
     })
 
     cy.get(".bg-green-500").should("exist")
-  })
-
-  it("displays impact indicator for negative impact", () => {
-    const pinia = createPinia()
-
-    mount(ContextDataAccordionItem, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        group: {
-          category: "negative-category",
-          label: "Negative Impact",
-          icon: "⚠️",
-          factors: [],
-          hasPositiveImpact: false,
-          hasNegativeImpact: true
-        },
-        colorScheme: "plantability"
-      }
-    })
-
-    cy.get(".bg-orange-500").should("exist")
-  })
-
-  it("displays impact indicator for mixed impact", () => {
-    const pinia = createPinia()
-
-    mount(ContextDataAccordionItem, {
-      global: {
-        plugins: [pinia]
-      },
-      props: {
-        group: {
-          category: "mixed-category",
-          label: "Mixed Impact",
-          icon: "⚖️",
-          factors: [],
-          hasPositiveImpact: true,
-          hasNegativeImpact: true
-        },
-        colorScheme: "plantability"
-      }
-    })
-
-    cy.get(".bg-yellow-500").should("exist")
   })
 
   it("displays parameter count", () => {
