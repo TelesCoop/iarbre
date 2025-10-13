@@ -2,7 +2,7 @@ import json
 
 from rest_framework import serializers
 
-from iarbre_data.models import Lcz, Tile, Vulnerability
+from iarbre_data.models import City, Iris, Lcz, Tile, Vulnerability
 
 
 class LczSerializer(serializers.ModelSerializer):
@@ -64,4 +64,33 @@ class VulnerabilitySerializer(serializers.ModelSerializer):
             "details",
             "geolevel",
             "datatype",
+        )
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = (
+            "id",
+            "code",
+            "name",
+            "geometry",
+            "plantability_counts",
+            "average_normalized_indice",
+            "average_indice",
+        )
+
+
+class IrisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Iris
+        fields = (
+            "id",
+            "code",
+            "name",
+            "geometry",
+            "city",
+            "plantability_counts",
+            "average_normalized_indice",
+            "average_indice",
         )
