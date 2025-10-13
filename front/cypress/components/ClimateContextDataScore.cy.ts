@@ -5,7 +5,7 @@ import { DataType, GeoLevel } from "@/utils/enum"
 describe("ClimateContextDataScore.vue", () => {
   const mockClimateData: ClimateData = {
     lczIndex: "1",
-    lczDescription: "Compact highrise",
+    lczDescription: "LCZ description",
     datatype: DataType.CLIMATE_ZONE,
     geolevel: GeoLevel.IRIS,
     id: 1,
@@ -31,7 +31,7 @@ describe("ClimateContextDataScore.vue", () => {
     })
 
     cy.contains("Zone climatique locale").should("be.visible")
-    cy.contains("Compact highrise").should("be.visible")
+    cy.contains("LCZ description").should("be.visible")
   })
 
   it("displays correct zone description", () => {

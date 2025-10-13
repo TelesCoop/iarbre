@@ -113,7 +113,7 @@ describe("ClimateContextDataMetrics", () => {
     cy.getBySel("climate-metrics").should("exist")
   })
 
-  it("renders null data gracefully", () => {
+  it("renders null data", () => {
     const pinia = createPinia()
 
     mount(ClimateContextDataMetrics, {
