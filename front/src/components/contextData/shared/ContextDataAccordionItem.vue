@@ -31,9 +31,9 @@ const categoryClasses = computed(() => {
   if (props.colorScheme === "plantability") {
     if (props.group?.hasPositiveImpact && props.group?.hasNegativeImpact) {
       return `${base} border-l-yellow-500`
-    } else if (props.group.hasPositiveImpact) {
+    } else if (props.group?.hasPositiveImpact) {
       return `${base} border-l-green-500`
-    } else if (props.group.hasNegativeImpact) {
+    } else if (props.group?.hasNegativeImpact) {
       return `${base} border-l-orange-500`
     }
   } else {
