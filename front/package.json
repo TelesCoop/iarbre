@@ -11,6 +11,10 @@
     "test:unit": "vitest",
     "test:cypress": "CYPRESS_COVERAGE=true NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress run'",
     "test:cypress:manually": "NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
+    "test:cypress:open": "CYPRESS_COVERAGE=true NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
+    "test:coverage": "npm run test:cypress && nyc report --reporter=html --reporter=text",
+    "coverage:report": "nyc report --reporter=html --reporter=text-summary",
+    "coverage:open": "open coverage/index.html",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
@@ -19,6 +23,8 @@
   "dependencies": {
     "@maplibre/maplibre-gl-geocoder": "^1.8.0",
     "@primeuix/themes": "^1.0.3",
+    "@rollup/rollup-darwin-arm64": "^4.52.4",
+    "@tailwindcss/oxide-darwin-arm64": "^4.1.14",
     "@tailwindcss/vite": "^4.0.17",
     "@vue/test-utils": "^2.4.6",
     "chart.js": "^4.5.0",
@@ -35,7 +41,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
-    "@cypress/code-coverage": "^3.14.5",
+    "@cypress/code-coverage": "^3.14.7",
     "@pinia/testing": "^1.0.0",
     "@primevue/auto-import-resolver": "^4.3.3",
     "@rushstack/eslint-patch": "^1.8.0",
