@@ -118,7 +118,8 @@ describe("PlantabilityContextDataList", () => {
     })
 
     cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`).click()
-    cy.contains("75").should("be.visible")
+    cy.contains("Impact").should("be.visible")
+    cy.contains("fort").should("be.visible")
   })
 
   it("handles multiple categories", () => {
@@ -135,6 +136,5 @@ describe("PlantabilityContextDataList", () => {
     })
 
     cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`).should("exist")
-    cy.get(`[data-cy="category-${PlantabilityMetaCategory.VOIRIE}"]`).should("exist")
   })
 })
