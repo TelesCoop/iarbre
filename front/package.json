@@ -23,8 +23,6 @@
   "dependencies": {
     "@maplibre/maplibre-gl-geocoder": "^1.8.0",
     "@primeuix/themes": "^1.0.3",
-    "@rollup/rollup-darwin-arm64": "^4.52.4",
-    "@tailwindcss/oxide-darwin-arm64": "^4.1.14",
     "@tailwindcss/vite": "^4.0.17",
     "@vue/test-utils": "^2.4.6",
     "chart.js": "^4.5.0",
