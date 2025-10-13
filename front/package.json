@@ -11,10 +11,6 @@
     "test:unit": "vitest",
     "test:cypress": "CYPRESS_COVERAGE=true NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress run'",
     "test:cypress:manually": "NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
-    "test:cypress:open": "CYPRESS_COVERAGE=true NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
-    "test:coverage": "npm run test:cypress && nyc report --reporter=html --reporter=text",
-    "coverage:report": "nyc report --reporter=html --reporter=text-summary",
-    "coverage:open": "open coverage/index.html",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
@@ -39,7 +35,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
-    "@cypress/code-coverage": "^3.14.7",
+    "@cypress/code-coverage": "^3.14.5",
     "@pinia/testing": "^1.0.0",
     "@primevue/auto-import-resolver": "^4.3.3",
     "@rushstack/eslint-patch": "^1.8.0",
@@ -71,8 +67,5 @@
     "vite-plugin-vue-devtools": "^7.3.1",
     "vitest": "^3.0.5",
     "vue-tsc": "^2.0.21"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "*"
   }
 }
