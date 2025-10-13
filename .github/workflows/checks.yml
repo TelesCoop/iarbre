@@ -217,6 +217,11 @@ jobs:
           fi
         working-directory: ./front
 
+      - name: Report NYC coverage
+        uses: sidx1024/report-nyc-coverage-github-action@v1.2.7
+        with:
+          coverage_file: "front/coverage/coverage-summary.json"
+
       - name: Create frontend coverage badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
