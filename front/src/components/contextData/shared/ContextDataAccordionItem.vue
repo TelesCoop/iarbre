@@ -91,10 +91,10 @@ const vulnerabilityCategory = computed(() => {
 <template>
   <div class="mb-2">
     <button
-      :aria-controls="`category-${group.category}`"
+      :aria-controls="`category-${group?.category}`"
       :aria-expanded="isExpanded"
       :class="categoryClasses"
-      :data-cy="`category-${group.category}`"
+      :data-cy="`category-${group?.category}`"
       @click="toggleExpanded"
     >
       <div class="flex items-center gap-3">
@@ -133,7 +133,7 @@ const vulnerabilityCategory = computed(() => {
 
     <div
       v-if="isExpanded"
-      :id="`category-${group.category}`"
+      :id="`category-${group?.category}`"
       class="mt-2 ml-4 space-y-2 animate-fade-in"
     >
       <context-data-item
