@@ -1,9 +1,8 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { ClimateData } from "@/types/climate"
-import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
 import { getAdaptativeColorClass } from "@/utils/color"
-import { getZoneColor } from "@/utils/climateZone"
+import { getZoneColor, CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
 
 interface ClimateScoreProps {
   data: ClimateData

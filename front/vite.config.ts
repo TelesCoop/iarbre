@@ -18,16 +18,24 @@ export default defineConfig({
     Components({
       resolvers: [PrimeVueResolver()]
     }),
-    ...(process.env.CYPRESS_COVERAGE
-      ? [
-          istanbul({
-            include: "src/**/*",
-            exclude: ["node_modules", "tests/**/*", "cypress/**/*"],
-            extension: [".ts", ".vue"],
-            requireEnv: false
-          })
-        ]
-      : [])
+    istanbul({
+      include: "src/**/*.{ts,vue}",
+      exclude: [
+        "node_modules",
+        "tests/**/*",
+        "cypress/**/*",
+        "**/*.d.ts",
+        "**/*.spec.ts",
+        "**/__tests__/**",
+        "src/utils/**",
+        "src/composables/**",
+        "src/services/**"
+      ],
+      extension: [".ts", ".vue"],
+      requireEnv: false,
+      cypress: true,
+      forceBuildInstrument: process.env.CYPRESS_COVERAGE === "true"
+    })
   ],
   server: {
     port: 3000,

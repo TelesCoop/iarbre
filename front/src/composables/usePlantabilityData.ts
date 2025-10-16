@@ -103,8 +103,6 @@ export function usePlantabilityData(data: Ref<PlantabilityData>) {
 
   const factorGroups: ComputedRef<PlantabilityFactorGroup[]> = computed(() => {
     const factorsByCategory = new Map<PlantabilityMetaCategory, PlantabilityFactor[]>()
-
-    // Grouper les facteurs par catégorie
     factors.value.forEach((factor) => {
       const category = PLANTABILITY_FACTORS_META_CATEGORIES[factor.key as PlantabilityLandUseKeys]
       if (category) {
