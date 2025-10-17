@@ -319,7 +319,6 @@ class MVTGenerator:
     ):
         if not queryset.exists():
             return all_features
-
         gdf = load_geodataframe_from_db(
             queryset,
             [
@@ -327,8 +326,6 @@ class MVTGenerator:
                 "map_geometry",
                 "id",
                 "vulnerability_idx_id",
-                "iris__code",
-                "city__code",
             ],
         )
         mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
@@ -393,27 +390,15 @@ class MVTGenerator:
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
         spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
-
-        # Aggregate plantability indices, city codes, and iris codes
         aggregated = (
-            spatial_join.groupby("grid_id")
-            .agg(
-                {
-                    "plantability_normalized_indice": ["mean", lambda x: list(x)],
-                    "city__code": lambda x: list(x.dropna().unique()),
-                    "iris__code": lambda x: list(x.dropna().unique()),
-                }
-            )
+            spatial_join.groupby("grid_id")["plantability_normalized_indice"]
+            .agg(["mean", lambda x: list(x)])
             .reset_index()
         )
-
-        # Flatten multi-level columns
         aggregated.columns = [
             "grid_id",
             "plantability_normalized_indice",
             "source_values",
-            "city__code",
-            "iris__code",
         ]
 
         # Map the mean values to PLANTABILITY_NORMALIZED set of values
@@ -432,14 +417,6 @@ class MVTGenerator:
         aggregated["source_values"] = aggregated["source_values"].apply(
             lambda x: json.dumps(x) if x else "[]"
         )
-
-        # # Store unique city and iris codes as JSON arrays
-        # aggregated["city__code"] = aggregated["city__code"].apply(
-        #     lambda x: json.dumps(x) if x else "[]"
-        # )
-        # aggregated["iris__code"] = aggregated["iris__code"].apply(
-        #     lambda x: json.dumps(x) if x else "[]"
-        # )
 
         df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
@@ -501,12 +478,6 @@ class MVTGenerator:
                 "indice": obj.plantability_normalized_indice,
                 "source_values": (
                     obj.source_values if hasattr(obj, "source_values") else []
-                ),
-                "city_codes": (
-                    obj.city__code if type(obj.city__code) == list else [obj.city__code]
-                ),
-                "iris_codes": (
-                    obj.iris__code if type(obj.iris__code) == list else [obj.iris__code]
                 ),
             }
 
