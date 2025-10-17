@@ -33,8 +33,6 @@ class TileSerializer(serializers.ModelSerializer):
             "details",
             "geolevel",
             "datatype",
-            "iris",
-            "city",
         )
 
     def get_details(self, obj):
@@ -68,29 +66,35 @@ class VulnerabilitySerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
+    plantabilityCounts = serializers.JSONField(source="plantability_counts")
+    averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
+    averageIndice = serializers.FloatField(source="average_indice")
+
     class Meta:
         model = City
         fields = (
             "id",
             "code",
             "name",
-            "geometry",
-            "plantability_counts",
-            "average_normalized_indice",
-            "average_indice",
+            "plantabilityCounts",
+            "averageNormalizedIndice",
+            "averageIndice",
         )
 
 
 class IrisSerializer(serializers.ModelSerializer):
+    plantabilityCounts = serializers.JSONField(source="plantability_counts")
+    averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
+    averageIndice = serializers.FloatField(source="average_indice")
+
     class Meta:
         model = Iris
         fields = (
             "id",
             "code",
             "name",
-            "geometry",
             "city",
-            "plantability_counts",
-            "average_normalized_indice",
-            "average_indice",
+            "plantabilityCounts",
+            "averageNormalizedIndice",
+            "averageIndice",
         )
