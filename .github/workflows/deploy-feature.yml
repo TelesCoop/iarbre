@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       has_open_pr: ${{ steps.set_output.outputs.has_open_pr }}
+      pr_number: ${{ steps.set_output.outputs.pr_number }}
     steps:
       - id: check_pr
         if: github.event_name == 'push'
@@ -20,8 +21,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "has_open_pr=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             echo "has_open_pr=${{ steps.check_pr.outputs.number != '' }}" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ steps.check_pr.outputs.number }}" >> $GITHUB_OUTPUT
           fi
 
   deploy-feature:
@@ -65,3 +68,18 @@ jobs:
           options: |
             -l feature -e branch=${{ env.BRANCH_NAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Comment PR with preview URL
+        if: needs.check-open-pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SANITIZED_BRANCH=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
+          PREVIEW_URL="https://${SANITIZED_BRANCH}.preview.iarbre.telescoop.fr"
+
+          gh pr comment ${{ needs.check-open-pr.outputs.pr_number }} --body "## Preview Deployment Ready
+
+          Your feature branch has been deployed successfully!
+
+          **Preview URL:** ${PREVIEW_URL}
+
+          The preview will be automatically deleted when the PR is closed or merged."
