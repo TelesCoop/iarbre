@@ -74,7 +74,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           SANITIZED_BRANCH=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
-          PREVIEW_URL="https://${SANITIZED_BRANCH}.preview.iarbre.telescoop.fr"
+          PREVIEW_URL="https://${SANITIZED_BRANCH}-carte.iarbre.telescoop.fr"
 
           gh pr comment ${{ needs.check-open-pr.outputs.pr_number }} --body "## Preview Deployment Ready
 
