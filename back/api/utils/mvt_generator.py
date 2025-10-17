@@ -389,16 +389,31 @@ class MVTGenerator:
 
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
-        spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
+        spatial_join = gpd.sjoin(df_with_vuln, grid, how="left", predicate="intersects")
+
+        # Aggregate plantability and vulnerability indices
         aggregated = (
-            spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-            .agg(["mean", lambda x: list(x)])
+            spatial_join.groupby("grid_id")
+            .agg(
+                {
+                    "plantability_normalized_indice": ["mean", lambda x: list(x)],
+                    "vulnerability_index_day": lambda x: (
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
+                    ),
+                    "vulnerability_index_night": lambda x: (
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
+                    ),
+                }
+            )
             .reset_index()
         )
+
         aggregated.columns = [
             "grid_id",
             "plantability_normalized_indice",
             "source_values",
+            "vulnerability_index_day_mean",
+            "vulnerability_index_night_mean",
         ]
 
         # Map the mean values to PLANTABILITY_NORMALIZED set of values
@@ -481,11 +496,25 @@ class MVTGenerator:
                 ),
             }
 
-            v_id = getattr(obj, "vulnerability_idx_id", None)
-            if v_id:
-                vulnerability_properties = vuln_props.get(v_id, {})
-                for key, value in vulnerability_properties.items():
-                    properties[f"vulnerability_{key}"] = value
+            # Add aggregated vulnerability means if available (from grid aggregation)
+            if (
+                hasattr(obj, "vulnerability_indice_day")
+                and obj.vulnerability_indice_day is not None
+            ):
+                properties["vulnerability_indice_day"] = obj.vulnerability_indice_day
+            if (
+                hasattr(obj, "vulnerability_indice_night")
+                and obj.vulnerability_indice_night is not None
+            ):
+                properties[
+                    "vulnerability_indice_night"
+                ] = obj.vulnerability_indice_night
+            if zoom > ZOOM_AGGREGATE_BREAKPOINT:
+                v_id = getattr(obj, "vulnerability_idx_id", None)
+                if v_id:
+                    vulnerability_properties = vuln_props.get(v_id, {})
+                    for key, value in vulnerability_properties.items():
+                        properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
