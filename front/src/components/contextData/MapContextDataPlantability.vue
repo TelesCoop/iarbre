@@ -4,6 +4,7 @@ import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
+import ClickPlantabilityDivisionData from "../division/ClickPlantabilityDivisionData.vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -42,6 +43,7 @@ const scorePercentage = computed(() =>
     </template>
     <template #content="{ data: plantabilityData }">
       <plantability-context-data-list :data="plantabilityData" />
+      <click-plantability-division-data />
     </template>
   </context-data-main-container>
 </template>

@@ -1,14 +1,20 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataScoreConfig, CircularScoreSize } from "@/types/contextData"
+import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 
-interface ContextDataScoreProps extends ContextDataScoreConfig {
+interface CircularScoreProps {
+  score: number
+  maxScore: number
+  percentage: number
+  label: string
+  colorScheme: ContextDataColorScheme
   name?: string
+  unit?: string
   size?: CircularScoreSize
 }
 
-const props = withDefaults(defineProps<ContextDataScoreProps>(), {
+const props = withDefaults(defineProps<CircularScoreProps>(), {
   size: "normal"
 })
 

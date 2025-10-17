@@ -5,7 +5,7 @@ import { toRef, computed } from "vue"
 import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import PlantabilityDistributionChart from "./PlantabilityDistributionChart.vue"
 
 interface PlantabilityFactorsProps {
   data: PlantabilityData
@@ -37,8 +37,8 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
   }))
 })
 
-const chartData = computed(() => {
-  if (!props.data?.details) return null
+const distributionEntries = computed(() => {
+  if (!props.data?.details) return []
 
   let values: number[]
   if (typeof props.data.details === "string") {
@@ -47,7 +47,7 @@ const chartData = computed(() => {
   } else {
     // For zoom >= 17 it is props.data.top5LandUse.
     // Can never happend here but because of type checking need the else
-    return null
+    return []
   }
 
   // Count frequency of each unique value
@@ -56,50 +56,11 @@ const chartData = computed(() => {
     frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
   })
 
-  const scores = Array.from(frequencyMap.keys())
-  const labels = scores.map((key) => `${key}/10`)
-  const data = Array.from(frequencyMap.values())
-
-  // Map each score to its corresponding color from PLANTABILITY_COLOR_MAP
-  const backgroundColor = scores.map((score) => {
-    const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(score)
-    return colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
-      ? PLANTABILITY_COLOR_MAP[colorIndex + 1]
-      : "#C4C4C4"
-  })
-
-  return {
-    labels,
-    datasets: [
-      {
-        data,
-        backgroundColor,
-        borderWidth: 2,
-        borderColor: "#fff"
-      }
-    ]
-  }
+  return Array.from(frequencyMap.entries()).map(([score, count]) => ({
+    score,
+    count
+  }))
 })
-
-const chartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: true,
-      position: "bottom",
-      onClick: null // don't allow filtering onClick
-    },
-    title: {
-      display: true,
-      text: "Distribution des scores de plantabilité sur la zone."
-    },
-    font: {
-      size: 34,
-      family: "IBM Plex Mono"
-    }
-  }
-}))
 </script>
 
 <template>
@@ -113,11 +74,8 @@ const chartOptions = computed(() => ({
     </template>
 
     <template v-else>
-      <div v-if="chartData" class="p-4">
-        <Chart type="pie" :data="chartData" :options="chartOptions" class="w-full h-64" />
-        <p class="text-sm font-sans text-center m-2">
-          0/10 signifie non plantable et 10/10 plantable
-        </p>
+      <div v-if="distributionEntries.length > 0">
+        <plantability-distribution-chart :entries="distributionEntries" />
         <empty-message
           data-cy="empty-message"
           message="Zoomez plus pour obtenir l'occupation des sols."
