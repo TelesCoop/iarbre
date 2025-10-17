@@ -1,5 +1,6 @@
 import { DataType, GeoLevel } from "@/utils/enum"
 import { Map } from "maplibre-gl"
+import { getBivariateCoordinates } from "@/utils/plant_vulnerability"
 
 export const highlightFeature = (map: Map, layerId: string, featureId: string) => {
   map.setPaintProperty(`${layerId}-border`, "line-width", ["match", ["get", "id"], featureId, 3, 0])

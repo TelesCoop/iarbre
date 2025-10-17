@@ -31,6 +31,7 @@ import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 import maplibreGl from "maplibre-gl"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
+import { getBivariateCoordinates } from "@/utils/plant_vulnerability"
 import { addCenterControl } from "@/utils/mapControls"
 
 export const useMapStore = defineStore("map", () => {
@@ -47,6 +48,8 @@ export const useMapStore = defineStore("map", () => {
     lng: DEFAULT_MAP_CENTER.lng
   })
 
+  const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
+
   const {
     clearAllFilters,
     applyFilters,
@@ -60,6 +63,7 @@ export const useMapStore = defineStore("map", () => {
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
     const bivariateExpression = generateBivariateColorExpression()
+
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
       [DataType.VULNERABILITY]: [
@@ -185,7 +189,33 @@ export const useMapStore = defineStore("map", () => {
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
+      const vuln_score_day =
+        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
+          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
+          : undefined
+      const vuln_score_night =
+        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
+          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
+          : undefined
       highlightFeature(map, layerId, featureId)
+      // Highlight cell in the legend that correspond to clicked tile
+      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
+        const properties = e.features![0].properties
+        if (
+          properties &&
+          properties.indice !== undefined &&
+          properties.vulnerability_indice_day !== undefined
+        ) {
+          const coords = getBivariateCoordinates(
+            properties.indice,
+            properties.vulnerability_indice_day
+          )
+          selectedLegendCell.value = coords
+        }
+      } else {
+        selectedLegendCell.value = null
+      }
+
       // Store click coordinates
       clickCoordinates.value = {
         lat: e.lngLat.lat,
@@ -195,7 +225,7 @@ export const useMapStore = defineStore("map", () => {
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
         contextData.setData(featureId, score, source_values)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
-        contextData.setData(featureId, score, source_values)
+        contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
       } else {
         contextData.setData(featureId)
       }
@@ -203,6 +233,7 @@ export const useMapStore = defineStore("map", () => {
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
   }
+
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layers = createMapLayers(datatype, geolevel, sourceId)
@@ -247,10 +278,10 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     selectedDataType.value = datatype
-    // Clear filters when changing data type
     clearAllFilters()
-    // Clear context data when changing data type
     contextData.removeData()
+    selectedLegendCell.value = null
+
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -418,6 +449,7 @@ export const useMapStore = defineStore("map", () => {
     vulnerabilityMode,
     currentZoom,
     clickCoordinates,
+    selectedLegendCell,
     contextData: {
       data: contextData.data,
       setData: contextData.setData,
