@@ -69,11 +69,11 @@ jobs:
             -l feature -e branch=${{ env.BRANCH_NAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Comment PR with preview URL
-        if: github.event.action == 'opened' && needs.check-open-pr.outputs.pr_number != ''
+        if: needs.check-open-pr.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          SANITIZED_BRANCH=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
+          SANITIZED_BRANCH=$(echo "${{ env.BRANCH_NAME }}" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]' | cut -c1-20)
           PREVIEW_URL="https://feature-${SANITIZED_BRANCH}-carte.iarbre.fr"
 
           gh pr comment ${{ needs.check-open-pr.outputs.pr_number }} --body "## Preview Deployment Ready
