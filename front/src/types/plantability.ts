@@ -118,6 +118,4 @@ export interface PlantabilityData {
   details?: PlantabilityDataDetails | string
   geolevel: GeoLevel
   datatype: DataType
-  iris: number
-  city: number
 }

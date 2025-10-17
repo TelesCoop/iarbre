@@ -2,15 +2,22 @@
 import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
-import ContextDataScore from "@/components/contextData/shared/ContextDataScore.vue"
+import CircularScore from "@/components/shared/CircularScore.vue"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
-import type { ContextDataScoreConfig } from "@/types/contextData"
 
 const mapStore = useMapStore()
 
-const scoreConfig = computed((): ContextDataScoreConfig | null => {
+interface ScoreData {
+  score: number
+  maxScore: number
+  percentage: number
+  label: string
+  colorScheme: "plantability" | "vulnerability"
+}
+
+const scoreData = computed((): ScoreData | null => {
   const contextData = mapStore.contextData.data
 
   if (!contextData) return null
@@ -39,7 +46,7 @@ const scoreConfig = computed((): ContextDataScoreConfig | null => {
       }
     }
     case DataType.CLIMATE_ZONE: {
-      // Climate zone doesn't use ContextDataScore, so return null
+      // Climate zone doesn't use CircularScore, so return null
       return null
     }
     default:
@@ -59,7 +66,14 @@ const showClimateText = computed(
     class="absolute bottom-20 bg-white rounded-lg shadow-lg p-2 z-40"
     data-cy="map-context-data-mobile"
   >
-    <context-data-score v-if="scoreConfig" v-bind="scoreConfig" />
+    <circular-score
+      v-if="scoreData"
+      :score="scoreData.score"
+      :max-score="scoreData.maxScore"
+      :percentage="scoreData.percentage"
+      :label="scoreData.label"
+      :color-scheme="scoreData.colorScheme"
+    />
     <div v-else-if="showClimateText" class="text-center text-gray-700">
       <span class="text-lg font-semibold">Zone climatique locale</span><br />
       <span class="text-sm">{{ (mapStore.contextData.data as ClimateData).lczDescription }}</span>
