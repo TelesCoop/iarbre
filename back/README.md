@@ -209,7 +209,7 @@ Pour restaurer une version spécifique de la base de données, créez ou modifie
 
 ```bash
 echo "2025-10-21T13:12_postgres_backup.dump" > back/.db_recover_target
-make back_recover_db_and_media
+cd back && python manage.py backup_db recover_db_and_media
 ```
 
 #### Restaurer la dernière version
