@@ -17,7 +17,7 @@ Il y avait, avec le calque de plantabilité, un bug qui faisait qu’au clic, pl
 
 On peut enfin accéder au score de plantabilité, même en ne zoomant pas complétement. Au passage on affiche aussi la distribution des scores sur la zone.
 
-![Contexte plantabilité](assets/images/changelog/v0.16.0/plantability_context.jpg)
+![Contexte plantabilité](../assets/images/changelog/v0.16.0/plantability_context.jpg)
 
 ### 🐛 fix: Score sur mobile
 
@@ -30,7 +30,7 @@ Avec les évolutions UI/UX la possiblité d'afficher le score au click sur mobil
 L'ensemble des affichages et commandes ont été transférées dans un panneau latéral à gauche. Il n'y a plus de popup, quand on clique les données s'affiche de ce panneau. La navigation est plus fluide et facile avec ce regroupement de l'information et des commandes. La taille de la légende a été réduite pour laisser plus de place à l'information sur la carte.
 Less informations affichées, en particulier les tableaux et les badges de scores, pour les différents calques sont maintenant homogènes.
 
-![Nouvel UX/UI](assets/images/changelog/v0.15.0/context.jpg)
+![Nouvel UX/UI](../assets/images/changelog/v0.15.0/context.jpg)
 
 &rarr; PR [#371](https://github.com/TelesCoop/iarbre/pull/371)
 &rarr; PR [#366](https://github.com/TelesCoop/iarbre/pull/366)
@@ -39,7 +39,7 @@ Less informations affichées, en particulier les tableaux et les badges de score
 
 Des tests pour le back et le front ont été ajouté ainsi que des badges sur le `README` qui indiquent les taux de couverture du code.
 
-![Code coverage badge](assets/images/changelog/v0.15.0/cover.png)
+![Code coverage badge](../assets/images/changelog/v0.15.0/cover.png)
 
 &rarr; Commit [bc66cd3](https://github.com/TelesCoop/iarbre/commit/bc66cd32bbf7d08de2a1312c12c40d5e3ec2a2df)
 &rarr; Commit [7c863d4](https://github.com/TelesCoop/iarbre/commit/7c863d4fa11f8848a4fd866cc78ccb02de5214cb)
@@ -68,7 +68,7 @@ Du ménage a été fait dans les fichiers du backend et la documentation a été
 
 La date de production des données apparait maintenant sur la carte et dans la documentation.
 
-![Date de production de la donnée de vulnérabilité à la chaleur](assets/images/changelog/v0.14.0/date_donnees.png)
+![Date de production de la donnée de vulnérabilité à la chaleur](../assets/images/changelog/v0.14.0/date_donnees.png)
 
 ## 🔖 0.13.0 (2025-07-09) : Intégration retours sur la vulnérabilité à la chaleur
 
@@ -107,7 +107,7 @@ Un affichage adapté est maintenant disponible sur mobile. Il permet de naviguer
 
 La légende permet de filtrer l'affichage des calques et de n'afficher que les zones correspondantes aux scores sélectionnés.
 
-![Filtre des scores sur le calque de vulnérabilité à la chaleur](assets/images/changelog/v0.10.0/filtre_score.jpg)
+![Filtre des scores sur le calque de vulnérabilité à la chaleur](../assets/images/changelog/v0.10.0/filtre_score.jpg)
 
 &rarr; Commit [53d9950](https://github.com/TelesCoop/iarbre/commit/53d99507d1004964110b31df97d220a17193ac9f)
 
@@ -115,7 +115,7 @@ La légende permet de filtrer l'affichage des calques et de n'afficher que les z
 
 La classification des zones climatiques par le CEREMA se base sur un arbre de décision (voir [méthodologie](https://docs.iarbre.fr/methodology/lcz/)) qui prend en compte 8 méta-indicateurs sur le bâti 3D et l'occupation des sols. Les valeurs de ces méta-indicateurs sur un îlot sont maintenant accessibles dans le panel de contexte.
 
-![Filtre des scores sur le calque de vulnérabilité à la chaleur](assets/images/changelog/v0.10.0/context_lcz.png)
+![Filtre des scores sur le calque de vulnérabilité à la chaleur](../assets/images/changelog/v0.10.0/context_lcz.png)
 
 &rarr; Commit [50e7091](https://github.com/TelesCoop/iarbre/commit/50e709188cb52539cf2f60efae8a4e0808da1634)
 
@@ -132,7 +132,7 @@ Il y a maintenant une option dans le menu déroulant pour afficher le cadastre a
 
 La plantabilité est calculé à partir de l'occupation des sols, décrite par 37 paramètres influant sur la possiblité de planter ou non un arbre. Le panel permet de voir quels sont les paramètres princpaux qui influent sur le score pour chaque carré de 5x5m.
 
-![Context panel plantabilité](assets/images/changelog/v0.9.0/context_plantability.jpg)
+![Context panel plantabilité](../assets/images/changelog/v0.9.0/context_plantability.jpg)
 
 &rarr; Commit [117d402](https://github.com/TelesCoop/iarbre/commit/117d4024c073b861cbc95702502da1d4a2b0d3d5)
 &rarr; Commit [a47cafd](https://github.com/TelesCoop/iarbre/commit/a47cafd0d1f2addcb0b4d2584aef4c8bbc4c6a3f)
@@ -141,7 +141,7 @@ La plantabilité est calculé à partir de l'occupation des sols, décrite par 3
 
 La vulnérabilité à la chaleur est la somme de l'exposition, la sensibilité et la capactié à faire face. Ces facteurs de vulnérabilité sont calculés à partir d'éléments observables sur le terrain qui sont décrits dans ce panel.
 
-![Context panel vulnérabilité à la chaleur](assets/images/changelog/v0.9.0/context_vulnerabilite.jpg)
+![Context panel vulnérabilité à la chaleur](../assets/images/changelog/v0.9.0/context_vulnerabilite.jpg)
 
 &rarr; Commit [1ee6f5f](https://github.com/TelesCoop/iarbre/commit/1ee6f5f1bb47ef17cb777bbe99bfd3836a132cbd)
 &rarr; Commit [49a8242](https://github.com/TelesCoop/iarbre/commit/49a8242b41914d45c90082cd2a7971aba0f4e015)
@@ -164,7 +164,7 @@ Nous avons ajouté un petit bouton permettant de recentrer la carte et le niveau
 
 Il est maintenant possible de superposer les calques à un fond de carte composé d'images satellite. Il s'agit de la basemap open source [World Imagery](https://www.esri.com/arcgis-blog/products/imagery/imagery/learning-more-about-the-world-imagery-basemap) de l'éditeur de logiciels SIG Esri.
 
-![Villeurbanne Gratte-Ciel avec images satellite](assets/images/changelog/v0.8.0/images_sat.jpg)
+![Villeurbanne Gratte-Ciel avec images satellite](../assets/images/changelog/v0.8.0/images_sat.jpg)
 
 &rarr; Commit [5582a18](https://github.com/TelesCoop/iarbre/commit/5582a182f733ef2e38a70ca721ade7c9cee1c5df)
 
@@ -244,7 +244,7 @@ Auparavant, la couleur des tuiles était codée directement dans les `.mvt` et n
 
 Pour des raisons esthétiques, on n'affiche plus le quadrillage « inter-tuiles » sur le calque de plantabilité
 
-![Vue cartographie sans les bordures](assets/images/changelog/v0.5.0/without_border_207.png)
+![Vue cartographie sans les bordures](../assets/images/changelog/v0.5.0/without_border_207.png)
 
 &rarr; Ticket [#207](https://github.com/TelesCoop/iarbre/issues/207)
 
@@ -252,7 +252,7 @@ Pour des raisons esthétiques, on n'affiche plus le quadrillage « inter-tuiles 
 
 La zone sélectionnée est mise en valeur par un léger surlignage noir (à améliorer), ce qui permet de facilement facilement où est-ce qu'on a cliqué.
 
-![La zone sélectionnée a un liseré noir](assets/images/changelog/v0.5.0/tile_border.png)
+![La zone sélectionnée a un liseré noir](../assets/images/changelog/v0.5.0/tile_border.png)
 
 &rarr; Ticket [#213](https://github.com/TelesCoop/iarbre/issues/213)
 
@@ -298,15 +298,15 @@ correspondent à l'occupation des sols par chaque facteur.
 
 Les couleurs ont aussi évolué pour une meilleure lisibilité.
 
-![Capture d’écran Raster 5x5](assets/images/changelog/v0.4.0/raster55.png)
+![Capture d’écran Raster 5x5](../assets/images/changelog/v0.4.0/raster55.png)
 
 ### 🛠️ enhance: Calque de vulnérabilité à la chaleur
 
 Mise à jour de l'échelle de couleurs sur 9 niveaux. La pop-up est aussi mise à jour.
 
-|                                 Avant                                  |                             Après                             |
-| :--------------------------------------------------------------------: | :-----------------------------------------------------------: |
-| ![Avant MAJ](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](assets/images/changelog/v0.4.0/chaleurapres.png) |
+|                                   Avant                                   |                              Après                               |
+| :-----------------------------------------------------------------------: | :--------------------------------------------------------------: |
+| ![Avant MAJ](../assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png) | ![Après MAJ](../assets/images/changelog/v0.4.0/chaleurapres.png) |
 
 &rarr; Commit [ef60f56](https://github.com/TelesCoop/iarbre/commit/ef60f567880e742e32a55106beec5383f5b78863)
 
@@ -317,7 +317,7 @@ ses identifiants Github à l'interface d'administration [iarbre.fr/admin](https:
 
 Cette interface permettra à l’avenir de modifier et de publier des articles de blog.
 
-![Capture d’écran de Sveltia CMS](assets/images/changelog/v0.4.0/cms_screenshot.png)
+![Capture d’écran de Sveltia CMS](../assets/images/changelog/v0.4.0/cms_screenshot.png)
 
 &rarr; Ticket [#43](https://github.com/TelesCoop/iarbre/issues/43)
 
@@ -337,9 +337,9 @@ chaleur : [carte.iarbre.fr/vulnerability/16/45.75773/4.85377](https://carte.iarb
 - Mise à jour des données de fibre et de signalisation lumineuse et tricolore.
 - Modifications sur certainnes OCS notamment sur les ponts pour lesquelles des tuiles apparaissaient comme plantables
 
-|                           Avant                            |                           Après                            |
-| :--------------------------------------------------------: | :--------------------------------------------------------: |
-| ![Avant MAJ](assets/images/changelog/v0.3.0/avant_MAJ.png) | ![Après MAJ](assets/images/changelog/v0.3.0/apres_MAJ.png) |
+|                             Avant                             |                             Après                             |
+| :-----------------------------------------------------------: | :-----------------------------------------------------------: |
+| ![Avant MAJ](../assets/images/changelog/v0.3.0/avant_MAJ.png) | ![Après MAJ](../assets/images/changelog/v0.3.0/apres_MAJ.png) |
 
 &rarr; Ticket [#178](https://github.com/TelesCoop/iarbre/issues/178)
 
@@ -350,7 +350,7 @@ des [travaux](https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7
 Maurine Di Tommaso (Direction Environnement, Écologie, Énergie). Le travail est en cours pour la séparation jour/nuit et
 une lisibilité accrue des scores.
 
-![Capture d'écran pour le calque vulnérabilité à la chaleur](assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png)
+![Capture d'écran pour le calque vulnérabilité à la chaleur](../assets/images/changelog/v0.3.0/vulnerabilite_chaleur.png)
 
 &rarr; Commit [6c24673](https://github.com/TelesCoop/iarbre/commit/6c24673d4c96230d58d588f56dc54a5d376638ec)
 
@@ -391,7 +391,7 @@ Nous utilisons Tailwind comme framework CSS sur le projet. Une refacto a été f
 Il n'existait qu'une PopUp pour le calque de plantabilité, il y en a maintenant une aussi pour les ZCLs. Correction
 aussi des bugs de fonctionnement.
 
-![Capture d'écran de la popup pour les Zones Climatiques Locales](assets/images/changelog/v0.2.0/lcz-popup.png)
+![Capture d'écran de la popup pour les Zones Climatiques Locales](../assets/images/changelog/v0.2.0/lcz-popup.png)
 
 &rarr; Commits [8434d74](https://github.com/TelesCoop/iarbre/commit/8434d74d075c34e27da6d116aafdc152931d927f)
 et [b87264a](https://github.com/TelesCoop/iarbre/commit/b87264a624db2e5b6bdb9aac6794dafaf2be69dc)
@@ -406,7 +406,7 @@ Création d'un fichier Markdown et un onglet dans le doc pour tenir au courant d
 
 Ajout dans la navbar d'un bouton qui ouvre une fenêtre permettant d'envoyer des feedbacks qui sont enregistrés en base.
 
-![Capture d’écran de la vue "Feedback"](assets/images/changelog/v0.2.0/feedback.png)
+![Capture d’écran de la vue "Feedback"](../assets/images/changelog/v0.2.0/feedback.png)
 
 &rarr; Commit [c8dfdc0](https://github.com/TelesCoop/iarbre/commit/c8dfdc0ed35f1615cae58dc20759d525653fbcbe)
 
@@ -417,7 +417,7 @@ Mise à jour de la légende des ZCLs et ajout d'un lien vers la source des donn�
 le [CEREMA] (https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/)
 pour les Zones Climatiques Locales
 
-![Capture d'écran de la mention du CEREMA](assets/images/changelog/v0.2.0/mention-cerema.png)
+![Capture d'écran de la mention du CEREMA](../assets/images/changelog/v0.2.0/mention-cerema.png)
 
 &rarr; Commit [7f45234](https://github.com/TelesCoop/iarbre/commit/7f45234d702382348a10a9cbaed87496445497e0)
 
@@ -464,7 +464,7 @@ La doc est en [ligne](https://docs.iarbre.fr) et est générée à l'aide `MkDoc
 
 En cliquant sur le calque de plantabilité, un popup apparaît pour afficher le score de la tuile.
 
-![Capture d'écran de la popup](assets/images/changelog/v0.1.0/popup.png)
+![Capture d'écran de la popup](../assets/images/changelog/v0.1.0/popup.png)
 
 ### ✨ feat: CI et deploy
 
