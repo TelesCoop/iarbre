@@ -45,9 +45,4 @@ Copiez ce modèle lors de l'ajout d'une nouvelle sauvegarde :
 ---
 ```
 
-## Notes
-
-- Les sauvegardes sont listées par ordre chronologique inversé (la plus récente en premier)
-- Inclure les numéros de migration si applicable (ex : "Migration 0030 appliquée")
-- Noter les imports ou mises à jour de données importantes
-- Enregistrer la taille de la sauvegarde pour suivre la croissance de la base de données
+**Remarque :** Les sauvegardes sont listées par ordre chronologique inversé (la plus récente en premier)
