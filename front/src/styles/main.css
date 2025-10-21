@@ -64,6 +64,8 @@
   --font-accent: "Sligoil", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji";
   --font-main: var(--font-sans);
   --breakpoint-xs: 23rem;
+  --width-sidepanel: 25rem;
+  --width-screen-without-sidepanel: calc(100vw - var(--width-sidepanel));
 }
 
 /* Define root variables */
