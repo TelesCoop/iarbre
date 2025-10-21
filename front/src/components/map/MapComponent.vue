@@ -45,7 +45,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="block lg:flex w-full h-full">
+  <div class="block w-full h-full lg:flex">
     <map-side-panel />
     <div
       :id="mapId"
