@@ -48,7 +48,7 @@ safe_recovery:
 
 # Recover db and media from file specified in .db_recover_target
 back_recover_db_and_media:
-	${BACK_CMD} backup_db recover $$(cat back/.db_recover_target)
+	${BACK_CMD} backup_db recover_db_and_media $$(cat .db_recover_target)
 
 # Backup db and media
 back_backup_db_and_media:
