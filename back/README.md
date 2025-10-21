@@ -196,7 +196,7 @@ python manage.py generate_mvt_files --geolevel tile --datatype plantability --nu
 Pour créer une sauvegarde de la base de données et des fichiers media sur S3 :
 
 ```bash
-make back_backup_db_and_media
+python manage.py backup_db backup_db_and_media --zipped
 ```
 
 Cette commande utilise `telescoop_backup` pour créer une sauvegarde compressée avec un timestamp (format : `YYYY-MM-DDTHH:MM_postgres_backup.dump`).
