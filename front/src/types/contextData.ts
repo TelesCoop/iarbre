@@ -36,6 +36,8 @@ export interface ContextDataVulnerabilityGroup extends ContextDataFactorGroup {
 }
 
 export interface ContextDataScoreConfig {
+  name?: string
+  size?: CircularScoreSize
   score: number
   maxScore: number
   percentage: number

@@ -3,12 +3,7 @@ import { computed } from "vue"
 import type { ContextDataScoreConfig, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 
-interface ContextDataScoreProps extends ContextDataScoreConfig {
-  name?: string
-  size?: CircularScoreSize
-}
-
-const props = withDefaults(defineProps<ContextDataScoreProps>(), {
+const props = withDefaults(defineProps<ContextDataScoreConfig>(), {
   size: "normal"
 })
 
