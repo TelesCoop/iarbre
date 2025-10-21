@@ -217,7 +217,6 @@ make back_recover_db_and_media
 Si le fichier `.db_recover_target` n'existe pas, la commande restaurera automatiquement la dernière sauvegarde disponible :
 
 ```bash
-rm back/.db_recover_target  # Supprimer le fichier si existant
 make back_recover_db_and_media
 ```
 
