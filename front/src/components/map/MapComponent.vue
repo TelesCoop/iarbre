@@ -45,9 +45,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="map-panels">
+  <div class="block lg:flex w-full h-full">
     <map-side-panel />
-    <div :id="mapId" class="map-component" data-cy="map-component"></div>
+    <div
+      :id="mapId"
+      class="map-component relative lg:ml-auto w-screen h-full"
+      data-cy="map-component"
+    ></div>
   </div>
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
     <map-config-drawer-toggle />
@@ -65,28 +69,10 @@ onMounted(() => {
 <style>
 @reference "@/styles/main.css";
 
-.map-panels {
-  display: grid;
-  width: 100%;
-  height: 100%;
-  grid-template-columns: var(--sidepanel-width) 1fr;
-}
-
-.map-panels .map-component {
-  position: relative;
+.map-component {
   /* Fix weird bug with map by adding margin-left */
-  margin-left: var(--sidepanel-width);
-  width: calc(100vw - var(--sidepanel-width));
-}
-
-@media (max-width: var(--breakpoint-md)) {
-  .map-panels {
-    display: block;
-  }
-
-  .map-panels .map-component {
-    margin-left: 0;
-    width: 100vw;
+  @media (max-width: var(--breakpoint-lg)) {
+    width: calc(100vw - var(--width-sidebar));
   }
 }
 
