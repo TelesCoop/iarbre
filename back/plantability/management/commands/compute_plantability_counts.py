@@ -4,7 +4,7 @@ from django.core.management import BaseCommand
 from django.db.models import Count
 from tqdm import tqdm
 
-from iarbre_data.models import City, Iris
+from iarbre_data.models import City, Iris, init_plantability_counts
 from plantability.constants import PLANTABILITY_NORMALIZED
 
 
@@ -25,7 +25,7 @@ class Command(BaseCommand):
             instance: City or Iris instance to compute counts for.
         """
         # Initialize counts with all possible values (as strings to match model)
-        counts = {str(value): 0 for value in PLANTABILITY_NORMALIZED}
+        counts = init_plantability_counts()
 
         # Count tiles by plantability_normalized_indice
         tiles_counts = (

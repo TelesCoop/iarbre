@@ -7,7 +7,10 @@ from django.db.models import Avg
 
 from iarbre_data.settings import TARGET_MAP_PROJ
 from api.constants import GeoLevel, DataType
-from plantability.constants import PLANTABILITY_NORMALIZED
+from plantability.constants import (
+    PLANTABILITY_NORMALIZED,
+    PlantabilityNormalizedThreshold,
+)
 
 
 def create_mapgeometry(instance):
@@ -36,9 +39,16 @@ class TileAggregateBase(models.Model):
         return self.tiles.aggregate(avg=Avg("plantability_indice"))["avg"]
 
 
+def init_plantability_counts():
+    """Init value for plantability_counts JSONField."""
+    return {str(value): 0 for value in PLANTABILITY_NORMALIZED}
+
+
 def default_plantability_counts():
     """Default value for plantability_counts JSONField."""
-    return {str(value): 0 for value in PLANTABILITY_NORMALIZED}
+    value = init_plantability_counts()
+    value[PlantabilityNormalizedThreshold.NEUTRAL] = 1
+    return value
 
 
 class PlantabilityCount(models.Model):

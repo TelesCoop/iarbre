@@ -1,5 +1,17 @@
+from enum import IntEnum
+
+
+class PlantabilityNormalizedThreshold(IntEnum):
+    IMPOSSIBLE = 0
+    VERY_CONSTRAINED = 2
+    CONSTRAINED = 4
+    NEUTRAL = 6
+    FAVORED = 8
+    VERY_FAVORED = 10
+
+
 PLANTABILITY_THRESHOLDS = [-5, -2, -0.75, 0.15, 2.5, 5]
-PLANTABILITY_NORMALIZED = [0, 2, 4, 6, 8, 10]
+PLANTABILITY_NORMALIZED = list(PlantabilityNormalizedThreshold)
 
 colors = {
     PLANTABILITY_THRESHOLDS[0]: "#C4C4C4",

@@ -14,15 +14,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="city",
             name="plantability_counts",
-            field=models.JSONField(
-                default=iarbre_data.models.default_plantability_counts
-            ),
+            field=models.JSONField(default=iarbre_data.models.init_plantability_counts),
         ),
         migrations.AddField(
             model_name="iris",
             name="plantability_counts",
-            field=models.JSONField(
-                default=iarbre_data.models.default_plantability_counts
-            ),
+            field=models.JSONField(default=iarbre_data.models.init_plantability_counts),
         ),
     ]
