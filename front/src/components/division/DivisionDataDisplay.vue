@@ -35,7 +35,6 @@ const codeLabel = computed(() => "Code INSEE")
 
 <template>
   <div>
-    <!-- Header -->
     <div class="mb-4">
       <h4 class="text-base font-semibold text-gray-800 mb-1">{{ data.name || data.code }}</h4>
       <p class="text-xs text-gray-500">{{ codeLabel }}: {{ data.code }}</p>
