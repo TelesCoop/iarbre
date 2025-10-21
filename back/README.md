@@ -221,6 +221,12 @@ rm back/.db_recover_target  # Supprimer le fichier si existant
 make back_recover_db_and_media
 ```
 
+Vous pouvez également ignorer le fichier `.db_recover_target` (s'il existe) et forcer l'utilisation de la dernière sauvegarde :
+
+```bash
+make back_recover_db_and_media USE_FILE=no
+```
+
 ### Liste des sauvegardes disponibles
 
 Pour voir toutes les sauvegardes disponibles sur S3 :

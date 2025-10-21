@@ -47,8 +47,16 @@ safe_recovery:
 	${BACK_CMD} safe_recovery
 
 # Recover db and media from file specified in .db_recover_target
+# Use USE_FILE=no to ignore .db_recover_target and use latest backup
+# Example: make back_recover_db_and_media USE_FILE=no
 back_recover_db_and_media:
-	${BACK_CMD} backup_db recover_db_and_media $$(cat .db_recover_target)
+	@if [ "$(USE_FILE)" = "no" ]; then \
+		${BACK_CMD} backup_db recover_db_and_media; \
+	elif [ -f .db_recover_target ]; then \
+		${BACK_CMD} backup_db recover_db_and_media $$(cat .db_recover_target); \
+	else \
+		${BACK_CMD} backup_db recover_db_and_media; \
+	fi
 
 # Backup db and media
 back_backup_db_and_media:
