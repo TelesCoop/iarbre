@@ -70,7 +70,7 @@ const scoreSizeClass = computed(() => {
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
         <span v-if="name" :class="[labelSizeClass, 'text-gray-600']">{{ name }}:</span>
-        <span v-else :class="[labelSizeClass, 'text-gray-600']">Score :</span>
+        <span v-else :class="[labelSizeClass, 'text-gray-600']">Moyenne :</span>
         <span :class="[scoreSizeClass, textColor, 'font-bold']" data-cy="context-data-score">
           {{ scoreDisplay }}
         </span>
