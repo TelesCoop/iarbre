@@ -72,7 +72,7 @@ onMounted(() => {
 .map-component {
   /* Fix weird bug with map by adding margin-left */
   @media (max-width: var(--breakpoint-lg)) {
-    width: calc(100vw - var(--width-sidebar));
+    width: calc(100vw - var(--width-sidepanel));
   }
 }
 
