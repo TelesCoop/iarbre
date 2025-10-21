@@ -1,43 +1,43 @@
-# Database Backup Changelog
+# Historique des Sauvegardes de Base de Données
 
-This document tracks all database backups and the changes included in each version.
+Ce document suit toutes les sauvegardes de base de données et les changements inclus dans chaque version.
 
 ---
 
-## Backups
+## Sauvegardes
 
 ### 2025-10-17T13:06_postgres_backup.dump
 
-**Changes:**
+**Changements :**
 
-- **Reference File** - Complete database with all 30 migrations (0001-0030)
-- **Core Models:** City, Data, Tile, TileFactor
-- **Geometry:** Dual projection support (SRID 2154 and 3857 for web mapping)
-- **Plantability:** Plantability indices with raw and normalized values
-- **MVT Tiles:** Mapbox Vector Tiles for efficient map rendering
-- **Geographic Subdivisions:** IRIS model (French statistical areas)
-- **Relationships:** Complete City-Tile-IRIS hierarchy
-- **City Tracking:** tiles_generated and tiles_computed boolean flags
-- **Climate Zones:** LCZ (Local Climate Zones) with climate classification data
-- **Vulnerability Assessment:** Day/night vulnerability indices (vulnerability, exposure, capaf, sensibility)
-- **Flexible Data:** JSON detail fields on Lcz, Tile, and Vulnerability models
-- **Metadata:** Tile meta_factors JSONField for extensible metadata
-- **Cadastre:** Land parcel registry with parcel_id and city relationships
-- **HotSpots:** Point-based locations of interest linked to cities
-- **Data Types:** MVTTile supports lcz, plantability, vulnerability, cadastre
-- **Geo Levels:** MVTTile supports tile, city, iris, lcz, cadastre levels
-- **Foreign Keys:** Tile vulnerability_idx with SET_NULL cascade behavior
+- **Fichier de Référence** - Base de données complète avec toutes les 30 migrations (0001-0030)
+- **Modèles Principaux :** City, Data, Tile, TileFactor
+- **Géométrie :** Support de double projection (SRID 2154 et 3857 pour la cartographie web)
+- **Plantabilité :** Indices de plantabilité avec valeurs brutes et normalisées
+- **Tuiles MVT :** Mapbox Vector Tiles pour un rendu cartographique efficace
+- **Subdivisions Géographiques :** Modèle IRIS (zones statistiques françaises)
+- **Relations :** Hiérarchie complète City-Tile-IRIS
+- **Suivi des Villes :** Drapeaux booléens tiles_generated et tiles_computed
+- **Zones Climatiques :** LCZ (Local Climate Zones) avec données de classification climatique
+- **Évaluation de Vulnérabilité :** Indices de vulnérabilité jour/nuit (vulnérabilité, exposition, capaf, sensibilité)
+- **Données Flexibles :** Champs JSON details sur les modèles Lcz, Tile et Vulnerability
+- **Métadonnées :** JSONField meta_factors sur Tile pour métadonnées extensibles
+- **Cadastre :** Registre parcellaire avec parcel_id et relations avec les villes
+- **Points d'Intérêt :** Emplacements ponctuels liés aux villes
+- **Types de Données :** MVTTile supporte lcz, plantability, vulnerability, cadastre
+- **Niveaux Géographiques :** MVTTile supporte les niveaux tile, city, iris, lcz, cadastre
+- **Clés Étrangères :** Tile vulnerability_idx avec comportement de cascade SET_NULL
 
 ---
 
-## Template for New Backups
+## Modèle pour Nouvelles Sauvegardes
 
-Copy this template when adding a new backup entry:
+Copiez ce modèle lors de l'ajout d'une nouvelle sauvegarde :
 
 ```
 ## YYYY-MM-DDTHH:MM_postgres_backup.dump
 
-**Changes:**
+**Changements :**
 -
 -
 -
@@ -47,7 +47,7 @@ Copy this template when adding a new backup entry:
 
 ## Notes
 
-- Backups are listed in reverse chronological order (newest first)
-- Include migration numbers if applicable (e.g., "Applied migration 0030")
-- Note any major data imports or updates
-- Record backup size to track database growth
+- Les sauvegardes sont listées par ordre chronologique inversé (la plus récente en premier)
+- Inclure les numéros de migration si applicable (ex : "Migration 0030 appliquée")
+- Noter les imports ou mises à jour de données importantes
+- Enregistrer la taille de la sauvegarde pour suivre la croissance de la base de données
