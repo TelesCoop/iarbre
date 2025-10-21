@@ -5,10 +5,6 @@ import {
   PlantabilityScore
 } from "@/types/plantability"
 
-/**
- * Plantability score thresholds enum
- * Scores range from 0 to 10
- */
 export enum PlantabilityScoreThreshold {
   IMPOSSIBLE = 0,
   VERY_CONSTRAINED = 2,
@@ -21,11 +17,6 @@ export enum PlantabilityScoreThreshold {
 export const PLANTABILITY_SCORES = Object.values(PlantabilityScoreThreshold) as number[]
 export const PLANTABILITY_SCORES_STR = PLANTABILITY_SCORES.map(String)
 
-/**
- * Get the plantability score label based on numeric index
- * @param id - Numeric plantability index (0-10)
- * @returns Plantability score label
- */
 export function getPlantabilityScore(id: number): string {
   if (id < PlantabilityScoreThreshold.VERY_CONSTRAINED) return PlantabilityScore.IMPOSSIBLE
   if (id < PlantabilityScoreThreshold.CONSTRAINED) return PlantabilityScore.VERY_CONSTRAINED
