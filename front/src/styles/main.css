@@ -65,6 +65,7 @@
   --font-main: var(--font-sans);
   --breakpoint-xs: 23rem;
   --width-sidepanel: 25rem;
+  --width-screen-without-sidepanel: calc(100vw - var(--width-sidepanel));
 }
 
 /* Define root variables */

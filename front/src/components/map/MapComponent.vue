@@ -49,7 +49,7 @@ onMounted(() => {
     <map-side-panel />
     <div
       :id="mapId"
-      class="map-component relative lg:ml-auto w-screen h-full"
+      class="relative w-screen h-full lg:ml-auto lg:w-screen-without-sidepanel"
       data-cy="map-component"
     ></div>
   </div>
@@ -68,13 +68,6 @@ onMounted(() => {
 
 <style>
 @reference "@/styles/main.css";
-
-.map-component {
-  /* Fix weird bug with map by adding margin-left */
-  @media (max-width: var(--breakpoint-lg)) {
-    width: calc(100vw - var(--width-sidepanel));
-  }
-}
 
 .legend-container {
   @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
