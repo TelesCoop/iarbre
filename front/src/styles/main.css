@@ -64,7 +64,6 @@
   --font-accent: "Sligoil", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji";
   --font-main: var(--font-sans);
   --breakpoint-xs: 23rem;
-  --spacing-sidebar: 25rem;
   --width-sidebar: 25rem;
 }
 
