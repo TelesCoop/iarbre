@@ -17,6 +17,7 @@ Il existe trois applications Django :
 - [Déploiement avec Ansible](#deploiement-avec-ansible)
 - [Installation manuelle](#installation-manuelle)
 - [Génération de la base de données](#generation-de-la-base-de-donnees)
+- [Gestion des sauvegardes de base de données](#gestion-des-sauvegardes-de-base-de-donnees)
 - [Démarrage du backend](#demarrage-du-service-backend)
 - [Aide](#aide)
 
@@ -187,6 +188,60 @@ affichées avec [MapLibre](https://maplibre.org/).
 ```bash
 python manage.py generate_mvt_files --geolevel tile --datatype plantability --number_of_threads 4
 ```
+
+## Gestion des sauvegardes de base de données
+
+### Sauvegarde de la base de données
+
+Pour créer une sauvegarde de la base de données et des fichiers media sur S3 :
+
+```bash
+make back_backup_db_and_media
+```
+
+Cette commande utilise `telescoop_backup` pour créer une sauvegarde compressée avec un timestamp (format : `YYYY-MM-DDTHH:MM_postgres_backup.dump`).
+
+### Restauration de la base de données
+
+#### Restaurer une version spécifique
+
+Pour restaurer une version spécifique de la base de données, créez ou modifiez le fichier `back/.db_recover_target` avec le nom de la sauvegarde :
+
+```bash
+echo "2025-10-21T13:12_postgres_backup.dump" > back/.db_recover_target
+make back_recover_db_and_media
+```
+
+#### Restaurer la dernière version
+
+Si le fichier `.db_recover_target` n'existe pas, la commande restaurera automatiquement la dernière sauvegarde disponible :
+
+```bash
+rm back/.db_recover_target  # Supprimer le fichier si existant
+make back_recover_db_and_media
+```
+
+### Liste des sauvegardes disponibles
+
+Pour voir toutes les sauvegardes disponibles sur S3 :
+
+```bash
+make back_backup_list
+```
+
+### Historique des sauvegardes
+
+Consultez le fichier [DATABASE_CHANGELOG.md](../DATABASE_CHANGELOG.md) pour voir l'historique détaillé de toutes les sauvegardes et leurs changements.
+
+### Déploiement
+
+Lors du déploiement avec Ansible, le système :
+
+- Vérifie si `back/.db_recover_target` existe
+- Si oui : restaure la version spécifiée dans le fichier
+- Si non : restaure la dernière sauvegarde disponible
+
+Cela permet de contrôler précisément quelle version de la base de données est déployée en production.
 
 ## Démarrage du service backend
 

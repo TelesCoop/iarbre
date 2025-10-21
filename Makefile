@@ -45,9 +45,19 @@ back_migrate:
 # Recover db and media without deleting some models
 safe_recovery:
 	${BACK_CMD} safe_recovery
-# Recover db and media
+
+# Recover db and media from file specified in .db_recover_target
 back_recover_db_and_media:
-	${BACK_CMD} backup_db recover_db_and_media
+	${BACK_CMD} backup_db recover $$(cat back/.db_recover_target)
+
+# Backup db and media
+back_backup_db_and_media:
+	${BACK_CMD} backup_db backup_db_and_media --zipped
+
+# List backup db and media
+back_backup_list:
+	${BACK_CMD} backup_db list
+
 # Shell in back
 back_shell:
 	${BACK_CMD} shell
