@@ -1,15 +1,41 @@
 # Journal des changements
 
+## 🔖 0.18.0 (2025-10-22) : Croisement chaleur x plantabilité et site vitrine
+
+### ✨ feat : Affichage d'un nouveau calque vulnérabilité à la chaleur x plantabilité
+
+Ce nouveau calque projet la vulnérabilité a la chaleur sur la maille de la plantabilité pour afficher les 2 en même temps avec une légende bivariée.
+Plus de détails se trouvent dans la [documentation](https://docs.iarbre.fr/methodology/plantabilit_vulnerability/).
+
+&rarr; PR [#394](https://github.com/TelesCoop/iarbre/pull/394)
+&rarr; PR [#405](https://github.com/TelesCoop/iarbre/pull/405)
+&rarr; PR [#407](https://github.com/TelesCoop/iarbre/pull/407)
+
+### 🛠️ enhance : Refacto du site vitrine
+
+L'organisation et le design du site vitrine ont été revu pour mieux présenter et mettre en valeur notre projet sur [iarbre.fr](https://iarbre.fr).
+&rarr; PR [#395](https://github.com/TelesCoop/iarbre/pull/395)
+
+### 🛠️ enhance : Corrections de petits bugs et naming
+
+- Ajout d'un changelog de base de données &rarr; PR [#426](https://github.com/TelesCoop/iarbre/pull/426) [#424](https://github.com/TelesCoop/iarbre/pull/424)
+- Optimiser la carte et le side pannel &rarr; PR [#416](https://github.com/TelesCoop/iarbre/pull/416)
+- Naming et petites incohérences &rarr; PR [#414](https://github.com/TelesCoop/iarbre/pull/414)
+
 ## 🔖 0.17.0 (2025-10-01) : Résolution de bugs et message d'accueil
 
 ### ✨ feat : Message d'accueil
 
 Lors de la première visite, un message d'accueil s'affiche pour présenter les différentes **fonctionnalités**. Ce message peut être affiché de nouveau en cliquant sur `Afficher les fonctionnalités` dans la barre de navigation.
 
+&rarr; Commit [78e9ae0](https://github.com/TelesCoop/iarbre/commit/78e9ae0bf54b539736be6eced698d46b285a9cbc)
+
 ### 🐛 fix: Affichage des ZCL et de la plantabilité
 
 Dans le calque des zones climatiques locales, toutes les rues formaient une seule géométrie, ce qui causait un comportement étrange lors de la sélection. Cela produisait aussi des artefacts dans les vues dézoomées. Il y a maintenant plusieurs sous-géométries pour un comportement plus fluide.
 Il y avait, avec le calque de plantabilité, un bug qui faisait qu’au clic, plusieurs tuiles étaient mises en valeur. Ces tuiles partageaient le même ID, ce qui a été corrigé.
+
+&rarr; PR [#363](https://github.com/TelesCoop/iarbre/pull/363)
 
 ## 🔖 0.16.0 (2025-09-24) : Contexte plantabilité et score mobile
 

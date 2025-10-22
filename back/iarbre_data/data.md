@@ -4,12 +4,13 @@ Ce calque provient d'un travail de [Exo-Dev](https://exo-dev.fr/) en 2022 qui a 
 
 Les scores actuellement affichées sur la [carte](https://carte.iarbre.fr/plantability) ont été calculés en _juillet 2025_ à l'aide des dernières données présentes sur data.grandlyon. Seulement les données de réseaux GRDF/ENEDIS (2022) et d'espaces verts (EVA 2015) ne sont pas à jour de 2025.
 
-## Format données
+## Pondération des facteurs
 
-### Structuration de la donnée
+La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
+organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.
+Ensuite [Exo-Dev](https://exo-dev.fr/) a cherché à traduire ces **facteurs** en données correspondantes. Par exemple, dire que les transports en commun sont un facteur se traduit en donnée par le jeux de données sur les tracés de bus, tramway ainsi que les arrêts correspondants.
 
-Les données que l'on récupère sont des géométries de type `POLYGON`, `LINESTRING` ou `POINT`. Un certain nombre de transformation
-sont appliquées pour transformer en un `POLYGON` qui représente l'occupation au sol du facteur.
+## Données correspondantes
 
 ### Données open-data
 
@@ -20,7 +21,7 @@ Pour les données BD TOPO et Cartofriches, voir le [lien](https://github.com/Tel
 
 ### Données autres
 
-Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été récupéres directement auprès des services métropolitains.
+Les données qui ne sont pas disponibles sur Data Grand Lyon et ont été récupéres directement auprès des services métropolitains.
 
 ### Tableau récapitulatif
 
@@ -54,11 +55,13 @@ Les autres données ne sont pas disponibles sur Data Grand Lyon et ont été ré
 | Station autopartage                           | Auto-partage                                                                                     | Territoire Infrastructures   | Service voirie                                                                                                                             |
 | Complément à Fibre Grand Lyon open-source     | Réseau fibre                                                                                     | Territoire Infrastructures   | Service voirie                                                                                                                             |
 
-## Pondération des facteurs
-
-La pondération de chaque `FACTORS` représente à quelle point il permet une plantation. Plus il est haut plus, c'est plantable et inversement une pondération négative indique une contrainte à la plantation. Ces poids ont été fixés lors d'ateliers
-organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.
-
 ## Génération calque de plantabilité
 
 Voir [ici](https://docs.iarbre.fr/back/backend/) pour la génération du calque de plantabilité.
+
+## Format données
+
+### Structuration de la donnée
+
+Les données que l'on récupère sont des géométries de type `POLYGON`, `LINESTRING` ou `POINT`. Un certain nombre de transformation
+sont appliquées pour transformer en un `POLYGON` qui représente l'occupation au sol du facteur.
