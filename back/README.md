@@ -236,7 +236,7 @@ make back_backup_list
 
 ### Historique des sauvegardes
 
-Consultez le fichier [DATABASE_CHANGELOG.md](../DATABASE_CHANGELOG.md) pour voir l'historique détaillé de toutes les sauvegardes et leurs changements.
+Consultez le fichier [database_changelog.md](../docs/changelog/database_changelog.md) pour voir l'historique détaillé de toutes les sauvegardes et leurs changements.
 
 ### Déploiement
 
