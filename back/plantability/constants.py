@@ -11,7 +11,9 @@ class PlantabilityNormalizedThreshold(IntEnum):
 
 
 PLANTABILITY_THRESHOLDS = [-5, -2, -0.75, 0.15, 2.5, 5]
-PLANTABILITY_NORMALIZED = list(PlantabilityNormalizedThreshold)
+PLANTABILITY_NORMALIZED = PLANTABILITY_NORMALIZED = [
+    threshold.value for threshold in PlantabilityNormalizedThreshold
+]
 
 colors = {
     PLANTABILITY_THRESHOLDS[0]: "#C4C4C4",
