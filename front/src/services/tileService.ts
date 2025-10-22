@@ -3,7 +3,7 @@ import type { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
-import type { PlantabilityVulnerabilityData } from "@/types/vuln_plantability"
+import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 
 export const getTileDetails = async (
   id: string,

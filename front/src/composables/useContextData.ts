@@ -2,7 +2,7 @@ import { ref } from "vue"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
-import type { PlantabilityVulnerabilityData } from "@/types/vuln_plantability"
+import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
@@ -32,8 +32,9 @@ export function useContextData() {
     } else if (
       indexValue !== undefined &&
       (mapStore.selectedDataType === DataType.PLANTABILITY ||
-        mapStore.selectedDataType === DataType.PLANT_VULNERABILITY) &&
-      (source_values !== undefined || mapStore.selectedDataType === DataType.PLANT_VULNERABILITY)
+        mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) &&
+      (source_values !== undefined ||
+        mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY)
     ) {
       if (!data.value) {
         if (mapStore.selectedDataType === DataType.PLANTABILITY) {
@@ -47,7 +48,7 @@ export function useContextData() {
             iris: 0,
             city: 0
           } as PlantabilityData
-        } else if (mapStore.selectedDataType === DataType.PLANT_VULNERABILITY) {
+        } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
           data.value = {
             id: stringId,
             plantabilityNormalizedIndice: +indexValue,
@@ -56,7 +57,7 @@ export function useContextData() {
             vulnerability_indice_night: vuln_score_night !== undefined ? +vuln_score_night : 0,
             details: source_values,
             geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
-            datatype: DataType.PLANT_VULNERABILITY,
+            datatype: DataType.PLANTABILITY_VULNERABILITY,
             iris: 0,
             city: 0
           } as PlantabilityVulnerabilityData
@@ -64,7 +65,7 @@ export function useContextData() {
       } else if (data.value.datatype === DataType.PLANTABILITY) {
         ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
         ;(data.value as PlantabilityData).details = source_values
-      } else if (data.value.datatype === DataType.PLANT_VULNERABILITY) {
+      } else if (data.value.datatype === DataType.PLANTABILITY_VULNERABILITY) {
         ;(data.value as PlantabilityVulnerabilityData).plantabilityNormalizedIndice = +indexValue
         ;(data.value as PlantabilityVulnerabilityData).details = source_values
         if (vuln_score_day !== undefined) {
