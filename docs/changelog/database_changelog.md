@@ -6,6 +6,13 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2025-10-22T13:06_postgres_backup.dump
+
+**Changements :**
+
+- **Compte de plantabilité par échellon** : Ajout des plantabilités par `City` et `Iris`.
+- **Plantabilité** : Les tuiles MVT et le modèle Tile incluent l'information de vulnérabilité à la chaleur sur la zone (croisement par projection au maillage de la plantabilité).
+
 ### 2025-10-17T13:06_postgres_backup.dump
 
 **Changements :**
