@@ -23,7 +23,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
-import { generateBivariateColorExpression } from "@/utils/plant_vulnerability"
+import { generateBivariateColorExpression } from "@/utils/plantability-vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
@@ -69,7 +69,7 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANT_VULNERABILITY]: bivariateExpression
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
     }
   })
 
@@ -151,7 +151,7 @@ export const useMapStore = defineStore("map", () => {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
@@ -166,7 +166,7 @@ export const useMapStore = defineStore("map", () => {
       id: `${layerId}-border`,
       type: "line",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
+      "source-layer": `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
       layout: {},
       paint: {
         "line-color": "#00000000",
@@ -187,11 +187,11 @@ export const useMapStore = defineStore("map", () => {
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
       const vuln_score_day =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
+        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
           : undefined
       const vuln_score_night =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY
+        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
           : undefined
       highlightFeature(map, layerId, featureId)
@@ -203,7 +203,7 @@ export const useMapStore = defineStore("map", () => {
       // Conditionally load context data based on geolevel, datatype, and zoom
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
         contextData.setData(featureId, score, source_values)
-      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANT_VULNERABILITY) {
+      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
       } else {
         contextData.setData(featureId)
@@ -223,7 +223,7 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const tileDataType =
-      datatype === DataType.PLANT_VULNERABILITY ? DataType.PLANTABILITY : datatype
+      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
     const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
     map.addSource(sourceId, {
