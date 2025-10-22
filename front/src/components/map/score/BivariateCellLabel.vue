@@ -10,10 +10,7 @@ interface BivariateCellLabelProps {
 
 const props = defineProps<BivariateCellLabelProps>()
 
-const isHighlighted = computed(() => {
-  const highlighted = props.highlighted || false
-  return highlighted
-})
+const isHighlighted = computed(() => props.highlighted ?? false)
 </script>
 
 <template>
