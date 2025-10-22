@@ -39,15 +39,43 @@ tests_cypress_dev:
 # Run backend server
 run_back:
 	${BACK_CMD} runserver
+
+# Migrate db
+back_cmd:
+	${BACK_CMD} ${cmd}
+
 # Migrate db
 back_migrate:
-	${BACK_CMD} migrate
+	${BACK_CMD} migrate ${cmd}
+
+# Make migrations db
+back_makemigration:
+	${BACK_CMD} makemigrations
+
 # Recover db and media without deleting some models
 safe_recovery:
 	${BACK_CMD} safe_recovery
-# Recover db and media
+
+# Recover db and media from file specified in .db_recover_target
+# Use USE_FILE=no to ignore .db_recover_target and use latest backup
+# Example: make back_recover_db_and_media USE_FILE=no
 back_recover_db_and_media:
-	${BACK_CMD} backup_db recover_db_and_media
+	@if [ "$(USE_FILE)" = "no" ]; then \
+		${BACK_CMD} backup_db recover_db_and_media; \
+	elif [ -f .db_recover_target ]; then \
+		${BACK_CMD} backup_db recover_db_and_media $$(cat .db_recover_target); \
+	else \
+		${BACK_CMD} backup_db recover_db_and_media; \
+	fi
+
+# Backup db and media
+back_backup_db_and_media:
+	${BACK_CMD} backup_db backup_db_and_media --zipped
+
+# List backup db and media
+back_backup_list:
+	${BACK_CMD} backup_db list
+
 # Shell in back
 back_shell:
 	${BACK_CMD} shell

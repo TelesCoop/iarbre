@@ -28,5 +28,9 @@ const mapStore = useMapStore()
       v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
       class="w-full"
     />
+    <plant-vulnerability-legend
+      v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
+      class="w-full"
+    />
   </div>
 </template>

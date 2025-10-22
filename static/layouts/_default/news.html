@@ -1,26 +1,32 @@
 {{ define "main" }}
 
-<div class="posts-container">
-  <div class="text-column">
-    <h1 class="posts-title">Actualités</h1>
-    <ul class="posts-list">
-      {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
-      ".PublishDate" }} {{ range $posts.Reverse }}
-      <li class="post-item">
-        <div class="post-meta">
-          <span class="tag"
-            >Publié le {{ .PublishDate | time.Format "02 January 2006" }} par {{
-            .Params.author }}</span
+<div class="news-page">
+  <div class="news-header">
+    <h1 class="news-title">Actualités</h1>
+    <p class="news-subtitle">Dernières nouvelles et mises à jour du projet</p>
+  </div>
+
+  <div class="news-grid">
+    {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
+    ".PublishDate" }} {{ range $posts.Reverse }}
+    <article class="news-card">
+      <div class="news-content">
+        <div class="news-meta">
+          <span class="meta-author">{{ .Params.author }}</span>
+          <span class="meta-separator">•</span>
+          <span class="meta-date"
+            >{{ .PublishDate | time.Format "02 January 2006" }}</span
           >
         </div>
-        <div class="post-content">
-          <div class="title"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
-          <p class="summary">{{ .Summary }}</p>
-          <a href="{{.RelPermalink}}" class="cta-button">Lire l'article ➜</a>
-        </div>
-      </li>
-      {{ end }}
-    </ul>
+
+        <h2 class="news-title">
+          <a href="{{.RelPermalink}}">{{ .Title }}</a>
+        </h2>
+
+        <p class="news-summary">{{ .Summary }}</p>
+      </div>
+    </article>
+    {{ end }}
   </div>
 </div>
 

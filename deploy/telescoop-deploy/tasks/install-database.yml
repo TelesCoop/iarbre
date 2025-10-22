@@ -17,6 +17,7 @@
           - postgresql-contrib
           - libpq-dev
           - python3-pip # for psycopg2
+          - postgresql-14-postgis-3
 
     - name: Find postgresql auth config file to configure authentication
       find: paths="/etc/postgresql/" recurse=yes patterns="pg_hba.conf"
@@ -40,6 +41,7 @@
         password: "{{ database_password }}"
       become: true
       become_user: postgres
+      when: database_provider == "postgresql"
 
     - name: Create database {{ database_name }}
       community.postgresql.postgresql_db:

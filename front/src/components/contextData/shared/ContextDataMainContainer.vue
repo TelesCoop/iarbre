@@ -3,17 +3,20 @@ import { computed, withDefaults } from "vue"
 import type { ContextDataMainContainerProps } from "@/types/contextData"
 import MapContextHeader from "@/components/contextData/MapContextHeader.vue"
 import EmptyMessage from "@/components/EmptyMessage.vue"
+import { ZoomToGridSize } from "@/utils/plantability"
 
 interface MainContainerProps extends ContextDataMainContainerProps {
   data?: any | null
   emptyMessage?: string
+  zoomLevel?: number | null
 }
 
 const props = withDefaults(defineProps<MainContainerProps>(), {
   data: null,
   emptyMessage: "Cliquez sur un carreau",
   fullHeight: false,
-  hideCloseButton: false
+  hideCloseButton: false,
+  zoomLevel: null
 })
 
 const containerClasses = computed(() => {
@@ -23,6 +26,14 @@ const containerClasses = computed(() => {
 
 const ariaDescribedBy = computed(() => `${props.colorScheme}-description`)
 const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
+
+const gridSize = computed(() => {
+  if (props.zoomLevel) {
+    const zoom = Math.floor(props.zoomLevel)
+    return ZoomToGridSize[zoom] ?? null
+  }
+  return null
+})
 </script>
 
 <template>
@@ -32,7 +43,10 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
     :class="containerClasses"
     role="dialog"
   >
-    <map-context-header :description="description" />
+    <map-context-header :description="description" :title="title" />
+    <div v-if="gridSize && title === 'plantability'" class="mt-2 text-sm text-center font-sans">
+      Taille d'un carreau: {{ gridSize }}m <span class="text-xs">(précision maximum de 5m).</span>
+    </div>
     <div class="map-context-panel-content">
       <div v-if="data">
         <slot name="score" :data="data" />

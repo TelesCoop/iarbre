@@ -26,6 +26,7 @@ from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 
 MVT_EXTENT = 4096
+ZOOM_AGGREGATE_BREAKPOINT = max(ZOOM_TO_GRID_SIZE.keys())
 
 
 class MVTGenerator:
@@ -215,7 +216,6 @@ class MVTGenerator:
             None
         """
         west, south, east, north = bounds
-
         mvt_data = mapbox_vector_tile.encode(
             transformed_geometries, quantize_bounds=(west, south, east, north)
         )
@@ -334,7 +334,7 @@ class MVTGenerator:
         if len(df_clipped) == 0:
             return all_features
 
-        if zoom <= 15 and side_length < 10:
+        if zoom <= ZOOM_AGGREGATE_BREAKPOINT and side_length <= 10:
             df_grid_clipped = self._make_grid_aggregate(df_clipped, grid_size)
         else:
             df_grid_clipped = df_clipped
@@ -357,24 +357,76 @@ class MVTGenerator:
         Returns:
             gpd.GeoDataFrame: The GeoDataFrame with aggregated plantability indices.
         """
+        vuln_ids = [
+            getattr(obj, "vulnerability_idx_id", None)
+            for obj in df_clipped.itertuples()
+            if getattr(obj, "vulnerability_idx_id", None) is not None
+            and not (
+                isinstance(getattr(obj, "vulnerability_idx_id", None), float)
+                and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+            )
+        ]
+        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
+
+        # Add vulnerability indices to the dataframe
+        df_with_vuln = df_clipped.copy()
+        df_with_vuln["vulnerability_index_day"] = df_with_vuln.apply(
+            lambda row: (
+                vulnerabilities[row["vulnerability_idx_id"]].vulnerability_index_day
+                if row["vulnerability_idx_id"] in vulnerabilities
+                else None
+            ),
+            axis=1,
+        )
+        df_with_vuln["vulnerability_index_night"] = df_with_vuln.apply(
+            lambda row: (
+                vulnerabilities[row["vulnerability_idx_id"]].vulnerability_index_night
+                if row["vulnerability_idx_id"] in vulnerabilities
+                else None
+            ),
+            axis=1,
+        )
+
         grid = self.create_grid(df_clipped, grid_size)
         grid = gpd.clip(grid, df_clipped)
-        spatial_join = gpd.sjoin(df_clipped, grid, how="left", predicate="intersects")
+        spatial_join = gpd.sjoin(df_with_vuln, grid, how="left", predicate="intersects")
+
+        # Aggregate plantability and vulnerability indices
         aggregated = (
-            spatial_join.groupby("grid_id")["plantability_normalized_indice"]
-            .agg(["mean", lambda x: list(x)])
+            spatial_join.groupby("grid_id")
+            .agg(
+                {
+                    "plantability_normalized_indice": ["mean", lambda x: list(x)],
+                    "vulnerability_index_day": lambda x: (
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
+                    ),
+                    "vulnerability_index_night": lambda x: (
+                        np.nanmean(x.dropna()) if not x.dropna().empty else 5
+                    ),
+                }
+            )
             .reset_index()
         )
+
         aggregated.columns = [
             "grid_id",
             "plantability_normalized_indice",
             "source_values",
+            "vulnerability_index_day_mean",
+            "vulnerability_index_night_mean",
         ]
 
         # Map the mean values to PLANTABILITY_NORMALIZED set of values
         aggregated["plantability_normalized_indice"] = aggregated[
             "plantability_normalized_indice"
         ].apply(self.map_to_discrete_value)
+
+        aggregated["vulnerability_index_day_mean"] = (
+            aggregated["vulnerability_index_day_mean"].fillna(5).round().astype(int)
+        )
+        aggregated["vulnerability_index_night_mean"] = (
+            aggregated["vulnerability_index_night_mean"].fillna(5).round().astype(int)
+        )
 
         # Store source_values in a JSON format to be added in the `details` field
         aggregated["source_values"] = aggregated["source_values"].apply(
@@ -383,6 +435,12 @@ class MVTGenerator:
 
         df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
+        df_clipped = df_clipped.rename(
+            columns={"vulnerability_index_day_mean": "vulnerability_indice_day"}
+        )
+        df_clipped = df_clipped.rename(
+            columns={"vulnerability_index_night_mean": "vulnerability_indice_night"}
+        )
 
         return df_clipped
 
@@ -405,21 +463,26 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        # Bulk load vulnerability data
-        vuln_ids = [
-            getattr(obj, "vulnerability_idx_id", None)
-            for obj in df_clipped.itertuples()
-            if getattr(obj, "vulnerability_idx_id", None) is not None
-            and not (
-                isinstance(getattr(obj, "vulnerability_idx_id", None), float)
-                and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+        if zoom > ZOOM_AGGREGATE_BREAKPOINT:
+            # Bulk load vulnerability data, not for aggregated
+            vuln_ids = [
+                getattr(obj, "vulnerability_idx_id", None)
+                for obj in df_clipped.itertuples()
+                if getattr(obj, "vulnerability_idx_id", None) is not None
+                and not (
+                    isinstance(getattr(obj, "vulnerability_idx_id", None), float)
+                    and np.isnan(getattr(obj, "vulnerability_idx_id", None))
+                )
+            ]
+            vulnerabilities = (
+                Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
             )
-        ]
-        vulnerabilities = Vulnerability.objects.in_bulk(vuln_ids) if vuln_ids else {}
-        vuln_props = {
-            vuln_id: {k: v for k, v in vuln.get_layer_properties().items() if k != "id"}
-            for vuln_id, vuln in vulnerabilities.items()
-        }
+            vuln_props = {
+                vuln_id: {
+                    k: v for k, v in vuln.get_layer_properties().items() if k != "id"
+                }
+                for vuln_id, vuln in vulnerabilities.items()
+            }
 
         for obj in tqdm(
             df_clipped.itertuples(),
@@ -433,11 +496,25 @@ class MVTGenerator:
                 ),
             }
 
-            v_id = getattr(obj, "vulnerability_idx_id", None)
-            if v_id:
-                vulnerability_properties = vuln_props.get(v_id, {})
-                for key, value in vulnerability_properties.items():
-                    properties[f"vulnerability_{key}"] = value
+            # Add aggregated vulnerability means if available (from grid aggregation)
+            if (
+                hasattr(obj, "vulnerability_indice_day")
+                and obj.vulnerability_indice_day is not None
+            ):
+                properties["vulnerability_indice_day"] = obj.vulnerability_indice_day
+            if (
+                hasattr(obj, "vulnerability_indice_night")
+                and obj.vulnerability_indice_night is not None
+            ):
+                properties[
+                    "vulnerability_indice_night"
+                ] = obj.vulnerability_indice_night
+            if zoom > ZOOM_AGGREGATE_BREAKPOINT:
+                v_id = getattr(obj, "vulnerability_idx_id", None)
+                if v_id:
+                    vulnerability_properties = vuln_props.get(v_id, {})
+                    for key, value in vulnerability_properties.items():
+                        properties[f"vulnerability_{key}"] = value
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,

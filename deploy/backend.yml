@@ -23,20 +23,6 @@
         - import_tasks: telescoop-deploy/tasks/install-database.yml
           vars:
             database_password: "{{ vault_database_password }}"
-
-        - name: Install and setup postgis to postgresql
-          block:
-            - name: Install postgis
-              apt:
-                name:
-                  - postgresql-14-postgis-3
-            - name: Adds postgis extension to the database {{ project_slug }}
-              community.postgresql.postgresql_ext:
-                name: postgis
-                login_db: "{{ database_user }}"
-              become: true
-              become_user: postgres
-          when: database_provider == "postgresql"
       when: branch is not defined
     - name: Create symbolic link from feature mvt_files to preprod mvt_files
       file:
@@ -61,9 +47,28 @@
           shell:
             cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
 
+        - name: Check if .db_recover_target exists
+          stat:
+            path: "{{ django_path }}/.db_recover_target"
+          register: db_recover_target_file
+
+        - name: Read database version from .db_recover_target
+          slurp:
+            src: "{{ django_path }}/.db_recover_target"
+          register: db_recover_target_content
+          when: db_recover_target_file.stat.exists
+
+        - name: Set recover target (from file or default to latest)
+          set_fact:
+            db_recover_target: "{{ db_recover_target_content['content'] | b64decode | trim if db_recover_target_file.stat.exists else 'latest' }}"
+
+        - name: Display recover target
+          debug:
+            msg: "Using database recover_db_and_media target: {{ db_recover_target }}"
+
         - name: Load database and media
           shell:
-            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media"
+            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media {{ db_recover_target }}"
 
         - name: Run migrations with conflict handling
           shell: |

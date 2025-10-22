@@ -2,9 +2,19 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView
-from .views import FeedbackView, TileView, HealthCheckView, QPVListView, MetadataView
+from .views import (
+    CityView,
+    IrisView,
+    FeedbackView,
+    TileView,
+    HealthCheckView,
+    QPVListView,
+    MetadataView,
+)
 
 router = routers.DefaultRouter()
+router.register(r"cities", CityView, basename="city")
+router.register(r"iris", IrisView, basename="iris")
 
 urlpatterns = [
     path(

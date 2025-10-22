@@ -19,6 +19,7 @@ export interface ContextDataFactorGroup {
 }
 
 export type ContextDataColorScheme = "plantability" | "climate" | "vulnerability"
+export type CircularScoreSize = "small" | "normal" | "large"
 
 export interface ContextDataVulnerabilityFactor extends ContextDataFactor {
   dayScore?: number | null
@@ -35,6 +36,8 @@ export interface ContextDataVulnerabilityGroup extends ContextDataFactorGroup {
 }
 
 export interface ContextDataScoreConfig {
+  name?: string
+  size?: CircularScoreSize
   score: number
   maxScore: number
   percentage: number

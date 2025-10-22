@@ -1,9 +1,10 @@
 boto3==1.34.162
 coverage==7.6.10
-Django==5.2.2
+Django==5.2.7
 django-anymail[mailgun]==12.0
 django-cors-headers==4.4.0
 django-extensions==3.2.3
+django-filter==25.2
 django-storages[s3]==1.14.4
 djangorestframework==3.15.2
 djangorestframework_camel_case==1.4.2
@@ -24,6 +25,6 @@ requests_oauthlib==2.0.0
 rollbar==1.1.0
 scipy==1.14.1
 shapely==2.0.5
-telescoop_backup==0.5.3
+telescoop_backup==0.6.2
 tqdm==4.66.5
 Unidecode==1.4.0
