@@ -43,6 +43,7 @@ declare module 'vue' {
     MapContextDataMobile: typeof import('./src/components/contextData/MapContextDataMobile.vue')['default']
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
     MapContextDataPlantabilityVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabilityVulnerability.vue')['default']
+    MapContextDataPlantabiltyVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabiltyVulnerability.vue')['default']
     MapContextDataVulnerability: typeof import('./src/components/contextData/MapContextDataVulnerability.vue')['default']
     MapContextHeader: typeof import('./src/components/contextData/MapContextHeader.vue')['default']
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
