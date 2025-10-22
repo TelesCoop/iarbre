@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2025-10-22T15:02_postgres_backup.dump
+
+**Changements :**
+
+- **Distribution de la plantabilité** : Ajout de la distribution de la plantabilité par `City` et `Iris`.
+
 ### 2025-10-22T13:06_postgres_backup.dump
 
 **Changements :**
