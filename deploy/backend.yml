@@ -23,20 +23,6 @@
         - import_tasks: telescoop-deploy/tasks/install-database.yml
           vars:
             database_password: "{{ vault_database_password }}"
-
-        - name: Install and setup postgis to postgresql
-          block:
-            - name: Install postgis
-              apt:
-                name:
-                  - postgresql-14-postgis-3
-            - name: Adds postgis extension to the database {{ project_slug }}
-              community.postgresql.postgresql_ext:
-                name: postgis
-                login_db: "{{ database_user }}"
-              become: true
-              become_user: postgres
-          when: database_provider == "postgresql"
       when: branch is not defined
     - name: Create symbolic link from feature mvt_files to preprod mvt_files
       file:
