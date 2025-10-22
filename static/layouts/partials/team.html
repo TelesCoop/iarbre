@@ -1,0 +1,190 @@
+<section class="team-section">
+  <div class="container">
+    <div class="team-header">
+      <div class="team-intro-content">
+        <div class="team-intro-text">
+          <h2 class="section-title">Qui nous sommes</h2>
+          <p class="team-description">
+            IA·rbre est une équipe d'expert.e.s passionné.e.s qui développe des
+            solutions d'intelligence artificielle pour l'analyse territoriale.
+            Nous combinons expertise technique et vision écologique pour créer
+            des outils innovants au service des territoires durables.
+          </p>
+          <p class="team-description">
+            Notre approche collaborative unit chercheurs, développeurs et
+            spécialistes du territoire pour concevoir des outils d'aide à la
+            décision performants et respectueux de l'environnement.
+          </p>
+
+          <div class="navigation-arrows">
+            <button class="nav-arrow nav-prev" id="team-prev">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15 18l-6-6 6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button class="nav-arrow nav-next" id="team-next">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 18l6-6-6-6"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="team-carousel">
+          <div class="team-slider" id="team-slider">
+            {{ range $member := .Site.Data.team }}
+            <div class="team-member-card">
+              <div class="member-photo-container">
+                <img
+                  alt="Photo de {{ $member.name }}"
+                  src="/images/{{ $member.portrait }}"
+                  class="member-photo"
+                />
+              </div>
+
+              <div class="member-details">
+                <h3 class="member-name">{{ $member.name }}</h3>
+                <p class="member-position">{{ $member.title }}</p>
+                <p class="member-role">{{ $member.function }}</p>
+              </div>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const slider = document.getElementById("team-slider");
+    const prevBtn = document.getElementById("team-prev");
+    const nextBtn = document.getElementById("team-next");
+
+    if (!slider || !prevBtn || !nextBtn) return;
+
+    const cards = slider.querySelectorAll(".team-member-card");
+    const cardWidth = 384; // 360px card width + 24px gap
+    const visibleCards = 3; // Always show exactly 3 cards
+    let currentIndex = 0;
+    let autoRotateInterval;
+    let isUserInteracting = false;
+
+    function getMaxIndex() {
+      return Math.max(0, cards.length - visibleCards);
+    }
+
+    function updateSlider() {
+      const maxIndex = getMaxIndex();
+      const translateX = -currentIndex * cardWidth;
+      slider.style.transform = `translateX(${translateX}px)`;
+
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled =
+        currentIndex >= maxIndex || cards.length <= visibleCards;
+    }
+
+    function nextSlide() {
+      const maxIndex = getMaxIndex();
+      if (currentIndex >= maxIndex) {
+        currentIndex = 0; // Loop back to start
+      } else {
+        currentIndex++;
+      }
+      updateSlider();
+    }
+
+    function prevSlide() {
+      if (currentIndex <= 0) {
+        currentIndex = getMaxIndex(); // Loop to end
+      } else {
+        currentIndex--;
+      }
+      updateSlider();
+    }
+
+    function startAutoRotate() {
+      if (autoRotateInterval) clearInterval(autoRotateInterval);
+      autoRotateInterval = setInterval(function () {
+        if (!isUserInteracting) {
+          nextSlide();
+        }
+      }, 4000); // Change slide every 4 seconds
+    }
+
+    function stopAutoRotate() {
+      if (autoRotateInterval) {
+        clearInterval(autoRotateInterval);
+        autoRotateInterval = null;
+      }
+    }
+
+    // Manual navigation
+    prevBtn.addEventListener("click", function () {
+      isUserInteracting = true;
+      prevSlide();
+      stopAutoRotate();
+      setTimeout(() => {
+        isUserInteracting = false;
+        startAutoRotate();
+      }, 2000); // Resume auto-rotate after 2 seconds
+    });
+
+    nextBtn.addEventListener("click", function () {
+      isUserInteracting = true;
+      nextSlide();
+      stopAutoRotate();
+      setTimeout(() => {
+        isUserInteracting = false;
+        startAutoRotate();
+      }, 2000); // Resume auto-rotate after 2 seconds
+    });
+
+    // Pause auto-rotation on hover
+    slider.parentElement.addEventListener("mouseenter", function () {
+      isUserInteracting = true;
+    });
+
+    slider.parentElement.addEventListener("mouseleave", function () {
+      isUserInteracting = false;
+    });
+
+    // Handle resize
+    window.addEventListener("resize", function () {
+      const newMaxIndex = getMaxIndex();
+      if (currentIndex > newMaxIndex) {
+        currentIndex = newMaxIndex;
+      }
+      updateSlider();
+    });
+
+    // Initialize
+    updateSlider();
+    startAutoRotate();
+  });
+</script>

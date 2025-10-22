@@ -174,3 +174,15 @@ export const PLANTABILITY_FACTORS_META_CATEGORIES = {
   [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityMetaCategory.PLANS_EAU,
   [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityMetaCategory.PLANS_EAU
 }
+
+export const ZoomToGridSize: Record<number, number> = {
+  10: 100,
+  11: 75,
+  12: 75,
+  13: 30,
+  14: 15,
+  15: 10,
+  16: 5,
+  17: 5,
+  18: 5
+}

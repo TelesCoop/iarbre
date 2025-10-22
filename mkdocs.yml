@@ -71,7 +71,7 @@ nav:
   - Documentation IA.rbre: index.md
   - Changelog: changelog.md
   - Méthodologie:
-      - Facteurs de plantabilité: methodology/data.md
+      - Facteurs de plantabilité: methodology/plantability.md
       - Atlas des vulnérabitilités: methodology/vulnerability.md
       - Zones climatiques locales: methodology/lcz.md
       - Croisement plantabilité et vulnérabilité: methodology/plantability_vulnerablity.md
