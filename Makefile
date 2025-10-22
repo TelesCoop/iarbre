@@ -39,9 +39,19 @@ tests_cypress_dev:
 # Run backend server
 run_back:
 	${BACK_CMD} runserver
+
+# Migrate db
+back_cmd:
+	${BACK_CMD} ${cmd}
+
 # Migrate db
 back_migrate:
-	${BACK_CMD} migrate
+	${BACK_CMD} migrate ${cmd}
+
+# Make migrations db
+back_makemigration:
+	${BACK_CMD} makemigrations
+
 # Recover db and media without deleting some models
 safe_recovery:
 	${BACK_CMD} safe_recovery

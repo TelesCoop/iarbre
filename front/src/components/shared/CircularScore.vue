@@ -1,9 +1,20 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataScoreConfig, CircularScoreSize } from "@/types/contextData"
+import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 
-const props = withDefaults(defineProps<ContextDataScoreConfig>(), {
+interface CircularScoreProps {
+  score: number
+  maxScore: number
+  percentage: number
+  label: string
+  colorScheme: ContextDataColorScheme
+  name?: string
+  unit?: string
+  size?: CircularScoreSize
+}
+
+const props = withDefaults(defineProps<CircularScoreProps>(), {
   size: "normal"
 })
 
@@ -70,7 +81,7 @@ const scoreSizeClass = computed(() => {
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
         <span v-if="name" :class="[labelSizeClass, 'text-gray-600']">{{ name }}:</span>
-        <span v-else :class="[labelSizeClass, 'text-gray-600']">Moyenne :</span>
+        <span v-else :class="[labelSizeClass, 'text-gray-600']">Score :</span>
         <span :class="[scoreSizeClass, textColor, 'font-bold']" data-cy="context-data-score">
           {{ scoreDisplay }}
         </span>

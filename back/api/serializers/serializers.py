@@ -2,7 +2,7 @@ import json
 
 from rest_framework import serializers
 
-from iarbre_data.models import Lcz, Tile, Vulnerability
+from iarbre_data.models import City, Iris, Lcz, Tile, Vulnerability
 
 
 class LczSerializer(serializers.ModelSerializer):
@@ -33,8 +33,6 @@ class TileSerializer(serializers.ModelSerializer):
             "details",
             "geolevel",
             "datatype",
-            "iris",
-            "city",
         )
 
     def get_details(self, obj):
@@ -64,4 +62,39 @@ class VulnerabilitySerializer(serializers.ModelSerializer):
             "details",
             "geolevel",
             "datatype",
+        )
+
+
+class CitySerializer(serializers.ModelSerializer):
+    plantabilityCounts = serializers.JSONField(source="plantability_counts")
+    averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
+    averageIndice = serializers.FloatField(source="average_indice")
+
+    class Meta:
+        model = City
+        fields = (
+            "id",
+            "code",
+            "name",
+            "plantabilityCounts",
+            "averageNormalizedIndice",
+            "averageIndice",
+        )
+
+
+class IrisSerializer(serializers.ModelSerializer):
+    plantabilityCounts = serializers.JSONField(source="plantability_counts")
+    averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
+    averageIndice = serializers.FloatField(source="average_indice")
+
+    class Meta:
+        model = Iris
+        fields = (
+            "id",
+            "code",
+            "name",
+            "city",
+            "plantabilityCounts",
+            "averageNormalizedIndice",
+            "averageIndice",
         )

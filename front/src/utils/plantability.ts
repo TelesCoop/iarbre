@@ -5,12 +5,24 @@ import {
   PlantabilityScore
 } from "@/types/plantability"
 
+export enum PlantabilityScoreThreshold {
+  IMPOSSIBLE = 0,
+  VERY_CONSTRAINED = 2,
+  CONSTRAINED = 4,
+  NEUTRAL = 6,
+  FAVORED = 8,
+  VERY_FAVORED = 10
+}
+
+export const PLANTABILITY_SCORES = Object.values(PlantabilityScoreThreshold) as number[]
+export const PLANTABILITY_SCORES_STR = PLANTABILITY_SCORES.map(String)
+
 export function getPlantabilityScore(id: number): string {
-  if (id < 2) return PlantabilityScore.IMPOSSIBLE
-  if (id < 4) return PlantabilityScore.VERY_CONSTRAINED
-  if (id < 6) return PlantabilityScore.CONSTRAINED
-  if (id < 8) return PlantabilityScore.NEUTRAL
-  if (id < 10) return PlantabilityScore.FAVORED
+  if (id < PlantabilityScoreThreshold.VERY_CONSTRAINED) return PlantabilityScore.IMPOSSIBLE
+  if (id < PlantabilityScoreThreshold.CONSTRAINED) return PlantabilityScore.VERY_CONSTRAINED
+  if (id < PlantabilityScoreThreshold.NEUTRAL) return PlantabilityScore.CONSTRAINED
+  if (id < PlantabilityScoreThreshold.FAVORED) return PlantabilityScore.NEUTRAL
+  if (id < PlantabilityScoreThreshold.VERY_FAVORED) return PlantabilityScore.FAVORED
   return PlantabilityScore.VERY_FAVORED
 }
 
