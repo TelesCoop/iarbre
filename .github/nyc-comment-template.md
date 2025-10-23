@@ -8,16 +8,8 @@
 | Type           | Base                                       | This PR                               | Diff                                       |
 | -------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------------ |
 | **Statements** | {{base_total_statements_coverage_percent}} | {{total_statements_coverage_percent}} | {{total_statements_coverage_percent_diff}} |
-| **Branches**   | {{base_total_branches_coverage_percent}}   | {{total_branches_coverage_percent}}   | {{total_branches_coverage_percent_diff}}   |
 | **Functions**  | {{base_total_functions_coverage_percent}}  | {{total_functions_coverage_percent}}  | {{total_functions_coverage_percent_diff}}  |
 | **Lines**      | {{base_total_lines_coverage_percent}}      | {{total_lines_coverage_percent}}      | {{total_lines_coverage_percent_diff}}      |
-
-<details>
-<summary>📋 Changed Files Coverage</summary>
-
-{{changed_files_coverage_table}}
-
-</details>
 
 <details>
 <summary>📁 All Files Coverage</summary>

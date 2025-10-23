@@ -98,7 +98,7 @@ declare module 'vue' {
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
   }
-  export interface GlobalDirectives {
+  export interface ComponentCustomProperties {
     Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

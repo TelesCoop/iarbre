@@ -11,8 +11,6 @@
     "**/__tests__/**",
     "**/node_modules/**",
     "src/main.ts",
-    "src/utils/**",
-    "src/composables/**",
     "src/services/**"
   ],
   "extension": [

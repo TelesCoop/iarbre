@@ -1,7 +1,6 @@
 /// <reference types="cypress" />
 import { createTestingPinia } from "@pinia/testing"
 import { DataType } from "@/utils/enum"
-
 import MapComponent from "@/components/map/MapComponent.vue"
 
 describe("MapComponent", () => {

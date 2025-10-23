@@ -202,8 +202,6 @@ jobs:
                 0;
               }
             ")
-
-            echo "Frontend coverage: $COVERAGE%"
           else
             echo "No coverage data found, setting coverage to 0"
             COVERAGE=0
