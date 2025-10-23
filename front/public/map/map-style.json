@@ -83,6 +83,26 @@
     },
     "version": 8
   },
+  "DARK": {
+    "layers": [
+      {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "osm": {
+        "attribution": "&copy; OpenStreetMap Contributors",
+        "tileSize": 256,
+        "tiles": [
+          "https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  },
   "OSM": {
     "layers": [
       {

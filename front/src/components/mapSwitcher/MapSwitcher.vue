@@ -16,6 +16,10 @@ const options = [
     value: MapStyle.OSM
   },
   {
+    label: MapStyleToLabel[MapStyle.DARK],
+    value: MapStyle.DARK
+  },
+  {
     label: MapStyleToLabel[MapStyle.SATELLITE],
     value: MapStyle.SATELLITE
   },

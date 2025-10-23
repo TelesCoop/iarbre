@@ -329,6 +329,8 @@ export const useMapStore = defineStore("map", () => {
         newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.OSM) {
         newStyle = mapStyles.OSM as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.DARK) {
+        newStyle = mapStyles.DARK as maplibregl.StyleSpecification
       }
 
       if (newStyle!) {
