@@ -18,7 +18,7 @@
 
     <meta content="{{ .Site.Params.meta.Author }}" name="author" />
     <meta content="{{ .Site.Params.meta.Keywords }}" name="keywords" />
-    <meta content="fr" name="language" />
+    <meta content="{{ .Site.Language.Lang }}" name="language" />
 
     <!-- Robots -->
     {{ if .Params.noRobots }}
@@ -92,8 +92,11 @@
     {{ end }}
 
     <!-- Theme Color -->
-    <meta content="#32412d" name="theme-color" />
-    <meta content="#32412d" name="msapplication-TileColor" />
+    <meta content="{{ .Site.Params.meta.ThemeColor }}" name="theme-color" />
+    <meta
+      content="{{ .Site.Params.meta.ThemeColor }}"
+      name="msapplication-TileColor"
+    />
 
     {{ block "meta-extended" . }} {{end}}
 

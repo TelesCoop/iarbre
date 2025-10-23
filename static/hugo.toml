@@ -17,6 +17,7 @@ Description = "Plateforme collaborative de production, d'analyse et de visualisa
 Author = "IA·rbre"
 Keywords = "arbre, climat, urbanisme, données territoriales, adaptation climatique, végétalisation urbaine, îlots de chaleur, France2030"
 Image = "/images/logo.jpg"
+ThemeColor = "#32412d"
 # TwitterHandle = "@iarbre"  # Uncomment and update if you have a Twitter account
 
 [params.newsletter]
