@@ -2,7 +2,7 @@ from django.db.models import TextChoices
 
 DEFAULT_ZOOM_LEVELS = (10, 18)
 
-ZOOM_TO_GRID_SIZE = {10: 100, 11: 75, 12: 75, 13: 30, 14: 15, 15: 10}
+ZOOM_TO_GRID_SIZE = {10: 75, 11: 50, 12: 50, 13: 20, 14: 10, 15: 10}
 
 
 class GeoLevel(TextChoices):

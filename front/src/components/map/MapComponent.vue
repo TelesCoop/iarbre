@@ -45,7 +45,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :id="mapId" class="h-full w-full" data-cy="map-component"></div>
+  <div class="block w-full h-full lg:flex">
+    <map-side-panel />
+    <div
+      :id="mapId"
+      class="relative w-screen h-full lg:ml-auto lg:w-screen-without-sidepanel"
+      data-cy="map-component"
+    ></div>
+  </div>
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
     <map-config-drawer-toggle />
   </div>
@@ -56,7 +63,6 @@ onMounted(() => {
   <div class="lg:hidden flex items-center justify-center">
     <map-context-data-mobile />
   </div>
-  <map-side-panel />
   <welcome-message />
 </template>
 

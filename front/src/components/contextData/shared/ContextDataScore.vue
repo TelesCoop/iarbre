@@ -1,13 +1,11 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataScoreConfig } from "@/types/contextData"
+import type { ContextDataScoreConfig, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 
-interface ContextDataScoreProps extends ContextDataScoreConfig {
-  name?: string
-}
-
-const props = defineProps<ContextDataScoreProps>()
+const props = withDefaults(defineProps<ContextDataScoreConfig>(), {
+  size: "normal"
+})
 
 const textColor = computed(() => {
   switch (props.colorScheme) {
@@ -31,6 +29,30 @@ const ariaLabel = computed(() => {
   const baseName = props.name ? ` ${props.name}` : ""
   return `Score de ${props.label}${baseName}: ${props.score} sur ${props.maxScore}`
 })
+
+const labelSizeClass = computed(() => {
+  switch (props.size) {
+    case "small":
+      return "text-xs"
+    case "large":
+      return "text-base"
+    case "normal":
+    default:
+      return "text-sm"
+  }
+})
+
+const scoreSizeClass = computed(() => {
+  switch (props.size) {
+    case "small":
+      return "text-lg md:text-xl"
+    case "large":
+      return "text-2xl md:text-4xl"
+    case "normal":
+    default:
+      return "text-xl md:text-3xl"
+  }
+})
 </script>
 
 <template>
@@ -41,14 +63,15 @@ const ariaLabel = computed(() => {
       <circular-progress
         :percentage="percentage"
         :background-color="textColor"
+        :size="size"
         :aria-label="ariaLabel"
         data-cy="circular-progress"
       />
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span v-if="name" class="text-sm text-gray-600">{{ name }}:</span>
-        <span v-else class="text-sm text-gray-600">Score :</span>
-        <span class="text-xl md:text-3xl font-bold" :class="textColor" data-cy="context-data-score">
+        <span v-if="name" :class="[labelSizeClass, 'text-gray-600']">{{ name }}:</span>
+        <span v-else :class="[labelSizeClass, 'text-gray-600']">Moyenne :</span>
+        <span :class="[scoreSizeClass, textColor, 'font-bold']" data-cy="context-data-score">
           {{ scoreDisplay }}
         </span>
       </div>
