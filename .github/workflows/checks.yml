@@ -179,26 +179,28 @@ jobs:
 
       - name: Generate frontend coverage report
         run: |
-          # Check if coverage files exist and create directory if needed
-          mkdir -p coverage
-
-          # List existing coverage files for debugging
+          # List coverage files for debugging
           echo "Checking for coverage files:"
-          find . -name "*.json" -path "*/coverage*" -o -name "coverage.json" -o -name ".nyc_output" -type d 2>/dev/null || true
-          find . -name "coverage-final.json" 2>/dev/null || true
+          find . -name "*.json" -path "*/.nyc_output/*" 2>/dev/null || echo "No .nyc_output files found"
 
-          # Try to merge coverage reports if they exist
-          if [ -d ".nyc_output" ] || [ -f "coverage/coverage-final.json" ]; then
-            npx nyc merge .nyc_output coverage/coverage.json 2>/dev/null || npx nyc report --reporter=json --report-dir=coverage 2>/dev/null || echo "No coverage files to merge"
-          fi
+          # Generate NYC reports
+          if [ -d ".nyc_output" ] && [ "$(ls -A .nyc_output)" ]; then
+            echo "Found coverage data, generating report..."
+            npx nyc report \
+              --reporter json-summary \
+              --reporter text-summary \
+              --report-dir coverage \
+              --exclude-after-remap false
 
-          # Generate summary report
-          if [ -f "coverage/coverage.json" ]; then
-            npx nyc report --reporter=json-summary --report-dir=coverage
+            # Extract coverage percentage
             COVERAGE=$(node -p "
-              const data = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json', 'utf8'));
-              const pct = data.total.lines.pct;
-              Math.round(typeof pct === 'number' ? pct : 0);
+              try {
+                const data = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json', 'utf8'));
+                Math.round(data.total.lines.pct || 0);
+              } catch (e) {
+                console.error('Error reading coverage:', e);
+                0;
+              }
             ")
           else
             echo "No coverage data found, setting coverage to 0"
@@ -216,6 +218,15 @@ jobs:
             echo "FRONTEND_BADGE_COLOR=red" >> $GITHUB_ENV
           fi
         working-directory: ./front
+
+      - name: Report NYC coverage
+        uses: sidx1024/report-nyc-coverage-github-action@v1.2.7
+        with:
+          coverage_file: "front/coverage/coverage-summary.json"
+          sources_base_path: "${{ github.workspace }}/front/"
+          files_coverage_table_output_type_order: "SBFL"
+          comment_template_file: ".github/nyc-comment-template.md"
+          comment_mode: "replace"
 
       - name: Create frontend coverage badge
         uses: schneegans/dynamic-badges-action@v1.7.0

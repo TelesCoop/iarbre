@@ -1,0 +1,39 @@
+{
+  "all": true,
+  "branches": 80,
+  "check-coverage": false,
+  "exclude": [
+    "**/*.d.ts",
+    "**/*.spec.ts",
+    "**/*.cy.ts",
+    "**/tests/**",
+    "**/cypress/**",
+    "**/__tests__/**",
+    "**/node_modules/**",
+    "src/main.ts",
+    "src/services/**"
+  ],
+  "extension": [
+    ".ts",
+    ".vue"
+  ],
+  "functions": 80,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ],
+  "instrument": false,
+  "lines": 80,
+  "produceSourceMap": true,
+  "report-dir": "coverage",
+  "reporter": [
+    "html",
+    "json",
+    "text-summary",
+    "lcov",
+    "json-summary"
+  ],
+  "sourceMap": true,
+  "statements": 80,
+  "temp-dir": ".nyc_output"
+}
