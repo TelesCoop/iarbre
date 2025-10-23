@@ -21,6 +21,7 @@
     "@primeuix/themes": "^1.0.3",
     "@tailwindcss/vite": "^4.0.17",
     "@vue/test-utils": "^2.4.6",
+    "@vueuse/core": "^14.0.0",
     "chart.js": "^4.5.0",
     "jsdom": "^26.1.0",
     "maplibre-gl": "^5.4.0",

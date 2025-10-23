@@ -5,19 +5,22 @@ import { getCities, getIrisList } from "@/services/divisionService"
 import type { City, Iris } from "@/types/division"
 import PlantabilityDivisionData from "./PlantabilityDivisionData.vue"
 import { ProgressSpinner } from "primevue"
-
+import { useDebounceFn } from "@vueuse/core"
 const mapStore = useMapStore()
 
 const city = ref<City | null>(null)
 const iris = ref<Iris | null>(null)
 const loading = ref(false)
 
+const resetDivisionData = () => {
+  city.value = null
+  iris.value = null
+}
+
 const fetchDivisionData = async () => {
   const { lat, lng } = mapStore.clickCoordinates
 
   if (!lat || !lng) {
-    city.value = null
-    iris.value = null
     return
   }
 
@@ -45,11 +48,16 @@ const fetchDivisionData = async () => {
   }
 }
 
+const debouncedFetchDivisionData = useDebounceFn(() => {
+  fetchDivisionData()
+}, 300)
+
 // Watch for changes in click coordinates
 watch(
   () => mapStore.clickCoordinates,
   () => {
-    fetchDivisionData()
+    resetDivisionData()
+    debouncedFetchDivisionData()
   },
   { deep: true, immediate: true }
 )
