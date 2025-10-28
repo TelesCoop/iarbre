@@ -1,7 +1,7 @@
 export const IPAVE_ZONE_COLOR: Record<string | number, string> = {
-  "herbacee": "#ffccaa",
-  "arbustif": "#648525",
-  "arborescent": "#006a00"
+  herbacee: "#ffccaa",
+  arbustif: "#648525",
+  arborescent: "#006a00"
 }
 
 export const IPAVE_ZONES = Object.keys(IPAVE_ZONE_COLOR) as string[]
@@ -12,13 +12,13 @@ export const IPAVE_COLOR_MAP = [
   "arbustif",
   IPAVE_ZONE_COLOR["arbustif"],
   "arborescent",
-  IPAVE_ZONE_COLOR["arborescent"],
+  IPAVE_ZONE_COLOR["arborescent"]
 ]
 
 const strateDescription: Record<string | number, string> = {
-  "herbacee": "Strate herbacée",
-  "arbustif": "Strate arbustive < 1.5m",
-  "arborescent": "Strate arborée > 1.5m"
+  herbacee: "Strate herbacée",
+  arbustif: "Strate arbustive < 1.5m",
+  arborescent: "Strate arborée > 1.5m"
 }
 
 export function getZoneDesc(zone: string | number): string {

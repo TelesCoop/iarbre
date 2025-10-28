@@ -300,7 +300,7 @@ class Ipave(models.Model):
         """Return the properties of the Ipave vegetation inventory for the MVT datatype."""
         return {
             "id": self.id,
-            "strate": self.strate,
+            "indice": self.strate,
             "surface": self.surface,
         }
 

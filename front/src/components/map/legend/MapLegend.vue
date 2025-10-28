@@ -32,9 +32,6 @@ const mapStore = useMapStore()
       v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
       class="w-full"
     />
-    <ipave-legend
-      v-else-if="mapStore.selectedDataType === DataType.IPAVE"
-      class="w-full"
-    />
+    <ipave-legend v-else-if="mapStore.selectedDataType === DataType.IPAVE" class="w-full" />
   </div>
 </template>

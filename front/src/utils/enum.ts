@@ -96,6 +96,5 @@ export const DataTypeToDownloadLink: Record<DataType, string> = {
     "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info",
   [DataType.PLANTABILITY_VULNERABILITY]:
     "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info",
-  [DataType.IPAVE]:
-    "https://documents.exo-dev.fr/metropole/iPave_donnees.zip"
+  [DataType.IPAVE]: "https://documents.exo-dev.fr/metropole/iPave_donnees.zip"
 }
