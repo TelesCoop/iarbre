@@ -15,13 +15,15 @@ export enum DataType {
 export enum MapStyle {
   OSM = "Plan",
   DARK = "Plan sombre",
+  POSITRON = "Positron",
   SATELLITE = "satellite",
   CADASTRE = "Cadastre"
 }
 
 export const MapStyleToLabel: Record<MapStyle, string> = {
-  [MapStyle.OSM]: "Plan de la ville",
+  [MapStyle.OSM]: "Plan de la ville voyager",
   [MapStyle.DARK]: "Plan de la ville sombre",
+  [MapStyle.POSITRON]: "Plan de la ville positron",
   [MapStyle.SATELLITE]: "Images satellite",
   [MapStyle.CADASTRE]: "Cadastre"
 }

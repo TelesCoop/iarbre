@@ -116,7 +116,31 @@
         "attribution": "&copy; OpenStreetMap Contributors",
         "tileSize": 256,
         "tiles": [
-          "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  },
+  "POSITRON": {
+    "layers": [
+      {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "osm": {
+        "attribution": "&copy; OpenStreetMap Contributors",
+        "tileSize": 256,
+        "tiles": [
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
         ],
         "type": "raster"
       }
