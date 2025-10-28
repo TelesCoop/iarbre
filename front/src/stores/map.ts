@@ -228,6 +228,9 @@ export const useMapStore = defineStore("map", () => {
         contextData.setData(featureId, score, source_values)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
+      } else if (geolevel === GeoLevel.TILE && datatype === DataType.IPAVE) {
+        const surface = extractFeatureProperty(e.features!, datatype, geolevel, "surface")
+        contextData.setData(featureId, score, { surface })
       } else {
         contextData.setData(featureId)
       }

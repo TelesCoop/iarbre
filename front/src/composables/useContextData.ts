@@ -3,13 +3,19 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
+import type { IpaveData } from "@/types/ipave"
 import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
 export function useContextData() {
   const data = ref<
-    PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
+    | PlantabilityData
+    | VulnerabilityData
+    | ClimateData
+    | PlantabilityVulnerabilityData
+    | IpaveData
+    | null
   >(null)
   const mapStore = useMapStore()
 
@@ -28,6 +34,25 @@ export function useContextData() {
       if (!data.value) {
         data.value = null
         return
+      }
+    } else if (
+      indexValue !== undefined &&
+      mapStore.selectedDataType === DataType.IPAVE &&
+      source_values !== undefined
+    ) {
+      // Handle IPAVE data: indice is the strate type, source_values contains surface
+      if (!data.value) {
+        data.value = {
+          id: stringId,
+          indice: String(indexValue),
+          surface: source_values?.surface !== undefined ? +source_values.surface : 0,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.IPAVE
+        } as IpaveData
+      } else if (data.value.datatype === DataType.IPAVE) {
+        ;(data.value as IpaveData).indice = String(indexValue)
+        ;(data.value as IpaveData).surface =
+          source_values?.surface !== undefined ? +source_values.surface : 0
       }
     } else if (
       indexValue !== undefined &&

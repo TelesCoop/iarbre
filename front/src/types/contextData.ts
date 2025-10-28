@@ -18,7 +18,7 @@ export interface ContextDataFactorGroup {
   description?: string
 }
 
-export type ContextDataColorScheme = "plantability" | "climate" | "vulnerability"
+export type ContextDataColorScheme = "plantability" | "climate" | "vulnerability" | "ipave"
 export type CircularScoreSize = "small" | "normal" | "large"
 
 export interface ContextDataVulnerabilityFactor extends ContextDataFactor {

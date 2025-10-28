@@ -9,6 +9,10 @@ export interface City {
   plantabilityCounts: PlantabilityCounts
   averageNormalizedIndice: number
   averageIndice: number
+  vegetationVoirieHaute: number
+  vegetationVoirieMoyenne: number
+  vegetationVoirieBasse: number
+  vegetationVoirieTotal: number
 }
 
 export interface Iris {
