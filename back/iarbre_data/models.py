@@ -293,6 +293,9 @@ class Ipave(models.Model):
     )
     surface = models.FloatField(null=True)
 
+    geolevel = GeoLevel.TILE.value
+    datatype = DataType.IPAVE.value
+
 
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
