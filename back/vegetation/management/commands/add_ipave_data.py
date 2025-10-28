@@ -80,13 +80,10 @@ def save_ipave(ipave_datas: geopandas.GeoDataFrame) -> None:
         for _, data in batch.iterrows():
             geom = GEOSGeometry(data["geometry"].wkt)
             map_geom = GEOSGeometry(data["map_geometry"].wkt)
-
-            # Convert MultiPolygon to Polygon if needed
-            # After explode, we should only have single polygons,
-            # but if MultiPolygon persists, take the first polygon
-            if geom.geom_type == "MultiPolygon" and geom.num_geom == 1:
+            # If multiPolygon persists only take the first one
+            if geom.geom_type == "MultiPolygon":
                 geom = geom[0]
-            if map_geom.geom_type == "MultiPolygon" and map_geom.num_geom == 1:
+            if map_geom.geom_type == "MultiPolygon":
                 map_geom = map_geom[0]
 
             ipave_objects.append(
