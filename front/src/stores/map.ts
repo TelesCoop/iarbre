@@ -25,6 +25,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
+import { IPAVE_COLOR_MAP } from "@/utils/ipave"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
@@ -72,7 +73,8 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
+      [DataType.IPAVE]: ["match", ["get", "indice"], ...IPAVE_COLOR_MAP]
     }
   })
 

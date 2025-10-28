@@ -9,7 +9,8 @@ export enum DataType {
   PLANTABILITY = "plantability",
   VULNERABILITY = "vulnerability",
   CLIMATE_ZONE = "lcz",
-  PLANTABILITY_VULNERABILITY = "plantability_vulnerability"
+  PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
+  IPAVE = "ipave"
 }
 
 export enum MapStyle {
@@ -28,14 +29,16 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "🌳 Score de plantabilité",
   [DataType.CLIMATE_ZONE]: "🌆 Zones climatiques locales",
   [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur",
-  [DataType.PLANTABILITY_VULNERABILITY]: "🌳🌡️ Plantabilité et chaleur"
+  [DataType.PLANTABILITY_VULNERABILITY]: "🌳🌡️ Plantabilité et chaleur",
+  [DataType.IPAVE]: "🌿 Végétal de voirie"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.PLANTABILITY]: GeoLevel.TILE,
   [DataType.CLIMATE_ZONE]: GeoLevel.LCZ,
   [DataType.VULNERABILITY]: GeoLevel.LCZ,
-  [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE
+  [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
+  [DataType.IPAVE]: GeoLevel.TILE
 }
 
 export const DataTypeToAttributionSource: Record<DataType, string> = {
@@ -46,7 +49,9 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.VULNERABILITY]:
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2025-02)</a>',
   [DataType.PLANTABILITY_VULNERABILITY]:
-    '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>'
+    '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
+  [DataType.IPAVE]:
+    '<a class="text-primary-500" href="https://github.com/datagora-erasme/ipave-scripts/tree/main" target="_blank">Exo-Dev</a>'
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
@@ -90,5 +95,7 @@ export const DataTypeToDownloadLink: Record<DataType, string> = {
   [DataType.VULNERABILITY]:
     "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info",
   [DataType.PLANTABILITY_VULNERABILITY]:
-    "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info"
+    "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info",
+  [DataType.IPAVE]:
+    "https://documents.exo-dev.fr/metropole/iPave_donnees.zip"
 }

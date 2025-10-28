@@ -38,6 +38,8 @@ declare module 'vue' {
     FeedbackPopin: typeof import('./src/components/FeedbackPopin.vue')['default']
     FilterIndicator: typeof import('./src/components/map/legend/FilterIndicator.vue')['default']
     InputText: typeof import('primevue/inputtext')['default']
+    IpaveLegend: typeof import('./src/components/map/legend/IpaveLegend.vue')['default']
+    IpaveScoreLabel: typeof import('./src/components/map/score/IpaveScoreLabel.vue')['default']
     IrisCard: typeof import('./src/components/division/IrisCard.vue')['default']
     LayerSwitcher: typeof import('./src/components/layerSwitcher/LayerSwitcher.vue')['default']
     LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
