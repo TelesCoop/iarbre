@@ -283,7 +283,7 @@ class StrateChoices(models.TextChoices):
 
 
 class Ipave(models.Model):
-    """Data from IPave experiments."""
+    """Data from IPave experiments on vegetation inventory."""
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
@@ -295,6 +295,14 @@ class Ipave(models.Model):
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.IPAVE.value
+
+    def get_layer_properties(self):
+        """Return the properties of the Ipave vegetation inventory for the MVT datatype."""
+        return {
+            "id": self.id,
+            "strate": self.strate,
+            "surface": self.surface,
+        }
 
 
 @receiver(pre_save, sender=Lcz)
