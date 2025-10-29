@@ -20,7 +20,15 @@ defineProps<MapContextHeaderProps>()
         target="_blank"
         class="text-sm text-center font-sans block hover:text-gray-500"
       >
-        Voir la méthodologie ici
+        Voir la méthodologie ici.
+      </a>
+      <a
+        v-else
+        href="https://docs.iarbre.fr/methodology/"
+        target="_blank"
+        class="text-sm text-center font-sans block hover:text-gray-500"
+      >
+        ⚠️ Les données de base sont de 2018 et disponible ici.
       </a>
     </div>
   </header>

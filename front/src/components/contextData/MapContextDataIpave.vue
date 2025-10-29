@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<IpaveCardProps>(), {
   <context-data-main-container
     color-scheme="ipave"
     title="ipave"
-    description="Données de végétation de voirie par strate : herbacée, arbustive (< 1.5m) et arborée. "
+    description="Données de végétation de voirie par strate : herbacée, arbustive (< 1.5m) et arborée."
     :data="props.data"
     empty-message="Cliquez sur un carreau."
     :zoom-level="zoomLevel"
