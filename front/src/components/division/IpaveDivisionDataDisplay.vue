@@ -12,24 +12,24 @@ const codeLabel = computed(() => "Code INSEE")
 
 const vegetationData = computed(() => [
   {
-    label: "Végétation haute",
+    label: "Végétation de voirie haute",
     value: props.data.vegetationVoirieHaute,
-    unit: "m²"
+    unit: "ha"
   },
   {
-    label: "Végétation moyenne",
+    label: "Végétation de voirie moyenne",
     value: props.data.vegetationVoirieMoyenne,
-    unit: "m²"
+    unit: "ha"
   },
   {
-    label: "Végétation basse",
+    label: "Végétation de voirie basse",
     value: props.data.vegetationVoirieBasse,
-    unit: "m²"
+    unit: "ha"
   },
   {
-    label: "Végétation totale",
+    label: "Végétation de voirie totale",
     value: props.data.vegetationVoirieTotal,
-    unit: "m²"
+    unit: "ha"
   }
 ])
 
@@ -43,7 +43,6 @@ const formatValue = (value: number) => {
   <div>
     <div class="mb-4">
       <h4 class="text-base font-semibold text-gray-800 mb-1">{{ data.name || data.code }}</h4>
-      <p class="text-xs text-gray-500">{{ codeLabel }}: {{ data.code }}</p>
     </div>
 
     <div class="space-y-3">
