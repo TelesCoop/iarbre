@@ -100,6 +100,8 @@ jobs:
         env:
           DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
           PGSERVICE: ${{ steps.postgres.outputs.service-name }}
+          SKIP: django-test
+          # We are already running django-test just bellow : `Generate coverage report`
         uses: pre-commit/action@v3.0.1
 
       - name: Generate coverage report
@@ -272,7 +274,7 @@ jobs:
         run: python manage.py migrate
         working-directory: ./back
       - name: Populate the database
-        run: python manage.py populate
+        run: python manage.py populate -e2e=True
         working-directory: ./back
       - name: Run back-end server in background
         run: python manage.py runserver localhost:8000 &

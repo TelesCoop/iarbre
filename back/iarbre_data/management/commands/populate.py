@@ -24,6 +24,12 @@ CITY_CODE = "38250"
 class Command(BaseCommand):
     help = "Small command to randomly populate the database with testing data"
 
+    def add_arguments(self, parser):
+        """Add arguments to the command."""
+        parser.add_argument(
+            "-e2e", type=bool, default=False, help="Populate DB for e2e or Django test"
+        )
+
     # GPS coords  { "lat": 45.06397, "lng": 5.55076}
     # Below in Lambert-93
     city_center = (900733.8693696633, 6443766.2240856625)
@@ -95,10 +101,10 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("> Plantability Score computed"))
 
-    def _generate_mvt(self, queryset, datatype, geolevel, n_threads=4):
+    def _generate_mvt(self, queryset, datatype, geolevel, zoom_levels, n_threads=4):
         mvt_generator = MVTGenerator(
             queryset=queryset,
-            zoom_levels=(13, 17),
+            zoom_levels=zoom_levels,
             datatype=datatype,
             geolevel=geolevel,
             number_of_thread=n_threads,
@@ -254,29 +260,33 @@ class Command(BaseCommand):
                     self.style.SUCCESS(f"> Vulnerability with ID {vul.id} updated")
                 )
 
-    def generate_lcz_mvt_tiles(self):
+    def generate_lcz_mvt_tiles(self, zoom_levels: tuple):
         lczs = Lcz.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
 
-        self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel)
+        self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel, zoom_levels=zoom_levels)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for LCZ computed"))
 
-    def generate_plantability_mvt_tiles(self, n_threads=4):
+    def generate_plantability_mvt_tiles(self, zoom_levels: tuple, n_threads=4):
         tiles_plantability = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         self._generate_mvt(
-            tiles_plantability, Tile.datatype, Tile.geolevel, n_threads=n_threads
+            tiles_plantability,
+            Tile.datatype,
+            Tile.geolevel,
+            zoom_levels,
+            n_threads=n_threads,
         )
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for plantability computed"))
 
-    def generate_vulnerability_mvt_tiles(self):
+    def generate_vulnerability_mvt_tiles(self, zoom_levels: tuple):
         vulnerabilities = Vulnerability.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         self._generate_mvt(
-            vulnerabilities, Vulnerability.datatype, Vulnerability.geolevel
+            vulnerabilities, Vulnerability.datatype, Vulnerability.geolevel, zoom_levels
         )
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
@@ -312,17 +322,22 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("> QPV data generated"))
 
     def handle(self, *args, **options):
+        e2e = options["e2e"]
+        if e2e:
+            zoom_levels = (13, 17)
+        else:
+            zoom_levels = (13, 13)
         self._create_city_and_iris()
         self.city = City.objects.get(code=CITY_CODE)
 
         self._generate_plantability_tiles()
-        self.generate_plantability_mvt_tiles()
+        self.generate_plantability_mvt_tiles(zoom_levels=zoom_levels)
 
         self._generate_lcz_zones()
-        self.generate_lcz_mvt_tiles()
+        self.generate_lcz_mvt_tiles(zoom_levels=zoom_levels)
 
         self.generate_vulnerability_zones()
-        self.generate_vulnerability_mvt_tiles()
+        self.generate_vulnerability_mvt_tiles(zoom_levels=zoom_levels)
 
         self._generate_qpv_data()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))
