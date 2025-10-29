@@ -4,52 +4,59 @@ import type {
   CarmenGeojsonFeature
 } from "@maplibre/maplibre-gl-geocoder"
 
-export const LIMIT_GEOCODE_CITY_CODE = "69000"
-export const LIMIT_GEOCODE_CITY_NAME = "Lyon"
+export const LIMIT_GEOCODE_CITY_CODE = ""
+export const LIMIT_GEOCODE_CITY_NAME = "Rhône"
 export const LIMIT_GEOCODE_COUNTRY_NAME = "France"
 
-export const GEOCODER_API_URL = "https://nominatim.openstreetmap.org/search"
+export const GEOCODER_API_URL = "https://photon.komoot.io/api/"
 
 const formatQueryWithCityAndCountry = (query: string | number[] | undefined): string => {
   return `${query}, ${LIMIT_GEOCODE_CITY_NAME}, ${LIMIT_GEOCODE_CITY_CODE}, ${LIMIT_GEOCODE_COUNTRY_NAME}`
 }
+
+const fetchGeocode = async (query: string): Promise<CarmenGeojsonFeature[]> => {
+  const features: CarmenGeojsonFeature[] = []
+  const formattedQuery = formatQueryWithCityAndCountry(query)
+  const request = `${GEOCODER_API_URL}?q=${encodeURIComponent(formattedQuery)}&limit=10`
+
+  const response = await fetch(request)
+  const geojson = await response.json()
+
+  for (const feature of geojson.features) {
+    const props = feature.properties
+    const placeName = [props.name, props.city, props.country].filter(Boolean).join(", ")
+
+    const point: CarmenGeojsonFeature = {
+      id: props.osm_id,
+      type: "Feature",
+      geometry: feature.geometry,
+      place_name: placeName,
+      properties: props,
+      text: props.name || placeName,
+      place_type: ["place"]
+    }
+    features.push(point)
+  }
+
+  return features
+}
+
 export const geocoderApi = {
   forwardGeocode: async (
     config: MaplibreGeocoderApiConfig
   ): Promise<MaplibreGeocoderFeatureResults> => {
-    const features: CarmenGeojsonFeature[] = []
     try {
-      const request = `${GEOCODER_API_URL}?q=${formatQueryWithCityAndCountry(
-        config.query
-      )}&format=geojson&polygon_geojson=1&addressdetails=1`
-      const response = await fetch(request)
-      const geojson = await response.json()
-      for (const feature of geojson.features) {
-        const center = [
-          feature.bbox[0] + (feature.bbox[2] - feature.bbox[0]) / 2,
-          feature.bbox[1] + (feature.bbox[3] - feature.bbox[1]) / 2
-        ]
-        const point: CarmenGeojsonFeature = {
-          id: feature.properties.osm_id,
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: center
-          },
-          place_name: feature.properties.display_name,
-          properties: feature.properties,
-          text: feature.properties.display_name,
-          place_type: ["place"]
-        }
-        features.push(point)
+      const features = await fetchGeocode(config.query as string)
+      return {
+        features,
+        type: "FeatureCollection"
       }
     } catch (e) {
       console.error(`Failed to forwardGeocode with error: ${e}`)
-    }
-
-    return {
-      features,
-      type: "FeatureCollection"
+      return {
+        features: [],
+        type: "FeatureCollection"
+      }
     }
   }
 }
