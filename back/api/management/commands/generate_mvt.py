@@ -44,6 +44,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Keep already existing tiles, do not delete them.",
         )
+        parser.add_argument(
+            "--zoom_levels",
+            type=tuple,
+            default=DEFAULT_ZOOM_LEVELS,
+            help="Zoom levels to generate MVTs.",
+        )
 
     def generate_tiles_for_model(
         self,
@@ -85,6 +91,7 @@ class Command(BaseCommand):
         number_of_thread = options["number_of_thread"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
+        zoom_levels = options["zoom_levels"]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
         elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
@@ -118,6 +125,6 @@ class Command(BaseCommand):
         self.generate_tiles_for_model(
             model=mdl,
             queryset=mdl.objects.all(),
-            zoom_levels=DEFAULT_ZOOM_LEVELS,
+            zoom_levels=zoom_levels,
             number_of_thread=number_of_thread,
         )
