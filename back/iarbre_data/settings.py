@@ -155,7 +155,7 @@ DATABASES = {
         "USER": config.getstr("database.user"),
         "PASSWORD": config.getstr("database.password"),
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": config.getstr("database.port") or "5432",
     }
 }
 

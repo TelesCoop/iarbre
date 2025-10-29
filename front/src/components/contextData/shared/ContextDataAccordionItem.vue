@@ -29,11 +29,11 @@ const categoryClasses = computed(() => {
     "flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 focus:bg-gray-100 transition-colors cursor-pointer rounded-r-lg border-l-4"
 
   if (props.colorScheme === "plantability") {
-    if (props.group.hasPositiveImpact && props.group.hasNegativeImpact) {
+    if (props.group?.hasPositiveImpact && props.group?.hasNegativeImpact) {
       return `${base} border-l-yellow-500`
-    } else if (props.group.hasPositiveImpact) {
+    } else if (props.group?.hasPositiveImpact) {
       return `${base} border-l-green-500`
-    } else if (props.group.hasNegativeImpact) {
+    } else if (props.group?.hasNegativeImpact) {
       return `${base} border-l-orange-500`
     }
   } else {
@@ -84,17 +84,17 @@ const isVulnerabilityGroup = computed(() => {
 
 const vulnerabilityCategory = computed(() => {
   if (!isVulnerabilityGroup.value) return null
-  return props.group.category as VulnerabilityCategory
+  return props.group?.category as VulnerabilityCategory
 })
 </script>
 
 <template>
   <div class="mb-2">
     <button
-      :class="categoryClasses"
-      :aria-controls="`category-${group.category}`"
+      :aria-controls="`category-${group?.category}`"
       :aria-expanded="isExpanded"
-      :data-cy="`category-${group.category}`"
+      :class="categoryClasses"
+      :data-cy="`category-${group?.category}`"
       @click="toggleExpanded"
     >
       <div class="flex items-center gap-3">
@@ -124,25 +124,25 @@ const vulnerabilityCategory = computed(() => {
           :title="impactTitle"
         ></div>
         <i
-          class="pi transition-transform duration-200"
           :class="isExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
           aria-hidden="true"
+          class="pi transition-transform duration-200"
         ></i>
       </div>
     </button>
 
     <div
       v-if="isExpanded"
-      :id="`category-${group.category}`"
+      :id="`category-${group?.category}`"
       class="mt-2 ml-4 space-y-2 animate-fade-in"
     >
       <context-data-item
         v-for="factor in group.factors"
         :key="factor.key"
-        :item="factor"
         :color-scheme="colorScheme"
         :get-score-color="getScoreColor"
         :get-score-label="getScoreLabel"
+        :item="factor"
       />
     </div>
   </div>

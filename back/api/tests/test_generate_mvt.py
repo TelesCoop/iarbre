@@ -24,6 +24,7 @@ class GenerateMVTCommandTest(TestCase):
             "datatype": DataType.TILE.value,
             "number_of_thread": 1,
             "keep": False,
+            "zoom_levels": (13, 13),
         }
         try:
             self.command.handle(**options)
@@ -56,6 +57,7 @@ class GenerateMVTCommandTest(TestCase):
             "datatype": DataType.TILE.value,
             "number_of_thread": 1,
             "keep": False,
+            "zoom_levels": (13, 13),
         }
 
         self.command.handle(**options)
@@ -84,6 +86,7 @@ class GenerateMVTCommandTest(TestCase):
             "datatype": DataType.TILE.value,
             "number_of_thread": 1,
             "keep": True,
+            "zoom_levels": (13, 13),
         }
 
         self.command.handle(**options)

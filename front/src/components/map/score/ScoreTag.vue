@@ -18,6 +18,7 @@ defineProps<{
       customSizeClass ?? 'w-14 h-8 p-2',
       isVertical ? 'flex-col' : 'flex-row'
     ]"
+    data-cy="score-tag"
   >
     <div>{{ score }}</div>
     <div
