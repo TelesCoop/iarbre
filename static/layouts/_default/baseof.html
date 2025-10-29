@@ -16,8 +16,8 @@
     .Site.Params.meta.Description }} {{ end }}
     <meta name="description" content="{{ $description }}" />
 
-    {{ $image := .Site.Params.meta.Image | absURL }} {{ if .Params.image }} {{
-    $image = .Params.image | absURL }} {{ end }}
+    {{ $image := "" }} {{ if .Params.image }} {{ $image = path.Join .Permalink
+    .Params.image }} {{ end }}
 
     <meta content="{{ .Site.Params.meta.Author }}" name="author" />
     <meta content="{{ .Site.Params.meta.Keywords }}" name="keywords" />
