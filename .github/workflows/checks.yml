@@ -101,6 +101,7 @@ jobs:
           DATABASE_URL: "postgres://myuser:securepassword@localhost:5432/mydatabase"
           PGSERVICE: ${{ steps.postgres.outputs.service-name }}
           SKIP: django-test
+          # We are already running django-test just bellow : `Generate coverage report`
         uses: pre-commit/action@v3.0.1
 
       - name: Generate coverage report
