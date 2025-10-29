@@ -55,6 +55,8 @@ export function useMapFilters() {
           ["get", `indice_${vulnerabilityMode!.value}`],
           ["literal", filteredValues.value]
         ]
+      } else if (dataType === DataType.IPAVE) {
+        filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
       }
 
       mapInstance.setFilter(layerId, filter as FilterSpecification)

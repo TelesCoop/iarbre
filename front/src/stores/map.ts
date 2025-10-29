@@ -162,7 +162,7 @@ export const useMapStore = defineStore("map", () => {
         "fill-color": FILL_COLOR_MAP.value[
           datatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-        "fill-opacity": 0.5,
+        "fill-opacity": datatype === DataType.IPAVE ? 0.8 : 0.5,
         "fill-outline-color": "#00000000"
       }
     }

@@ -15,6 +15,7 @@ defineProps<MapContextHeaderProps>()
         {{ description }}
       </p>
       <a
+        v-if="title !== 'ipave'"
         :href="`https://docs.iarbre.fr/methodology/${title}/`"
         target="_blank"
         class="text-sm text-center font-sans block hover:text-gray-500"

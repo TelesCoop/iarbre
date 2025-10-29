@@ -1,7 +1,7 @@
 export const IPAVE_ZONE_COLOR: Record<string | number, string> = {
-  herbacee: "#ffccaa",
-  arbustif: "#648525",
-  arborescent: "#006a00"
+  herbacee: "#BF5A16",
+  arbustif: "#0A3D80",
+  arborescent: "#025400"
 }
 
 export const IPAVE_ZONES = Object.keys(IPAVE_ZONE_COLOR) as string[]
@@ -12,7 +12,8 @@ export const IPAVE_COLOR_MAP = [
   "arbustif",
   IPAVE_ZONE_COLOR["arbustif"],
   "arborescent",
-  IPAVE_ZONE_COLOR["arborescent"]
+  IPAVE_ZONE_COLOR["arborescent"],
+  "#CCCCCC" // Default color for unmatched values
 ]
 
 const strateDescription: Record<string | number, string> = {
