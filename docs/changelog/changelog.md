@@ -1,5 +1,28 @@
 # Journal des changements
 
+## 🔖 0.19.0 (2025-10-29) : Recherche de lieux améliorée et améliorations pour les tests
+
+### 🛠️ enhance : Changement de l'API de geocoding
+
+On utiliser maintenant [photon](https://github.com/komoot/photon) de Komoot qui est plus robuste que [nominatim](https://nominatim.org/) pour les typos dans la recherche.
+
+&rarr; Commit [1b1ca0a](https://github.com/TelesCoop/iarbre/commit/1b1ca0a7fb839a6c6722dccc2467e4cde0f5f913)
+
+### 🛠️ enhance : Tests fronts et back
+
+- Amélioration du coverage du front et affichage de ce coverage
+
+&rarr; PR [#417](https://github.com/TelesCoop/iarbre/pull/417)
+
+- Accélération des tests back
+
+&rarr; PR [#441](https://github.com/TelesCoop/iarbre/pull/441)
+
+### 🛠️ enhance : Ajout de balises OpenGraph
+
+Ajout de balises OpenGraph sur le site vitrine.
+&rarr; PR [#435](https://github.com/TelesCoop/iarbre/pull/435)
+
 ## 🔖 0.18.0 (2025-10-22) : Croisement chaleur x plantabilité et site vitrine
 
 ### ✨ feat : Affichage d'un nouveau calque vulnérabilité à la chaleur x plantabilité
