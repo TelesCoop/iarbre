@@ -16,9 +16,9 @@
     .Site.Params.meta.Description }} {{ end }}
     <meta name="description" content="{{ $description }}" />
 
-    {{ $image := "" }} {{ if .Params.image }} {{ $image = path.Join .Permalink
-    .Params.image }} {{ else if .Site.Params.meta.Image }} {{ $image = path.Join
-    .Site.BaseURL .Site.Params.meta.Image }} {{ end }}
+    {{ $image := "" }} {{ if .Params.image }} {{ $image = .Params.image | absURL
+    }} {{ else if .Site.Params.meta.Image }} {{ $image = .Site.Params.meta.Image
+    | absURL }} {{ end }}
 
     <meta content="{{ .Site.Params.meta.Author }}" name="author" />
     <meta content="{{ .Site.Params.meta.Keywords }}" name="keywords" />
