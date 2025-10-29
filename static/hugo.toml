@@ -12,6 +12,14 @@ title = "IA·rbre"
 weight = 1
 disableKinds = ['taxonomy', 'term', 'category']
 [params]
+[params.meta]
+Description = "Plateforme collaborative de production, d'analyse et de visualisation de données territoriales pour accompagner les décisions en faveur de l'adaptation urbaine au changement climatique."
+Author = "IA·rbre"
+Keywords = "arbre, climat, urbanisme, données territoriales, adaptation climatique, végétalisation urbaine, îlots de chaleur, France2030"
+Image = "/images/logo.jpg"
+ThemeColor = "#32412d"
+# TwitterHandle = "@iarbre"  # Uncomment and update if you have a Twitter account
+
 [params.newsletter]
 formUrl = "https://app.keila.io/forms/nfrm_6b3DZDVg"
 captchaKey = "a1c5fab7-71df-4ea4-af75-87a3d07c61de"

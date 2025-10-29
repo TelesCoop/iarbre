@@ -3,37 +3,83 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
 
-    <meta content="{{ .Site.BaseURL }}" property="og:URL" />
-    <meta content="{{ .Site.Title }}" property="og:site_name" />
-    <meta content="{{ .Site.Title }}" property="twitter:site" />
-    <meta content="website" property="og:type" />
+    <!-- Primary Meta Tags -->
+    {{ $title := .Site.Title }} {{ if .Title }} {{ $title = printf "%s | %s"
+    .Title .Site.Title }} {{ end }}
+    <title>{{ $title }}</title>
 
+    {{ $description := "Enraciner la résilience des territoires." }} {{ if
+    .Description }} {{ $description = .Description }} {{ else if
+    .Site.Params.meta.Description }} {{ $description =
+    .Site.Params.meta.Description }} {{ end }}
+    <meta name="description" content="{{ $description }}" />
+
+    <meta content="{{ .Site.Params.meta.Author }}" name="author" />
+    <meta content="{{ .Site.Params.meta.Keywords }}" name="keywords" />
+    <meta content="{{ .Site.Language.Lang }}" name="language" />
+
+    <!-- Robots -->
     {{ if .Params.noRobots }}
-    <meta content="noindex" name="robots" />
-    {{ end }} {{ if .Description }}
-    <meta content="{{ .Description }}" name="description" />
-    <meta content="{{ .Description }}" property="og:description" />
-    <meta content="{{ .Description }}" property="twitter:description" />
+    <meta content="noindex, nofollow" name="robots" />
     {{ else }}
-    <meta content="{{ .Site.Params.meta.Description }}" name="description" />
-    <meta
-      content="{{ .Site.Params.meta.Description }}"
-      property="og:description"
-    />
-    <meta
-      content="{{ .Site.Params.meta.Description }}"
-      property="twitter:description"
-    />
-    {{ end }} {{ block "meta-extended" . }} {{end}} {{ if .Title }}
-    <title>{{ .Title }}</title>
-    <meta content="{{ .Title }}" property="og:title" />
-    <meta content="{{ .Title }}" property="twitter:title" />
-    {{ else }}
-    <title>{{ .Site.Title }}</title>
-    <meta content="{{ .Site.Title }}" property="og:title" />
-    <meta content="{{ .Site.Title }}" property="twitter:title" />
+    <meta content="index, follow" name="robots" />
     {{ end }}
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ .Permalink }}" />
+
+    <!-- Open Graph / Facebook -->
+    <meta content="website" property="og:type" />
+    <meta content="{{ .Permalink }}" property="og:url" />
+    <meta property="og:title" content="{{ $title }}" />
+    <meta property="og:description" content="{{ $description }}" />
+
+    <meta content="{{ .Site.Title }}" property="og:site_name" />
+    <meta content="fr_FR" property="og:locale" />
+
+    {{ if .Params.image }}
+    <meta content="{{ .Params.image | absURL }}" property="og:image" />
+    <meta content="1200" property="og:image:width" />
+    <meta content="630" property="og:image:height" />
+    {{ else if .Site.Params.meta.Image }}
+    <meta
+      content="{{ .Site.Params.meta.Image | absURL }}"
+      property="og:image"
+    />
+    <meta content="1200" property="og:image:width" />
+    <meta content="630" property="og:image:height" />
+    {{ end }}
+
+    <!-- Twitter -->
+    <meta content="summary_large_image" name="twitter:card" />
+    <meta content="{{ .Permalink }}" property="twitter:url" />
+    <meta property="twitter:title" content="{{ $title }}" />
+    <meta property="twitter:description" content="{{ $description }}" />
+    {{ if .Params.image }}
+    <meta content="{{ .Params.image | absURL }}" property="twitter:image" />
+    {{ else if .Site.Params.meta.Image }}
+    <meta
+      content="{{ .Site.Params.meta.Image | absURL }}"
+      property="twitter:image"
+    />
+    {{ end }} {{ if .Site.Params.meta.TwitterHandle }}
+    <meta content="{{ .Site.Params.meta.TwitterHandle }}" name="twitter:site" />
+    <meta
+      content="{{ .Site.Params.meta.TwitterHandle }}"
+      name="twitter:creator"
+    />
+    {{ end }}
+
+    <!-- Theme Color -->
+    <meta content="{{ .Site.Params.meta.ThemeColor }}" name="theme-color" />
+    <meta
+      content="{{ .Site.Params.meta.ThemeColor }}"
+      name="msapplication-TileColor"
+    />
+
+    {{ block "meta-extended" . }} {{end}}
 
     <!-- Style -->
     {{ with resources.Get "sass/main.scss" }} {{ $opts := dict "transpiler"
