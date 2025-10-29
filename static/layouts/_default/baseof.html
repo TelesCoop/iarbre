@@ -16,6 +16,9 @@
     .Site.Params.meta.Description }} {{ end }}
     <meta name="description" content="{{ $description }}" />
 
+    {{ $image := .Site.Params.meta.Image }} {{ if .Params.image }} {{ $image =
+    .Params.image }} {{ end }}
+
     <meta content="{{ .Site.Params.meta.Author }}" name="author" />
     <meta content="{{ .Site.Params.meta.Keywords }}" name="keywords" />
     <meta content="{{ .Site.Language.Lang }}" name="language" />
@@ -39,15 +42,8 @@
     <meta content="{{ .Site.Title }}" property="og:site_name" />
     <meta content="fr_FR" property="og:locale" />
 
-    {{ if .Params.image }}
-    <meta content="{{ .Params.image | absURL }}" property="og:image" />
-    <meta content="1200" property="og:image:width" />
-    <meta content="630" property="og:image:height" />
-    {{ else if .Site.Params.meta.Image }}
-    <meta
-      content="{{ .Site.Params.meta.Image | absURL }}"
-      property="og:image"
-    />
+    {{ if $image }}
+    <meta content="{{ $image }}" property="og:image" />
     <meta content="1200" property="og:image:width" />
     <meta content="630" property="og:image:height" />
     {{ end }}
@@ -57,13 +53,8 @@
     <meta content="{{ .Permalink }}" property="twitter:url" />
     <meta property="twitter:title" content="{{ $title }}" />
     <meta property="twitter:description" content="{{ $description }}" />
-    {{ if .Params.image }}
-    <meta content="{{ .Params.image | absURL }}" property="twitter:image" />
-    {{ else if .Site.Params.meta.Image }}
-    <meta
-      content="{{ .Site.Params.meta.Image | absURL }}"
-      property="twitter:image"
-    />
+    {{ if $image }}
+    <meta content="{{ $image }}" property="twitter:image" />
     {{ end }} {{ if .Site.Params.meta.TwitterHandle }}
     <meta content="{{ .Site.Params.meta.TwitterHandle }}" name="twitter:site" />
     <meta
