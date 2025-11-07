@@ -3,8 +3,10 @@ import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
 
+const DEFAULT_PLANTABILITY_FILTERS = [4, 6, 8, 10]
+
 export function useMapFilters() {
-  const filteredValues = ref<(number | string)[]>([])
+  const filteredValues = ref<(number | string)[]>([...DEFAULT_PLANTABILITY_FILTERS])
 
   const hasActiveFilters = computed(() => filteredValues.value.length > 0)
   const activeFiltersCount = computed(() => filteredValues.value.length)
@@ -20,8 +22,12 @@ export function useMapFilters() {
 
   const isFiltered = (value: number | string) => filteredValues.value.includes(value)
 
-  const clearAllFilters = () => {
-    filteredValues.value = []
+  const clearAllFilters = (dataType?: DataType) => {
+    if (dataType === DataType.PLANTABILITY) {
+      filteredValues.value = [...DEFAULT_PLANTABILITY_FILTERS]
+    } else {
+      filteredValues.value = []
+    }
   }
 
   const applyFilters = (
