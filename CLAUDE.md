@@ -38,9 +38,6 @@ See [Development Commands](#development-commands) section for the full list.
 ### Styling Guidelines
 
 - **Use Tailwind classes directly** in templates instead of creating scoped CSS classes
-- Reusable component classes are defined in `front/src/styles/components.css` and imported in `main.css`
-  - Use `.btn-primary` for primary action buttons (green theme)
-  - Add new reusable component classes to this file when a pattern is used multiple times across components
 - **Important**: We want to remove VeeValidate
 
 ### Component Guidelines
