@@ -16,7 +16,7 @@ const model = defineModel<MapParams>({
 })
 
 const emit = defineEmits<{
-  "update:modelValue": [value: MapParams]
+  (e: "update:modelValue", value: MapParams): void
 }>()
 
 const mapStore = useMapStore()
@@ -31,12 +31,13 @@ onMounted(() => {
   })
 
   const updateParams = () => {
-    emit("update:modelValue", {
+    const params: MapParams = {
       zoom: Math.round(mapStore.currentZoom),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
       dataType: mapStore.selectedDataType
-    })
+    }
+    emit("update:modelValue", params)
   }
 
   mapInstance.on("moveend", updateParams)
