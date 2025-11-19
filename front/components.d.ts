@@ -23,6 +23,7 @@ declare module 'vue' {
     ClimateContextDataScore: typeof import('./src/components/contextData/climate/ClimateContextDataScore.vue')['default']
     ClimateZoneLegend: typeof import('./src/components/map/legend/ClimateZoneLegend.vue')['default']
     ClimateZoneScoreLabel: typeof import('./src/components/map/score/ClimateZoneScoreLabel.vue')['default']
+    CompactContextData: typeof import('./src/components/contextData/CompactContextData.vue')['default']
     ContextDataAccordionItem: typeof import('./src/components/contextData/shared/ContextDataAccordionItem.vue')['default']
     ContextDataItem: typeof import('./src/components/contextData/shared/ContextDataItem.vue')['default']
     ContextDataListContainer: typeof import('./src/components/contextData/shared/ContextDataListContainer.vue')['default']

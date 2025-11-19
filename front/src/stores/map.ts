@@ -451,10 +451,12 @@ export const useMapStore = defineStore("map", () => {
     clickCoordinates,
     selectedLegendCell,
     contextData: {
-      data: contextData.data,
+      currentContextData: contextData.currentContextData,
+      selectedContextData: contextData.selectedContextData,
       setData: contextData.setData,
       removeData: contextData.removeData,
-      toggleContextData: contextData.toggleContextData
+      toggleContextData: contextData.toggleContextData,
+      addCurrentToSelected: contextData.addCurrentToSelected
     },
     clearAllFilters,
     applyFilters,

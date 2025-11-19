@@ -18,7 +18,7 @@ interface ScoreData {
 }
 
 const scoreData = computed((): ScoreData | null => {
-  const contextData = mapStore.contextData.data
+  const contextData = mapStore.contextData.currentContextData?.data
 
   if (!contextData) return null
 
@@ -54,7 +54,7 @@ const scoreData = computed((): ScoreData | null => {
   }
 })
 
-const hasData = computed(() => mapStore.contextData.data !== null)
+const hasData = computed(() => mapStore.contextData.currentContextData !== null)
 const showClimateText = computed(
   () => mapStore.selectedDataType === DataType.CLIMATE_ZONE && hasData.value
 )
@@ -76,7 +76,9 @@ const showClimateText = computed(
     />
     <div v-else-if="showClimateText" class="text-center text-gray-700">
       <span class="text-lg font-semibold">Zone climatique locale</span><br />
-      <span class="text-sm">{{ (mapStore.contextData.data as ClimateData).lczDescription }}</span>
+      <span class="text-sm">{{
+        (mapStore.contextData.currentContextData?.data as ClimateData).lczDescription
+      }}</span>
     </div>
   </div>
 </template>

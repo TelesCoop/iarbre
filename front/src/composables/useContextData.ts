@@ -7,10 +7,16 @@ import { getTileDetails } from "@/services/tileService"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
+export type ContextDataItem = {
+  data: PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData
+  coordinates: { lat: number; lng: number }
+}
+
 export function useContextData() {
-  const data = ref<
-    PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
-  >(null)
+  // Current context data - the most recent click, displayed in full
+  const currentContextData = ref<ContextDataItem | null>(null)
+  // Selected context data - list of items the user wants to keep for comparison
+  const selectedContextData = ref<ContextDataItem[]>([])
   const mapStore = useMapStore()
 
   const setData = async (
@@ -22,11 +28,13 @@ export function useContextData() {
   ) => {
     if (!featureId) return null
     const stringId = String(featureId)
-    if (indexValue === undefined) {
-      data.value = await getTileDetails(stringId, mapStore.selectedDataType)
 
-      if (!data.value) {
-        data.value = null
+    let newData: ContextDataItem | null = null
+
+    if (indexValue === undefined) {
+      newData = await getTileDetails(stringId, mapStore.selectedDataType)
+
+      if (!newData) {
         return
       }
     } else if (
@@ -36,64 +44,93 @@ export function useContextData() {
       (source_values !== undefined ||
         mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY)
     ) {
-      if (!data.value) {
-        if (mapStore.selectedDataType === DataType.PLANTABILITY) {
-          data.value = {
-            id: stringId,
-            plantabilityNormalizedIndice: +indexValue,
-            plantabilityIndice: +indexValue,
-            details: source_values,
-            geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
-            datatype: DataType.PLANTABILITY,
-            iris: 0,
-            city: 0
-          } as PlantabilityData
-        } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
-          data.value = {
-            id: stringId,
-            plantabilityNormalizedIndice: +indexValue,
-            plantabilityIndice: +indexValue,
-            vulnerability_indice_day: vuln_score_day !== undefined ? +vuln_score_day : 0,
-            vulnerability_indice_night: vuln_score_night !== undefined ? +vuln_score_night : 0,
-            details: source_values,
-            geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
-            datatype: DataType.PLANTABILITY_VULNERABILITY,
-            iris: 0,
-            city: 0
-          } as PlantabilityVulnerabilityData
-        }
-      } else if (data.value.datatype === DataType.PLANTABILITY) {
-        ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
-        ;(data.value as PlantabilityData).details = source_values
-      } else if (data.value.datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        ;(data.value as PlantabilityVulnerabilityData).plantabilityNormalizedIndice = +indexValue
-        ;(data.value as PlantabilityVulnerabilityData).details = source_values
-        if (vuln_score_day !== undefined) {
-          ;(data.value as PlantabilityVulnerabilityData).vulnerability_indice_day = +vuln_score_day
-        }
-        if (vuln_score_night !== undefined) {
-          ;(data.value as PlantabilityVulnerabilityData).vulnerability_indice_night =
-            +vuln_score_night
-        }
+      if (mapStore.selectedDataType === DataType.PLANTABILITY) {
+        newData = {
+          id: stringId,
+          plantabilityNormalizedIndice: +indexValue,
+          plantabilityIndice: +indexValue,
+          details: source_values,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.PLANTABILITY,
+          iris: 0,
+          city: 0
+        } as PlantabilityData
+      } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
+        newData = {
+          id: stringId,
+          plantabilityNormalizedIndice: +indexValue,
+          plantabilityIndice: +indexValue,
+          vulnerability_indice_day: vuln_score_day !== undefined ? +vuln_score_day : 0,
+          vulnerability_indice_night: vuln_score_night !== undefined ? +vuln_score_night : 0,
+          details: source_values,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.PLANTABILITY_VULNERABILITY,
+          iris: 0,
+          city: 0
+        } as PlantabilityVulnerabilityData
       }
+    }
+
+    // Set new data as current
+    if (newData) {
+      // Get current coordinates from the map store
+      const coordinates = { ...mapStore.clickCoordinates }
+
+      // Set the new item as current (don't automatically move previous to selected)
+      currentContextData.value = { data: newData, coordinates }
     }
   }
 
-  const removeData = () => {
-    data.value = null
+  const addCurrentToSelected = () => {
+    if (!currentContextData.value) return
+
+    // Check if it's not already in the selected list
+    const existsInSelected = selectedContextData.value.some(
+      (item) => item.data.id === currentContextData.value!.data.id
+    )
+    if (!existsInSelected) {
+      selectedContextData.value.push(currentContextData.value)
+    }
+  }
+
+  const removeData = (itemId?: string) => {
+    if (itemId) {
+      // Remove specific item from selected list by id
+      const index = selectedContextData.value.findIndex((item) => item.data.id === itemId)
+      if (index !== -1) {
+        selectedContextData.value.splice(index, 1)
+      }
+      // Also check if it's the current item
+      if (currentContextData.value && currentContextData.value.data.id === itemId) {
+        currentContextData.value = null
+      }
+    } else {
+      // Remove all items
+      currentContextData.value = null
+      selectedContextData.value = []
+    }
   }
 
   const toggleContextData = (featureId: string | number) => {
-    if (!data.value) {
-      setData(featureId)
+    const stringId = String(featureId)
+    const isCurrent = currentContextData.value?.data.id === stringId
+    const existsInSelected = selectedContextData.value.some((item) => item.data.id === stringId)
+
+    if (isCurrent || existsInSelected) {
+      // Item exists, remove it
+      removeData(stringId)
     } else {
-      removeData()
+      // Item doesn't exist, add it
+      setData(featureId)
     }
   }
+
   return {
-    data,
+    currentContextData,
+    selectedContextData,
     setData,
     removeData,
-    toggleContextData
+    toggleContextData,
+    addCurrentToSelected
   }
 }

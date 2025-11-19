@@ -24,7 +24,10 @@ describe("MapContextData", () => {
   it("should display component when tileDetails and PLANTABILITY datatype are set", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.contextData.data = { plantabilityNormalizedIndice: 8.5 }
+      store.contextData.currentContextData = {
+        data: { plantabilityNormalizedIndice: 8.5 },
+        coordinates: { lat: 0, lng: 0 }
+      }
       store.selectedDataType = DataType.PLANTABILITY
     })
     cy.get('[data-cy="map-context-data"]').should("be.visible")
@@ -32,7 +35,7 @@ describe("MapContextData", () => {
   it("display empty message when no data is available", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.contextData.data = null
+      store.contextData.currentContextData = null
       store.selectedDataType = DataType.PLANTABILITY
     })
     cy.contains("Zommez et cliquez sur un carreau").should("be.visible")
@@ -41,18 +44,21 @@ describe("MapContextData", () => {
   it("should display informations correctly", () => {
     cy.window().then(() => {
       const store = useMapStore()
-      store.contextData.data = {
-        plantabilityNormalizedIndice: 2,
-        details: {
-          top5LandUse: {
-            [PlantabilityLandUseKeys.PROXIMITE_FACADE]: 88,
-            [PlantabilityLandUseKeys.BATIMENTS]: 56
-          }
+      store.contextData.currentContextData = {
+        data: {
+          plantabilityNormalizedIndice: 2,
+          details: {
+            top5LandUse: {
+              [PlantabilityLandUseKeys.PROXIMITE_FACADE]: 88,
+              [PlantabilityLandUseKeys.BATIMENTS]: 56
+            }
+          },
+          geolevel: GeoLevel.TILE,
+          datatype: DataType.PLANTABILITY,
+          iris: 547,
+          city: 63
         },
-        geolevel: GeoLevel.TILE,
-        datatype: DataType.PLANTABILITY,
-        iris: 547,
-        city: 63
+        coordinates: { lat: 0, lng: 0 }
       }
       store.selectedDataType = DataType.PLANTABILITY
     })
