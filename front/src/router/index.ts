@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 import MapView from "@/views/MapView.vue"
+import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
 
 const router = createRouter({
@@ -29,6 +30,11 @@ const router = createRouter({
           }
         }
       }
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "notFound",
+      component: NotFoundView
     }
   ]
 })
