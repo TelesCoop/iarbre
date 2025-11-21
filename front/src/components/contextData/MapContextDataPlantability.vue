@@ -11,26 +11,49 @@ const mapStore = useMapStore()
 const zoomLevel = computed(() => mapStore.currentZoom)
 
 interface PlantabilityCardProps {
-  data?: PlantabilityData | null
+  data?: PlantabilityData[]
 }
 
 const props = withDefaults(defineProps<PlantabilityCardProps>(), {
-  data: null
+  data: () => []
+})
+
+// Les données sont soit une seule tuile, soit des données pré-agrégées du backend
+const currentData = computed<PlantabilityData | null>(() => {
+  if (!props.data || props.data.length === 0) return null
+  return props.data[0]
 })
 
 const scorePercentage = computed(() =>
-  props.data?.plantabilityNormalizedIndice !== undefined
-    ? props.data.plantabilityNormalizedIndice * 10
+  currentData.value?.plantabilityNormalizedIndice !== undefined
+    ? currentData.value.plantabilityNormalizedIndice * 10
     : null
 )
+
+// Détecter si c'est une sélection multiple (ID commence par "polygon-")
+const isMultipleSelection = computed(
+  () => currentData.value?.id?.toString().startsWith("polygon-") || false
+)
+
+// Extraire le nombre de tuiles du ID (format: "polygon-123")
+const tileCount = computed(() => {
+  if (!isMultipleSelection.value) return 0
+  const id = currentData.value?.id?.toString()
+  const count = id?.split("-")[1]
+  return count ? parseInt(count) : 0
+})
 </script>
 
 <template>
   <context-data-main-container
     color-scheme="plantability"
     title="plantability"
-    description="Calcul basé sur la pondération de +37 paramètres."
-    :data="props.data"
+    :description="
+      isMultipleSelection
+        ? `Moyenne de ${tileCount} tuiles dans la zone sélectionnée - Calcul basé sur la pondération de +37 paramètres.`
+        : 'Calcul basé sur la pondération de +37 paramètres.'
+    "
+    :data="currentData"
     empty-message="Zommez et cliquez sur un carreau."
     :zoom-level="zoomLevel"
   >

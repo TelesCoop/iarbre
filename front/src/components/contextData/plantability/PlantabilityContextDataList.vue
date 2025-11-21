@@ -40,13 +40,23 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
 const distributionEntries = computed(() => {
   if (!props.data?.details) return []
 
+  // Check if details contains a distribution object (from polygon selection)
+  if (typeof props.data.details === "object" && "distribution" in props.data.details) {
+    const distribution = (props.data.details as any).distribution
+    return Object.entries(distribution).map(([score, count]) => ({
+      score: Number(score),
+      count: count as number
+    }))
+  }
+
+  // Legacy format: string with JSON array of values
   let values: number[]
   if (typeof props.data.details === "string") {
     const parsed = JSON.parse(props.data.details)
     values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
   } else {
     // For zoom >= 17 it is props.data.top5LandUse.
-    // Can never happend here but because of type checking need the else
+    // Can never happen here but because of type checking need the else
     return []
   }
 

@@ -18,3 +18,11 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
+
+
+# Score ranges for different data types
+PLANTABILITY_MAX_SCORE = 10
+VULNERABILITY_MAX_SCORE = 9
+
+# Rounding precision for calculated indices
+INDICE_ROUNDING_DECIMALS = 1

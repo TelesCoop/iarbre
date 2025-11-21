@@ -56,6 +56,15 @@ onMounted(() => {
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
     <map-config-drawer-toggle />
   </div>
+
+  <!-- Selection mode toggle - visible on all screens -->
+  <div class="absolute right-0 top-0 mt-2 mr-2 z-40">
+    <selection-mode-toggle />
+  </div>
+
+  <!-- Drawing controls - only visible in shape mode -->
+  <drawing-controls />
+
   <div class="legend-container hidden lg:flex">
     <map-legend />
     <map-filters-status />

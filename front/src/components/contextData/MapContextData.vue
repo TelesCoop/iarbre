@@ -19,19 +19,19 @@ defineProps({
   <div class="map-context-data-container w-full" data-cy="map-context-data">
     <map-context-data-plantability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
-      :data="mapStore.contextData.data as PlantabilityData"
+      :data="mapStore.contextData.data as PlantabilityData[]"
     />
     <map-context-data-vulnerability
       v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
-      :data="mapStore.contextData.data as VulnerabilityData"
+      :data="mapStore.contextData.data as VulnerabilityData[]"
     />
     <map-context-data-climate-zone
       v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
-      :data="mapStore.contextData.data as ClimateData"
+      :data="mapStore.contextData.data as ClimateData[]"
     />
     <map-context-data-plantability-vulnerability
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
-      :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
+      :data="mapStore.contextData.data as PlantabilityVulnerabilityData[]"
     />
   </div>
 </template>

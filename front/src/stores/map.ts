@@ -13,6 +13,7 @@ import {
   GeoLevel,
   DataType,
   MapStyle,
+  SelectionMode,
   DataTypeToGeolevel,
   getDataTypeAttributionSource
 } from "@/utils/enum"
@@ -33,6 +34,7 @@ import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } fro
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl } from "@/utils/mapControls"
+import { useShapeDrawing } from "@/composables/useTerraDraw"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -43,6 +45,8 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
   const showQPVLayer = ref<boolean>(false)
+  const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
+  const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
     lng: DEFAULT_MAP_CENTER.lng
@@ -131,7 +135,7 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: (map: Map) => {
+    onRemove: (_map: Map) => {
       const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
       if (controlElement) {
         controlElement.remove()
@@ -186,6 +190,13 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
     const clickHandler = (e: any) => {
+      // Si on est en mode POINT (clic simple), gérer le clic normalement
+      // Les autres modes sont gérés automatiquement par Terra Draw
+      if (selectionMode.value !== SelectionMode.POINT) {
+        return
+      }
+
+      // Mode point normal (clic simple pour sélectionner une tuile)
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
@@ -418,6 +429,8 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("style.load", async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
+      // Initialiser le dessin de formes
+      shapeDrawing.initDraw(mapInstance)
     })
 
     mapInstance.on("moveend", () => {
@@ -438,6 +451,32 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const changeSelectionMode = (mode: SelectionMode) => {
+    const previousMode = selectionMode.value
+    selectionMode.value = mode
+
+    // Nettoyer les données contextuelles lors du changement de mode
+    contextData.removeData()
+
+    // Utiliser Terra Draw pour changer de mode
+    shapeDrawing.setMode(mode)
+
+    // En mode POINT (clic simple), on désactive le dessin
+    if (mode === SelectionMode.POINT) {
+      shapeDrawing.stopDrawing()
+    }
+  }
+
+  const finishShapeSelection = async () => {
+    // Récupérer les scores agrégés dans la forme via l'API backend
+    const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
+
+    if (scores) {
+      // Définir directement les scores agrégés dans le contexte
+      contextData.data.value = [scores]
+    }
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -450,9 +489,21 @@ export const useMapStore = defineStore("map", () => {
     currentZoom,
     clickCoordinates,
     selectedLegendCell,
+    selectionMode,
+    changeSelectionMode,
+    finishShapeSelection,
+    shapeDrawing: {
+      isDrawing: shapeDrawing.isDrawing,
+      drawingPoints: shapeDrawing.drawingPoints,
+      currentMode: shapeDrawing.currentMode,
+      setMode: shapeDrawing.setMode,
+      clearDrawing: shapeDrawing.clearDrawing,
+      getSelectedFeatures: shapeDrawing.getSelectedFeatures
+    },
     contextData: {
       data: contextData.data,
       setData: contextData.setData,
+      setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
       toggleContextData: contextData.toggleContextData
     },
