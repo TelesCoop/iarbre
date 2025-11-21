@@ -4,3 +4,4 @@ from .tile_views import TileView  # noqa: F401
 from .heath_views import HealthCheckView  # noqa: F401
 from .qpv_views import QPVListView  # noqa: F401
 from .database_version_views import MetadataView  # noqa: F401
+from .raster_views import RasterDownloadView  # noqa: F401
