@@ -38,38 +38,46 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
 })
 
 const distributionEntries = computed(() => {
-  if (!props.data?.details) return []
-
-  // Check if details contains a distribution object (from polygon selection)
-  if (typeof props.data.details === "object" && "distribution" in props.data.details) {
-    const distribution = (props.data.details as any).distribution
-    return Object.entries(distribution).map(([score, count]) => ({
+  // Check if distribution is directly available (from polygon selection)
+  if (props.data?.distribution) {
+    return Object.entries(props.data.distribution).map(([score, count]) => ({
       score: Number(score),
       count: count as number
     }))
   }
 
-  // Legacy format: string with JSON array of values
-  let values: number[]
+  // Legacy format: details as string with JSON array of values
+  if (!props.data?.details) return []
+
+  let parsed: any
   if (typeof props.data.details === "string") {
-    const parsed = JSON.parse(props.data.details)
-    values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
+    try {
+      parsed = JSON.parse(props.data.details)
+    } catch {
+      return []
+    }
   } else {
-    // For zoom >= 17 it is props.data.top5LandUse.
-    // Can never happen here but because of type checking need the else
-    return []
+    parsed = props.data.details
   }
 
-  // Count frequency of each unique value
-  const frequencyMap = new Map<number, number>()
-  values.forEach((value) => {
-    frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
-  })
+  // Legacy format: JSON array of values
+  if (Array.isArray(parsed)) {
+    const values: number[] = parsed.filter((value) => typeof value === "number")
 
-  return Array.from(frequencyMap.entries()).map(([score, count]) => ({
-    score,
-    count
-  }))
+    // Count frequency of each unique value
+    const frequencyMap = new Map<number, number>()
+    values.forEach((value) => {
+      frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
+    })
+
+    return Array.from(frequencyMap.entries()).map(([score, count]) => ({
+      score,
+      count
+    }))
+  }
+
+  // For zoom >= 17 it is props.data.top5LandUse.
+  return []
 })
 </script>
 

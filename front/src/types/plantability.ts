@@ -116,6 +116,7 @@ export interface PlantabilityData {
   plantabilityNormalizedIndice: number
   plantabilityIndice: number
   details?: PlantabilityDataDetails | string
+  distribution?: { [key: string]: number }
   geolevel: GeoLevel
   datatype: DataType
   irisCodes?: string[]

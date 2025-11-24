@@ -62,7 +62,7 @@ export const getScoresInPolygon = async (
         id: `polygon-${data.count}`,
         plantabilityNormalizedIndice: data.plantabilityNormalizedIndice,
         plantabilityIndice: data.plantabilityIndice,
-        details: JSON.stringify({ distribution: data.distribution }),
+        distribution: data.distribution,
         geolevel: "tile" as any,
         datatype: dataType,
         irisCodes: data.irisCodes,
