@@ -47,6 +47,7 @@ export const useMapStore = defineStore("map", () => {
   const contextData = useContextData()
   const showQPVLayer = ref<boolean>(false)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
+  const isToolbarVisible = ref<boolean>(false)
   const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
@@ -502,6 +503,14 @@ export const useMapStore = defineStore("map", () => {
   // Debouncer le calcul pour éviter les appels multiples rapides
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
+  const toggleToolbar = () => {
+    isToolbarVisible.value = !isToolbarVisible.value
+    // Quand on ferme la toolbar, revenir en mode POINT
+    if (!isToolbarVisible.value) {
+      changeSelectionMode(SelectionMode.POINT)
+    }
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -515,6 +524,8 @@ export const useMapStore = defineStore("map", () => {
     clickCoordinates,
     selectedLegendCell,
     selectionMode,
+    isToolbarVisible,
+    toggleToolbar,
     changeSelectionMode,
     finishShapeSelection,
     isCalculating,

@@ -57,9 +57,14 @@ onMounted(() => {
     <map-config-drawer-toggle />
   </div>
 
-  <!-- Selection mode toggle - visible on all screens -->
+  <!-- Drawing mode toggle - visible on all screens -->
   <div class="absolute right-0 top-0 mt-2 mr-2 z-40">
-    <selection-mode-toggle />
+    <drawing-mode-toggle />
+  </div>
+
+  <!-- Selection mode toolbar - only visible when toolbar is toggled -->
+  <div v-if="mapStore.isToolbarVisible" class="absolute right-0 top-14 mt-2 mr-2 z-40">
+    <selection-mode-toolbar />
   </div>
 
   <!-- Drawing controls - only visible in shape mode -->
