@@ -1,5 +1,6 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
+import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
@@ -51,6 +52,7 @@ export const useMapStore = defineStore("map", () => {
     lat: DEFAULT_MAP_CENTER.lat,
     lng: DEFAULT_MAP_CENTER.lng
   })
+  const isCalculating = ref<boolean>(false)
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
 
@@ -135,7 +137,7 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: (_map: Map) => {
+    onRemove: () => {
       const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
       if (controlElement) {
         controlElement.remove()
@@ -431,6 +433,10 @@ export const useMapStore = defineStore("map", () => {
       initTiles(mapInstance)
       // Initialiser le dessin de formes
       shapeDrawing.initDraw(mapInstance)
+      // Configurer le calcul automatique quand une forme est terminée
+      shapeDrawing.onShapeFinished(() => {
+        finishShapeSelection()
+      })
     })
 
     mapInstance.on("moveend", () => {
@@ -452,7 +458,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const changeSelectionMode = (mode: SelectionMode) => {
-    const previousMode = selectionMode.value
     selectionMode.value = mode
 
     // Nettoyer les données contextuelles lors du changement de mode
@@ -467,15 +472,35 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const finishShapeSelection = async () => {
-    // Récupérer les scores agrégés dans la forme via l'API backend
-    const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
+  const MIN_LOADING_DURATION_MS = 500
 
-    if (scores) {
-      // Définir directement les scores agrégés dans le contexte
-      contextData.data.value = [scores]
+  const performCalculation = async () => {
+    // Activer l'état de chargement
+    isCalculating.value = true
+    const loadingStartTime = Date.now()
+
+    try {
+      // Récupérer les scores agrégés dans la forme via l'API backend
+      const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
+
+      if (scores) {
+        // Définir directement les scores agrégés dans le contexte
+        contextData.data.value = [scores]
+      }
+    } finally {
+      // Assurer un temps de chargement minimum de 0.5 secondes
+      const loadingDuration = Date.now() - loadingStartTime
+      if (loadingDuration < MIN_LOADING_DURATION_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_DURATION_MS - loadingDuration)
+        )
+      }
+      isCalculating.value = false
     }
   }
+
+  // Debouncer le calcul pour éviter les appels multiples rapides
+  const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
   return {
     mapInstancesByIds,
@@ -492,13 +517,15 @@ export const useMapStore = defineStore("map", () => {
     selectionMode,
     changeSelectionMode,
     finishShapeSelection,
+    isCalculating,
     shapeDrawing: {
       isDrawing: shapeDrawing.isDrawing,
       drawingPoints: shapeDrawing.drawingPoints,
       currentMode: shapeDrawing.currentMode,
       setMode: shapeDrawing.setMode,
       clearDrawing: shapeDrawing.clearDrawing,
-      getSelectedFeatures: shapeDrawing.getSelectedFeatures
+      getSelectedFeatures: shapeDrawing.getSelectedFeatures,
+      onShapeFinished: shapeDrawing.onShapeFinished
     },
     contextData: {
       data: contextData.data,

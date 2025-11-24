@@ -56,13 +56,17 @@ export const getScoresInPolygon = async (
     // Transform backend response to match expected types
     if (dataType === DataType.PLANTABILITY) {
       const data = req.data as PlantabilityScoresResponse
+      console.log("Polygon scores response:", data)
+      console.log("iris_codes:", data.irisCodes, "city_codes:", data.cityCodes)
       return {
         id: `polygon-${data.count}`,
         plantabilityNormalizedIndice: data.plantabilityNormalizedIndice,
         plantabilityIndice: data.plantabilityIndice,
         details: JSON.stringify({ distribution: data.distribution }),
         geolevel: "tile" as any,
-        datatype: dataType
+        datatype: dataType,
+        irisCodes: data.irisCodes,
+        cityCodes: data.cityCodes
       } as PlantabilityData
     } else if (dataType === DataType.VULNERABILITY) {
       const data = req.data as VulnerabilityScoresResponse

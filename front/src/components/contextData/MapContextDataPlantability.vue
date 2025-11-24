@@ -21,6 +21,12 @@ const props = withDefaults(defineProps<PlantabilityCardProps>(), {
 // Les données sont soit une seule tuile, soit des données pré-agrégées du backend
 const currentData = computed<PlantabilityData | null>(() => {
   if (!props.data || props.data.length === 0) return null
+  console.log("MapContextDataPlantability - props.data:", props.data)
+  console.log("MapContextDataPlantability - props.data[0]:", props.data[0])
+  console.log("MapContextDataPlantability - codes:", {
+    irisCodes: props.data[0]?.irisCodes,
+    cityCodes: props.data[0]?.cityCodes
+  })
   return props.data[0]
 })
 
@@ -66,7 +72,7 @@ const tileCount = computed(() => {
     </template>
     <template #content="{ data: plantabilityData }">
       <plantability-context-data-list :data="plantabilityData" />
-      <click-plantability-division-data />
+      <click-plantability-division-data :plantability-data="plantabilityData" />
     </template>
   </context-data-main-container>
 </template>

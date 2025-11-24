@@ -24,6 +24,7 @@ export function useShapeDrawing() {
   const currentMap = ref<Map | null>(null)
   const terraDraw = ref<TerraDraw | null>(null)
   const currentMode = ref<SelectionMode | null>(null)
+  const onShapeFinishedCallback = ref<(() => void) | null>(null)
 
   const initDraw = (map: Map) => {
     currentMap.value = map
@@ -142,6 +143,11 @@ export function useShapeDrawing() {
           }
         }
       }
+
+      // Déclencher automatiquement le calcul quand une forme est terminée
+      if (onShapeFinishedCallback.value) {
+        onShapeFinishedCallback.value()
+      }
     })
   }
 
@@ -251,6 +257,11 @@ export function useShapeDrawing() {
     currentMap.value = null
     drawingPoints.value = []
     isDrawing.value = false
+    onShapeFinishedCallback.value = null
+  }
+
+  const onShapeFinished = (callback: () => void) => {
+    onShapeFinishedCallback.value = callback
   }
 
   return {
@@ -265,6 +276,7 @@ export function useShapeDrawing() {
     clearDrawing,
     getScoresInShape,
     getSelectedFeatures,
+    onShapeFinished,
     cleanup
   }
 }

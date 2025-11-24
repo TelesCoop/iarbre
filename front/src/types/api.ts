@@ -5,8 +5,8 @@
 export interface BaseScoresResponse {
   datatype: string
   count: number
-  iris_codes: string[]
-  city_codes: string[]
+  irisCodes: string[]
+  cityCodes: string[]
 }
 
 export interface PlantabilityScoresResponse extends BaseScoresResponse {
