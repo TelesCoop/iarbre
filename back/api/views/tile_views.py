@@ -131,12 +131,12 @@ class ScoresInPolygonView(APIView):
         return {
             "datatype": "plantability",
             "count": result["total_count"],
-            "plantabilityNormalizedIndice": round(avg_score, INDICE_ROUNDING_DECIMALS)
-            if avg_score
-            else 0,
-            "plantabilityIndice": round(avg_score, INDICE_ROUNDING_DECIMALS)
-            if avg_score
-            else 0,
+            "plantabilityNormalizedIndice": (
+                round(avg_score, INDICE_ROUNDING_DECIMALS) if avg_score else 0
+            ),
+            "plantabilityIndice": (
+                round(avg_score, INDICE_ROUNDING_DECIMALS) if avg_score else 0
+            ),
             "distribution": distribution,
         }
 
@@ -182,18 +182,18 @@ class ScoresInPolygonView(APIView):
         return {
             "datatype": "vulnerability",
             "count": result["total_count"],
-            "vulnerability_indice_day": round(avg_day, INDICE_ROUNDING_DECIMALS)
-            if avg_day
-            else 0,
-            "vulnerability_indice_night": round(avg_night, INDICE_ROUNDING_DECIMALS)
-            if avg_night
-            else 0,
-            "vulnerabilityIndexDay": round(avg_day, INDICE_ROUNDING_DECIMALS)
-            if avg_day
-            else 0,
-            "vulnerabilityIndexNight": round(avg_night, INDICE_ROUNDING_DECIMALS)
-            if avg_night
-            else 0,
+            "vulnerability_indice_day": (
+                round(avg_day, INDICE_ROUNDING_DECIMALS) if avg_day else 0
+            ),
+            "vulnerability_indice_night": (
+                round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
+            ),
+            "vulnerabilityIndexDay": (
+                round(avg_day, INDICE_ROUNDING_DECIMALS) if avg_day else 0
+            ),
+            "vulnerabilityIndexNight": (
+                round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
+            ),
             "distribution_day": distribution_day,
             "distribution_night": distribution_night,
         }
@@ -204,22 +204,39 @@ class ScoresInPolygonView(APIView):
         # Single query for distribution using values().annotate()
         lcz_distribution = tiles.values("lcz_index").annotate(count=Count("id"))
 
-        distribution = {}
+        lcz_index_distribution = {}
         total_count = 0
         for item in lcz_distribution:
             if item["lcz_index"] is not None:
-                distribution[str(item["lcz_index"])] = item["count"]
+                lcz_index_distribution[str(item["lcz_index"])] = item["count"]
                 total_count += item["count"]
 
         # Zone la plus fréquente
         most_common = (
-            max(distribution.items(), key=lambda x: x[1]) if distribution else (None, 0)
+            max(lcz_index_distribution.items(), key=lambda x: x[1])
+            if lcz_index_distribution
+            else (None, 0)
         )
+
+        # Calculer les surfaces totales pour chaque type de détail
+        detail_keys = ["hre", "are", "bur", "ror", "bsr", "war", "ver", "vhr"]
+        distribution = {key: 0.0 for key in detail_keys}
+
+        for tile in tiles:
+            if tile.details:
+                # Calculer la surface de la géométrie en m²
+                tile_area = tile.geometry.area  # area is in m² for SRID 2154
+
+                for key in detail_keys:
+                    if key in tile.details:
+                        percentage = tile.details[key]
+                        # Multiplier le pourcentage par la surface pour obtenir la surface réelle
+                        distribution[key] += (percentage / 100.0) * tile_area
 
         return {
             "datatype": "lcz",
             "count": total_count,
-            "lcz_primary": int(most_common[0]) if most_common[0] else None,
+            "lcz_primary": most_common[0] if most_common[0] else None,
             "distribution": distribution,
         }
 

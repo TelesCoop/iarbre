@@ -90,19 +90,19 @@ export const getScoresInPolygon = async (
       const data = req.data as LczScoresResponse
       return {
         id: data.count,
-        lczIndex: data.lcz_primary || 0,
+        lczIndex: data.lcz_primary || "mixte",
         lczDescription: `Zone climatique ${data.lcz_primary || "mixte"}`,
         geometry: "",
         mapGeometry: "",
         details: {
-          hre: 0,
-          are: 0,
-          bur: 0,
-          ror: 0,
-          bsr: 0,
-          war: 0,
-          ver: 0,
-          vhr: 0
+          hre: data.distribution?.hre || 0,
+          are: data.distribution?.are || 0,
+          bur: data.distribution?.bur || 0,
+          ror: data.distribution?.ror || 0,
+          bsr: data.distribution?.bsr || 0,
+          war: data.distribution?.war || 0,
+          ver: data.distribution?.ver || 0,
+          vhr: data.distribution?.vhr || 0
         },
         geolevel: "tile" as any,
         datatype: dataType

@@ -25,6 +25,6 @@ export interface VulnerabilityScoresResponse extends BaseScoresResponse {
 }
 
 export interface LczScoresResponse extends BaseScoresResponse {
-  lcz_primary: number | null
+  lcz_primary: string | null
   distribution: { [key: string]: number }
 }

@@ -319,6 +319,12 @@ export const useMapStore = defineStore("map", () => {
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
+
+    // Si une géométrie est dessinée, recalculer automatiquement avec le nouveau type de données
+    const features = shapeDrawing.getSelectedFeatures()
+    if (features.length > 0 && selectionMode.value !== SelectionMode.POINT) {
+      finishShapeSelection()
+    }
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {

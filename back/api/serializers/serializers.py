@@ -125,5 +125,5 @@ class VulnerabilityScoresSerializer(BaseScoresSerializer):
 
 
 class LczScoresSerializer(BaseScoresSerializer):
-    lcz_primary = serializers.IntegerField(allow_null=True)
+    lcz_primary = serializers.CharField(allow_null=True)
     distribution = serializers.DictField()
