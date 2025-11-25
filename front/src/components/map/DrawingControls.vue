@@ -29,7 +29,7 @@ const cancelDrawing = () => {
 <template>
   <div
     v-if="isShapeMode"
-    class="absolute bottom-4 left-1/2 z-50 max-w-md"
+    class="absolute bottom-2 left-1/2 z-50 max-w-md"
     data-cy="drawing-controls"
     @click.stop
   >
