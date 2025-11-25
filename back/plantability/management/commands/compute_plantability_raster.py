@@ -128,9 +128,12 @@ class Command(BaseCommand):
         result = np.zeros(shape, dtype=np.float32)
 
         for factor_name, weight in FACTORS.items():
-            compute_weighted_sum(
-                raster_directory, output_file, meta, result, factor_name, weight
-            )
+            if factor_name == "QPV":
+                continue
+            else:
+                compute_weighted_sum(
+                    raster_directory, output_file, meta, result, factor_name, weight
+                )
 
         # Cut everything outside cities
         all_cities = select_city(None).union_all()
