@@ -10,8 +10,6 @@ import random
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from iarbre_data.models import Tile
-
 project_root = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 )
@@ -21,7 +19,17 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "iarbre_data.settings")
 django.setup()
 
 
-def extract_land_use_data(sample_size: int = 100000) -> list[dict]:
+def get_tile_model():
+    """Avoid E402 from flake8"""
+    from iarbre_data.models import Tile
+
+    return Tile
+
+
+Tile = get_tile_model()
+
+
+def extract_land_use_data(sample_size: int = 10000) -> list[dict]:
     """Extract a random sample of tiles.
 
     Args:
@@ -127,44 +135,13 @@ def parse_land_uses(tiles_data: list[dict]) -> pd.DataFrame:
     return df
 
 
-def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Clean data by removing rows with missing values.
-
-    Args:
-        df: Input DataFrame containing land use data and plantability indices
-
-    Returns:
-        Cleaned DataFrame with no missing values
-    """
-    print("\n" + "=" * 80)
-    print("STEP 3: CLEANING DATA")
-    print("=" * 80)
-
-    print(f"\nInitial shape: {df.shape}")
-    print("\nMissing values per column:")
-    missing = df.isnull().sum()
-    for col, count in missing.items():
-        if count > 0:
-            print(f"  {col}: {count} ({count/len(df)*100:.2f}%)")
-
-    df_clean = df.dropna()
-
-    print(f"\nShape after dropping NaN: {df_clean.shape}")
-    print(f"Rows dropped: {len(df) - len(df_clean)}")
-
-    print("\nData statistics:")
-    print(df_clean.describe())
-
-    return df_clean
-
-
 def prepare_features(
-    df_clean: pd.DataFrame,
+    df: pd.DataFrame,
 ) -> tuple[pd.DataFrame, pd.Series, list[str]]:
     """Prepare feature matrix for PCA.
 
     Args:
-        df_clean: Cleaned DataFrame containing land use data and plantability indices
+        df: DataFrame containing land use data and plantability indices
 
     Returns:
         Tuple containing:
@@ -173,21 +150,19 @@ def prepare_features(
         - feature_cols: List of column names for the features
     """
     print("\n" + "=" * 80)
-    print("STEP 4: PREPARING FEATURES")
+    print("STEP 3: PREPARING FEATURES")
     print("=" * 80)
 
     # Separate target (plantability) from features (land use factors)
-    feature_cols = [
-        col for col in df_clean.columns if col not in ["tile_id", "plantability"]
-    ]
+    feature_cols = [col for col in df.columns if col not in ["tile_id", "plantability"]]
 
     print("\n*** TARGET VARIABLE: plantability ***")
     print(f"\nLand use factors for PCA ({len(feature_cols)} features):")
     for i, col in enumerate(feature_cols, 1):
         print(f"  {i}. {col}")
 
-    X = df_clean[feature_cols].copy()
-    y = df_clean["plantability"].copy()
+    X = df[feature_cols].copy()
+    y = df["plantability"].copy()
 
     print("\nLand use factor ranges:")
     for col in X.columns:
@@ -209,7 +184,7 @@ def standardize_features(X: pd.DataFrame) -> pd.DataFrame:
         X_scaled: DataFrame with standardized features
     """
     print("\n" + "=" * 80)
-    print("STEP 5: STANDARDIZING FEATURES")
+    print("STEP 4: STANDARDIZING FEATURES")
     print("=" * 80)
 
     scaler = StandardScaler()
@@ -243,7 +218,7 @@ def perform_pca(
         - cumulative_variance: Array of cumulative explained variance
     """
     print("\n" + "=" * 80)
-    print("STEP 6: PERFORMING PCA")
+    print("STEP 5: PERFORMING PCA")
     print("=" * 80)
 
     pca = PCA()
@@ -297,7 +272,7 @@ def analyze_relationships(
         - pc_correlations: Dictionary mapping principal components to their correlation with plantability
     """
     print("\n" + "=" * 80)
-    print("STEP 7: ANALYZING RELATIONSHIPS WITH PLANTABILITY")
+    print("STEP 6: ANALYZING RELATIONSHIPS WITH PLANTABILITY")
     print("=" * 80)
 
     print("\n" + "=" * 60)
@@ -414,13 +389,10 @@ def main() -> None:
         if df.empty:
             print("\nERROR: Failed to parse land use data.")
             return
+        # If not data means land use = 0
+        df.fillna(0, inplace=True)
 
-        df_clean = clean_data(df)
-        if df_clean.empty:
-            print("\nERROR: No data remaining after cleaning.")
-            return
-
-        X, y, feature_cols = prepare_features(df_clean)
+        X, y, feature_cols = prepare_features(df)
 
         X_scaled = standardize_features(X)
 
@@ -437,7 +409,7 @@ def main() -> None:
             cumulative_variance,
             factor_correlations,
             pc_correlations,
-            len(df_clean),
+            len(df),
             len(feature_cols),
         )
 
