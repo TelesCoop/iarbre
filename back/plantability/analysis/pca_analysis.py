@@ -9,6 +9,8 @@ import pandas as pd
 import random
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 project_root = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +31,7 @@ def get_tile_model():
 Tile = get_tile_model()
 
 
-def extract_land_use_data(sample_size: int = 10000) -> list[dict]:
+def extract_land_use_data(sample_size: int = 100000) -> list[dict]:
     """Extract a random sample of tiles.
 
     Args:
@@ -308,6 +310,21 @@ def analyze_relationships(
         pc_correlations[pc_col] = corr
         var_explained = explained_variance[i] * 100
         print(f"  {pc_col:5s} (explains {var_explained:5.2f}% var): {corr:+.4f}")
+
+    print("\n" + "=" * 60)
+    print("REGRESSION ANALYSIS: PC EXPLANATORY POWER ON PLANTABILITY")
+    print("=" * 60)
+    print("\nLinear regression R² (variance in plantability explained by PCs):")
+
+    max_pcs_to_test = min(5, len(df_pca.columns))
+    for n in range(1, max_pcs_to_test + 1):
+        pc_subset = df_pca.iloc[:, :n].values
+        reg = LinearRegression()
+        reg.fit(pc_subset, y)
+        r2 = r2_score(y, reg.predict(pc_subset))
+
+        pc_names = "+".join([f"PC{i+1}" for i in range(n)])
+        print(f"  {pc_names:15s}: R² = {r2:.4f}  ({r2*100:5.2f}% variance explained)")
 
     print("\n" + "=" * 60)
     print("PC1 INTERPRETATION")
