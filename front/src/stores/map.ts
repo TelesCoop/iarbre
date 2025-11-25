@@ -9,7 +9,13 @@ import {
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
-import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM, DEFAULT_MAP_CENTER } from "@/utils/constants"
+import {
+  MAP_CONTROL_POSITION,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  DEFAULT_MAP_CENTER,
+  TERRA_DRAW_POLYGON_LAYER
+} from "@/utils/constants"
 import {
   GeoLevel,
   DataType,
@@ -251,7 +257,13 @@ export const useMapStore = defineStore("map", () => {
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layers = createMapLayers(datatype, geolevel, sourceId)
-    layers.forEach((layer) => map.addLayer(layer))
+
+    // Ajouter les couches avant les couches Terra Draw pour qu'elles soient en dessous
+    const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
+
+    layers.forEach((layer) => {
+      map.addLayer(layer, beforeId)
+    })
 
     setupClickEventOnTile(map, datatype, geolevel)
   }
@@ -382,15 +394,23 @@ export const useMapStore = defineStore("map", () => {
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
-      mapInstance.addLayer({
-        id: "qpv-border",
-        type: "line",
-        source: "qpv-source",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 3
-        }
-      })
+      // Ajouter la couche QPV avant les couches Terra Draw pour qu'elle soit en dessous
+      const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
+        ? TERRA_DRAW_POLYGON_LAYER
+        : undefined
+
+      mapInstance.addLayer(
+        {
+          id: "qpv-border",
+          type: "line",
+          source: "qpv-source",
+          paint: {
+            "line-color": "#ffffff",
+            "line-width": 3
+          }
+        },
+        beforeId
+      )
     }
     mapInstance.once("render", () => {
       console.info(`cypress: QPV data loaded`)
