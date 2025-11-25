@@ -9,13 +9,14 @@ const mapStore = useMapStore()
 const isShapeMode = computed(() => mapStore.selectionMode !== SelectionMode.POINT)
 const drawingInfo = computed(() => {
   const mode = mapStore.selectionMode
+  const baseTitle = "Sélection"
   const modeLabels: Partial<Record<SelectionMode, string>> = {
     [SelectionMode.POINT]: "Clic simple",
-    [SelectionMode.POLYGON]: "Dessin de polygone",
-    [SelectionMode.RECTANGLE]: "Dessin de rectangle",
-    [SelectionMode.CIRCLE]: "Dessin de cercle",
-    [SelectionMode.ANGLED_RECTANGLE]: "Dessin de rectangle incliné",
-    [SelectionMode.SECTOR]: "Dessin de secteur"
+    [SelectionMode.POLYGON]: `${baseTitle} polygone`,
+    [SelectionMode.RECTANGLE]: `${baseTitle} rectangle`,
+    [SelectionMode.CIRCLE]: `${baseTitle} cercle`,
+    [SelectionMode.ANGLED_RECTANGLE]: `${baseTitle} rectangle incliné`,
+    [SelectionMode.SECTOR]: `${baseTitle} secteur`
   }
   return modeLabels[mode] || ""
 })
@@ -33,10 +34,10 @@ const cancelDrawing = () => {
     data-cy="drawing-controls"
     @click.stop
   >
-    <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col gap-3">
+    <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col">
       <div class="text-center text-brown font-semibold">{{ drawingInfo }}</div>
 
-      <div class="text-center text-sm text-gray-600">
+      <div class="text-center text-sm text-gray-600 mb-2">
         <template v-if="mapStore.selectionMode === SelectionMode.POLYGON">
           Dessinez un polygone. Appuyez sur <strong>Entrée ⏎</strong> pour terminer (3 points
           minimum).
