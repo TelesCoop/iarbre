@@ -4,6 +4,8 @@ import type { ClimateData } from "@/types/climate"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
 import ClimateContextDataScore from "@/components/contextData/climate/ClimateContextDataScore.vue"
+import UnsupportedShapeModeMessage from "@/components/contextData/shared/UnsupportedShapeModeMessage.vue"
+import { useMapStore } from "@/stores/map"
 
 interface ClimateDataProps {
   data?: ClimateData[]
@@ -14,6 +16,8 @@ interface ClimateDataProps {
 const props = withDefaults(defineProps<ClimateDataProps>(), {
   data: () => []
 })
+
+const mapStore = useMapStore()
 
 // Pour les zones climatiques, on affiche la première zone ou null
 const primaryData = computed<ClimateData | null>(() => {
@@ -33,16 +37,23 @@ const tileCount = computed(() => props.data?.length || 0)
         ? `${tileCount} zones sélectionnées - Indicateurs climatiques locaux. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation.`
         : 'Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation.'
     "
-    :data="primaryData"
+    :data="mapStore.isShapeMode ? {} : primaryData"
     :full-height="props.fullHeight"
     :hide-close-button="props.hideCloseButton"
     empty-message="Cliquez sur un carreau"
+    :hide-description="mapStore.isShapeMode"
+    :hide-empty-message="mapStore.isShapeMode"
   >
     <template #score="{ data: climateData }">
-      <climate-context-data-score :data="climateData" />
+      <unsupported-shape-mode-message />
+      <climate-context-data-score v-if="!mapStore.isShapeMode" :data="climateData" />
     </template>
     <template #content="{ data: climateData, fullHeight: isFullHeight }">
-      <climate-context-data-metrics :data="climateData" :full-height="isFullHeight" />
+      <climate-context-data-metrics
+        v-if="!mapStore.isShapeMode"
+        :data="climateData"
+        :full-height="isFullHeight"
+      />
     </template>
   </context-data-main-container>
 </template>

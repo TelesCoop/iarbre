@@ -17,37 +17,37 @@ const drawingModes: DrawingMode[] = [
   {
     mode: SelectionMode.POINT,
     icon: "point",
-    label: "Point",
+    label: "Sélection par point",
     dataCy: "selection-mode-point"
   },
   {
     mode: SelectionMode.POLYGON,
     icon: "polygon",
-    label: "Polygone",
+    label: "Sélection par polygone",
     dataCy: "selection-mode-polygon"
   },
   {
     mode: SelectionMode.RECTANGLE,
     icon: "rectangle",
-    label: "Rectangle",
+    label: "Sélection par rectangle",
     dataCy: "selection-mode-rectangle"
   },
   {
     mode: SelectionMode.CIRCLE,
     icon: "circle",
-    label: "Cercle",
+    label: "Sélection par cercle",
     dataCy: "selection-mode-circle"
   },
   {
     mode: SelectionMode.ANGLED_RECTANGLE,
     icon: "angled-rectangle",
-    label: "Rectangle incliné",
+    label: "Sélection par rectangle incliné",
     dataCy: "selection-mode-angled-rectangle"
   },
   {
     mode: SelectionMode.SECTOR,
     icon: "sector",
-    label: "Secteur",
+    label: "Sélection par secteur",
     dataCy: "selection-mode-sector"
   }
 ]
@@ -64,6 +64,7 @@ const switchMode = (mode: SelectionMode) => {
     <Button
       v-for="drawingMode in drawingModes"
       :key="drawingMode.mode"
+      v-tooltip.left="drawingMode.label"
       :data-cy="drawingMode.dataCy"
       size="small"
       :severity="isActive(drawingMode.mode).value ? 'secondary' : ''"

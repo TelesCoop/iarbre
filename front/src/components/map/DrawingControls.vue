@@ -6,7 +6,6 @@ import Button from "primevue/button"
 
 const mapStore = useMapStore()
 
-const isShapeMode = computed(() => mapStore.selectionMode !== SelectionMode.POINT)
 const drawingInfo = computed(() => {
   const mode = mapStore.selectionMode
   const baseTitle = "Sélection"
@@ -29,7 +28,7 @@ const cancelDrawing = () => {
 
 <template>
   <div
-    v-if="isShapeMode"
+    v-if="mapStore.isShapeMode"
     class="absolute bottom-2 left-1/2 z-50 max-w-md"
     data-cy="drawing-controls"
     @click.stop

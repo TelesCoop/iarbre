@@ -529,6 +529,8 @@ export const useMapStore = defineStore("map", () => {
   // Debouncer le calcul pour éviter les appels multiples rapides
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
+  const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
+
   const toggleToolbar = () => {
     isToolbarVisible.value = !isToolbarVisible.value
     // Quand on ferme la toolbar, revenir en mode POINT
@@ -550,6 +552,7 @@ export const useMapStore = defineStore("map", () => {
     clickCoordinates,
     selectedLegendCell,
     selectionMode,
+    isShapeMode,
     isToolbarVisible,
     toggleToolbar,
     changeSelectionMode,

@@ -22,13 +22,14 @@ from api.serializers.serializers import (
 )
 from api.constants import (
     INDICE_ROUNDING_DECIMALS,
+    DataType,
 )
 
 # Mapping des datatypes vers leurs modèles
 DATATYPE_MODEL_MAP = {
-    "lcz": Lcz,
-    "vulnerability": Vulnerability,
-    "plantability": Tile,
+    DataType.LCZ.value: Lcz,
+    DataType.VULNERABILITY.value: Vulnerability,
+    DataType.TILE.value: Tile,
 }
 
 
@@ -55,9 +56,9 @@ class TileView(generics.RetrieveAPIView):
 class TileDetailsView(generics.RetrieveAPIView):
     def _get_serializer_by_datatype(self, datatype):
         serializer_per_datatype = {
-            "lcz": LczSerializer,
-            "vulnerability": VulnerabilitySerializer,
-            "plantability": TileSerializer,
+            DataType.LCZ.value: LczSerializer,
+            DataType.VULNERABILITY.value: VulnerabilitySerializer,
+            DataType.TILE.value: TileSerializer,
         }
         if datatype not in serializer_per_datatype:
             raise Http404
@@ -198,48 +199,6 @@ class ScoresInPolygonView(APIView):
             "distribution_night": distribution_night,
         }
 
-    def _calculate_lcz_scores(self, tiles):
-        """Calcule les scores pour les zones climatiques locales"""
-
-        # Single query for distribution using values().annotate()
-        lcz_distribution = tiles.values("lcz_index").annotate(count=Count("id"))
-
-        lcz_index_distribution = {}
-        total_count = 0
-        for item in lcz_distribution:
-            if item["lcz_index"] is not None:
-                lcz_index_distribution[str(item["lcz_index"])] = item["count"]
-                total_count += item["count"]
-
-        # Zone la plus fréquente
-        most_common = (
-            max(lcz_index_distribution.items(), key=lambda x: x[1])
-            if lcz_index_distribution
-            else (None, 0)
-        )
-
-        # Calculer les surfaces totales pour chaque type de détail
-        detail_keys = ["hre", "are", "bur", "ror", "bsr", "war", "ver", "vhr"]
-        distribution = {key: 0.0 for key in detail_keys}
-
-        for tile in tiles:
-            if tile.details:
-                # Calculer la surface de la géométrie en m²
-                tile_area = tile.geometry.area  # area is in m² for SRID 2154
-
-                for key in detail_keys:
-                    if key in tile.details:
-                        percentage = tile.details[key]
-                        # Multiplier le pourcentage par la surface pour obtenir la surface réelle
-                        distribution[key] += (percentage / 100.0) * tile_area
-
-        return {
-            "datatype": "lcz",
-            "count": total_count,
-            "lcz_primary": most_common[0] if most_common[0] else None,
-            "distribution": distribution,
-        }
-
     def post(self, request, datatype, *args, **kwargs):
         """
         Accepte un GeoJSON polygon et retourne les scores moyens et la distribution
@@ -282,6 +241,15 @@ class ScoresInPolygonView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Vérifier que le datatype n'est pas LCZ (zones climatiques locales)
+        if datatype == DataType.LCZ.value:
+            return Response(
+                {
+                    "error": "Le calcul des zones climatiques locales n'est pas supporté pour les sélections de type polygone. Utilisez le mode de sélection par point."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         polygon_geojson = request.data
         if not polygon_geojson:
             return Response(
@@ -312,17 +280,13 @@ class ScoresInPolygonView(APIView):
             iris_codes, city_codes = self._get_iris_and_city_codes(tiles)
 
             # Calculer les scores et distributions selon le datatype
-            if datatype == "plantability":
+            if datatype == DataType.TILE.value:
                 data = self._calculate_plantability_scores(tiles)
                 serializer_class = PlantabilityScoresSerializer
 
-            elif datatype == "vulnerability":
+            elif datatype == DataType.VULNERABILITY.value:
                 data = self._calculate_vulnerability_scores(tiles)
                 serializer_class = VulnerabilityScoresSerializer
-
-            elif datatype == "lcz":
-                data = self._calculate_lcz_scores(tiles)
-                serializer_class = LczScoresSerializer
 
             # Fusionner les données avec les codes
             serializer = serializer_class(

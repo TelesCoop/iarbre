@@ -1,10 +1,11 @@
 import { ref } from "vue"
 import type { Map, LngLat } from "maplibre-gl"
 import { getScoresInPolygon } from "@/services/tileService"
-import type { DataType, SelectionMode } from "@/utils/enum"
+import { DataType, type SelectionMode } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
+import { GeometryType } from "@/types/map"
 import {
   TerraDraw,
   TerraDrawPointMode,
@@ -216,10 +217,15 @@ export function useShapeDrawing() {
     // Pour l'instant, on traite la dernière feature dessinée
     const lastFeature = features[features.length - 1]
 
+    // Ne pas appeler l'API pour LCZ en mode non-Point
+    if (dataType === DataType.CLIMATE_ZONE && lastFeature.geometry.type !== GeometryType.POINT) {
+      return null
+    }
+
     let coordinates: [number, number][] = []
 
     // Extraire les coordonnées selon le type de géométrie
-    if (lastFeature.geometry.type === "Point") {
+    if (lastFeature.geometry.type === GeometryType.POINT) {
       // Pour un point, créer un petit polygone autour
       const [lng, lat] = lastFeature.geometry.coordinates
       const offset = 0.0001
@@ -230,15 +236,11 @@ export function useShapeDrawing() {
         [lng - offset, lat + offset],
         [lng - offset, lat - offset]
       ]
-    } else if (lastFeature.geometry.type === "Polygon") {
+    } else if (lastFeature.geometry.type === GeometryType.POLYGON) {
       coordinates = lastFeature.geometry.coordinates[0].map((coord: number[]) => [
         coord[0],
         coord[1]
       ])
-    } else if (lastFeature.geometry.type === "LineString") {
-      // Pour les lignes (freehand), créer un polygone
-      coordinates = lastFeature.geometry.coordinates.map((coord: number[]) => [coord[0], coord[1]])
-      coordinates.push(coordinates[0]) // Fermer le polygone
     }
 
     if (coordinates.length < 3) return null
