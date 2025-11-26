@@ -6,6 +6,7 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import { GeometryType } from "@/types/map"
+import { terraDrawStyles } from "@/utils/color"
 import {
   TerraDraw,
   TerraDrawPointMode,
@@ -30,81 +31,69 @@ export function useShapeDrawing() {
   const initDraw = (map: Map) => {
     currentMap.value = map
 
-    // Styles communs pour tous les modes
-    const commonStyles = {
-      fillColor: "#92a48d" as `#${string}`,
-      fillOpacity: 0.3,
-      outlineColor: "#426A45" as `#${string}`,
-      outlineWidth: 2,
-      pointColor: "#426A45" as `#${string}`,
-      pointWidth: 3,
-      pointOutlineColor: "#ffffff" as `#${string}`,
-      pointOutlineWidth: 2
-    }
-
     // Initialiser Terra Draw avec tous les modes disponibles
     terraDraw.value = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
         new TerraDrawPointMode({
           styles: {
-            pointColor: commonStyles.pointColor,
-            pointWidth: commonStyles.pointWidth,
-            pointOutlineColor: commonStyles.pointOutlineColor,
-            pointOutlineWidth: commonStyles.pointOutlineWidth
+            pointColor: terraDrawStyles.pointColor,
+            pointWidth: terraDrawStyles.pointWidth,
+            pointOutlineColor: terraDrawStyles.pointOutlineColor,
+            pointOutlineWidth: terraDrawStyles.pointOutlineWidth
           }
         }),
         new TerraDrawPolygonMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth,
-            closingPointColor: commonStyles.pointColor,
-            closingPointWidth: commonStyles.pointWidth,
-            closingPointOutlineColor: commonStyles.pointOutlineColor,
-            closingPointOutlineWidth: commonStyles.pointOutlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth,
+            closingPointColor: terraDrawStyles.pointColor,
+            closingPointWidth: terraDrawStyles.pointWidth,
+            closingPointOutlineColor: terraDrawStyles.pointOutlineColor,
+            closingPointOutlineWidth: terraDrawStyles.pointOutlineWidth
           },
           pointerDistance: 40
         }),
         new TerraDrawRectangleMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth
           }
         }),
         new TerraDrawAngledRectangleMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth
           }
         }),
         new TerraDrawCircleMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth
           }
         }),
         new TerraDrawFreehandMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth
           }
         }),
         new TerraDrawSectorMode({
           styles: {
-            fillColor: commonStyles.fillColor,
-            fillOpacity: commonStyles.fillOpacity,
-            outlineColor: commonStyles.outlineColor,
-            outlineWidth: commonStyles.outlineWidth
+            fillColor: terraDrawStyles.fillColor,
+            fillOpacity: terraDrawStyles.fillOpacity,
+            outlineColor: terraDrawStyles.outlineColor,
+            outlineWidth: terraDrawStyles.outlineWidth
           }
         }),
         new TerraDrawSelectMode({
@@ -179,11 +168,6 @@ export function useShapeDrawing() {
 
   const startDrawing = () => {
     isDrawing.value = true
-  }
-
-  const addPoint = () => {
-    // Cette méthode n'est plus nécessaire avec Terra Draw
-    // Terra Draw gère les clics automatiquement
   }
 
   const stopDrawing = () => {
@@ -273,7 +257,6 @@ export function useShapeDrawing() {
     initDraw,
     setMode,
     startDrawing,
-    addPoint,
     stopDrawing,
     clearDrawing,
     getScoresInShape,
