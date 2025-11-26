@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 🔖 0.20.0 (2025-11-26) : Analyse des facteurs de plantabilité et améliorations diverses
+
+### 🛠️ enhance : Ajout d'une page 404
+
+Nous n'avions pas ajouté des pages pour les 404, elles étaient blanches. Maintenant un message s'affiche.
+
+&rarr; Commit [e88a995](https://github.com/TelesCoop/iarbre/commit/e88a995bc5fdf8c2bebdee80e92e89cda8699138)
+
+### ✨ feat : Analyse en ACP sur les facteurs de plantabilité
+
+Nous avons fait un script Python et un billet de blog sur [iarbre.fr](https://iarbre.fr/actualites/) pour analyser les dynamiques à l'oeuvre derrière le calcul de plantabilité.
+
+&rarr; Branch [`plantability-analysis`](https://github.com/TelesCoop/iarbre/tree/plantability-analysis)
+
+### ✨ feat : Ajout d'un endpoint pour télécharger le calque de plantabilité en raster
+
+Il permet sur une url stable de récupérer la dernière version du calque de plantalité au format `.tif`.
+Il faut faire un `GET https://carte.iarbre.fr/api/rasters/plantability/`.
+
+&rarr; Commit [5b4de61](https://github.com/TelesCoop/iarbre/commit/5b4de617ea09594a32a45184667c1fa298acfc7c)
+
 ## 🔖 0.19.0 (2025-10-29) : Recherche de lieux améliorée et améliorations pour les tests
 
 ### 🛠️ enhance : Changement de l'API de geocoding
@@ -31,18 +52,22 @@ Ce nouveau calque projet la vulnérabilité a la chaleur sur la maille de la pla
 Plus de détails se trouvent dans la [documentation](https://docs.iarbre.fr/methodology/plantabilit_vulnerability/).
 
 &rarr; PR [#394](https://github.com/TelesCoop/iarbre/pull/394)
+
 &rarr; PR [#405](https://github.com/TelesCoop/iarbre/pull/405)
+
 &rarr; PR [#407](https://github.com/TelesCoop/iarbre/pull/407)
 
 ### 🛠️ enhance : Refacto du site vitrine
 
 L'organisation et le design du site vitrine ont été revu pour mieux présenter et mettre en valeur notre projet sur [iarbre.fr](https://iarbre.fr).
+
 &rarr; PR [#395](https://github.com/TelesCoop/iarbre/pull/395)
 
 ### 🛠️ enhance : Corrections de petits bugs et naming
 
 - Ajout d'un changelog de base de données &rarr; PR [#426](https://github.com/TelesCoop/iarbre/pull/426) [#424](https://github.com/TelesCoop/iarbre/pull/424)
 - Optimiser la carte et le side pannel &rarr; PR [#416](https://github.com/TelesCoop/iarbre/pull/416)
+
 - Naming et petites incohérences &rarr; PR [#414](https://github.com/TelesCoop/iarbre/pull/414)
 
 ## 🔖 0.17.0 (2025-10-01) : Résolution de bugs et message d'accueil
@@ -82,6 +107,7 @@ Less informations affichées, en particulier les tableaux et les badges de score
 ![Nouvel UX/UI](../assets/images/changelog/v0.15.0/context.jpg)
 
 &rarr; PR [#371](https://github.com/TelesCoop/iarbre/pull/371)
+
 &rarr; PR [#366](https://github.com/TelesCoop/iarbre/pull/366)
 
 ### ✅ test: Ajouts de tests front et back + calcul de la couverture.
@@ -173,6 +199,7 @@ La classification des zones climatiques par le CEREMA se base sur un arbre de d�
 Il y a maintenant une option dans le menu déroulant pour afficher le cadastre avec les numéros de parcelle en superposition de la carte OpenStreetMap en fond de carte.
 
 &rarr; Commit [5e62373](https://github.com/TelesCoop/iarbre/commit/5e62373ac8bdc165597b6e830e48ffe08b533bab)
+
 &rarr; Commit [d83bb41](https://github.com/TelesCoop/iarbre/commit/d83bb41003d7f7bcbeaec96ab0e2f0d45a5b0918)
 
 ## 🔖 0.9.0 (2025-06-12) : Panels d'explicabilité
@@ -184,6 +211,7 @@ La plantabilité est calculé à partir de l'occupation des sols, décrite par 3
 ![Context panel plantabilité](../assets/images/changelog/v0.9.0/context_plantability.jpg)
 
 &rarr; Commit [117d402](https://github.com/TelesCoop/iarbre/commit/117d4024c073b861cbc95702502da1d4a2b0d3d5)
+
 &rarr; Commit [a47cafd](https://github.com/TelesCoop/iarbre/commit/a47cafd0d1f2addcb0b4d2584aef4c8bbc4c6a3f)
 
 ### ✨ feat : Panel d'explicabilité pour la vulnérabilité à la chaleur
@@ -442,8 +470,9 @@ aussi des bugs de fonctionnement.
 
 ![Capture d'écran de la popup pour les Zones Climatiques Locales](../assets/images/changelog/v0.2.0/lcz-popup.png)
 
-&rarr; Commits [8434d74](https://github.com/TelesCoop/iarbre/commit/8434d74d075c34e27da6d116aafdc152931d927f)
-et [b87264a](https://github.com/TelesCoop/iarbre/commit/b87264a624db2e5b6bdb9aac6794dafaf2be69dc)
+&rarr; Commit [8434d74](https://github.com/TelesCoop/iarbre/commit/8434d74d075c34e27da6d116aafdc152931d927f)
+
+&rarr; Commit [b87264a](https://github.com/TelesCoop/iarbre/commit/b87264a624db2e5b6bdb9aac6794dafaf2be69dc)
 
 ### ✨ feat: Création du changelog
 
