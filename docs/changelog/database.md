@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2025-11-24T08:29_postgres_backup.dump (3.4 GiB)
+
+**Changements :**
+
+- **Données Land Use** : Recalcule des facteurs qui étaient mal insérés dans les champs `details` et `meta_factors` du modèle `Tile`.
+
 ### 2025-10-29T08:19_postgres_backup.dump
 
 **Changements :**
