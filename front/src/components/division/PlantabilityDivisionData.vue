@@ -16,9 +16,6 @@ const props = withDefaults(defineProps<DivisionDataProps>(), {
 
 const hasCities = computed(() => props.cities && props.cities.length > 0)
 const hasIris = computed(() => props.irisList && props.irisList.length > 0)
-console.log("cities and iris")
-console.log(props.cities)
-console.log(props.irisList)
 </script>
 
 <template>
