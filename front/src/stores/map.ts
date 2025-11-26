@@ -107,7 +107,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const resetFilters = () => {
-    clearAllFilters()
+    clearAllFilters(selectedDataType.value!)
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
   const geocoderControl = ref(
@@ -278,7 +278,7 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     selectedDataType.value = datatype
-    clearAllFilters()
+    clearAllFilters(datatype)
     contextData.removeData()
     selectedLegendCell.value = null
 
@@ -305,6 +305,8 @@ export const useMapStore = defineStore("map", () => {
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
+
+    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
@@ -329,6 +331,10 @@ export const useMapStore = defineStore("map", () => {
         newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.OSM) {
         newStyle = mapStyles.OSM as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.DARK) {
+        newStyle = mapStyles.DARK as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.POSITRON) {
+        newStyle = mapStyles.POSITRON as maplibregl.StyleSpecification
       }
 
       if (newStyle!) {
@@ -418,6 +424,9 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("style.load", async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
+      if (selectedDataType.value === DataType.PLANTABILITY) {
+        applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+      }
     })
 
     mapInstance.on("moveend", () => {

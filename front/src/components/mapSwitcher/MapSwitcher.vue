@@ -16,6 +16,14 @@ const options = [
     value: MapStyle.OSM
   },
   {
+    label: MapStyleToLabel[MapStyle.DARK],
+    value: MapStyle.DARK
+  },
+  {
+    label: MapStyleToLabel[MapStyle.POSITRON],
+    value: MapStyle.POSITRON
+  },
+  {
     label: MapStyleToLabel[MapStyle.SATELLITE],
     value: MapStyle.SATELLITE
   },
