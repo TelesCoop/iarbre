@@ -4,11 +4,7 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
-import type {
-  PlantabilityScoresResponse,
-  VulnerabilityScoresResponse,
-  LczScoresResponse
-} from "@/types/api"
+import type { PlantabilityScoresResponse, VulnerabilityScoresResponse } from "@/types/api"
 
 export const getTileDetails = async (
   id: string,
@@ -43,9 +39,7 @@ export const getScoresInPolygon = async (
       coordinates: [polygonCoordinates]
     }
 
-    const req = await useApiPost<
-      PlantabilityScoresResponse | VulnerabilityScoresResponse | LczScoresResponse
-    >(
+    const req = await useApiPost<PlantabilityScoresResponse | VulnerabilityScoresResponse>(
       `tiles/${dataType}/in-polygon/`,
       polygon,
       `Impossible de récupérer les scores dans le polygone`
@@ -72,8 +66,8 @@ export const getScoresInPolygon = async (
       const data = req.data as VulnerabilityScoresResponse
       return {
         id: data.count,
-        vulnerabilityIndexDay: data.vulnerabilityIndexDay,
-        vulnerabilityIndexNight: data.vulnerabilityIndexNight,
+        vulnerabilityIndexDay: data.vulnerabilityIndiceDay,
+        vulnerabilityIndexNight: data.vulnerabilityIndiceNight,
         capafIndexDay: 0,
         capafIndexNight: 0,
         expoIndexDay: 0,
@@ -86,29 +80,7 @@ export const getScoresInPolygon = async (
         geolevel: "tile" as any,
         datatype: dataType
       } as VulnerabilityData
-    } else if (dataType === DataType.CLIMATE_ZONE) {
-      const data = req.data as LczScoresResponse
-      return {
-        id: data.count,
-        lczIndex: data.lcz_primary || "mixte",
-        lczDescription: `Zone climatique ${data.lcz_primary || "mixte"}`,
-        geometry: "",
-        mapGeometry: "",
-        details: {
-          hre: data.distribution?.hre || 0,
-          are: data.distribution?.are || 0,
-          bur: data.distribution?.bur || 0,
-          ror: data.distribution?.ror || 0,
-          bsr: data.distribution?.bsr || 0,
-          war: data.distribution?.war || 0,
-          ver: data.distribution?.ver || 0,
-          vhr: data.distribution?.vhr || 0
-        },
-        geolevel: "tile" as any,
-        datatype: dataType
-      } as ClimateData
     }
-
     return null
   } catch (error) {
     console.error("Error retrieving scores in polygon:", error)

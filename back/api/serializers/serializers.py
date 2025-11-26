@@ -110,20 +110,11 @@ class BaseScoresSerializer(serializers.Serializer):
 
 
 class PlantabilityScoresSerializer(BaseScoresSerializer):
-    plantabilityNormalizedIndice = serializers.FloatField()
-    plantabilityIndice = serializers.FloatField()
+    plantability_normalized_indice = serializers.FloatField()
+    plantability_indice = serializers.FloatField()
     distribution = serializers.DictField()
 
 
 class VulnerabilityScoresSerializer(BaseScoresSerializer):
     vulnerability_indice_day = serializers.FloatField()
     vulnerability_indice_night = serializers.FloatField()
-    vulnerabilityIndexDay = serializers.FloatField()
-    vulnerabilityIndexNight = serializers.FloatField()
-    distribution_day = serializers.DictField()
-    distribution_night = serializers.DictField()
-
-
-class LczScoresSerializer(BaseScoresSerializer):
-    lcz_primary = serializers.CharField(allow_null=True)
-    distribution = serializers.DictField()

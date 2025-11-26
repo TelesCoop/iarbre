@@ -16,15 +16,6 @@ export interface PlantabilityScoresResponse extends BaseScoresResponse {
 }
 
 export interface VulnerabilityScoresResponse extends BaseScoresResponse {
-  vulnerability_indice_day: number
-  vulnerability_indice_night: number
-  vulnerabilityIndexDay: number
-  vulnerabilityIndexNight: number
-  distribution_day: { [key: string]: number }
-  distribution_night: { [key: string]: number }
-}
-
-export interface LczScoresResponse extends BaseScoresResponse {
-  lcz_primary: string | null
-  distribution: { [key: string]: number }
+  vulnerabilityIndiceDay: number
+  vulnerabilityIndiceNight: number
 }

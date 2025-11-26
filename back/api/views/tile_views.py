@@ -18,7 +18,6 @@ from api.serializers.serializers import (
     TileSerializer,
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
-    LczScoresSerializer,
 )
 from api.constants import (
     INDICE_ROUNDING_DECIMALS,
@@ -130,12 +129,12 @@ class ScoresInPolygonView(APIView):
         avg_score = result["avg_score"]
 
         return {
-            "datatype": "plantability",
+            "datatype": DataType.TILE.value,
             "count": result["total_count"],
-            "plantabilityNormalizedIndice": (
+            "plantability_normalized_indice": (
                 round(avg_score, INDICE_ROUNDING_DECIMALS) if avg_score else 0
             ),
-            "plantabilityIndice": (
+            "plantability_indice": (
                 round(avg_score, INDICE_ROUNDING_DECIMALS) if avg_score else 0
             ),
             "distribution": distribution,
@@ -151,37 +150,11 @@ class ScoresInPolygonView(APIView):
             total_count=Count("id"),
         )
 
-        # Single query for day distribution using values().annotate()
-        distribution_day_qs = (
-            tiles.values("vulnerability_index_day")
-            .annotate(count=Count("id"))
-            .order_by("vulnerability_index_day")
-        )
-
-        # Single query for night distribution using values().annotate()
-        distribution_night_qs = (
-            tiles.values("vulnerability_index_night")
-            .annotate(count=Count("id"))
-            .order_by("vulnerability_index_night")
-        )
-
-        distribution_day = {
-            str(int(item["vulnerability_index_day"])): item["count"]
-            for item in distribution_day_qs
-            if item["vulnerability_index_day"] is not None
-        }
-
-        distribution_night = {
-            str(int(item["vulnerability_index_night"])): item["count"]
-            for item in distribution_night_qs
-            if item["vulnerability_index_night"] is not None
-        }
-
         avg_day = result["avg_day"]
         avg_night = result["avg_night"]
 
         return {
-            "datatype": "vulnerability",
+            "datatype": DataType.VULNERABILITY.value,
             "count": result["total_count"],
             "vulnerability_indice_day": (
                 round(avg_day, INDICE_ROUNDING_DECIMALS) if avg_day else 0
@@ -189,14 +162,6 @@ class ScoresInPolygonView(APIView):
             "vulnerability_indice_night": (
                 round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
             ),
-            "vulnerabilityIndexDay": (
-                round(avg_day, INDICE_ROUNDING_DECIMALS) if avg_day else 0
-            ),
-            "vulnerabilityIndexNight": (
-                round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
-            ),
-            "distribution_day": distribution_day,
-            "distribution_night": distribution_night,
         }
 
     def post(self, request, datatype, *args, **kwargs):
@@ -229,8 +194,6 @@ class ScoresInPolygonView(APIView):
             "count": 150,
             "vulnerability_indice_day": 4.2,
             "vulnerability_indice_night": 3.8,
-            "distribution_day": {...},
-            "distribution_night": {...}
         }
         """
         if datatype not in DATATYPE_MODEL_MAP:
