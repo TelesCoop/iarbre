@@ -4,7 +4,11 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
-import type { PlantabilityScoresResponse, VulnerabilityScoresResponse } from "@/types/api"
+import type {
+  PlantabilityScoresResponse,
+  VulnerabilityScoresResponse,
+  PlantabilityVulnerabilityScoresResponse
+} from "@/types/api"
 
 export const getTileDetails = async (
   id: string,
@@ -39,7 +43,11 @@ export const getScoresInPolygon = async (
       coordinates: [polygonCoordinates]
     }
 
-    const req = await useApiPost<PlantabilityScoresResponse | VulnerabilityScoresResponse>(
+    const req = await useApiPost<
+      | PlantabilityScoresResponse
+      | VulnerabilityScoresResponse
+      | PlantabilityVulnerabilityScoresResponse
+    >(
       `tiles/${dataType}/in-polygon/`,
       polygon,
       `Impossible de récupérer les scores dans le polygone`
@@ -80,6 +88,17 @@ export const getScoresInPolygon = async (
         geolevel: "tile" as any,
         datatype: dataType
       } as VulnerabilityData
+    } else if (dataType === DataType.PLANTABILITY_VULNERABILITY) {
+      const data = req.data as PlantabilityVulnerabilityScoresResponse
+      return {
+        id: `polygon-${data.count}`,
+        plantabilityNormalizedIndice: data.plantabilityNormalizedIndice,
+        plantabilityIndice: data.plantabilityIndice,
+        vulnerabilityIndiceDay: data.vulnerabilityIndiceDay,
+        vulnerabilityIndiceNight: data.vulnerabilityIndiceNight,
+        geolevel: "tile" as any,
+        datatype: dataType
+      } as PlantabilityVulnerabilityData
     }
     return null
   } catch (error) {

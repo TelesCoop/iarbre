@@ -208,12 +208,12 @@ export const useMapStore = defineStore("map", () => {
       // Mode point normal (clic simple pour sélectionner une tuile)
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
-      const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
-      const vuln_score_day =
+      const sourceValues = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
+      const vulnScoreDay =
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
           : undefined
-      const vuln_score_night =
+      const vulnScoreNight =
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
           : undefined
@@ -243,9 +243,9 @@ export const useMapStore = defineStore("map", () => {
       }
       // Conditionally load context data based on geolevel, datatype, and zoom
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
-        contextData.setData(featureId, score, source_values)
+        contextData.setData(featureId, score, sourceValues)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
+        contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
       } else {
         contextData.setData(featureId)
       }

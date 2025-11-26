@@ -16,9 +16,9 @@ export function useContextData() {
   const setData = async (
     featureId: string | number,
     indexValue?: string | number,
-    source_values?: any,
-    vuln_score_day?: number,
-    vuln_score_night?: number,
+    sourceValues?: any,
+    vulnScoreDay?: number,
+    vulnScoreNight?: number,
     replace: boolean = true
   ) => {
     if (!featureId) return null
@@ -41,7 +41,7 @@ export function useContextData() {
       indexValue !== undefined &&
       (mapStore.selectedDataType === DataType.PLANTABILITY ||
         mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) &&
-      (source_values !== undefined ||
+      (sourceValues !== undefined ||
         mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY)
     ) {
       if (mapStore.selectedDataType === DataType.PLANTABILITY) {
@@ -49,7 +49,7 @@ export function useContextData() {
           id: stringId,
           plantabilityNormalizedIndice: +indexValue,
           plantabilityIndice: +indexValue,
-          details: source_values,
+          details: sourceValues,
           geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
           datatype: DataType.PLANTABILITY,
           iris: 0,
@@ -60,9 +60,9 @@ export function useContextData() {
           id: stringId,
           plantabilityNormalizedIndice: +indexValue,
           plantabilityIndice: +indexValue,
-          vulnerability_indice_day: vuln_score_day !== undefined ? +vuln_score_day : 0,
-          vulnerability_indice_night: vuln_score_night !== undefined ? +vuln_score_night : 0,
-          details: source_values,
+          vulnerabilityIndiceDay: vulnScoreDay !== undefined ? +vulnScoreDay : 0,
+          vulnerabilityIndiceNight: vulnScoreNight !== undefined ? +vulnScoreNight : 0,
+          details: sourceValues,
           geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
           datatype: DataType.PLANTABILITY_VULNERABILITY,
           iris: 0,

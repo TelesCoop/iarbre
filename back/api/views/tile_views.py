@@ -18,10 +18,12 @@ from api.serializers.serializers import (
     TileSerializer,
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
+    PlantabilityVulnerabilityScoresSerializer,
 )
 from api.constants import (
     INDICE_ROUNDING_DECIMALS,
     DataType,
+    FrontendDataType,
 )
 
 # Mapping des datatypes vers leurs modèles
@@ -29,6 +31,13 @@ DATATYPE_MODEL_MAP = {
     DataType.LCZ.value: Lcz,
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
+}
+
+# Mapping des datatypes frontend vers leurs modèles
+FRONTEND_DATATYPE_MODEL_MAP = {
+    FrontendDataType.VULNERABILITY.value: Vulnerability,
+    FrontendDataType.PLANTABILITY.value: Tile,
+    FrontendDataType.PLANTABILITY_VULNERABILITY.value: Tile,
 }
 
 
@@ -140,11 +149,11 @@ class ScoresInPolygonView(APIView):
             "distribution": distribution,
         }
 
-    def _calculate_vulnerability_scores(self, tiles):
+    def _calculate_vulnerability_scores(self, vulnerabilities):
         """Calcule les scores moyens et la distribution pour la vulnérabilité"""
 
         # Single query for averages and count
-        result = tiles.aggregate(
+        result = vulnerabilities.aggregate(
             avg_day=Avg("vulnerability_index_day"),
             avg_night=Avg("vulnerability_index_night"),
             total_count=Count("id"),
@@ -162,6 +171,34 @@ class ScoresInPolygonView(APIView):
             "vulnerability_indice_night": (
                 round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
             ),
+        }
+
+    def _calculate_plantability_vulnerability_scores(self, tiles):
+        """Calcule les scores moyens pour plantabilité et vulnérabilité combinés"""
+
+        # Calculate plantability scores from tiles
+        plantability_data = self._calculate_plantability_scores(tiles)
+
+        # Get unique vulnerability objects from tiles
+        vulnerabilities = Vulnerability.objects.filter(
+            id__in=tiles.values_list("vulnerability_idx", flat=True).distinct()
+        )
+
+        # Calculate vulnerability scores from vulnerability objects
+        vulnerability_data = self._calculate_vulnerability_scores(vulnerabilities)
+
+        # Fusionner les résultats en excluant les champs redondants
+        return {
+            "datatype": FrontendDataType.PLANTABILITY_VULNERABILITY.value,
+            "count": plantability_data["count"],
+            "plantability_normalized_indice": plantability_data[
+                "plantability_normalized_indice"
+            ],
+            "plantability_indice": plantability_data["plantability_indice"],
+            "vulnerability_indice_day": vulnerability_data["vulnerability_indice_day"],
+            "vulnerability_indice_night": vulnerability_data[
+                "vulnerability_indice_night"
+            ],
         }
 
     def post(self, request, datatype, *args, **kwargs):
@@ -196,16 +233,16 @@ class ScoresInPolygonView(APIView):
             "vulnerability_indice_night": 3.8,
         }
         """
-        if datatype not in DATATYPE_MODEL_MAP:
+        if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
             return Response(
                 {
-                    "error": f"Invalid datatype. Must be one of: {', '.join(DATATYPE_MODEL_MAP.keys())}"
+                    "error": f"Invalid datatype. Must be one of: {', '.join(FRONTEND_DATATYPE_MODEL_MAP.keys())}"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Vérifier que le datatype n'est pas LCZ (zones climatiques locales)
-        if datatype == DataType.LCZ.value:
+        if datatype == FrontendDataType.CLIMATE_ZONE.value:
             return Response(
                 {
                     "error": "Le calcul des zones climatiques locales n'est pas supporté pour les sélections de type polygone. Utilisez le mode de sélection par point."
@@ -228,7 +265,7 @@ class ScoresInPolygonView(APIView):
             polygon.transform(2154)
 
             # Récupérer le modèle approprié
-            model = DATATYPE_MODEL_MAP[datatype]
+            model = FRONTEND_DATATYPE_MODEL_MAP[datatype]
 
             # Requête PostGIS pour trouver les tuiles qui intersectent le polygone
             tiles = model.objects.filter(geometry__intersects=polygon)
@@ -243,13 +280,17 @@ class ScoresInPolygonView(APIView):
             iris_codes, city_codes = self._get_iris_and_city_codes(tiles)
 
             # Calculer les scores et distributions selon le datatype
-            if datatype == DataType.TILE.value:
+            if datatype == FrontendDataType.PLANTABILITY.value:
                 data = self._calculate_plantability_scores(tiles)
                 serializer_class = PlantabilityScoresSerializer
 
-            elif datatype == DataType.VULNERABILITY.value:
+            elif datatype == FrontendDataType.VULNERABILITY.value:
                 data = self._calculate_vulnerability_scores(tiles)
                 serializer_class = VulnerabilityScoresSerializer
+
+            elif datatype == FrontendDataType.PLANTABILITY_VULNERABILITY.value:
+                data = self._calculate_plantability_vulnerability_scores(tiles)
+                serializer_class = PlantabilityVulnerabilityScoresSerializer
 
             # Fusionner les données avec les codes
             serializer = serializer_class(

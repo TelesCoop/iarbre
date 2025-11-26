@@ -118,3 +118,10 @@ class PlantabilityScoresSerializer(BaseScoresSerializer):
 class VulnerabilityScoresSerializer(BaseScoresSerializer):
     vulnerability_indice_day = serializers.FloatField()
     vulnerability_indice_night = serializers.FloatField()
+
+
+class PlantabilityVulnerabilityScoresSerializer(BaseScoresSerializer):
+    plantability_normalized_indice = serializers.FloatField()
+    plantability_indice = serializers.FloatField()
+    vulnerability_indice_day = serializers.FloatField()
+    vulnerability_indice_night = serializers.FloatField()

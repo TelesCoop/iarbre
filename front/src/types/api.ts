@@ -19,3 +19,10 @@ export interface VulnerabilityScoresResponse extends BaseScoresResponse {
   vulnerabilityIndiceDay: number
   vulnerabilityIndiceNight: number
 }
+
+export interface PlantabilityVulnerabilityScoresResponse extends BaseScoresResponse {
+  plantabilityNormalizedIndice: number
+  plantabilityIndice: number
+  vulnerabilityIndiceDay: number
+  vulnerabilityIndiceNight: number
+}
