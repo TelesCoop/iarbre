@@ -11,24 +11,14 @@ const mapStore = useMapStore()
 const zoomLevel = computed(() => mapStore.currentZoom)
 
 interface PlantabilityCardProps {
-  data?: PlantabilityData[]
+  data?: PlantabilityData | null
 }
 
 const props = withDefaults(defineProps<PlantabilityCardProps>(), {
-  data: () => []
+  data: null
 })
 
-// Les données sont soit une seule tuile, soit des données pré-agrégées du backend
-const currentData = computed<PlantabilityData | null>(() => {
-  if (!props.data || props.data.length === 0) return null
-  console.log("MapContextDataPlantability - props.data:", props.data)
-  console.log("MapContextDataPlantability - props.data[0]:", props.data[0])
-  console.log("MapContextDataPlantability - codes:", {
-    irisCodes: props.data[0]?.irisCodes,
-    cityCodes: props.data[0]?.cityCodes
-  })
-  return props.data[0]
-})
+const currentData = computed<PlantabilityData | null>(() => props.data)
 
 const scorePercentage = computed(() =>
   currentData.value?.plantabilityNormalizedIndice !== undefined

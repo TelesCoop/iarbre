@@ -18,12 +18,9 @@ interface ScoreData {
 }
 
 const scoreData = computed((): ScoreData | null => {
-  const contextData = mapStore.contextData.data
+  const data = mapStore.contextData.data
 
-  if (!contextData || contextData.length === 0) return null
-
-  // Les données sont déjà agrégées (soit une seule tuile, soit pré-agrégées par le backend)
-  const data = contextData[0]
+  if (!data) return null
 
   switch (mapStore.selectedDataType) {
     case DataType.PLANTABILITY: {
@@ -57,14 +54,14 @@ const scoreData = computed((): ScoreData | null => {
   }
 })
 
-const hasData = computed(() => mapStore.contextData.data.length > 0)
+const hasData = computed(() => mapStore.contextData.data !== null)
 const showClimateText = computed(
   () => mapStore.selectedDataType === DataType.CLIMATE_ZONE && hasData.value
 )
 
 const primaryClimateData = computed(() => {
   if (!hasData.value || mapStore.selectedDataType !== DataType.CLIMATE_ZONE) return null
-  return mapStore.contextData.data[0] as ClimateData
+  return mapStore.contextData.data as ClimateData
 })
 </script>
 

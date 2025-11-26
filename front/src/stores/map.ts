@@ -512,7 +512,7 @@ export const useMapStore = defineStore("map", () => {
 
       if (scores) {
         // Définir directement les scores agrégés dans le contexte
-        contextData.data.value = [scores]
+        contextData.data.value = scores
       }
     } finally {
       // Assurer un temps de chargement minimum de 0.5 secondes

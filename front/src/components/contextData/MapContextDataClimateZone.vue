@@ -8,35 +8,25 @@ import UnsupportedShapeModeMessage from "@/components/contextData/shared/Unsuppo
 import { useMapStore } from "@/stores/map"
 
 interface ClimateDataProps {
-  data?: ClimateData[]
+  data?: ClimateData | null
   hideCloseButton?: boolean
   fullHeight?: boolean
 }
 
 const props = withDefaults(defineProps<ClimateDataProps>(), {
-  data: () => []
+  data: null
 })
 
 const mapStore = useMapStore()
 
-// Pour les zones climatiques, on affiche la première zone ou null
-const primaryData = computed<ClimateData | null>(() => {
-  if (!props.data || props.data.length === 0) return null
-  return props.data[0]
-})
-
-const tileCount = computed(() => props.data?.length || 0)
+const primaryData = computed<ClimateData | null>(() => props.data)
 </script>
 
 <template>
   <context-data-main-container
     color-scheme="climate"
     title="lcz"
-    :description="
-      tileCount > 1
-        ? `${tileCount} zones sélectionnées - Indicateurs climatiques locaux. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation.`
-        : 'Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation.'
-    "
+    description="Indicateurs climatiques locaux pour une zone sélectionnée. Ces données incluent des informations sur les bâtiments, les surfaces et la végétation."
     :data="mapStore.isShapeMode ? {} : primaryData"
     :full-height="props.fullHeight"
     :hide-close-button="props.hideCloseButton"

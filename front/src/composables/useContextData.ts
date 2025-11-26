@@ -9,8 +9,8 @@ import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
 export function useContextData() {
   const data = ref<
-    Array<PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData>
-  >([])
+    PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
+  >(null)
   const mapStore = useMapStore()
 
   const setData = async (
@@ -18,8 +18,7 @@ export function useContextData() {
     indexValue?: string | number,
     sourceValues?: any,
     vulnScoreDay?: number,
-    vulnScoreNight?: number,
-    replace: boolean = true
+    vulnScoreNight?: number
   ) => {
     if (!featureId) return null
     const stringId = String(featureId)
@@ -72,45 +71,24 @@ export function useContextData() {
     }
 
     if (newData) {
-      if (replace) {
-        data.value = [newData]
-      } else {
-        // Vérifier si la tuile n'existe pas déjà dans le tableau
-        const existingIndex = data.value.findIndex((item) => item.id === stringId)
-        if (existingIndex >= 0) {
-          data.value[existingIndex] = newData
-        } else {
-          data.value.push(newData)
-        }
-      }
+      data.value = newData
     }
   }
 
   const setMultipleData = async (featureIds: Array<string | number>) => {
-    const promises = featureIds.map(async (featureId) => {
-      const stringId = String(featureId)
-      const tileData = await getTileDetails(stringId, mapStore.selectedDataType)
-      return tileData
-    })
+    if (featureIds.length === 0) return
 
-    const results = await Promise.all(promises)
-    data.value = results.filter(
-      (
-        item
-      ): item is
-        | PlantabilityData
-        | VulnerabilityData
-        | ClimateData
-        | PlantabilityVulnerabilityData => item !== null
-    )
+    const stringId = String(featureIds[0])
+    const tileData = await getTileDetails(stringId, mapStore.selectedDataType)
+    data.value = tileData
   }
 
   const removeData = () => {
-    data.value = []
+    data.value = null
   }
 
   const toggleContextData = (featureId: string | number) => {
-    if (data.value.length === 0) {
+    if (data.value === null) {
       setData(featureId)
     } else {
       removeData()
