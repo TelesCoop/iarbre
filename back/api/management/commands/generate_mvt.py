@@ -12,7 +12,7 @@ from django.db.models import QuerySet, Model
 
 from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, Vulnerability, Cadastre, MVTTile
+from iarbre_data.models import Tile, Lcz, Vulnerability, Cadastre, MVTTile, Ipave
 
 
 class Command(BaseCommand):
@@ -93,7 +93,15 @@ class Command(BaseCommand):
         datatype = options["datatype"]
         zoom_levels = options["zoom_levels"]
         if geolevel == GeoLevel.TILE.value:
-            mdl = Tile
+            if datatype == DataType.IPAVE.value:
+                mdl = Ipave
+            elif datatype == DataType.TILE.value:
+                mdl = Tile
+            else:
+                supported_levels = [DataType.IPAVE.value, DataType.TILE.value]
+                raise ValueError(
+                    f"Unsupported datatype with {geolevel}. Currently supported datatypes: {', '.join(supported_levels)}"
+                )
         elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
             mdl = Lcz
         elif (

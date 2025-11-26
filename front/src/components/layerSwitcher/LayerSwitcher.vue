@@ -26,6 +26,10 @@ const options = [
   {
     label: DataTypeToLabel[DataType.PLANTABILITY_VULNERABILITY],
     value: DataType.PLANTABILITY_VULNERABILITY
+  },
+  {
+    label: DataTypeToLabel[DataType.IPAVE],
+    value: DataType.IPAVE
   }
 ]
 </script>
