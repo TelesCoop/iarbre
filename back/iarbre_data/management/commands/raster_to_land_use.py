@@ -114,27 +114,35 @@ def process_tile_batch(
     log_progress("Top 5 land use and meta-factors.")
     tiles_to_update = []
     for tile in tiles:
-        land_uses = tile_land_use[tile.id].copy()
+        land_uses_raw = tile_land_use[tile.id].copy()
+
+        meta_factors = compute_meta_factors(land_uses_raw)
+
+        # Aggregate individual network factors into "Réseaux et infrastructures"
+        # because they are sensible data
+        land_uses_aggregated = land_uses_raw.copy()
         reseaux_souterrains_total = 0
         keys_to_remove = []
-        for key in land_uses:
+        for key in land_uses_aggregated:
             if key in META_FACTORS_MAPPING["Réseaux et infrastructures"]:
-                reseaux_souterrains_total += land_uses[key]
+                reseaux_souterrains_total += land_uses_aggregated[key]
                 keys_to_remove.append(key)
         for key in keys_to_remove:
-            del land_uses[key]
+            del land_uses_aggregated[key]
 
         if reseaux_souterrains_total > 0:
-            land_uses["Réseaux et infrastructures"] = reseaux_souterrains_total
+            land_uses_aggregated[
+                "Réseaux et infrastructures"
+            ] = reseaux_souterrains_total
 
-        meta_factors = compute_meta_factors(land_uses)
         sorted_land_uses = sorted(
-            land_uses.items(), key=lambda item: item[1], reverse=True
+            land_uses_aggregated.items(), key=lambda item: item[1], reverse=True
         )
         top5_land_use = dict(sorted_land_uses[:5])
 
         details = json.loads(tile.details) if tile.details else {}
         details["top5_land_use"] = top5_land_use
+        details["land_uses"] = land_uses_raw  # Save all for PCA analysis
         tile.details = json.dumps(details)
 
         meta_factors_field = json.loads(tile.meta_factors) if tile.meta_factors else {}
