@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.20.0 (2025-11-26) : Analyse des facteurs de plantabilité et petits fixs
+## 🔖 0.20.0 (2025-11-26) : Analyse des facteurs de plantabilité et améliorations diverses
 
 ### 🛠️ enhance : Ajout d'une page 404
 
