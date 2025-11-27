@@ -18,19 +18,38 @@ const props = withDefaults(defineProps<PlantabilityCardProps>(), {
   data: null
 })
 
+const currentData = computed<PlantabilityData | null>(() => props.data)
+
 const scorePercentage = computed(() =>
-  props.data?.plantabilityNormalizedIndice !== undefined
-    ? props.data.plantabilityNormalizedIndice * 10
+  currentData.value?.plantabilityNormalizedIndice !== undefined
+    ? currentData.value.plantabilityNormalizedIndice * 10
     : null
 )
+
+// Detect if this is a multiple selection (ID starts with "polygon-")
+const isMultipleSelection = computed(
+  () => currentData.value?.id?.toString().startsWith("polygon-") || false
+)
+
+// Extract the number of tiles from ID (format: "polygon-123")
+const tileCount = computed(() => {
+  if (!isMultipleSelection.value) return 0
+  const id = currentData.value?.id?.toString()
+  const count = id?.split("-")[1]
+  return count ? parseInt(count) : 0
+})
 </script>
 
 <template>
   <context-data-main-container
     color-scheme="plantability"
     title="plantability"
-    description="Calcul basé sur la pondération de +37 paramètres."
-    :data="props.data"
+    :description="
+      isMultipleSelection
+        ? `Moyenne de ${tileCount} tuiles dans la zone sélectionnée - Calcul basé sur la pondération de +37 paramètres.`
+        : 'Calcul basé sur la pondération de +37 paramètres.'
+    "
+    :data="currentData"
     empty-message="Zommez et cliquez sur un carreau."
     :zoom-level="zoomLevel"
   >
@@ -43,7 +62,7 @@ const scorePercentage = computed(() =>
     </template>
     <template #content="{ data: plantabilityData }">
       <plantability-context-data-list :data="plantabilityData" />
-      <click-plantability-division-data />
+      <click-plantability-division-data :plantability-data="plantabilityData" />
     </template>
   </context-data-main-container>
 </template>

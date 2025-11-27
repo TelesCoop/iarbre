@@ -38,28 +38,46 @@ const genericFactorGroups = computed((): ContextDataFactorGroup[] => {
 })
 
 const distributionEntries = computed(() => {
-  if (!props.data?.details) return []
-
-  let values: number[]
-  if (typeof props.data.details === "string") {
-    const parsed = JSON.parse(props.data.details)
-    values = Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : []
-  } else {
-    // For zoom >= 17 it is props.data.top5LandUse.
-    // Can never happend here but because of type checking need the else
-    return []
+  // Check if distribution is directly available (from polygon selection)
+  if (props.data?.distribution) {
+    return Object.entries(props.data.distribution).map(([score, count]) => ({
+      score: Number(score),
+      count: count as number
+    }))
   }
 
-  // Count frequency of each unique value
-  const frequencyMap = new Map<number, number>()
-  values.forEach((value) => {
-    frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
-  })
+  // Legacy format: details as string with JSON array of values
+  if (!props.data?.details) return []
 
-  return Array.from(frequencyMap.entries()).map(([score, count]) => ({
-    score,
-    count
-  }))
+  let parsed: any
+  if (typeof props.data.details === "string") {
+    try {
+      parsed = JSON.parse(props.data.details)
+    } catch {
+      return []
+    }
+  } else {
+    parsed = props.data.details
+  }
+
+  // Legacy format: JSON array of values
+  if (Array.isArray(parsed)) {
+    const values: number[] = parsed.filter((value) => typeof value === "number")
+
+    // Count frequency of each unique value
+    const frequencyMap = new Map<number, number>()
+    values.forEach((value) => {
+      frequencyMap.set(value, (frequencyMap.get(value) || 0) + 1)
+    })
+
+    return Array.from(frequencyMap.entries()).map(([score, count]) => ({
+      score,
+      count
+    }))
+  }
+
+  // For zoom >= 17 it is props.data.top5LandUse.
+  return []
 })
 </script>
 

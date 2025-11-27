@@ -36,7 +36,7 @@ const OCCUPATION_THRESHOLDS = {
   MEDIUM: 33
 } as const
 
-// Mapping des catégories avec leurs labels et icônes
+// Mapping of categories with their labels and icons
 const META_CATEGORY_CONFIG = {
   [PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES]: {
     label: "Réseaux & infrastructures",

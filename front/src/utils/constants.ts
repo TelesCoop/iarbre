@@ -11,3 +11,6 @@ export const DEFAULT_MAP_CENTER = {
   lng: 4.8537684279176645,
   lat: 45.75773479280862
 }
+
+// Terra Draw layer name (used to position layers below drawing layers)
+export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"

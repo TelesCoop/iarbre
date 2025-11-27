@@ -16,67 +16,71 @@ export function useContextData() {
   const setData = async (
     featureId: string | number,
     indexValue?: string | number,
-    source_values?: any,
-    vuln_score_day?: number,
-    vuln_score_night?: number
+    sourceValues?: any,
+    vulnScoreDay?: number,
+    vulnScoreNight?: number
   ) => {
     if (!featureId) return null
     const stringId = String(featureId)
-    if (indexValue === undefined) {
-      data.value = await getTileDetails(stringId, mapStore.selectedDataType)
 
-      if (!data.value) {
-        data.value = null
+    let newData:
+      | PlantabilityData
+      | VulnerabilityData
+      | ClimateData
+      | PlantabilityVulnerabilityData
+      | null = null
+
+    if (indexValue === undefined) {
+      newData = await getTileDetails(stringId, mapStore.selectedDataType)
+
+      if (!newData) {
         return
       }
     } else if (
       indexValue !== undefined &&
       (mapStore.selectedDataType === DataType.PLANTABILITY ||
         mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) &&
-      (source_values !== undefined ||
+      (sourceValues !== undefined ||
         mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY)
     ) {
-      if (!data.value) {
-        if (mapStore.selectedDataType === DataType.PLANTABILITY) {
-          data.value = {
-            id: stringId,
-            plantabilityNormalizedIndice: +indexValue,
-            plantabilityIndice: +indexValue,
-            details: source_values,
-            geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
-            datatype: DataType.PLANTABILITY,
-            iris: 0,
-            city: 0
-          } as PlantabilityData
-        } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
-          data.value = {
-            id: stringId,
-            plantabilityNormalizedIndice: +indexValue,
-            plantabilityIndice: +indexValue,
-            vulnerability_indice_day: vuln_score_day !== undefined ? +vuln_score_day : 0,
-            vulnerability_indice_night: vuln_score_night !== undefined ? +vuln_score_night : 0,
-            details: source_values,
-            geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
-            datatype: DataType.PLANTABILITY_VULNERABILITY,
-            iris: 0,
-            city: 0
-          } as PlantabilityVulnerabilityData
-        }
-      } else if (data.value.datatype === DataType.PLANTABILITY) {
-        ;(data.value as PlantabilityData).plantabilityNormalizedIndice = +indexValue
-        ;(data.value as PlantabilityData).details = source_values
-      } else if (data.value.datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        ;(data.value as PlantabilityVulnerabilityData).plantabilityNormalizedIndice = +indexValue
-        ;(data.value as PlantabilityVulnerabilityData).details = source_values
-        if (vuln_score_day !== undefined) {
-          ;(data.value as PlantabilityVulnerabilityData).vulnerability_indice_day = +vuln_score_day
-        }
-        if (vuln_score_night !== undefined) {
-          ;(data.value as PlantabilityVulnerabilityData).vulnerability_indice_night =
-            +vuln_score_night
-        }
+      if (mapStore.selectedDataType === DataType.PLANTABILITY) {
+        newData = {
+          id: stringId,
+          plantabilityNormalizedIndice: +indexValue,
+          plantabilityIndice: +indexValue,
+          details: sourceValues,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.PLANTABILITY,
+          iris: 0,
+          city: 0
+        } as PlantabilityData
+      } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
+        newData = {
+          id: stringId,
+          plantabilityNormalizedIndice: +indexValue,
+          plantabilityIndice: +indexValue,
+          vulnerabilityIndiceDay: vulnScoreDay !== undefined ? +vulnScoreDay : 0,
+          vulnerabilityIndiceNight: vulnScoreNight !== undefined ? +vulnScoreNight : 0,
+          details: sourceValues,
+          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          datatype: DataType.PLANTABILITY_VULNERABILITY,
+          iris: 0,
+          city: 0
+        } as PlantabilityVulnerabilityData
       }
     }
+
+    if (newData) {
+      data.value = newData
+    }
+  }
+
+  const setMultipleData = async (featureIds: Array<string | number>) => {
+    if (featureIds.length === 0) return
+
+    const stringId = String(featureIds[0])
+    const tileData = await getTileDetails(stringId, mapStore.selectedDataType)
+    data.value = tileData
   }
 
   const removeData = () => {
@@ -84,15 +88,17 @@ export function useContextData() {
   }
 
   const toggleContextData = (featureId: string | number) => {
-    if (!data.value) {
+    if (data.value === null) {
       setData(featureId)
     } else {
       removeData()
     }
   }
+
   return {
     data,
     setData,
+    setMultipleData,
     removeData,
     toggleContextData
   }

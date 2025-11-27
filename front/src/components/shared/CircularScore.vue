@@ -58,10 +58,10 @@ const scoreSizeClass = computed(() => {
     case "small":
       return "text-lg md:text-xl"
     case "large":
-      return "text-2xl md:text-4xl"
+      return "text-2xl md:text-3xl"
     case "normal":
     default:
-      return "text-xl md:text-3xl"
+      return "text-xl md:text-2xl"
   }
 })
 </script>

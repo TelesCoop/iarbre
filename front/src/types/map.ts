@@ -11,3 +11,9 @@ export interface Feedback {
   email: string
   feedback: string
 }
+
+export enum GeometryType {
+  POINT = "Point",
+  POLYGON = "Polygon",
+  LINE_STRING = "LineString"
+}

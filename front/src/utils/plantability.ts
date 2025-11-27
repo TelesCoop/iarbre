@@ -92,7 +92,7 @@ export const PLANTABILITY_EMOJIS: Record<PlantabilityLandUseKeys, string> = {
 }
 
 export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, PlantabilityImpact> = {
-  // Réseaux et infrastructures (NEGATIF)
+  // Networks and infrastructure (NEGATIVE)
   [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.ASSAINISSEMENT]: PlantabilityImpact.NEGATIVE,
   [PlantabilityLandUseKeys.RESEAU_FIBRE]: PlantabilityImpact.NEGATIVE,
