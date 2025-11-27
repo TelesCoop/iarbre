@@ -199,13 +199,13 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
     const clickHandler = (e: any) => {
-      // Si on est en mode POINT (clic simple), gérer le clic normalement
-      // Les autres modes sont gérés automatiquement par Terra Draw
+      // If we are in POINT mode (simple click), handle click normally
+      // Other modes are handled automatically by Terra Draw
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
 
-      // Mode point normal (clic simple pour sélectionner une tuile)
+      // Normal point mode (simple click to select a tile)
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
       const sourceValues = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
@@ -258,7 +258,7 @@ export const useMapStore = defineStore("map", () => {
     const sourceId = getSourceId(datatype, geolevel)
     const layers = createMapLayers(datatype, geolevel, sourceId)
 
-    // Ajouter les couches avant les couches Terra Draw pour qu'elles soient en dessous
+    // Add layers before Terra Draw layers so they are underneath
     const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
     layers.forEach((layer) => {
@@ -332,7 +332,7 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.fire("moveend")
     })
 
-    // Si une géométrie est dessinée, recalculer automatiquement avec le nouveau type de données
+    // If a geometry is drawn, automatically recalculate with the new data type
     const features = shapeDrawing.getSelectedFeatures()
     if (features.length > 0 && selectionMode.value !== SelectionMode.POINT) {
       finishShapeSelection()
@@ -394,7 +394,7 @@ export const useMapStore = defineStore("map", () => {
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
-      // Ajouter la couche QPV avant les couches Terra Draw pour qu'elle soit en dessous
+      // Add QPV layer before Terra Draw layers so it is underneath
       const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
         ? TERRA_DRAW_POLYGON_LAYER
         : undefined
@@ -458,9 +458,9 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("style.load", async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
-      // Initialiser le dessin de formes
+      // Initialize shape drawing
       shapeDrawing.initDraw(mapInstance)
-      // Configurer le calcul automatique quand une forme est terminée
+      // Configure automatic calculation when a shape is finished
       shapeDrawing.onShapeFinished(() => {
         finishShapeSelection()
       })
@@ -487,13 +487,13 @@ export const useMapStore = defineStore("map", () => {
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
-    // Nettoyer les données contextuelles lors du changement de mode
+    // Clear contextual data when changing mode
     contextData.removeData()
 
-    // Utiliser Terra Draw pour changer de mode
+    // Use Terra Draw to change mode
     shapeDrawing.setMode(mode)
 
-    // En mode POINT (clic simple), on désactive le dessin
+    // In POINT mode (simple click), disable drawing
     if (mode === SelectionMode.POINT) {
       shapeDrawing.stopDrawing()
     }
@@ -502,20 +502,20 @@ export const useMapStore = defineStore("map", () => {
   const MIN_LOADING_DURATION_MS = 500
 
   const performCalculation = async () => {
-    // Activer l'état de chargement
+    // Activate loading state
     isCalculating.value = true
     const loadingStartTime = Date.now()
 
     try {
-      // Récupérer les scores agrégés dans la forme via l'API backend
+      // Retrieve aggregated scores in shape via backend API
       const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
 
       if (scores) {
-        // Définir directement les scores agrégés dans le contexte
+        // Set aggregated scores directly in context
         contextData.data.value = scores
       }
     } finally {
-      // Assurer un temps de chargement minimum de 0.5 secondes
+      // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
       if (loadingDuration < MIN_LOADING_DURATION_MS) {
         await new Promise((resolve) =>
@@ -526,14 +526,14 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Debouncer le calcul pour éviter les appels multiples rapides
+  // Debounce calculation to avoid multiple rapid calls
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
 
   const toggleToolbar = () => {
     isToolbarVisible.value = !isToolbarVisible.value
-    // Quand on ferme la toolbar, revenir en mode POINT
+    // When closing toolbar, return to POINT mode
     if (!isToolbarVisible.value) {
       changeSelectionMode(SelectionMode.POINT)
     }

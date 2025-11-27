@@ -31,7 +31,7 @@ export function useShapeDrawing() {
   const initDraw = (map: Map) => {
     currentMap.value = map
 
-    // Initialiser Terra Draw avec tous les modes disponibles
+    // Initialize Terra Draw with all available modes
     terraDraw.value = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
@@ -118,14 +118,14 @@ export function useShapeDrawing() {
 
     terraDraw.value.start()
 
-    // Limiter à une seule forme : supprimer les formes précédentes quand une nouvelle est créée
+    // Limit to a single shape: remove previous shapes when a new one is created
     terraDraw.value.on("finish", () => {
       if (!terraDraw.value) return
 
       const features = terraDraw.value.getSnapshot()
-      // Si on a plus d'une forme, garder seulement la dernière
+      // If we have more than one shape, keep only the last one
       if (features.length > 1) {
-        // Supprimer toutes les formes sauf la dernière
+        // Remove all shapes except the last one
         for (let i = 0; i < features.length - 1; i++) {
           const featureId = features[i].id
           if (featureId !== undefined) {
@@ -134,7 +134,7 @@ export function useShapeDrawing() {
         }
       }
 
-      // Déclencher automatiquement le calcul quand une forme est terminée
+      // Automatically trigger calculation when a shape is finished
       if (onShapeFinishedCallback.value) {
         onShapeFinishedCallback.value()
       }
@@ -144,13 +144,13 @@ export function useShapeDrawing() {
   const setMode = (mode: SelectionMode) => {
     if (!terraDraw.value) return
 
-    // Effacer les formes existantes avant de changer de mode
+    // Clear existing shapes before changing mode
     terraDraw.value.clear()
     drawingPoints.value = []
 
     currentMode.value = mode
 
-    // Mapper les modes de sélection aux modes Terra Draw
+    // Map selection modes to Terra Draw modes
     const modeMap: Record<SelectionMode, string> = {
       point: "point",
       polygon: "polygon",
@@ -194,42 +194,25 @@ export function useShapeDrawing() {
   ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
     if (!terraDraw.value) return null
 
-    // Récupérer toutes les features dessinées
+    // Get all drawn features
     const features = terraDraw.value.getSnapshot()
     if (features.length === 0) return null
 
-    // Pour l'instant, on traite la dernière feature dessinée
+    // For now, process the last drawn feature
     const lastFeature = features[features.length - 1]
 
-    // Ne pas appeler l'API pour LCZ en mode non-Point
-    if (dataType === DataType.CLIMATE_ZONE && lastFeature.geometry.type !== GeometryType.POINT) {
+    // Don't call API for LCZ in non-Point mode
+    if (dataType === DataType.CLIMATE_ZONE || lastFeature.geometry.type === GeometryType.POINT) {
       return null
     }
 
-    let coordinates: [number, number][] = []
-
-    // Extraire les coordonnées selon le type de géométrie
-    if (lastFeature.geometry.type === GeometryType.POINT) {
-      // Pour un point, créer un petit polygone autour
-      const [lng, lat] = lastFeature.geometry.coordinates
-      const offset = 0.0001
-      coordinates = [
-        [lng - offset, lat - offset],
-        [lng + offset, lat - offset],
-        [lng + offset, lat + offset],
-        [lng - offset, lat + offset],
-        [lng - offset, lat - offset]
-      ]
-    } else if (lastFeature.geometry.type === GeometryType.POLYGON) {
-      coordinates = lastFeature.geometry.coordinates[0].map((coord: number[]) => [
-        coord[0],
-        coord[1]
-      ])
-    }
+    const coordinates: [number, number][] = (
+      lastFeature.geometry.coordinates[0] as Array<[number, number]>
+    ).map((coord) => [coord[0], coord[1]])
 
     if (coordinates.length < 3) return null
 
-    // Appeler l'API backend pour récupérer les scores agrégés dans le polygone
+    // Call backend API to retrieve aggregated scores in polygon
     const scores = await getScoresInPolygon(coordinates, dataType)
 
     return scores
