@@ -19,7 +19,7 @@ export const getTileDetails = async (
   try {
     const req = await useApiGet(
       `tiles/${dataType}/${id}/`,
-      `Impossible de récupérer les informations de la tuile avec l'id ${id}`
+      `Unable to retrieve tile information with id ${id}`
     )
     return req.data as
       | PlantabilityData
@@ -37,7 +37,7 @@ export const getScoresInPolygon = async (
   dataType: DataType
 ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
   try {
-    // Créer le GeoJSON polygon
+    // Create the GeoJSON polygon
     const polygon = {
       type: "Polygon",
       coordinates: [polygonCoordinates]
@@ -47,11 +47,7 @@ export const getScoresInPolygon = async (
       | PlantabilityScoresResponse
       | VulnerabilityScoresResponse
       | PlantabilityVulnerabilityScoresResponse
-    >(
-      `tiles/${dataType}/in-polygon/`,
-      polygon,
-      `Impossible de récupérer les scores dans le polygone`
-    )
+    >(`tiles/${dataType}/in-polygon/`, polygon, `Unable to retrieve scores in polygon`)
 
     if (!req.data) return null
 
