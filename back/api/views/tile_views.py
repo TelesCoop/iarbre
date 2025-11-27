@@ -26,14 +26,14 @@ from api.constants import (
     FrontendDataType,
 )
 
-# Mapping des datatypes vers leurs modèles
+# Mapping of datatypes to their models
 DATATYPE_MODEL_MAP = {
     DataType.LCZ.value: Lcz,
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
 }
 
-# Mapping des datatypes frontend vers leurs modèles
+# Mapping of frontend datatypes to their models
 FRONTEND_DATATYPE_MODEL_MAP = {
     FrontendDataType.VULNERABILITY.value: Vulnerability,
     FrontendDataType.PLANTABILITY.value: Tile,
@@ -89,11 +89,11 @@ class TileDetailsView(generics.RetrieveAPIView):
 
 class ScoresInPolygonView(APIView):
     """
-    API endpoint pour récupérer les scores moyens et la distribution des tuiles dans un polygone
+    API endpoint to retrieve average scores and tile distribution within a polygon
     """
 
     def _get_iris_and_city_codes(self, tiles):
-        """Extrait les codes IRIS et communes uniques depuis un queryset de tuiles"""
+        """Extracts unique IRIS and city codes from a tile queryset"""
         # Single query with conditional aggregation to get distinct codes
         # Note: Only works with Tile model which has iris and city foreign keys
         if tiles.model != Tile:
@@ -115,7 +115,7 @@ class ScoresInPolygonView(APIView):
         )
 
     def _calculate_plantability_scores(self, tiles):
-        """Calcule les scores moyens et la distribution pour la plantabilité"""
+        """Calculates average scores and distribution for plantability"""
 
         # Single query to get average and count
         result = tiles.aggregate(
@@ -150,7 +150,7 @@ class ScoresInPolygonView(APIView):
         }
 
     def _calculate_vulnerability_scores(self, vulnerabilities):
-        """Calcule les scores moyens et la distribution pour la vulnérabilité"""
+        """Calculates average scores and distribution for vulnerability"""
 
         # Single query for averages and count
         result = vulnerabilities.aggregate(
@@ -174,7 +174,7 @@ class ScoresInPolygonView(APIView):
         }
 
     def _calculate_plantability_vulnerability_scores(self, tiles):
-        """Calcule les scores moyens pour plantabilité et vulnérabilité combinés"""
+        """Calculates average scores for combined plantability and vulnerability"""
 
         # Calculate plantability scores from tiles
         plantability_data = self._calculate_plantability_scores(tiles)
@@ -187,7 +187,7 @@ class ScoresInPolygonView(APIView):
         # Calculate vulnerability scores from vulnerability objects
         vulnerability_data = self._calculate_vulnerability_scores(vulnerabilities)
 
-        # Fusionner les résultats en excluant les champs redondants
+        # Merge results excluding redundant fields
         return {
             "datatype": FrontendDataType.PLANTABILITY_VULNERABILITY.value,
             "count": plantability_data["count"],
@@ -242,11 +242,11 @@ class ScoresInPolygonView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Vérifier que le datatype n'est pas LCZ (zones climatiques locales)
+        # Check that datatype is not LCZ (local climate zones)
         if datatype == FrontendDataType.CLIMATE_ZONE.value:
             return Response(
                 {
-                    "error": "Le calcul des zones climatiques locales n'est pas supporté pour les sélections de type polygone. Utilisez le mode de sélection par point."
+                    "error": "Local climate zone calculation is not supported for polygon selections. Use point selection mode instead."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -259,16 +259,16 @@ class ScoresInPolygonView(APIView):
             )
 
         try:
-            # Convertir le GeoJSON en geometry PostGIS
+            # Convert GeoJSON to PostGIS geometry
             polygon = GEOSGeometry(str(polygon_geojson))
             if polygon.srid is None or polygon.srid == 0:
                 polygon.srid = 4326
             polygon.transform(2154)
 
-            # Récupérer le modèle approprié
+            # Get the appropriate model
             model = FRONTEND_DATATYPE_MODEL_MAP[datatype]
 
-            # Requête PostGIS pour trouver les tuiles qui intersectent le polygone
+            # PostGIS query to find tiles that intersect the polygon
             tiles = model.objects.filter(geometry__intersects=polygon)
 
             if not tiles.exists():
@@ -277,10 +277,10 @@ class ScoresInPolygonView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-            # Extraire les codes IRIS et communes
+            # Extract IRIS and city codes
             iris_codes, city_codes = self._get_iris_and_city_codes(tiles)
 
-            # Calculer les scores et distributions selon le datatype
+            # Calculate scores and distributions based on datatype
             if datatype == FrontendDataType.PLANTABILITY.value:
                 data = self._calculate_plantability_scores(tiles)
                 serializer_class = PlantabilityScoresSerializer
@@ -293,7 +293,7 @@ class ScoresInPolygonView(APIView):
                 data = self._calculate_plantability_vulnerability_scores(tiles)
                 serializer_class = PlantabilityVulnerabilityScoresSerializer
 
-            # Fusionner les données avec les codes
+            # Merge data with codes
             serializer = serializer_class(
                 data={**data, "iris_codes": iris_codes, "city_codes": city_codes}
             )

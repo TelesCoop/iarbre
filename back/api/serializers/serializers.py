@@ -101,7 +101,7 @@ class IrisSerializer(serializers.ModelSerializer):
 
 
 class BaseScoresSerializer(serializers.Serializer):
-    """Serializer de base pour les scores dans un polygone"""
+    """Base serializer for scores within a polygon"""
 
     datatype = serializers.CharField()
     count = serializers.IntegerField()

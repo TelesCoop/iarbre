@@ -26,12 +26,12 @@ const scorePercentage = computed(() =>
     : null
 )
 
-// Détecter si c'est une sélection multiple (ID commence par "polygon-")
+// Detect if this is a multiple selection (ID starts with "polygon-")
 const isMultipleSelection = computed(
   () => currentData.value?.id?.toString().startsWith("polygon-") || false
 )
 
-// Extraire le nombre de tuiles du ID (format: "polygon-123")
+// Extract the number of tiles from ID (format: "polygon-123")
 const tileCount = computed(() => {
   if (!isMultipleSelection.value) return 0
   const id = currentData.value?.id?.toString()
