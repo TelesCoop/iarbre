@@ -194,6 +194,7 @@ class ScoresInPolygonView(APIView):
             "plantability_normalized_indice": plantability_data[
                 "plantability_normalized_indice"
             ],
+            "distribution": plantability_data["distribution"],
             "plantability_indice": plantability_data["plantability_indice"],
             "vulnerability_indice_day": vulnerability_data["vulnerability_indice_day"],
             "vulnerability_indice_night": vulnerability_data[
