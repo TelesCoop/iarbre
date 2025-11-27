@@ -98,7 +98,7 @@ export function useShapeDrawing() {
         }),
         new TerraDrawSelectMode({
           flags: {
-            arbitary: {
+            arbitrary: {
               feature: {}
             },
             polygon: {
