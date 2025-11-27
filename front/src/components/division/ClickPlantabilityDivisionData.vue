@@ -24,12 +24,9 @@ const loading = ref(false)
 
 // Extract codes from plantability data if available
 const cityCodes = computed(() => {
-  console.log("plantabilityData:", props.plantabilityData)
-  console.log("cityCodes from props:", props.plantabilityData?.cityCodes)
   return props.plantabilityData?.cityCodes || []
 })
 const irisCodes = computed(() => {
-  console.log("irisCodes from props:", props.plantabilityData?.irisCodes)
   return props.plantabilityData?.irisCodes || []
 })
 
@@ -40,10 +37,8 @@ const resetDivisionData = () => {
 
 const fetchDivisionData = async () => {
   const { lat, lng } = mapStore.clickCoordinates
-  console.log("fetchDivisionData called with coordinates:", { lat, lng })
 
   if (!lat || !lng) {
-    console.log("No coordinates, skipping fetch")
     return
   }
 
@@ -52,10 +47,6 @@ const fetchDivisionData = async () => {
   try {
     // If we have codes from polygon selection, use them
     if (cityCodes.value.length > 0 || irisCodes.value.length > 0) {
-      console.log("Using codes to fetch divisions:", {
-        cityCodes: cityCodes.value,
-        irisCodes: irisCodes.value
-      })
       const [citiesData, irisData] = await Promise.all([
         cityCodes.value.length > 0
           ? getCities({ code__in: cityCodes.value })
@@ -65,12 +56,10 @@ const fetchDivisionData = async () => {
           : Promise.resolve(null)
       ])
 
-      console.log("Fetched by codes - cities:", citiesData, "iris:", irisData)
       cities.value = citiesData || []
       irisList.value = irisData || []
     } else {
       // Fallback to point intersection for single tile selection
-      console.log("Using geometry__intersects for single tile")
       const coordinates: [number, number] = [lng, lat]
 
       const [citiesData, irisData] = await Promise.all([
@@ -78,7 +67,6 @@ const fetchDivisionData = async () => {
         getIrisList({ geometry__intersects: coordinates })
       ])
 
-      console.log("Fetched by intersection - cities:", citiesData, "iris:", irisData)
       cities.value = citiesData || []
       irisList.value = irisData || []
     }
