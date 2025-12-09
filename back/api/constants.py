@@ -18,3 +18,4 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
+    LIDAR = "vegetation", "Vegetation"

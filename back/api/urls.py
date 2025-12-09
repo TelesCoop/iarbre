@@ -11,6 +11,7 @@ from .views import (
     QPVListView,
     MetadataView,
     RasterDownloadView,
+    VegetationTileView,
 )
 
 router = routers.DefaultRouter()
@@ -22,6 +23,11 @@ urlpatterns = [
         "tiles/<geolevel>/<datatype>/<zoom>/<x>/<y>.mvt",
         TileView.as_view(),
         name="retrieve-tile",
+    ),
+    path(
+        "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
+        VegetationTileView.as_view(),
+        name="retrieve-vegetation-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",
