@@ -52,6 +52,7 @@ declare module 'vue' {
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
     MapContextDataPlantabilityVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabilityVulnerability.vue')['default']
     MapContextDataPlantabiltyVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabiltyVulnerability.vue')['default']
+    MapContextDataVegetation: typeof import('./src/components/contextData/MapContextDataVegetation.vue')['default']
     MapContextDataVulnerability: typeof import('./src/components/contextData/MapContextDataVulnerability.vue')['default']
     MapContextHeader: typeof import('./src/components/contextData/MapContextHeader.vue')['default']
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
