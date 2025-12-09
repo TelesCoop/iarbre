@@ -150,6 +150,21 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
+    if (datatype === DataType.VEGETATION) {
+      // Raster layer for vegetation
+      const rasterLayer: AddLayerObject = {
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        layout: {},
+        paint: {
+          "raster-opacity": 0.7
+        }
+      }
+      return [rasterLayer]
+    }
+
+    // Vector layers for other data types
     const fillLayer: AddLayerObject = {
       id: layerId,
       type: "fill",
@@ -181,6 +196,11 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    // Skip click events for raster layers (vegetation)
+    if (datatype === DataType.VEGETATION) {
+      return
+    }
+
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -244,15 +264,28 @@ export const useMapStore = defineStore("map", () => {
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const tileDataType =
-      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
+
+    if (datatype === DataType.VEGETATION) {
+      // Raster source for vegetation
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png`
+      map.addSource(sourceId, {
+        type: "raster",
+        tiles: [tileUrl],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+    } else {
+      // Vector source for other data types
+      const tileDataType =
+        datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
+      const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
+      map.addSource(sourceId, {
+        type: "vector",
+        tiles: [tileUrl],
+        minzoom: MIN_ZOOM
+      })
+    }
   }
 
   const removeControls = (map: Map) => {
@@ -293,7 +326,10 @@ export const useMapStore = defineStore("map", () => {
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
         mapInstance.removeLayer(layerId)
-        mapInstance.removeLayer(`${layerId}-border`)
+        // Only remove border layer for vector data types
+        if (previousDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+          mapInstance.removeLayer(`${layerId}-border`)
+        }
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
       }
       removeControls(mapInstance)
