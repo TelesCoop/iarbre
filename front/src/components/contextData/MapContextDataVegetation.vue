@@ -18,7 +18,7 @@ defineProps<VegetationCardProps>()
   <context-data-main-container
     color-scheme="vegetation"
     title="vegetation"
-    description="Données de végétation issues du LIDAR 2023 et de la classification des orthophotos à l'aide de FLAIR-HUB de l'IGN."
+    description="Données de végétation issues de la fusion de la classification du LIDAR 2023 et de la classification des orthophotos à l'aide de FLAIR-HUB de l'IGN."
     :data="data"
     empty-message="Zoomez et cliquez sur un carreau."
     :zoom-level="zoomLevel"
