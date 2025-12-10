@@ -51,7 +51,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.PLANTABILITY_VULNERABILITY]:
     '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
   [DataType.VEGETATION]:
-    '<a class="text-primary-500" href="https://github.com/IGNF/FLAIR-HUB" target="_blank">IGN FLAIR-HUB</a>'
+    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate" target="_blank">Vegestrate</a>'
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
