@@ -55,6 +55,11 @@ server {
         alias {{ backend_static_path }};
     }
 
+    location /media  {
+        autoindex off;
+        alias {{ backend_media_path }};
+    }
+
     proxy_read_timeout {{ requests_timeout }};
     proxy_connect_timeout {{ requests_timeout }};
     proxy_send_timeout {{ requests_timeout }};

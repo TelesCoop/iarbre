@@ -18,6 +18,7 @@ all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
+backend_media_path: "{{ project_dir }}/backend_media"
 
 frontend_branch: main
 backend_branch: main

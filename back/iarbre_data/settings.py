@@ -212,7 +212,7 @@ else:
         },
     }
     STATIC_ROOT = config.getstr("staticfiles.static_root")
-    MEDIA_ROOT = config.getstr("mediafiles.media_root")
+    MEDIA_ROOT = config.getstr("media.media_root")
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
