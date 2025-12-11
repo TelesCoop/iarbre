@@ -30,6 +30,12 @@
         dest: "{{ django_path }}/mvt_files"
         state: link
       when: branch is defined
+    - name: Create symbolic link from feature media to preprod media
+      file:
+        src: "{{ project_base_dir }}_preprod/backend/back/rasters"
+        dest: "{{ django_path }}/rasters"
+        state: link
+      when: branch is defined
 
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
