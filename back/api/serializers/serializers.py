@@ -69,6 +69,10 @@ class CitySerializer(serializers.ModelSerializer):
     plantabilityCounts = serializers.JSONField(source="plantability_counts")
     averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
     averageIndice = serializers.FloatField(source="average_indice")
+    vegetationVoirieHaute = serializers.FloatField(source="vegetation_voirie_haute")
+    vegetationVoirieMoyenne = serializers.FloatField(source="vegetation_voirie_moyenne")
+    vegetationVoirieBasse = serializers.FloatField(source="vegetation_voirie_basse")
+    vegetationVoirieTotal = serializers.FloatField(source="vegetation_voirie_total")
 
     class Meta:
         model = City
@@ -79,6 +83,10 @@ class CitySerializer(serializers.ModelSerializer):
             "plantabilityCounts",
             "averageNormalizedIndice",
             "averageIndice",
+            "vegetationVoirieHaute",
+            "vegetationVoirieMoyenne",
+            "vegetationVoirieBasse",
+            "vegetationVoirieTotal",
         )
 
 

@@ -25,6 +25,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
+import { IPAVE_COLOR_MAP } from "@/utils/ipave"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
@@ -72,7 +73,8 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
+      [DataType.IPAVE]: ["match", ["get", "indice"], ...IPAVE_COLOR_MAP]
     }
   })
 
@@ -160,7 +162,7 @@ export const useMapStore = defineStore("map", () => {
         "fill-color": FILL_COLOR_MAP.value[
           datatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-        "fill-opacity": 0.5,
+        "fill-opacity": datatype === DataType.IPAVE ? 0.8 : 0.5,
         "fill-outline-color": "#00000000"
       }
     }
@@ -226,6 +228,9 @@ export const useMapStore = defineStore("map", () => {
         contextData.setData(featureId, score, source_values)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
+      } else if (geolevel === GeoLevel.TILE && datatype === DataType.IPAVE) {
+        const surface = extractFeatureProperty(e.features!, datatype, geolevel, "surface")
+        contextData.setData(featureId, score, { surface })
       } else {
         contextData.setData(featureId)
       }
