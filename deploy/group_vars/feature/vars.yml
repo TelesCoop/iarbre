@@ -23,7 +23,7 @@ all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 
 project_dir: "{{ project_base_dir }}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
-backend_media_path: "{{ project_dir }}/backend_media"
+backend_media_path: "{{ project_dir }}/backend/back/backend_media"
 
 branch_slug: "{{ branch | replace('/','-') }}"
 frontend_branch: "{{ branch }}"
