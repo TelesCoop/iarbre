@@ -33,7 +33,7 @@
     - name: Create symbolic link from feature media to preprod media
       file:
         src: "{{ project_base_dir }}_preprod/backend/back/rasters"
-        dest: "{{ django_path }}/rasters"
+        dest: "{{ django_path }}"
         state: link
       when: branch is defined
 
