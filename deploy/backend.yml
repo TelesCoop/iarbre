@@ -24,16 +24,26 @@
           vars:
             database_password: "{{ vault_database_password }}"
       when: branch is not defined
+    - name: Remove existing mvt_files directory on feature branches
+      file:
+        path: "{{ django_path }}/mvt_files"
+        state: absent
+      when: branch is defined
     - name: Create symbolic link from feature mvt_files to preprod mvt_files
       file:
         src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
-        dest: "{{ django_path }}"
+        dest: "{{ django_path }}/mvt_files"
         state: link
+      when: branch is defined
+    - name: Remove existing rasters directory on feature branches
+      file:
+        path: "{{ django_path }}/rasters"
+        state: absent
       when: branch is defined
     - name: Create symbolic link from feature media to preprod media
       file:
         src: "{{ project_base_dir }}_preprod/backend/back/rasters"
-        dest: "{{ django_path }}"
+        dest: "{{ django_path }}/rasters"
         state: link
       when: branch is defined
 
