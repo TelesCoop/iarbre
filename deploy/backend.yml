@@ -27,7 +27,7 @@
     - name: Create symbolic link from feature mvt_files to preprod mvt_files
       file:
         src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
-        dest: "{{ django_path }}/mvt_files"
+        dest: "{{ django_path }}"
         state: link
       when: branch is defined
     - name: Create symbolic link from feature media to preprod media
