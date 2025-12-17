@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 import MapView from "@/views/MapView.vue"
 import { DataType } from "@/utils/enum"
+import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,6 +10,20 @@ const router = createRouter({
       path: "/",
       name: "map",
       component: MapView
+    },
+    {
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)",
+      redirect: (to) => {
+        return {
+          name: "mapWithUrlParams",
+          params: {
+            dataType: to.params.dataType,
+            zoom: DEFAULT_MAP_PARAMS.zoom,
+            lat: DEFAULT_MAP_PARAMS.lat.toFixed(5),
+            lng: DEFAULT_MAP_PARAMS.lng.toFixed(5)
+          }
+        }
+      }
     },
     {
       path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(\\d+\\.\\d{5})/:lng(\\d+\\.\\d{5})",
