@@ -113,7 +113,7 @@ describe("Map", () => {
 describe("Geocoder", () => {
   beforeEach(() => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.visit("/plantability/13/45.07126/5.55430")
   })
 
   it("search for an address in Lyon and display results", () => {
@@ -128,14 +128,14 @@ describe("Geocoder", () => {
 
 describe("Welcome message", () => {
   beforeEach(() => {
-    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.visit("/plantability/13/45.07126/5.55430")
   })
 
   it("Close when clicked and don't show up again", () => {
     cy.getBySel("welcome-dialog").should("be.visible")
     cy.getBySel("welcome-click").should("be.visible").click()
     cy.getBySel("welcome-dialog").should("not.exist")
-    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.visit("/plantability/13/45.07126/5.55430")
     cy.getBySel("welcome-dialog").should("not.exist")
   })
 })
