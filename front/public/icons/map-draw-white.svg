@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="24" height="24" viewBox="0 0 24 24"
+     fill="none" stroke="white" stroke-width="1.7"
+     stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- Map panels -->
+  <path d="M3 5 L8 3 L15 5 L21 3 V19 L15 21 L8 19 L3 21 Z"
+        stroke="white" stroke-width="1.2" fill="none" />
+
+  <!-- Polygon (lighter stroke) -->
+  <path d="M7 12 L10 8 L15 9 L18 13 L14 16 L9 15 Z"
+        fill="none" stroke="white" stroke-width="1.1"/>
+
+  <!-- Vertices (smaller) -->
+  <circle cx="7" cy="12" r="0.7" fill="white"/>
+  <circle cx="10" cy="8" r="0.7" fill="white"/>
+  <circle cx="15" cy="9" r="0.7" fill="white"/>
+  <circle cx="18" cy="13" r="0.7" fill="white"/>
+  <circle cx="14" cy="16" r="0.7" fill="white"/>
+  <circle cx="9" cy="15" r="0.7" fill="white"/>
+
+</svg>

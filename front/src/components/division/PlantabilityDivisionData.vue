@@ -5,17 +5,17 @@ import DivisionDataDisplay from "./DivisionDataDisplay.vue"
 import { Accordion, AccordionPanel, AccordionHeader, AccordionContent, Card } from "primevue"
 
 interface DivisionDataProps {
-  city?: City | null
-  iris?: Iris | null
+  cities?: City[]
+  irisList?: Iris[]
 }
 
 const props = withDefaults(defineProps<DivisionDataProps>(), {
-  city: null,
-  iris: null
+  cities: () => [],
+  irisList: () => []
 })
 
-const hasCity = computed(() => props.city !== null && props.city !== undefined)
-const hasIris = computed(() => props.iris !== null && props.iris !== undefined)
+const hasCities = computed(() => props.cities && props.cities.length > 0)
+const hasIris = computed(() => props.irisList && props.irisList.length > 0)
 </script>
 
 <template>
@@ -29,25 +29,44 @@ const hasIris = computed(() => props.iris !== null && props.iris !== undefined)
       </h3>
     </template>
     <template #content>
-      <Accordion multiple>
-        <AccordionPanel value="0" :disabled="!hasCity">
-          <AccordionHeader>Commune</AccordionHeader>
-          <AccordionContent>
-            <DivisionDataDisplay v-if="props.city" :data="props.city" />
-            <div v-else class="p-4 text-center text-gray-500">
-              Aucune donnée de commune disponible
-            </div>
-          </AccordionContent>
-        </AccordionPanel>
+      <!-- Communes Section -->
+      <div v-if="hasCities" class="mb-6">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Communes</h4>
+        <Accordion multiple>
+          <AccordionPanel
+            v-for="(city, index) in props.cities"
+            :key="`city-${city.id}`"
+            :value="`city-${index}`"
+          >
+            <AccordionHeader>{{ city.name || city.code }}</AccordionHeader>
+            <AccordionContent>
+              <DivisionDataDisplay :data="city" />
+            </AccordionContent>
+          </AccordionPanel>
+        </Accordion>
+      </div>
 
-        <AccordionPanel value="1" :disabled="!hasIris">
-          <AccordionHeader>IRIS</AccordionHeader>
-          <AccordionContent>
-            <DivisionDataDisplay v-if="props.iris" :data="props.iris" />
-            <div v-else class="p-4 text-center text-gray-500">Aucune donnée IRIS disponible</div>
-          </AccordionContent>
-        </AccordionPanel>
-      </Accordion>
+      <!-- IRIS Section -->
+      <div v-if="hasIris">
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">IRIS</h4>
+        <Accordion multiple>
+          <AccordionPanel
+            v-for="(iris, index) in props.irisList"
+            :key="`iris-${iris.id}`"
+            :value="`iris-${index}`"
+          >
+            <AccordionHeader>{{ iris.name || iris.code }}</AccordionHeader>
+            <AccordionContent>
+              <DivisionDataDisplay :data="iris" />
+            </AccordionContent>
+          </AccordionPanel>
+        </Accordion>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="!hasCities && !hasIris" class="p-4 text-center text-gray-500">
+        Aucune donnée disponible
+      </div>
     </template>
   </Card>
 </template>

@@ -16,7 +16,7 @@ const model = defineModel<MapParams>({
 })
 
 const emit = defineEmits<{
-  "update:modelValue": [value: MapParams]
+  (e: "update:modelValue", value: MapParams): void
 }>()
 
 const mapStore = useMapStore()
@@ -31,12 +31,13 @@ onMounted(() => {
   })
 
   const updateParams = () => {
-    emit("update:modelValue", {
+    const params: MapParams = {
       zoom: Math.round(mapStore.currentZoom),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
       dataType: mapStore.selectedDataType
-    })
+    }
+    emit("update:modelValue", params)
   }
 
   mapInstance.on("moveend", updateParams)
@@ -56,6 +57,20 @@ onMounted(() => {
   <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
     <map-config-drawer-toggle />
   </div>
+
+  <!-- Drawing mode toggle - visible on all screens -->
+  <div class="absolute right-0 top-0 mt-2 mr-2 z-40">
+    <drawing-mode-toggle />
+  </div>
+
+  <!-- Selection mode toolbar - only visible when toolbar is toggled -->
+  <div v-if="mapStore.isToolbarVisible" class="absolute right-0 top-14 mt-2 mr-2 z-40">
+    <selection-mode-toolbar />
+  </div>
+
+  <!-- Drawing controls - only visible in shape mode -->
+  <drawing-controls />
+
   <div class="legend-container hidden lg:flex">
     <map-legend />
     <map-filters-status />

@@ -9,6 +9,8 @@ interface MainContainerProps extends ContextDataMainContainerProps {
   data?: any | null
   emptyMessage?: string
   zoomLevel?: number | null
+  hideDescription?: boolean
+  hideEmptyMessage?: boolean
 }
 
 const props = withDefaults(defineProps<MainContainerProps>(), {
@@ -16,7 +18,9 @@ const props = withDefaults(defineProps<MainContainerProps>(), {
   emptyMessage: "Cliquez sur un carreau",
   fullHeight: false,
   hideCloseButton: false,
-  zoomLevel: null
+  zoomLevel: null,
+  hideDescription: false,
+  hideEmptyMessage: false
 })
 
 const containerClasses = computed(() => {
@@ -43,7 +47,7 @@ const gridSize = computed(() => {
     :class="containerClasses"
     role="dialog"
   >
-    <map-context-header :description="description" :title="title" />
+    <map-context-header v-if="!hideDescription" :description="description" :title="title" />
     <div v-if="gridSize && title === 'plantability'" class="mt-2 text-sm text-center font-sans">
       Taille d'un carreau: {{ gridSize }}m <span class="text-xs">(précision maximum de 5m).</span>
     </div>
@@ -53,7 +57,11 @@ const gridSize = computed(() => {
         <slot name="content" :data="data" :full-height="fullHeight" />
         <slot name="legend" :data="data" />
       </div>
-      <empty-message v-else data-cy="empty-message" :message="emptyMessage" />
+      <empty-message
+        v-else-if="!hideEmptyMessage"
+        data-cy="empty-message"
+        :message="emptyMessage"
+      />
     </div>
   </div>
 </template>

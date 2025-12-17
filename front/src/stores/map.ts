@@ -1,5 +1,6 @@
 import { computed, ref } from "vue"
 import { defineStore } from "pinia"
+import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
@@ -8,11 +9,18 @@ import {
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
-import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM, DEFAULT_MAP_CENTER } from "@/utils/constants"
+import {
+  MAP_CONTROL_POSITION,
+  MAX_ZOOM,
+  MIN_ZOOM,
+  DEFAULT_MAP_CENTER,
+  TERRA_DRAW_POLYGON_LAYER
+} from "@/utils/constants"
 import {
   GeoLevel,
   DataType,
   MapStyle,
+  SelectionMode,
   DataTypeToGeolevel,
   getDataTypeAttributionSource
 } from "@/utils/enum"
@@ -33,6 +41,7 @@ import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } fro
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl } from "@/utils/mapControls"
+import { useShapeDrawing } from "@/composables/useTerraDraw"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -43,10 +52,14 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData()
   const showQPVLayer = ref<boolean>(false)
+  const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
+  const isToolbarVisible = ref<boolean>(false)
+  const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
     lng: DEFAULT_MAP_CENTER.lng
   })
+  const isCalculating = ref<boolean>(false)
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
 
@@ -131,7 +144,7 @@ export const useMapStore = defineStore("map", () => {
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
-    onRemove: (map: Map) => {
+    onRemove: () => {
       const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
       if (controlElement) {
         controlElement.remove()
@@ -186,14 +199,21 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", layerId, mapEventsListener.value[layerId])
     }
     const clickHandler = (e: any) => {
+      // If we are in POINT mode (simple click), handle click normally
+      // Other modes are handled automatically by Terra Draw
+      if (selectionMode.value !== SelectionMode.POINT) {
+        return
+      }
+
+      // Normal point mode (simple click to select a tile)
       const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
       const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
-      const source_values = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
-      const vuln_score_day =
+      const sourceValues = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
+      const vulnScoreDay =
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
           : undefined
-      const vuln_score_night =
+      const vulnScoreNight =
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
           : undefined
@@ -223,9 +243,9 @@ export const useMapStore = defineStore("map", () => {
       }
       // Conditionally load context data based on geolevel, datatype, and zoom
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
-        contextData.setData(featureId, score, source_values)
+        contextData.setData(featureId, score, sourceValues)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        contextData.setData(featureId, score, source_values, vuln_score_day, vuln_score_night)
+        contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
       } else {
         contextData.setData(featureId)
       }
@@ -237,7 +257,13 @@ export const useMapStore = defineStore("map", () => {
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layers = createMapLayers(datatype, geolevel, sourceId)
-    layers.forEach((layer) => map.addLayer(layer))
+
+    // Add layers before Terra Draw layers so they are underneath
+    const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
+
+    layers.forEach((layer) => {
+      map.addLayer(layer, beforeId)
+    })
 
     setupClickEventOnTile(map, datatype, geolevel)
   }
@@ -305,6 +331,12 @@ export const useMapStore = defineStore("map", () => {
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
+
+    // If a geometry is drawn, automatically recalculate with the new data type
+    const features = shapeDrawing.getSelectedFeatures()
+    if (features.length > 0 && selectionMode.value !== SelectionMode.POINT) {
+      finishShapeSelection()
+    }
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
@@ -362,15 +394,23 @@ export const useMapStore = defineStore("map", () => {
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
-      mapInstance.addLayer({
-        id: "qpv-border",
-        type: "line",
-        source: "qpv-source",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 3
-        }
-      })
+      // Add QPV layer before Terra Draw layers so it is underneath
+      const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
+        ? TERRA_DRAW_POLYGON_LAYER
+        : undefined
+
+      mapInstance.addLayer(
+        {
+          id: "qpv-border",
+          type: "line",
+          source: "qpv-source",
+          paint: {
+            "line-color": "#ffffff",
+            "line-width": 3
+          }
+        },
+        beforeId
+      )
     }
     mapInstance.once("render", () => {
       console.info(`cypress: QPV data loaded`)
@@ -418,6 +458,12 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("style.load", async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
+      // Initialize shape drawing
+      shapeDrawing.initDraw(mapInstance)
+      // Configure automatic calculation when a shape is finished
+      shapeDrawing.onShapeFinished(() => {
+        finishShapeSelection()
+      })
     })
 
     mapInstance.on("moveend", () => {
@@ -438,6 +484,61 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const changeSelectionMode = (mode: SelectionMode) => {
+    selectionMode.value = mode
+
+    // Clear contextual data when changing mode
+    contextData.removeData()
+
+    // Use Terra Draw to change mode
+    shapeDrawing.setMode(mode)
+
+    // In POINT mode (simple click), disable drawing
+    if (mode === SelectionMode.POINT) {
+      shapeDrawing.stopDrawing()
+    }
+  }
+
+  const MIN_LOADING_DURATION_MS = 500
+
+  const performCalculation = async () => {
+    // Activate loading state
+    isCalculating.value = true
+    const loadingStartTime = Date.now()
+
+    try {
+      // Retrieve aggregated scores in shape via backend API
+      const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
+
+      if (scores) {
+        // Set aggregated scores directly in context
+        contextData.data.value = scores
+      }
+    } finally {
+      // Ensure minimum loading duration of 0.5 seconds
+      const loadingDuration = Date.now() - loadingStartTime
+      if (loadingDuration < MIN_LOADING_DURATION_MS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, MIN_LOADING_DURATION_MS - loadingDuration)
+        )
+      }
+      isCalculating.value = false
+    }
+  }
+
+  // Debounce calculation to avoid multiple rapid calls
+  const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
+
+  const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
+
+  const toggleToolbar = () => {
+    isToolbarVisible.value = !isToolbarVisible.value
+    // When closing toolbar, return to POINT mode
+    if (!isToolbarVisible.value) {
+      changeSelectionMode(SelectionMode.POINT)
+    }
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -450,9 +551,26 @@ export const useMapStore = defineStore("map", () => {
     currentZoom,
     clickCoordinates,
     selectedLegendCell,
+    selectionMode,
+    isShapeMode,
+    isToolbarVisible,
+    toggleToolbar,
+    changeSelectionMode,
+    finishShapeSelection,
+    isCalculating,
+    shapeDrawing: {
+      isDrawing: shapeDrawing.isDrawing,
+      drawingPoints: shapeDrawing.drawingPoints,
+      currentMode: shapeDrawing.currentMode,
+      setMode: shapeDrawing.setMode,
+      clearDrawing: shapeDrawing.clearDrawing,
+      getSelectedFeatures: shapeDrawing.getSelectedFeatures,
+      onShapeFinished: shapeDrawing.onShapeFinished
+    },
     contextData: {
       data: contextData.data,
       setData: contextData.setData,
+      setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
       toggleContextData: contextData.toggleContextData
     },

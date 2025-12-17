@@ -76,7 +76,9 @@
         "attribution": "&copy; OpenStreetMap Contributors",
         "tileSize": 256,
         "tiles": [
-          "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
         ],
         "type": "raster"
       }
@@ -96,7 +98,9 @@
         "attribution": "&copy; OpenStreetMap Contributors",
         "tileSize": 256,
         "tiles": [
-          "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
         ],
         "type": "raster"
       }
