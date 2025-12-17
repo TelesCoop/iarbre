@@ -46,15 +46,6 @@ const handleMapUpdate = (params: MapParams) => {
     hasAlreadyChanged.value = true
     replaceUrl()
   }
-  router.replace({
-    name: "mapWithUrlParams",
-    params: {
-      dataType: params.dataType,
-      zoom: params.zoom.toString(),
-      lat: params.lat.toFixed(5),
-      lng: params.lng.toFixed(5)
-    }
-  })
 }
 </script>
 
