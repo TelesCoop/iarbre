@@ -19,3 +19,23 @@ class DataType(TextChoices):
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
     LIDAR = "vegetation", "Vegetation"
+
+
+class FrontendDataType(TextChoices):
+    """DataType enum used by the frontend"""
+
+    PLANTABILITY = "plantability", "Plantability"
+    VULNERABILITY = "vulnerability", "Vulnerability"
+    CLIMATE_ZONE = "lcz", "LCZ"
+    PLANTABILITY_VULNERABILITY = (
+        "plantability_vulnerability",
+        "Plantability & Vulnerability",
+    )
+
+
+# Score ranges for different data types
+PLANTABILITY_MAX_SCORE = 10
+VULNERABILITY_MAX_SCORE = 9
+
+# Rounding precision for calculated indices
+INDICE_ROUNDING_DECIMALS = 1

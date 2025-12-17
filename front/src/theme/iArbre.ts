@@ -33,20 +33,22 @@ const lightSecondaryColors = {
   activeColor: "{secondary.800}"
 }
 
+export const primaryColors = {
+  50: "#EDF5E9",
+  100: "#C7DBC0",
+  200: "#97B090",
+  300: "#7A9374",
+  400: "#6D8766",
+  500: "#426A45",
+  600: "#49673F",
+  700: "#34522A",
+  800: "#2B4822",
+  900: "#002814"
+}
+
 export const IArbrePreset = definePreset(Aura, {
   semantic: {
-    primary: {
-      50: "#EDF5E9",
-      100: "#C7DBC0",
-      200: "#97B090",
-      300: "#7A9374",
-      400: "#6D8766",
-      500: "#426A45",
-      600: "#49673F",
-      700: "#34522A",
-      800: "#2B4822",
-      900: "#002814"
-    },
+    primary: primaryColors,
     colorScheme: {
       light: {
         primary: lightPrimaryColors,

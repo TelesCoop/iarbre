@@ -1,5 +1,17 @@
 import { getContrast } from "polished"
 import { getVulnerabilityColor } from "./vulnerability"
+import { primaryColors } from "@/theme/iArbre"
+
+export const terraDrawStyles = {
+  fillColor: primaryColors[200] as `#${string}`,
+  fillOpacity: 0.3,
+  outlineColor: primaryColors[500] as `#${string}`,
+  outlineWidth: 2,
+  pointColor: primaryColors[500] as `#${string}`,
+  pointWidth: 3,
+  pointOutlineColor: "#ffffff" as `#${string}`,
+  pointOutlineWidth: 2
+}
 
 function getElementBackgroundColor(element: HTMLElement): string {
   let currentElement: HTMLElement | null = element

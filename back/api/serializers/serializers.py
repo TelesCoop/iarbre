@@ -98,3 +98,29 @@ class IrisSerializer(serializers.ModelSerializer):
             "averageNormalizedIndice",
             "averageIndice",
         )
+
+
+class BaseScoresSerializer(serializers.Serializer):
+    """Base serializer for scores within a polygon"""
+
+    datatype = serializers.CharField()
+    count = serializers.IntegerField()
+    iris_codes = serializers.ListField(child=serializers.CharField())
+    city_codes = serializers.ListField(child=serializers.CharField())
+
+
+class PlantabilityScoresSerializer(BaseScoresSerializer):
+    plantability_normalized_indice = serializers.FloatField()
+    plantability_indice = serializers.FloatField()
+    distribution = serializers.DictField()
+
+
+class VulnerabilityScoresSerializer(BaseScoresSerializer):
+    vulnerability_indice_day = serializers.FloatField()
+    vulnerability_indice_night = serializers.FloatField()
+
+
+class PlantabilityVulnerabilityScoresSerializer(
+    PlantabilityScoresSerializer, VulnerabilityScoresSerializer
+):
+    pass

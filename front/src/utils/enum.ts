@@ -19,6 +19,16 @@ export enum MapStyle {
   CADASTRE = "Cadastre"
 }
 
+export enum SelectionMode {
+  POINT = "point",
+  POLYGON = "polygon",
+  RECTANGLE = "rectangle",
+  CIRCLE = "circle",
+  ANGLED_RECTANGLE = "angled-rectangle",
+  SECTOR = "sector",
+  SELECT = "select"
+}
+
 export const MapStyleToLabel: Record<MapStyle, string> = {
   [MapStyle.OSM]: "Plan de la ville",
   [MapStyle.SATELLITE]: "Images satellite",

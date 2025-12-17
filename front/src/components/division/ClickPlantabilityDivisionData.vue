@@ -1,20 +1,38 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue"
+import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { getCities, getIrisList } from "@/services/divisionService"
 import type { City, Iris } from "@/types/division"
+import type { PlantabilityData } from "@/types/plantability"
 import PlantabilityDivisionData from "./PlantabilityDivisionData.vue"
 import { ProgressSpinner } from "primevue"
 import { useDebounceFn } from "@vueuse/core"
+
+interface ClickPlantabilityDivisionDataProps {
+  plantabilityData?: PlantabilityData | null
+}
+
+const props = withDefaults(defineProps<ClickPlantabilityDivisionDataProps>(), {
+  plantabilityData: null
+})
+
 const mapStore = useMapStore()
 
-const city = ref<City | null>(null)
-const iris = ref<Iris | null>(null)
+const cities = ref<City[]>([])
+const irisList = ref<Iris[]>([])
 const loading = ref(false)
 
+// Extract codes from plantability data if available
+const cityCodes = computed(() => {
+  return props.plantabilityData?.cityCodes || []
+})
+const irisCodes = computed(() => {
+  return props.plantabilityData?.irisCodes || []
+})
+
 const resetDivisionData = () => {
-  city.value = null
-  iris.value = null
+  cities.value = []
+  irisList.value = []
 }
 
 const fetchDivisionData = async () => {
@@ -27,22 +45,35 @@ const fetchDivisionData = async () => {
   loading.value = true
 
   try {
-    // Create coordinates array [lng, lat]
-    const coordinates: [number, number] = [lng, lat]
+    // If we have codes from polygon selection, use them
+    if (cityCodes.value.length > 0 || irisCodes.value.length > 0) {
+      const [citiesData, irisData] = await Promise.all([
+        cityCodes.value.length > 0
+          ? getCities({ code__in: cityCodes.value })
+          : Promise.resolve(null),
+        irisCodes.value.length > 0
+          ? getIrisList({ code__in: irisCodes.value })
+          : Promise.resolve(null)
+      ])
 
-    // Fetch cities and iris that intersect with the click point
-    const [citiesData, irisData] = await Promise.all([
-      getCities({ geometry__intersects: coordinates }),
-      getIrisList({ geometry__intersects: coordinates })
-    ])
+      cities.value = citiesData || []
+      irisList.value = irisData || []
+    } else {
+      // Fallback to point intersection for single tile selection
+      const coordinates: [number, number] = [lng, lat]
 
-    // Extract the first city and iris from the results
-    city.value = citiesData && citiesData.length > 0 ? citiesData[0] : null
-    iris.value = irisData && irisData.length > 0 ? irisData[0] : null
+      const [citiesData, irisData] = await Promise.all([
+        getCities({ geometry__intersects: coordinates }),
+        getIrisList({ geometry__intersects: coordinates })
+      ])
+
+      cities.value = citiesData || []
+      irisList.value = irisData || []
+    }
   } catch (error) {
     console.error("Error fetching division data:", error)
-    city.value = null
-    iris.value = null
+    cities.value = []
+    irisList.value = []
   } finally {
     loading.value = false
   }
@@ -52,9 +83,9 @@ const debouncedFetchDivisionData = useDebounceFn(() => {
   fetchDivisionData()
 }, 300)
 
-// Watch for changes in click coordinates
+// Watch for changes in click coordinates or plantability data
 watch(
-  () => mapStore.clickCoordinates,
+  () => [mapStore.clickCoordinates, props.plantabilityData] as const,
   () => {
     resetDivisionData()
     debouncedFetchDivisionData()
@@ -68,6 +99,6 @@ watch(
     <div v-if="loading" class="flex justify-center p-4">
       <ProgressSpinner style="width: 50px; height: 50px" />
     </div>
-    <PlantabilityDivisionData v-else :city="city" :iris="iris" />
+    <PlantabilityDivisionData v-else :cities="cities" :iris-list="irisList" />
   </div>
 </template>

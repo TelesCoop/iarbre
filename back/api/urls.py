@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views.tile_views import TileDetailsView
+from .views.tile_views import TileDetailsView, ScoresInPolygonView
 from .views import (
     CityView,
     IrisView,
@@ -23,6 +23,12 @@ urlpatterns = [
         "tiles/<geolevel>/<datatype>/<zoom>/<x>/<y>.mvt",
         TileView.as_view(),
         name="retrieve-tile",
+    ),
+    # L'URL spécifique doit venir AVANT l'URL générale avec <id>
+    path(
+        "tiles/<datatype>/in-polygon/",
+        ScoresInPolygonView.as_view(),
+        name="scores-in-polygon",
     ),
     path(
         "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
