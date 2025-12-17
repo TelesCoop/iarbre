@@ -11,7 +11,7 @@ const router = createRouter({
       component: MapView
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(\\d+.\\d+)/:lng(\\d+.\\d+)",
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(\\d+\\.\\d{5})/:lng(\\d+\\.\\d{5})",
       name: "mapWithUrlParams",
       component: MapView
     },
@@ -24,8 +24,8 @@ const router = createRouter({
           params: {
             dataType: DataType.PLANTABILITY,
             zoom,
-            lat,
-            lng
+            lat: parseFloat(lat as string).toFixed(5),
+            lng: parseFloat(lng as string).toFixed(5)
           }
         }
       }

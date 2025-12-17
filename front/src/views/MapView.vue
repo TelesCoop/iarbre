@@ -23,16 +23,21 @@ if (route.name === "mapWithUrlParams") {
 
 const handleMapUpdate = (params: MapParams) => {
   const replaceUrl = () => {
-    router.replace({ name: "mapWithUrlParams", params: params as any })
+    router.replace({
+      name: "mapWithUrlParams",
+      params: {
+        ...params,
+        lat: params.lat.toFixed(5),
+        lng: params.lng.toFixed(5)
+      } as any
+    })
   }
 
-  // If already changed once, always update URL
   if (hasAlreadyChanged.value) {
     replaceUrl()
     return
   }
 
-  // Check if params differ from defaults
   const hasChanged = Object.keys(DEFAULT_MAP_PARAMS).some(
     (key) => params[key as keyof MapParams] !== DEFAULT_MAP_PARAMS[key as keyof MapParams]
   )
