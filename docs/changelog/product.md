@@ -1,5 +1,27 @@
 # Journal des changements
 
+## 🔖 0.21.0 (2025-12-17) : Ajout de fonctionnalités de traçage et correction de bugs
+
+### ✨ feat : Ajout du traçage
+
+Un outil de traçage fait son apparation et permet d'avoir des statistiques sur la zone sélectionnée.
+
+&rarr; Issue [#411](https://github.com/orgs/TelesCoop/projects/3?pane=issue&itemId=132939406&issue=TelesCoop%7Ciarbre%7C411)
+
+![Outil de tracage](../assets/images/changelog/v0.21.0/tracage.jpg)
+
+### 🛠️ enhance : Formatage de l'url
+
+Quelques améliorations pour raccourcir les URLs et surtout l'ajout de la possiblité maintenant de partager une URL sans le niveau de zoom ou la lattitude ou longitude.
+
+&rarr; Commit [3ead578](https://github.com/TelesCoop/iarbre/commit/3ead5780bd2db07ef76e9778e04336425a0ee525)
+
+### ✨ feat : Ajout d'un endpoint pour télécharger la plantabilité en raster
+
+Avec `GET /api/rasters/plantability/` on récupère le calque de plantabilité mis à jour et au format raster, à la résolution 5m.
+
+&rarr; PR [#456](https://github.com/TelesCoop/iarbre/pull/456)
+
 ## 🔖 0.20.0 (2025-11-26) : Analyse des facteurs de plantabilité et améliorations diverses
 
 ### 🛠️ enhance : Ajout d'une page 404

@@ -6,7 +6,13 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
-### 2025-11-24T08:29_postgres_backup.dump (3.4 GiB)
+### 2025-12-09T14:16_postgres_backup.dump
+
+**Changements :**
+
+- **Inventaire stratifié du végétal** : Ajout dans les `media` du raster de l'inventaire du végétal stratifié pour la ville de Villeurbanne.
+
+### 2025-11-24T08:29_postgres_backup.dump
 
 **Changements :**
 
