@@ -24,29 +24,15 @@
           vars:
             database_password: "{{ vault_database_password }}"
       when: branch is not defined
-    - name: Create media directory for non-feature branches
+    - name: Remove existing media directory on feature branches
       file:
-        path: "{{ django_path }}/backend_media"
-        state: directory
-        mode: "0755"
-      when: branch is not defined
-
-    - name: Create symbolic link from feature backend_media to preprod backend_media
-      file:
-        src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
-        dest: "{{ django_path }}/backend_media"
-        state: link
-        force: yes
-      when: branch is defined
-    - name: Remove existing rasters directory on feature branches
-      file:
-        path: "{{ django_path }}/rasters"
+        path: "{{ backend_media_path }}"
         state: absent
       when: branch is defined
     - name: Create symbolic link from feature media to preprod media
       file:
-        src: "{{ project_base_dir }}_preprod/backend/back/rasters"
-        dest: "{{ django_path }}/rasters"
+        src: "{{ project_base_dir }}_preprod/backend/back/media"
+        dest: "{{ backend_media_path }}"
         state: link
       when: branch is defined
 
