@@ -88,9 +88,92 @@ class TileDetailsView(generics.RetrieveAPIView):
 
 
 class ScoresInPolygonView(APIView):
-    """
-    API endpoint to retrieve average scores and tile distribution within a polygon
-    """
+    MAX_POLYGON_AREA_M2 = 10_000_000
+    MAX_VERTICES = 10
+
+    def _validate_datatype(self, datatype):
+        if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
+            return Response(
+                {
+                    "error": f"Invalid datatype. Must be one of: {', '.join(FRONTEND_DATATYPE_MODEL_MAP.keys())}"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if datatype == FrontendDataType.CLIMATE_ZONE.value:
+            return Response(
+                {
+                    "error": "Local climate zone calculation is not supported for polygon selections. Use point selection mode instead."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
+    def _validate_polygon_data(self, polygon_geojson):
+        if not polygon_geojson:
+            return Response(
+                {"error": "No polygon data provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return None
+
+    def _process_polygon_geometry(self, polygon_geojson):
+        try:
+            polygon = GEOSGeometry(str(polygon_geojson))
+            if polygon.srid is None or polygon.srid == 0:
+                polygon.srid = 4326
+            polygon.transform(2154)
+
+            if polygon.area > self.MAX_POLYGON_AREA_M2:
+                return None, Response(
+                    {
+                        "error": f"Polygon area exceeds maximum allowed size ({self.MAX_POLYGON_AREA_M2 / 1_000_000} km²)"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            num_coords = (
+                len(polygon.coords[0])
+                if polygon.geom_type == "Polygon"
+                else sum(len(ring) for ring in polygon.coords)
+            )
+            if num_coords > self.MAX_VERTICES:
+                return None, Response(
+                    {
+                        "error": f"Polygon complexity exceeds maximum allowed vertices ({self.MAX_VERTICES})"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            return polygon, None
+
+        except Exception as e:
+            return None, Response(
+                {"error": f"Error processing polygon: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def _get_scores_data(self, datatype, tiles):
+        if datatype == FrontendDataType.PLANTABILITY.value:
+            return (
+                self._calculate_plantability_scores(tiles),
+                PlantabilityScoresSerializer,
+            )
+
+        if datatype == FrontendDataType.VULNERABILITY.value:
+            return (
+                self._calculate_vulnerability_scores(tiles),
+                VulnerabilityScoresSerializer,
+            )
+
+        if datatype == FrontendDataType.PLANTABILITY_VULNERABILITY.value:
+            return (
+                self._calculate_plantability_vulnerability_scores(tiles),
+                PlantabilityVulnerabilityScoresSerializer,
+            )
+
+        return None, None
 
     def _get_iris_and_city_codes(self, tiles):
         """Extracts unique IRIS and city codes from a tile queryset"""
@@ -176,18 +259,20 @@ class ScoresInPolygonView(APIView):
     def _calculate_plantability_vulnerability_scores(self, tiles):
         """Calculates average scores for combined plantability and vulnerability"""
 
-        # Calculate plantability scores from tiles
         plantability_data = self._calculate_plantability_scores(tiles)
 
-        # Get unique vulnerability objects from tiles
-        vulnerabilities = Vulnerability.objects.filter(
-            id__in=tiles.values_list("vulnerability_idx", flat=True).distinct()
+        vuln_result = (
+            tiles.values("vulnerability_idx")
+            .distinct()
+            .aggregate(
+                avg_day=Avg("vulnerability_idx__vulnerability_index_day"),
+                avg_night=Avg("vulnerability_idx__vulnerability_index_night"),
+            )
         )
 
-        # Calculate vulnerability scores from vulnerability objects
-        vulnerability_data = self._calculate_vulnerability_scores(vulnerabilities)
+        avg_day = vuln_result["avg_day"]
+        avg_night = vuln_result["avg_night"]
 
-        # Merge results excluding redundant fields
         return {
             "datatype": FrontendDataType.PLANTABILITY_VULNERABILITY.value,
             "count": plantability_data["count"],
@@ -196,112 +281,42 @@ class ScoresInPolygonView(APIView):
             ],
             "distribution": plantability_data["distribution"],
             "plantability_indice": plantability_data["plantability_indice"],
-            "vulnerability_indice_day": vulnerability_data["vulnerability_indice_day"],
-            "vulnerability_indice_night": vulnerability_data[
-                "vulnerability_indice_night"
-            ],
+            "vulnerability_indice_day": (
+                round(avg_day, INDICE_ROUNDING_DECIMALS) if avg_day else 0
+            ),
+            "vulnerability_indice_night": (
+                round(avg_night, INDICE_ROUNDING_DECIMALS) if avg_night else 0
+            ),
         }
 
     def post(self, request, datatype, *args, **kwargs):
-        """
-        Accepte un GeoJSON polygon et retourne les scores moyens et la distribution
-
-        Request body:
-        {
-            "type": "Polygon",
-            "coordinates": [[[lng, lat], [lng, lat], ...]]
-        }
-
-        Response (plantability):
-        {
-            "datatype": "plantability",
-            "count": 150,
-            "plantabilityNormalizedIndice": 6.5,
-            "plantabilityIndice": 6.5,
-            "distribution": {
-                "0": 5,
-                "1": 10,
-                "2": 15,
-                ...
-            }
-        }
-
-        Response (vulnerability):
-        {
-            "datatype": "vulnerability",
-            "count": 150,
-            "vulnerability_indice_day": 4.2,
-            "vulnerability_indice_night": 3.8,
-        }
-        """
-        if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
-            return Response(
-                {
-                    "error": f"Invalid datatype. Must be one of: {', '.join(FRONTEND_DATATYPE_MODEL_MAP.keys())}"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check that datatype is not LCZ (local climate zones)
-        if datatype == FrontendDataType.CLIMATE_ZONE.value:
-            return Response(
-                {
-                    "error": "Local climate zone calculation is not supported for polygon selections. Use point selection mode instead."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        error_response = self._validate_datatype(datatype)
+        if error_response:
+            return error_response
 
         polygon_geojson = request.data
-        if not polygon_geojson:
+        error_response = self._validate_polygon_data(polygon_geojson)
+        if error_response:
+            return error_response
+
+        polygon, error_response = self._process_polygon_geometry(polygon_geojson)
+        if error_response:
+            return error_response
+
+        model = FRONTEND_DATATYPE_MODEL_MAP[datatype]
+        tiles = model.objects.filter(geometry__intersects=polygon)
+
+        if not tiles.exists():
             return Response(
-                {"error": "No polygon data provided"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "No tiles found in polygon"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        try:
-            # Convert GeoJSON to PostGIS geometry
-            polygon = GEOSGeometry(str(polygon_geojson))
-            if polygon.srid is None or polygon.srid == 0:
-                polygon.srid = 4326
-            polygon.transform(2154)
+        iris_codes, city_codes = self._get_iris_and_city_codes(tiles)
+        data, serializer_class = self._get_scores_data(datatype, tiles)
 
-            # Get the appropriate model
-            model = FRONTEND_DATATYPE_MODEL_MAP[datatype]
-
-            # PostGIS query to find tiles that intersect the polygon
-            tiles = model.objects.filter(geometry__intersects=polygon)
-
-            if not tiles.exists():
-                return Response(
-                    {"error": "No tiles found in polygon"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            # Extract IRIS and city codes
-            iris_codes, city_codes = self._get_iris_and_city_codes(tiles)
-
-            # Calculate scores and distributions based on datatype
-            if datatype == FrontendDataType.PLANTABILITY.value:
-                data = self._calculate_plantability_scores(tiles)
-                serializer_class = PlantabilityScoresSerializer
-
-            elif datatype == FrontendDataType.VULNERABILITY.value:
-                data = self._calculate_vulnerability_scores(tiles)
-                serializer_class = VulnerabilityScoresSerializer
-
-            elif datatype == FrontendDataType.PLANTABILITY_VULNERABILITY.value:
-                data = self._calculate_plantability_vulnerability_scores(tiles)
-                serializer_class = PlantabilityVulnerabilityScoresSerializer
-
-            # Merge data with codes
-            serializer = serializer_class(
-                data={**data, "iris_codes": iris_codes, "city_codes": city_codes}
-            )
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
-
-        except Exception as e:
-            return Response(
-                {"error": f"Error processing polygon: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        serializer = serializer_class(
+            data={**data, "iris_codes": iris_codes, "city_codes": city_codes}
+        )
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
