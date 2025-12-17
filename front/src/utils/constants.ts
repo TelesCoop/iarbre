@@ -21,3 +21,6 @@ export const DEFAULT_MAP_PARAMS: MapParams = {
   lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14
 }
+
+// Terra Draw layer name (used to position layers below drawing layers)
+export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"
