@@ -10,6 +10,7 @@ from .views import (
     HealthCheckView,
     QPVListView,
     MetadataView,
+    RasterDownloadView,
 )
 
 router = routers.DefaultRouter()
@@ -35,6 +36,11 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path(
+        "rasters/plantability/",
+        RasterDownloadView.as_view(),
+        name="download-plantability-raster",
+    ),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
