@@ -26,12 +26,27 @@ const router = createRouter({
       }
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(\\d+\\.\\d{5})/:lng(\\d+\\.\\d{5})",
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})/:lng(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})",
+      redirect: (to) => {
+        const { dataType, zoom, lat, lng } = to.params
+        return {
+          name: "mapWithUrlParams",
+          params: {
+            dataType,
+            zoom,
+            lat: parseFloat(lat as string).toFixed(5),
+            lng: parseFloat(lng as string).toFixed(5)
+          }
+        }
+      }
+    },
+    {
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{5})/:lng(-?\\d+\\.\\d{5})",
       name: "mapWithUrlParams",
       component: MapView
     },
     {
-      path: "/:zoom(\\d+)/:lat(\\d+\\.\\d+)/:lng(\\d+\\.\\d+)",
+      path: "/:zoom(\\d+)/:lat(-?\\d+\\.\\d+)/:lng(-?\\d+\\.\\d+)",
       redirect: (to) => {
         const { zoom, lat, lng } = to.params
         return {
