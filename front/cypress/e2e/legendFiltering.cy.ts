@@ -5,7 +5,7 @@ import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 describe("Legend Filtering", () => {
   beforeEach(() => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.visit("/plantability/13/45.07126/5.5543")
+    cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
