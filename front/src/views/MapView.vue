@@ -4,17 +4,13 @@ import { useRouter, useRoute } from "vue-router"
 import { ref } from "vue"
 import type { MapParams } from "@/types/map"
 import { DataType } from "@/utils/enum"
-import { DEFAULT_MAP_CENTER } from "@/utils/constants"
+import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 
 const router = useRouter()
 const route = useRoute()
 
-const mapParams = ref<MapParams>({
-  dataType: DataType.PLANTABILITY,
-  lng: DEFAULT_MAP_CENTER.lng,
-  lat: DEFAULT_MAP_CENTER.lat,
-  zoom: 14
-})
+const mapParams = ref<MapParams>({ ...DEFAULT_MAP_PARAMS })
+const hasAlreadyChanged = ref<boolean>(false)
 
 if (route.name === "mapWithUrlParams") {
   mapParams.value = {
@@ -24,6 +20,33 @@ if (route.name === "mapWithUrlParams") {
     dataType: route.params.dataType as DataType
   }
 }
+
+const handleMapUpdate = (params: MapParams) => {
+  const replaceUrl = () => {
+    router.replace({
+      name: "mapWithUrlParams",
+      params: {
+        ...params,
+        lat: params.lat.toFixed(5),
+        lng: params.lng.toFixed(5)
+      } as any
+    })
+  }
+
+  if (hasAlreadyChanged.value) {
+    replaceUrl()
+    return
+  }
+
+  const hasChanged = Object.keys(DEFAULT_MAP_PARAMS).some(
+    (key) => params[key as keyof MapParams] !== DEFAULT_MAP_PARAMS[key as keyof MapParams]
+  )
+
+  if (hasChanged) {
+    hasAlreadyChanged.value = true
+    replaceUrl()
+  }
+}
 </script>
 
 <template>
@@ -31,9 +54,7 @@ if (route.name === "mapWithUrlParams") {
     <map-component
       :model-value="mapParams"
       map-id="default"
-      @update:model-value="
-        (params) => router.replace({ name: 'mapWithUrlParams', params: params as any })
-      "
+      @update:model-value="handleMapUpdate"
     />
 
     <!-- Drawer -->
