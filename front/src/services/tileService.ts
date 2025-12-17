@@ -37,7 +37,6 @@ export const getScoresInPolygon = async (
   dataType: DataType
 ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
   try {
-    // Create the GeoJSON polygon
     const polygon = {
       type: "Polygon",
       coordinates: [polygonCoordinates]
