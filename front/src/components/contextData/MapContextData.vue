@@ -20,7 +20,6 @@ defineProps({
 
 <template>
   <div class="map-context-data-container w-full" data-cy="map-context-data">
-    />
     <div v-if="mapStore.isCalculating" class="flex flex-col items-center justify-center gap-3 p-8">
       <ProgressSpinner style="width: 50px; height: 50px" stroke-width="4" animation-duration="1s" />
       <div class="text-brown text-center">Calcul en cours...</div>
