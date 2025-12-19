@@ -13,7 +13,7 @@ const router = createRouter({
       component: MapView
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)",
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability|vegetation)",
       redirect: (to) => {
         return {
           name: "mapWithUrlParams",
@@ -27,7 +27,7 @@ const router = createRouter({
       }
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})/:lng(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})",
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability|vegetation)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})/:lng(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})",
       redirect: (to) => {
         const { dataType, zoom, lat, lng } = to.params
         return {
@@ -42,7 +42,7 @@ const router = createRouter({
       }
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{5})/:lng(-?\\d+\\.\\d{5})",
+      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability|vegetation)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{5})/:lng(-?\\d+\\.\\d{5})",
       name: "mapWithUrlParams",
       component: MapView
     },
