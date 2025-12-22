@@ -148,10 +148,10 @@ class ScoresInPolygonView(APIView):
 
             return polygon, None
 
-        except Exception as e:
+        except Exception:
             return None, Response(
-                {"error": f"Error processing polygon: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"error": "Invalid polygon shape"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     def _get_scores_data(self, datatype, tiles):
