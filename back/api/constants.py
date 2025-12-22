@@ -18,6 +18,8 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
+    LIDAR = "vegetation", "Vegetation"
+    VEGESTRATE = "vegestrate", "Vegestrate"
 
 
 class FrontendDataType(TextChoices):

@@ -77,6 +77,7 @@ nav:
       - Atlas des vulnérabitilités: methodology/vulnerability.md
       - Zones climatiques locales: methodology/lcz.md
       - Croisement plantabilité et vulnérabilité: methodology/plantability_vulnerability.md
+      - Végétation: methodology/vegetation.md
   - Backend:
       - Instructions: back/backend.md
       - Données de test: back/testing-data.md

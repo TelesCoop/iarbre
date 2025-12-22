@@ -24,10 +24,15 @@
           vars:
             database_password: "{{ vault_database_password }}"
       when: branch is not defined
-    - name: Create symbolic link from feature mvt_files to preprod mvt_files
+    - name: Remove existing media directory on feature branches
       file:
-        src: "{{ project_base_dir }}_preprod/backend/back/mvt_files"
-        dest: "{{ django_path }}/mvt_files"
+        path: "{{ backend_media_path }}"
+        state: absent
+      when: branch is defined
+    - name: Create symbolic link from feature media to preprod media
+      file:
+        src: "{{ project_base_dir }}_preprod/backend/back/media"
+        dest: "{{ backend_media_path }}"
         state: link
       when: branch is defined
 
