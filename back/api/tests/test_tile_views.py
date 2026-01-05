@@ -2,6 +2,7 @@ import json
 from django.test import TestCase, Client
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Polygon
+from django.urls import reverse
 from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
 
 
@@ -18,7 +19,16 @@ class TileViewTest(TestCase):
         )
 
     def test_valid_tile_retrieval(self):
-        url = "/api/tiles/city/test/10/512/256.mvt"
+        url = reverse(
+            "retrieve-tile",
+            kwargs={
+                "geolevel": "city",
+                "datatype": "test",
+                "zoom": 10,
+                "x": 512,
+                "y": 256,
+            },
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -26,7 +36,16 @@ class TileViewTest(TestCase):
         self.assertTrue(len(response.content) > 0)  # Has content
 
     def test_nonexistent_tile_returns_404(self):
-        url = "/api/tiles/city/test/10/999/999.mvt"
+        url = reverse(
+            "retrieve-tile",
+            kwargs={
+                "geolevel": "city",
+                "datatype": "test",
+                "zoom": 10,
+                "x": 999,
+                "y": 999,
+            },
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
@@ -42,21 +61,25 @@ class TileDetailsViewTest(TestCase):
         self.tile = Tile.objects.create(id=3, geometry=square)
 
     def test_lcz_details_retrieval(self):
-        url = "/api/tiles/lcz/1/"
+        url = reverse("retrieve-tile-details", kwargs={"datatype": "lcz", "id": 1})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("application/json", response["content-type"])
 
     def test_vulnerability_details_retrieval(self):
-        url = "/api/tiles/vulnerability/2/"
+        url = reverse(
+            "retrieve-tile-details", kwargs={"datatype": "vulnerability", "id": 2}
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("application/json", response["content-type"])
 
     def test_plantability_details_retrieval(self):
-        url = "/api/tiles/plantability/3/"
+        url = reverse(
+            "retrieve-tile-details", kwargs={"datatype": "plantability", "id": 3}
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -73,7 +96,9 @@ class TileDetailsViewTest(TestCase):
             else:
                 obj_id = self.tile.id
 
-            url = f"/api/tiles/{datatype}/{obj_id}/"
+            url = reverse(
+                "retrieve-tile-details", kwargs={"datatype": datatype, "id": obj_id}
+            )
             response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
 
@@ -84,7 +109,10 @@ class TileDetailsViewTest(TestCase):
             geometry=square, details='{"plantabilityNormalizedIndice": 5, "id": 42}'
         )
 
-        url = f"/api/tiles/plantability/{tile_with_json.id}/"
+        url = reverse(
+            "retrieve-tile-details",
+            kwargs={"datatype": "plantability", "id": tile_with_json.id},
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -99,7 +127,10 @@ class TileDetailsViewTest(TestCase):
             geometry=square, details="invalid json string"
         )
 
-        url = f"/api/tiles/plantability/{tile_with_invalid_json.id}/"
+        url = reverse(
+            "retrieve-tile-details",
+            kwargs={"datatype": "plantability", "id": tile_with_invalid_json.id},
+        )
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -130,7 +161,7 @@ class ScoresInPolygonViewTest(TestCase):
         )
 
     def test_valid_plantability_polygon(self):
-        url = "/api/tiles/plantability/in-polygon/"
+        url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
         polygon = {
             "type": "Polygon",
             "coordinates": [
@@ -154,7 +185,7 @@ class ScoresInPolygonViewTest(TestCase):
         self.assertIn("plantabilityNormalizedIndice", data)
 
     def test_valid_vulnerability_polygon(self):
-        url = "/api/tiles/vulnerability/in-polygon/"
+        url = reverse("scores-in-polygon", kwargs={"datatype": "vulnerability"})
         polygon = {
             "type": "Polygon",
             "coordinates": [
@@ -177,7 +208,7 @@ class ScoresInPolygonViewTest(TestCase):
         self.assertIn("vulnerabilityIndiceDay", data)
 
     def test_invalid_datatype(self):
-        url = "/api/tiles/invalid/in-polygon/"
+        url = reverse("scores-in-polygon", kwargs={"datatype": "invalid"})
         polygon = {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]}
         response = self.client.post(
             url, data=json.dumps(polygon), content_type="application/json"
@@ -186,13 +217,13 @@ class ScoresInPolygonViewTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_empty_polygon_data(self):
-        url = "/api/tiles/plantability/in-polygon/"
+        url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
         response = self.client.post(url, data="", content_type="application/json")
 
         self.assertEqual(response.status_code, 400)
 
     def test_no_tiles_found(self):
-        url = "/api/tiles/plantability/in-polygon/"
+        url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
         polygon = {
             "type": "Polygon",
             "coordinates": [
