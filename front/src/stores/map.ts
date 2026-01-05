@@ -24,7 +24,7 @@ import {
   DataTypeToGeolevel,
   getDataTypeAttributionSource
 } from "@/utils/enum"
-import mapStyles from "../../public/map/map-style.json"
+import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
