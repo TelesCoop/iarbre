@@ -502,6 +502,10 @@ class MVTGenerator:
                 and obj.vulnerability_indice_day is not None
             ):
                 properties["vulnerability_indice_day"] = obj.vulnerability_indice_day
+                # Calculate mixed_indice_day for bivariate visualization
+                properties["mixed_indice_day"] = MVTGenerator.calculate_mixed_indice(
+                    obj.plantability_normalized_indice, obj.vulnerability_indice_day
+                )
             if (
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
@@ -509,12 +513,32 @@ class MVTGenerator:
                 properties[
                     "vulnerability_indice_night"
                 ] = obj.vulnerability_indice_night
+                # Calculate mixed_indice_night for bivariate visualization
+                properties["mixed_indice_night"] = MVTGenerator.calculate_mixed_indice(
+                    obj.plantability_normalized_indice, obj.vulnerability_indice_night
+                )
             if zoom > ZOOM_AGGREGATE_BREAKPOINT:
                 v_id = getattr(obj, "vulnerability_idx_id", None)
                 if v_id:
                     vulnerability_properties = vuln_props.get(v_id, {})
                     for key, value in vulnerability_properties.items():
                         properties[f"vulnerability_{key}"] = value
+
+                    # Calculate mixed_indice_day and mixed_indice_night for non-aggregated tiles
+                    if "vulnerability_index_day" in vulnerability_properties:
+                        properties[
+                            "mixed_indice_day"
+                        ] = MVTGenerator.calculate_mixed_indice(
+                            obj.plantability_normalized_indice,
+                            vulnerability_properties["vulnerability_index_day"],
+                        )
+                    if "vulnerability_index_night" in vulnerability_properties:
+                        properties[
+                            "mixed_indice_night"
+                        ] = MVTGenerator.calculate_mixed_indice(
+                            obj.plantability_normalized_indice,
+                            vulnerability_properties["vulnerability_index_night"],
+                        )
             all_features.append(
                 {
                     "geometry": obj.geometry.wkt,
@@ -583,3 +607,33 @@ class MVTGenerator:
             if x < PLANTABILITY_NORMALIZED[i]:
                 return PLANTABILITY_NORMALIZED[i - 1]
         return PLANTABILITY_NORMALIZED[-1]
+
+    @staticmethod
+    def calculate_mixed_indice(
+        plantability_indice: float, vulnerability_indice_day: float
+    ) -> int:
+        """
+        Calculate mixed bivariate index from plantability and vulnerability indices.
+
+        This combines plantability (0-10) and vulnerability (1-9) into a single index
+        that maps to a 5x5 bivariate color grid.
+
+        Args:
+            plantability_indice: Plantability normalized index (0-10 scale)
+            vulnerability_indice_day: Vulnerability day index (1-9 scale)
+
+        Returns:
+            int: Combined index value (1-45) for bivariate color mapping
+        """
+        if plantability_indice is None or vulnerability_indice_day is None:
+            return None
+
+        # Component 1: Map plantability from 0-10 to 0-4, then multiply by 10
+        component_1 = min(4, max(0, math.floor(plantability_indice / 2.5))) * 10
+
+        # Component 2: Map vulnerability from 1-9 to 1-5
+        component_2 = min(
+            5, max(1, 1 + math.floor(((vulnerability_indice_day - 1) / 8) * 4))
+        )
+
+        return component_1 + component_2
