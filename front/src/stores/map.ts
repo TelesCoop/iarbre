@@ -75,7 +75,7 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
-    const bivariateExpression = generateBivariateColorExpression()
+    const bivariateExpression = generateBivariateColorExpression(vulnerabilityMode.value)
 
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
