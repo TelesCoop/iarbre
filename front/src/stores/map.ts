@@ -339,6 +339,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const refreshDatatype = () => {
+    changeDataType(selectedDataType.value)
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -546,6 +550,7 @@ export const useMapStore = defineStore("map", () => {
     selectedMapStyle,
     changeMapStyle,
     changeDataType,
+    refreshDatatype,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
