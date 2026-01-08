@@ -31,6 +31,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
@@ -85,6 +86,11 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
+        "match",
+        ["get", "indice"],
+        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
     }
   })

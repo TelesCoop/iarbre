@@ -26,6 +26,10 @@ const options = [
   {
     label: DataTypeToLabel[DataType.PLANTABILITY_VULNERABILITY],
     value: DataType.PLANTABILITY_VULNERABILITY
+  },
+  {
+    label: DataTypeToLabel[DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY],
+    value: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
   }
 ]
 </script>

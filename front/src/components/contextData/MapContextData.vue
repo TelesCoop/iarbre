@@ -29,15 +29,19 @@ defineProps({
         :data="mapStore.contextData.data as PlantabilityData"
       />
       <map-context-data-vulnerability
-        v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+        v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
         :data="mapStore.contextData.data as VulnerabilityData"
       />
       <map-context-data-climate-zone
-        v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+        v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
         :data="mapStore.contextData.data as ClimateData"
       />
       <map-context-data-plantability-vulnerability
-        v-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
+        v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
+        :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
+      />
+      <map-context-data-biosphere-integrity
+        v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
       />
     </template>

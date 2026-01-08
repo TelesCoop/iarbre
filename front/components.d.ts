@@ -10,6 +10,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppDrawer: typeof import('./src/components/AppDrawer.vue')['default']
     Badge: typeof import('primevue/badge')['default']
+    BiosphereFunctionalIntegrityLegend: typeof import('./src/components/map/legend/BiosphereFunctionalIntegrityLegend.vue')['default']
     BivariateCellLabel: typeof import('./src/components/map/score/BivariateCellLabel.vue')['default']
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
@@ -28,6 +29,7 @@ declare module 'vue' {
     ContextDataListContainer: typeof import('./src/components/contextData/shared/ContextDataListContainer.vue')['default']
     ContextDataMainContainer: typeof import('./src/components/contextData/shared/ContextDataMainContainer.vue')['default']
     ContextDataScore: typeof import('./src/components/contextData/shared/ContextDataScore.vue')['default']
+    copy: typeof import('./src/components/map/legend/PlantVulnerabilityLegend copy.vue')['default']
     Dialog: typeof import('primevue/dialog')['default']
     DivisionData: typeof import('./src/components/division/DivisionData.vue')['default']
     DivisionDataDisplay: typeof import('./src/components/division/DivisionDataDisplay.vue')['default']

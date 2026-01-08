@@ -4,6 +4,8 @@ import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 
+const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY})`
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -13,7 +15,7 @@ const router = createRouter({
       component: MapView
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)",
+      path: dataTypeBaseRegex,
       redirect: (to) => {
         return {
           name: "mapWithUrlParams",
@@ -27,7 +29,7 @@ const router = createRouter({
       }
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})/:lng(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})",
+      path: `${dataTypeBaseRegex}/:zoom(\\d+)/:lat(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})/:lng(-?\\d+\\.\\d{1,4}|\\d+\\.\\d{6,})`,
       redirect: (to) => {
         const { dataType, zoom, lat, lng } = to.params
         return {
@@ -42,7 +44,7 @@ const router = createRouter({
       }
     },
     {
-      path: "/:dataType(plantability|lcz|vulnerability|plantability_vulnerability)/:zoom(\\d+)/:lat(-?\\d+\\.\\d{5})/:lng(-?\\d+\\.\\d{5})",
+      path: `${dataTypeBaseRegex}/:zoom(\\d+)/:lat(-?\\d+\\.\\d{5})/:lng(-?\\d+\\.\\d{5})`,
       name: "mapWithUrlParams",
       component: MapView
     },
