@@ -271,6 +271,26 @@ class HotSpot(models.Model):
         }
 
 
+class BiosphereFunctionalIntegrity(models.Model):
+    """
+    Biodiversity integrity
+    """
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    indice = models.IntegerField()
+
+    geolevel = GeoLevel.BIOSPHERE_INTEGRITY.value
+    datatype = DataType.BIOSPHERE_INTEGRITY.value
+
+    def get_layer_properties(self):
+        """Return the properties of the hotspot point for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice": self.indice,
+        }
+
+
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)

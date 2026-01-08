@@ -11,6 +11,10 @@ class GeoLevel(TextChoices):
     IRIS = "iris", "Iris"
     LCZ = "lcz", "LCZ"
     CADASTRE = "cadastre", "Cadastre"
+    BIOSPHERE_INTEGRITY = (
+        "biosphere_functional_integrity",
+        "Biosphere Functional Integrity",
+    )
 
 
 class DataType(TextChoices):
@@ -18,6 +22,10 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
+    BIOSPHERE_INTEGRITY = (
+        "biosphere_functional_integrity",
+        "Biosphere Functional Integrity",
+    )
 
 
 class FrontendDataType(TextChoices):
