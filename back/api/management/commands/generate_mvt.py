@@ -12,7 +12,14 @@ from django.db.models import QuerySet, Model
 
 from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, Vulnerability, Cadastre, MVTTile
+from iarbre_data.models import (
+    Tile,
+    Lcz,
+    Vulnerability,
+    Cadastre,
+    MVTTile,
+    BiosphereFunctionalIntegrity,
+)
 
 
 class Command(BaseCommand):
@@ -104,11 +111,17 @@ class Command(BaseCommand):
             geolevel == GeoLevel.CADASTRE.value and datatype == DataType.CADASTRE.value
         ):
             mdl = Cadastre
+        elif (
+            geolevel == GeoLevel.BIOSPHERE_INTEGRITY.value
+            and datatype == DataType.BIOSPHERE_INTEGRITY.value
+        ):
+            mdl = BiosphereFunctionalIntegrity
         else:
             supported_levels = [
                 GeoLevel.TILE.value,
                 GeoLevel.LCZ.value,
                 GeoLevel.CADASTRE.value,
+                GeoLevel.BIOSPHERE_INTEGRITY.value,
             ]
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
