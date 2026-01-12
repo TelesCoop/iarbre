@@ -6,7 +6,7 @@ BACK_CMD_BASE = cd back/ && pew in ${PEW_ENV}
 BACK_CMD = ${BACK_CMD_BASE} python manage.py
 # Install front
 install_front:
-	${FRONT_CMD} && npm install
+	${FRONT_CMD} && npm install --ignore-scripts
 
 # Install back
 install_back:

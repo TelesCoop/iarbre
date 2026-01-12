@@ -22,7 +22,7 @@
 
 - name: Install project node dependencies with npm
   # yamllint disable-line rule:line-length
-  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm ci"
+  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm ci --ignore-scripts"
   args:
     chdir: "{{ current_path }}"
     executable: /bin/bash
