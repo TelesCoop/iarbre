@@ -75,7 +75,7 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
-    const bivariateExpression = generateBivariateColorExpression()
+    const bivariateExpression = generateBivariateColorExpression(vulnerabilityMode.value)
 
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
@@ -339,6 +339,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const refreshDatatype = () => {
+    changeDataType(selectedDataType.value)
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -546,6 +550,7 @@ export const useMapStore = defineStore("map", () => {
     selectedMapStyle,
     changeMapStyle,
     changeDataType,
+    refreshDatatype,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
