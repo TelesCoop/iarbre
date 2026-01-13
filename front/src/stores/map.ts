@@ -262,7 +262,9 @@ export const useMapStore = defineStore("map", () => {
     const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
     layers.forEach((layer) => {
-      map.addLayer(layer, beforeId)
+      if (!map.getLayer(layer.id)) {
+        map.addLayer(layer, beforeId)
+      }
     })
 
     setupClickEventOnTile(map, datatype, geolevel)
@@ -274,11 +276,13 @@ export const useMapStore = defineStore("map", () => {
       datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
     const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
+    if (!map.getSource(sourceId)) {
+      map.addSource(sourceId, {
+        type: "vector",
+        tiles: [tileUrl],
+        minzoom: MIN_ZOOM
+      })
+    }
   }
 
   const removeControls = (map: Map) => {
@@ -369,11 +373,13 @@ export const useMapStore = defineStore("map", () => {
 
       if (newStyle!) {
         mapInstance.setStyle(newStyle)
+        mapInstance.once("style.load", () => {
+          setupControls(mapInstance).catch(console.error)
+          if (showQPVLayer.value) {
+            addQPVLayer(mapInstance)
+          }
+        })
       }
-      if (showQPVLayer.value) {
-        addQPVLayer(mapInstance)
-      }
-      mapInstance.fire("style.load")
     })
   }
 
