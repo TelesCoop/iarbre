@@ -4,6 +4,7 @@ from api.management.commands.generate_mvt import Command as GenerateMVTCommand
 from api.constants import GeoLevel, DataType
 from iarbre_data.models import MVTTile, City
 from iarbre_data.management.commands.populate import Command as PopulateCommand
+from api.utils.mvt_generator import MVTGenerator
 
 
 class GenerateMVTCommandTest(TestCase):
@@ -96,8 +97,6 @@ class GenerateMVTCommandTest(TestCase):
 
     def test_mixed_indice_calculation(self):
         """Test that calculate_mixed_indice function works correctly"""
-        from api.utils.mvt_generator import MVTGenerator
-
         # Test various combinations of plantability and vulnerability indices
         test_cases = [
             # (plantability_indice, vulnerability_indice, expected_mixed_indice)
@@ -124,7 +123,6 @@ class GenerateMVTCommandTest(TestCase):
 
     def test_mixed_indice_with_none_values(self):
         """Test that calculate_mixed_indice handles None values correctly"""
-        from api.utils.mvt_generator import MVTGenerator
 
         # Should return None when either input is None
         self.assertIsNone(MVTGenerator.calculate_mixed_indice(None, 5))
@@ -133,8 +131,6 @@ class GenerateMVTCommandTest(TestCase):
 
     def test_mixed_indice_boundary_values(self):
         """Test calculate_mixed_indice with boundary values"""
-        from api.utils.mvt_generator import MVTGenerator
-
         # Test plantability boundaries (0-10 scale maps to 0-4 grid)
         # 0 -> 0, 2.5 -> 1, 5 -> 2, 7.5 -> 3, 10 -> 4
         # Note: vulnerability 5 maps to component 3 (see vulnerability boundaries test below)
