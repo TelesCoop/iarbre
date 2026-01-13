@@ -6,12 +6,6 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
-### 2026-01-12T20:03_postgres_backup.dump (3.4 GiB)
-
-**Changements :**
-
-- **Inventaire stratifié du végétal** : Ajout dans les `media` du raster de l'inventaire du végétal stratifié pour toute la métropole de Lyon.
-
 ### 2025-12-09T14:16_postgres_backup.dump
 
 **Changements :**
