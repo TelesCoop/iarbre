@@ -503,7 +503,7 @@ class MVTGenerator:
             ):
                 properties["vulnerability_indice_day"] = obj.vulnerability_indice_day
                 # Calculate mixed_indice_day for bivariate visualization
-                properties["mixed_indice_day"] = MVTGenerator.calculate_mixed_indice(
+                properties["mixed_indice_day"] = MVTGenerator.compute_mixed_indice(
                     obj.plantability_normalized_indice, obj.vulnerability_indice_day
                 )
             if (
@@ -514,7 +514,7 @@ class MVTGenerator:
                     "vulnerability_indice_night"
                 ] = obj.vulnerability_indice_night
                 # Calculate mixed_indice_night for bivariate visualization
-                properties["mixed_indice_night"] = MVTGenerator.calculate_mixed_indice(
+                properties["mixed_indice_night"] = MVTGenerator.compute_mixed_indice(
                     obj.plantability_normalized_indice, obj.vulnerability_indice_night
                 )
             if zoom > ZOOM_AGGREGATE_BREAKPOINT:
@@ -528,14 +528,14 @@ class MVTGenerator:
                     if "vulnerability_index_day" in vulnerability_properties:
                         properties[
                             "mixed_indice_day"
-                        ] = MVTGenerator.calculate_mixed_indice(
+                        ] = MVTGenerator.compute_mixed_indice(
                             obj.plantability_normalized_indice,
                             vulnerability_properties["vulnerability_index_day"],
                         )
                     if "vulnerability_index_night" in vulnerability_properties:
                         properties[
                             "mixed_indice_night"
-                        ] = MVTGenerator.calculate_mixed_indice(
+                        ] = MVTGenerator.compute_mixed_indice(
                             obj.plantability_normalized_indice,
                             vulnerability_properties["vulnerability_index_night"],
                         )
@@ -609,7 +609,7 @@ class MVTGenerator:
         return PLANTABILITY_NORMALIZED[-1]
 
     @staticmethod
-    def calculate_mixed_indice(
+    def compute_mixed_indice(
         plantability_indice: float, vulnerability_indice_day: float
     ) -> int:
         """
