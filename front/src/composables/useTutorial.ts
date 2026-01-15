@@ -45,7 +45,6 @@ export function useTutorial() {
           const toggleElement = document.querySelector(TutorialSelector.DRAWER_TOGGLE)
           const handleToggleClick = () => {
             toggleElement?.removeEventListener("click", handleToggleClick)
-            appStore.setDrawerVisible(Drawer.MAP_SCORES, true)
             nextTick(() => {
               tutorialStore.nextStep()
             })
@@ -54,7 +53,7 @@ export function useTutorial() {
         }
       },
       {
-        element: TutorialSelector.MAP_DRAWER,
+        element: TutorialSelector.MAP_CONFIG_DRAWER,
         popover: {
           title: "Panneau d'informations",
           description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
