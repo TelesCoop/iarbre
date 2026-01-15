@@ -82,6 +82,11 @@
   @apply border border-gray-200;
 }
 
+.welcome-functionnality--clickable {
+  @apply cursor-pointer transition-colors duration-200;
+  @apply hover:bg-gray-100 hover:border-gray-300;
+}
+
 .p-button {
   @apply font-sans!;
   /* There is no way actually to override the default font in PrimeReact */

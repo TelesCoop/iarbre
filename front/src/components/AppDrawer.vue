@@ -55,7 +55,7 @@ const drawerVisible = computed({
       </slot>
     </template>
 
-    <div class="drawer-content">
+    <div class="drawer-content" data-cy="drawer-content">
       <slot></slot>
     </div>
   </Drawer>
