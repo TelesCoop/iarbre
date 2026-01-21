@@ -48,7 +48,7 @@ jobs:
         working-directory: ./front
 
       - name: Install front js dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: npm ci --prefer-offline --no-audit && npx allow-scripts
         working-directory: ./front
 
   pre-commit:
@@ -93,7 +93,7 @@ jobs:
 
       - name: Install js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
+        run: npm ci && npx allow-scripts
         working-directory: ./front
 
       - name: Enforce pre-commit hook server side
@@ -149,7 +149,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
       - name: Install js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
+        run: npm ci && npx allow-scripts
         working-directory: ./front
 
   frontend-tests:
@@ -170,7 +170,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
       - name: Install front js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
+        run: npm ci && npx allow-scripts
         working-directory: ./front
       - name: Install Cypress binary
         run: npx cypress install
@@ -292,7 +292,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
       - name: Install front js dependencies if not cached
         if: steps.cache-node.outputs.cache-hit != 'true'
-        run: npm install
+        run: npm ci && npx allow-scripts
         working-directory: ./front
       - name: Build front
         run: npm run build

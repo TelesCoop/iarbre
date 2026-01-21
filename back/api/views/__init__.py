@@ -5,3 +5,4 @@ from .heath_views import HealthCheckView  # noqa: F401
 from .qpv_views import QPVListView  # noqa: F401
 from .database_version_views import MetadataView  # noqa: F401
 from .raster_views import RasterDownloadView  # noqa: F401
+from .vegetation_views import VegetationTileView  # noqa: F401

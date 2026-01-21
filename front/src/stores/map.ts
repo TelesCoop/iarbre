@@ -24,7 +24,7 @@ import {
   DataTypeToGeolevel,
   getDataTypeAttributionSource
 } from "@/utils/enum"
-import mapStyles from "../../public/map/map-style.json"
+import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -75,7 +75,7 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
-    const bivariateExpression = generateBivariateColorExpression()
+    const bivariateExpression = generateBivariateColorExpression(vulnerabilityMode.value)
 
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
@@ -163,6 +163,21 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
+    if (datatype === DataType.VEGETATION) {
+      // Raster layer for vegetation
+      const rasterLayer: AddLayerObject = {
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        layout: {},
+        paint: {
+          "raster-opacity": 0.7
+        }
+      }
+      return [rasterLayer]
+    }
+
+    // Vector layers for other data types
     const fillLayer: AddLayerObject = {
       id: layerId,
       type: "fill",
@@ -194,6 +209,11 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    // Skip click events for raster layers (vegetation)
+    if (datatype === DataType.VEGETATION) {
+      return
+    }
+
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -262,7 +282,9 @@ export const useMapStore = defineStore("map", () => {
     const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
     layers.forEach((layer) => {
-      map.addLayer(layer, beforeId)
+      if (!map.getLayer(layer.id)) {
+        map.addLayer(layer, beforeId)
+      }
     })
 
     setupClickEventOnTile(map, datatype, geolevel)
@@ -270,15 +292,28 @@ export const useMapStore = defineStore("map", () => {
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const tileDataType =
-      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
     const sourceId = getSourceId(datatype, geolevel)
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
+
+    if (datatype === DataType.VEGETATION) {
+      // Raster source for vegetation
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png`
+      map.addSource(sourceId, {
+        type: "raster",
+        tiles: [tileUrl],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+    } else {
+      // Vector source for other data types
+      const tileDataType =
+        datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
+      const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
+      map.addSource(sourceId, {
+        type: "vector",
+        tiles: [tileUrl],
+        minzoom: MIN_ZOOM
+      })
+    }
   }
 
   const removeControls = (map: Map) => {
@@ -319,7 +354,10 @@ export const useMapStore = defineStore("map", () => {
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
         mapInstance.removeLayer(layerId)
-        mapInstance.removeLayer(`${layerId}-border`)
+        // Only remove border layer for vector data types
+        if (previousDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+          mapInstance.removeLayer(`${layerId}-border`)
+        }
         mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
       }
       removeControls(mapInstance)
@@ -337,6 +375,10 @@ export const useMapStore = defineStore("map", () => {
     if (features.length > 0 && selectionMode.value !== SelectionMode.POINT) {
       finishShapeSelection()
     }
+  }
+
+  const refreshDatatype = () => {
+    changeDataType(selectedDataType.value)
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
@@ -365,11 +407,13 @@ export const useMapStore = defineStore("map", () => {
 
       if (newStyle!) {
         mapInstance.setStyle(newStyle)
+        mapInstance.once("style.load", () => {
+          setupControls(mapInstance).catch(console.error)
+          if (showQPVLayer.value) {
+            addQPVLayer(mapInstance)
+          }
+        })
       }
-      if (showQPVLayer.value) {
-        addQPVLayer(mapInstance)
-      }
-      mapInstance.fire("style.load")
     })
   }
 
@@ -546,6 +590,7 @@ export const useMapStore = defineStore("map", () => {
     selectedMapStyle,
     changeMapStyle,
     changeDataType,
+    refreshDatatype,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,

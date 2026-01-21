@@ -1,5 +1,16 @@
 # Journal des changements
 
+## 🔖 0.22.0 (2026-01-21) : Ajout du calque inventaire du végétal stratifié
+
+### ✨ feat : nouveau calque du végétal stratifié sur la métropole
+
+Une v.0 de ce calque qui va être amélioré et mis à jour également prochainement.
+&rarr; Code de prodution du [calque](https://github.com/TelesCoop/vegestrate)
+
+### ✨ feat : Ajout du mode jour/nuit sur calque plantabilité x vulnérabilité
+
+Nous n'avions que les valeurs qui correspondaient au croisement plantabilité x vulnérabilité le jour, il est possible maintenant de voir ce croisement également avec les données de nuit.
+
 ## 🔖 0.21.0 (2025-12-17) : Ajout de fonctionnalités de traçage et correction de bugs
 
 ### ✨ feat : Ajout du traçage
