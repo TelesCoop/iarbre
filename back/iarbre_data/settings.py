@@ -200,9 +200,14 @@ if IS_LOCAL_DEV:
     STATIC_ROOT = BASE_DIR / "collected_static"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 else:
+    STATIC_ROOT = config.getstr("staticfiles.static_root")
+    MEDIA_ROOT = config.getstr("media.media_root")
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "OPTIONS": {
+                "location": MEDIA_ROOT,
+            },
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
@@ -211,8 +216,6 @@ else:
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         },
     }
-    STATIC_ROOT = config.getstr("staticfiles.static_root")
-    MEDIA_ROOT = config.getstr("mediafiles.media_root")
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
