@@ -6,7 +6,9 @@ import { computed } from "vue"
 
 const mapStore = useMapStore()
 const show = computed(() => {
-  return mapStore.selectedDataType === DataType.VULNERABILITY
+  return [DataType.VULNERABILITY, DataType.PLANTABILITY_VULNERABILITY].includes(
+    mapStore.selectedDataType
+  )
 })
 </script>
 

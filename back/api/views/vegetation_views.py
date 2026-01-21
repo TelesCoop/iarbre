@@ -30,7 +30,7 @@ class VegetationTileView(APIView):
         raster_path = os.path.join(
             settings.MEDIA_ROOT,
             "rasters",
-            "LIDAR_FLAIRHUB_enhanced_Villeurbanne.tif",
+            "merged_fullmetropole_08.tif",
         )
 
         if not os.path.exists(raster_path):
