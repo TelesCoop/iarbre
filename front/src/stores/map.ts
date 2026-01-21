@@ -24,7 +24,7 @@ import {
   DataTypeToGeolevel,
   getDataTypeAttributionSource
 } from "@/utils/enum"
-import mapStyles from "../../public/map/map-style.json"
+import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -75,7 +75,7 @@ export const useMapStore = defineStore("map", () => {
 
   // reference https://docs.mapbox.com/style-spec/reference/expressions
   const FILL_COLOR_MAP = computed(() => {
-    const bivariateExpression = generateBivariateColorExpression()
+    const bivariateExpression = generateBivariateColorExpression(vulnerabilityMode.value)
 
     return {
       [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
@@ -282,7 +282,9 @@ export const useMapStore = defineStore("map", () => {
     const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
     layers.forEach((layer) => {
-      map.addLayer(layer, beforeId)
+      if (!map.getLayer(layer.id)) {
+        map.addLayer(layer, beforeId)
+      }
     })
 
     setupClickEventOnTile(map, datatype, geolevel)
@@ -375,6 +377,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const refreshDatatype = () => {
+    changeDataType(selectedDataType.value)
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -401,11 +407,13 @@ export const useMapStore = defineStore("map", () => {
 
       if (newStyle!) {
         mapInstance.setStyle(newStyle)
+        mapInstance.once("style.load", () => {
+          setupControls(mapInstance).catch(console.error)
+          if (showQPVLayer.value) {
+            addQPVLayer(mapInstance)
+          }
+        })
       }
-      if (showQPVLayer.value) {
-        addQPVLayer(mapInstance)
-      }
-      mapInstance.fire("style.load")
     })
   }
 
@@ -582,6 +590,7 @@ export const useMapStore = defineStore("map", () => {
     selectedMapStyle,
     changeMapStyle,
     changeDataType,
+    refreshDatatype,
     getMapInstance,
     vulnerabilityMode,
     currentZoom,

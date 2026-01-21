@@ -132,6 +132,7 @@ class Tile(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        db_constraint=False,  # No DB-level FK constraint
     )
 
     iris = models.ForeignKey(
