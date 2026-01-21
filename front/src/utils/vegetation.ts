@@ -5,9 +5,9 @@ export enum VegetationLegendName {
 }
 
 export enum VegetationColor {
-  LOW = "rgb(46, 242, 24)",
-  MID = "rgb(228, 242, 24)",
-  HIGH = "rgb(22, 81, 15)"
+  LOW = "#9DC183",
+  MID = "#588157",
+  HIGH = "#2D5A16"
 }
 
 export const VegetationLegend: Record<VegetationLegendName, VegetationColor> = {
