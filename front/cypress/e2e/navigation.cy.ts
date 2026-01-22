@@ -7,7 +7,7 @@ describe("Navigation", () => {
     cy.visit("/")
     cy.visit("/")
     cy.getBySel("map-component").should("exist")
-    cy.getBySel("navbar").should("exist")
+    cy.get(".sidebar").should("exist")
     cy.getBySel("feedback-popin").should("not.exist")
   })
 })

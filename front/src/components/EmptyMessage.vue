@@ -11,9 +11,9 @@ withDefaults(defineProps<EmptyStateProps>(), {
 
 <template>
   <div
-    class="flex items-center justify-center h-full text-gray-500 text-sm"
-    role="status"
     aria-live="polite"
+    class="flex items-center justify-center h-full text-gray-500 text-md bg-gray-100 p-4 rounded-lg border border-dashed border-gray-100"
+    role="status"
   >
     <i :class="`pi ${icon} mr-2`" aria-hidden="true"></i>
     {{ message }}

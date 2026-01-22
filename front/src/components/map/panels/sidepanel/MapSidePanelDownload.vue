@@ -13,24 +13,22 @@ const handleDownload = () => {
 </script>
 
 <template>
-  <div
-    class="flex bg-primary-500 w-full font-sans text-white text-base text-center px-4 py-2 rounded-md border border-primary-900"
-  >
-    <div class="w-full flex flex-col items-center gap-4">
-      <span>🌱 Collectivités, aménageurs, urbanistes</span>
+  <div class="flex w-full font-sans text-white text-base text-center px-3 py-2">
+    <div class="w-full flex flex-col items-center justify-center gap-1.5">
+      <span class="text-sm">🌱 Collectivités, aménageurs, urbanistes</span>
       <span class="text-xs">Demandez les données pour ce calque</span>
       <button
-        class="cursor-pointer bg-white font-sans flex items-center px-4 py-2 rounded-3xl text-sm text-primary-500"
+        class="cursor-pointer bg-white font-sans flex items-center px-3 py-1.5 rounded-3xl text-sm text-primary-500"
         data-cy="download-data"
         @click="handleDownload"
       >
         Obtenir les données
         <svg
           class="ml-2"
-          width="16"
+          fill="none"
           height="16"
           viewBox="0 0 16 16"
-          fill="none"
+          width="16"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path

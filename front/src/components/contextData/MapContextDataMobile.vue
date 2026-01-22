@@ -68,16 +68,16 @@ const primaryClimateData = computed(() => {
 <template>
   <div
     v-if="hasData"
-    class="absolute bottom-20 bg-white rounded-lg shadow-lg p-2 z-40"
+    class="absolute bottom-20 bg-white rounded-lg p-2 z-40"
     data-cy="map-context-data-mobile"
   >
     <circular-score
       v-if="scoreData"
-      :score="scoreData.score"
+      :color-scheme="scoreData.colorScheme"
+      :label="scoreData.label"
       :max-score="scoreData.maxScore"
       :percentage="scoreData.percentage"
-      :label="scoreData.label"
-      :color-scheme="scoreData.colorScheme"
+      :score="scoreData.score"
     />
     <div v-else-if="showClimateText && primaryClimateData" class="text-center text-gray-700">
       <span class="text-lg font-semibold">Zone climatique locale</span><br />

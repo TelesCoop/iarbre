@@ -15,6 +15,8 @@ interface CircularScoreProps {
 }
 
 const props = withDefaults(defineProps<CircularScoreProps>(), {
+  name: undefined,
+  unit: undefined,
   size: "normal"
 })
 

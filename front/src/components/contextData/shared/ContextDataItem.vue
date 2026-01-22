@@ -15,7 +15,9 @@ interface ContextDataItemProps {
 }
 
 const props = withDefaults(defineProps<ContextDataItemProps>(), {
-  colorScheme: "plantability"
+  colorScheme: "plantability",
+  getScoreColor: undefined,
+  getScoreLabel: undefined
 })
 
 const iconClasses = computed(() => {
@@ -80,20 +82,20 @@ const vulnerabilityScores = computed(() => {
 
 <template>
   <div
-    role="listitem"
-    class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
     :data-cy="`factor-${item.key}`"
+    class="flex items-start gap-3 p-3 bg-gray-50 border-gray-200 border-1 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
+    role="listitem"
   >
     <div
       v-if="item.icon"
-      :class="iconClasses"
       :aria-label="`Icône pour ${item.label}`"
+      :class="iconClasses"
       data-cy="factor-icon"
     >
       {{ item.icon }}
     </div>
 
-    <div class="flex-1 min-w-0" :class="{ 'ml-0': !item.icon }">
+    <div :class="{ 'ml-0': !item.icon }" class="flex-1 min-w-0">
       <h4 class="text-sm font-medium text-gray-900 mb-1 truncate">
         {{ item.label }}
       </h4>
@@ -107,19 +109,19 @@ const vulnerabilityScores = computed(() => {
         <div class="flex items-center gap-2">
           <span class="text-xs font-medium text-gray-600">☀️ Jour:</span>
           <vulnerability-context-data-score
-            :score="vulnerabilityScores.day ?? null"
             :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
             :get-score-color="getScoreColor"
             :get-score-label="getScoreLabel"
+            :score="vulnerabilityScores.day ?? null"
           />
         </div>
         <div class="flex items-center gap-2">
           <span class="text-xs font-medium text-gray-600">🌙 Nuit:</span>
           <vulnerability-context-data-score
-            :score="vulnerabilityScores.night ?? null"
             :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
             :get-score-color="getScoreColor"
             :get-score-label="getScoreLabel"
+            :score="vulnerabilityScores.night ?? null"
           />
         </div>
       </div>
