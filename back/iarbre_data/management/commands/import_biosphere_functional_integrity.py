@@ -13,17 +13,21 @@ from tqdm import tqdm
 
 
 def split_data(shp_folder, shp_filename, batch_folder) -> geopandas.GeoDataFrame:
+    batch_size = 5_000
     gdf = geopandas.read_file(os.path.join(shp_folder, shp_filename))
-
     if os.path.exists(batch_folder):
         shutil.rmtree(batch_folder)
     os.mkdir(batch_folder)
 
-    batch_size = 50_000
     index = 0
     for start in tqdm(range(0, gdf.shape[0], batch_size)):
         end = start + batch_size
         batch = gdf.iloc[start:end]
+        print("before: ", batch.shape)
+        print("start dissolve")
+        batch = batch.dissolve(by="class")
+        print("end dissolve")
+        print("after: ", batch.shape)
         batch.to_file(os.path.join(batch_folder, f"part_{index}.shp"))
         index += 1
 

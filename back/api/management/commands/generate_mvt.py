@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--number_of_thread",
+            "--number_of_workers",
             type=int,
             default=1,
             help="Number of threads to use for generating tiles",
@@ -62,13 +62,13 @@ class Command(BaseCommand):
         self,
         model: Type[Model],
         zoom_levels: Tuple[int, int] = DEFAULT_ZOOM_LEVELS,
-        number_of_thread: int = 1,
+        number_of_workers: int = 1,
     ) -> None:
         """
         Generate MVT tiles for a geographic model.
 
         This method generates MVT (Mapbox Vector Tiles) for a specified geographic model
-        based on the provided queryset and zoom levels. It utilizes multiple threads
+        based on the providedmdl. queryset and zoom levels. It utilizes multiple threads
         to enhance performance.
 
         Args:
@@ -76,7 +76,7 @@ class Command(BaseCommand):
             queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
-            number_of_thread (int): The number of threads to use for generating tiles.
+            number_of_workersmdl. (int): The number of threads to use for generating tiles.
 
         Returns:
             None
@@ -84,7 +84,7 @@ class Command(BaseCommand):
         mvt_generator = MVTGenerator(
             mdl=model,
             zoom_levels=zoom_levels,
-            number_of_thread=number_of_thread,
+            number_of_workers=number_of_workers,
         )
 
         mvt_generator.generate_tiles(ignore_existing=False)
@@ -92,7 +92,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Handle the command."""
-        number_of_thread = options["number_of_thread"]
+        number_of_workers = options["number_of_workers"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
         zoom_levels = options["zoom_levels"]
@@ -128,14 +128,13 @@ class Command(BaseCommand):
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
             print(
                 MVTTile.objects.filter(
-                    geolevel=geolevel, datatype=mdl.datatype
+                    geolevel=mdl.geolevel, datatype=mdl.datatype
                 ).delete()
             )
 
         # Generate new tiles
-        print(zoom_levels)
         self.generate_tiles_for_model(
             model=mdl,
             zoom_levels=zoom_levels,
-            number_of_thread=number_of_thread,
+            number_of_workers=number_of_workers,
         )

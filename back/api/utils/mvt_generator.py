@@ -517,7 +517,7 @@ class MVTGenerator:
         self,
         mdl: Type[Model],
         zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
-        number_of_thread: int = 1,
+        number_of_workers: int = 1,
     ):
         """
         Initialize MVT Generator for Django GeoDjango QuerySet.
@@ -531,7 +531,7 @@ class MVTGenerator:
         """
         self.mdl = mdl
         self.min_zoom, self.max_zoom = zoom_levels
-        self.number_of_thread = number_of_thread
+        self.number_of_workers = number_of_workers
 
     @staticmethod
     def process_tiles(mdl, tiles, number_of_thread):
@@ -591,26 +591,27 @@ class MVTGenerator:
                             tile_x=tile.x,
                             tile_y=tile.y,
                             zoom_level=zoom,
-                            geolevel=self.geolevel,
-                            datatype=self.datatype,
+                            geolevel=self.mdl.geolevel,
+                            datatype=self.mdl.datatype,
                         )
                     except MVTTile.DoesNotExist:
                         tiles_to_generate.append((tile, zoom))
 
-        nb_process = 8
         tiles_to_generate_by_process = partition(
             tiles_to_generate, int(len(tiles_to_generate) / 100)
         )
         futures = []
         progress = 0
-        with ProcessPoolExecutor(max_workers=nb_process) as process_executor:
+        with ProcessPoolExecutor(
+            max_workers=self.number_of_workers
+        ) as process_executor:
             for tiles in tiles_to_generate_by_process:
                 futures.append(
                     process_executor.submit(
                         MVTGenerator.process_tiles,
                         self.mdl,
                         tiles,
-                        self.number_of_thread,
+                        4,
                     )
                 )
                 # process_executor.submit(self.process_tiles, funct, tiles, 32)#)
