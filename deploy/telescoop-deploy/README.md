@@ -48,4 +48,3 @@ Principes généraux :
 
 - Assurer une rétro-compatibilité sur les différents projets lorsqu'un fichier de tâche (fichiers `/tasks/*.yml`) est mis à jour ;
 - Les noms des fichiers de tâches commencent par un verbe d'action, et en snake-case
--

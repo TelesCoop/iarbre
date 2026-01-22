@@ -29,11 +29,11 @@ const cancelDrawing = () => {
 <template>
   <div
     v-if="mapStore.isShapeMode"
-    class="absolute bottom-2 left-1/2 z-50 max-w-md"
+    class="absolute top-2 left-1/2 -translate-x-1/2 z-50 max-w-md"
     data-cy="drawing-controls"
     @click.stop
   >
-    <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col">
+    <div class="bg-white rounded-lg p-4 flex flex-col">
       <div class="text-center text-brown font-semibold">{{ drawingInfo }}</div>
 
       <div class="text-center text-sm text-gray-600 mb-2">
@@ -52,10 +52,10 @@ const cancelDrawing = () => {
 
       <div class="flex justify-center">
         <Button
-          severity="secondary"
-          outlined
-          size="small"
           data-cy="drawing-cancel"
+          outlined
+          severity="secondary"
+          size="small"
           @click="cancelDrawing"
         >
           <i class="pi pi-times mr-2"></i>

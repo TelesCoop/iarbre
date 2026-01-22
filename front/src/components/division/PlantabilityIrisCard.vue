@@ -6,7 +6,7 @@ interface IrisCardProps {
   iris: Iris
 }
 
-const props = defineProps<IrisCardProps>()
+defineProps<IrisCardProps>()
 </script>
 
 <template>

@@ -15,7 +15,10 @@ interface ContextDataAccordionItemProps {
 }
 
 const props = withDefaults(defineProps<ContextDataAccordionItemProps>(), {
-  colorScheme: "plantability"
+  colorScheme: "plantability",
+  getCategoryScore: undefined,
+  getScoreColor: undefined,
+  getScoreLabel: undefined
 })
 
 const isExpanded = ref(false)
@@ -25,22 +28,7 @@ const toggleExpanded = () => {
 }
 
 const categoryClasses = computed(() => {
-  const base =
-    "flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 focus:bg-gray-100 transition-colors cursor-pointer rounded-r-lg border-l-4"
-
-  if (props.colorScheme === "plantability") {
-    if (props.group?.hasPositiveImpact && props.group?.hasNegativeImpact) {
-      return `${base} border-l-yellow-500`
-    } else if (props.group?.hasPositiveImpact) {
-      return `${base} border-l-green-500`
-    } else if (props.group?.hasNegativeImpact) {
-      return `${base} border-l-orange-500`
-    }
-  } else {
-    return `${base} border-l-primary-500`
-  }
-
-  return `${base} border-l-gray-400`
+  return "flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 focus:bg-gray-100 transition-colors cursor-pointer rounded-lg border-gray-200 border-1"
 })
 
 const impactIndicatorClasses = computed(() => {

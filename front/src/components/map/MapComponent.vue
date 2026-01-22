@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, type PropType } from "vue"
+import { onMounted, type PropType, computed } from "vue"
 import { type MapParams } from "@/types/map"
+import { ZoomToGridSize } from "@/utils/plantability"
 
 const props = defineProps({
   mapId: {
@@ -45,6 +46,11 @@ onMounted(() => {
   mapInstance.on("moveend", updateParams)
   updateParams()
 })
+
+const gridSize = computed(() => {
+  const zoom = Math.floor(mapStore.currentZoom)
+  return ZoomToGridSize[zoom] ?? null
+})
 </script>
 
 <template>
@@ -60,21 +66,34 @@ onMounted(() => {
     <map-config-drawer-toggle />
   </div>
 
-  <!-- Drawing mode toggle - visible on all screens -->
-  <div class="absolute right-0 top-0 mt-2 mr-2 z-40">
-    <drawing-mode-toggle />
+  <!-- Top-right controls stack -->
+  <div class="absolute right-0 top-0 mt-2 mr-2 flex flex-col gap-2" style="z-index: 50">
+    <map-coordinates />
+    <map-geocoder />
   </div>
 
-  <!-- Selection mode toolbar - only visible when toolbar is toggled -->
-  <div v-if="mapStore.isToolbarVisible" class="absolute right-0 top-14 mt-2 mr-2 z-40">
-    <selection-mode-toolbar />
+  <!-- Drawing controls in bottom-right corner -->
+  <div class="absolute bottom-2 z-40 flex flex-col-reverse gap-2" style="right: 56px">
+    <drawing-mode-toggle />
+    <selection-mode-toolbar v-if="mapStore.isToolbarVisible" />
   </div>
 
   <!-- Drawing controls - only visible in shape mode -->
   <drawing-controls />
 
+<!-- Background selector in bottom-left corner -->
+  <div class="absolute bottom-2 left-2 z-40 hidden lg:block">
+    <map-background-selector />
+  </div>
+
   <div v-if="appStore.isDesktop" class="legend-container flex">
     <map-legend />
+    <div v-if="mapStore.selectedDataType === 'plantability' && gridSize" class="grid-size-info">
+      <div class="flex items-center gap-2">
+        <div class="tile-pixel"></div>
+        <span>{{ gridSize }}m</span>
+      </div>
+    </div>
     <map-filters-status />
   </div>
   <div v-else class="flex items-center justify-center">
@@ -87,7 +106,7 @@ onMounted(() => {
 @reference "@/styles/main.css";
 
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-2 top-0 mx-1 mt-2;
 }
 
 .legend-container > * {
@@ -102,33 +121,17 @@ onMounted(() => {
   }
 }
 
-.maplibregl-ctrl-geocoder {
-  width: 90%;
-  max-width: 400px;
+.grid-size-info {
+  @apply text-sm text-center font-sans font-bold;
+  @apply bg-white px-3 py-2 rounded-lg border border-gray-200;
+  @apply pointer-events-auto;
 }
 
-.maplibregl-ctrl-geocoder--suggestions {
-  width: 100%;
-}
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed,
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--input {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
-}
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--icon {
-  width: 25px;
-  height: 25px;
-  top: 3px;
-  left: 3px;
-}
-
-.maplibregl-ctrl-geocoder--input {
-  @apply text-primary-500;
-  @apply font-accent;
-}
-
-.maplibregl-ctrl-geocoder--icon-search {
-  @apply fill-primary-500;
+.tile-pixel {
+  width: 12px;
+  height: 12px;
+  background-color: #a6d5a3;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 </style>

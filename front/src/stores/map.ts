@@ -33,10 +33,6 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
-import { geocoderApi } from "@/utils/geocoder"
-import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
-import maplibreGl from "maplibre-gl"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -60,6 +56,7 @@ export const useMapStore = defineStore("map", () => {
     lng: DEFAULT_MAP_CENTER.lng
   })
   const isCalculating = ref<boolean>(false)
+  const controlsAdded = ref<Record<string, boolean>>({})
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
@@ -114,12 +111,6 @@ export const useMapStore = defineStore("map", () => {
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
   }
-  const attributionControl = ref(
-    new AttributionControl({
-      compact: true,
-      customAttribution: ""
-    })
-  )
   const navControl = ref(
     new NavigationControl({
       visualizePitch: true,
@@ -138,24 +129,6 @@ export const useMapStore = defineStore("map", () => {
     clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
-  const geocoderControl = ref(
-    new MaplibreGeocoder(
-      {
-        forwardGeocode: geocoderApi.forwardGeocode
-      },
-      {
-        // @ts-ignore
-        maplibregl: maplibreGl,
-        marker: false,
-        showResultsWhileTyping: true,
-        countries: "FR",
-        placeholder: "Recherche",
-        clearOnBlur: true,
-        collapsed: true,
-        enableEventLogging: false
-      }
-    )
-  )
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
@@ -363,34 +336,39 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const getMapId = (map: Map): string => {
+    return Object.keys(mapInstancesByIds.value).find((key) => mapInstancesByIds.value[key] === map)!
+  }
+
   const removeControls = (map: Map) => {
-    if (map.hasControl(attributionControl.value)) {
-      map.removeControl(attributionControl.value)
-    }
-    if (map.hasControl(navControl.value)) {
+    const mapId = getMapId(map)
+    if (!controlsAdded.value[mapId]) return
+
+    try {
       map.removeControl(navControl.value)
-    }
-    if (map.hasControl(centerControl.value)) {
       map.removeControl(centerControl.value)
-    }
-    if (map.hasControl(control3D.value)) {
       map.removeControl(control3D.value)
-    }
-    if (map.hasControl(geocoderControl.value as unknown as maplibreGl.IControl)) {
-      map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+      controlsAdded.value[mapId] = false
+    } catch {
+      // Control may not be added yet
     }
   }
+
   const setupControls = async (map: Map) => {
-    const attribution = await getAttributionSource()
-    attributionControl.value = new AttributionControl({
-      compact: true,
-      customAttribution: attribution
-    })
-    map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
-    map.addControl(control3D.value, MAP_CONTROL_POSITION)
-    map.addControl(navControl.value, MAP_CONTROL_POSITION)
-    map.addControl(centerControl.value, MAP_CONTROL_POSITION)
-    map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
+    const mapId = getMapId(map)
+    // Only add controls if they are not already added
+    if (!controlsAdded.value[mapId]) {
+      const attribution = await getAttributionSource()
+      const attributionControl = new AttributionControl({
+        compact: true,
+        customAttribution: attribution
+      })
+      map.addControl(attributionControl, MAP_CONTROL_POSITION)
+      map.addControl(control3D.value, MAP_CONTROL_POSITION)
+      map.addControl(navControl.value, MAP_CONTROL_POSITION)
+      map.addControl(centerControl.value, MAP_CONTROL_POSITION)
+      controlsAdded.value[mapId] = true
+    }
   }
 
   const changeDataType = (datatype: DataType) => {
@@ -571,6 +549,7 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+    controlsAdded.value[mapId] = false
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId,
@@ -704,6 +683,7 @@ export const useMapStore = defineStore("map", () => {
     changeSelectionMode,
     finishShapeSelection,
     isCalculating,
+    getAttributionSource,
     shapeDrawing: {
       isDrawing: shapeDrawing.isDrawing,
       drawingPoints: shapeDrawing.drawingPoints,

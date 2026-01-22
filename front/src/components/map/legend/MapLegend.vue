@@ -10,12 +10,6 @@ const mapStore = useMapStore()
     v-if="mapStore.selectedDataType"
     class="bg-white flex px-4 py-2 flex-col justify-center items-center gap-2 rounded-lg"
   >
-    <div
-      class="hidden lg:block text-sm font-semibold font-accent text-primary-900 text-center"
-      data-cy="map-legend-title"
-    >
-      {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
-    </div>
     <plantability-legend
       v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
       class="w-full"

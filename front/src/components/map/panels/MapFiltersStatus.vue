@@ -17,7 +17,7 @@ const filterSummary = computed(() => {
 <template>
   <div
     v-if="mapStore.hasActiveFilters"
-    class="bg-white flex px-4 py-2 justify-center items-center gap-2 rounded-lg mb-2"
+    class="bg-white flex px-4 py-2 justify-center items-center gap-2 rounded-lg mb-2 border border-gray-200 border-1"
     data-cy="map-filters-status"
   >
     <div class="flex items-center gap-2 w-full justify-center">
@@ -35,7 +35,7 @@ const filterSummary = computed(() => {
         :icon-class="'filter-reset-icon'"
         data-cy="reset-filters-button"
         icon="pi pi-times"
-        label="Effacer"
+        label=""
         outlined
         severity="danger"
         size="small"

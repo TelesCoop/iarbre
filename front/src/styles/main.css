@@ -87,9 +87,47 @@
   @apply hover:bg-gray-100 hover:border-gray-300;
 }
 
+/* PrimeVue Button harmonization */
 .p-button {
   @apply font-sans!;
   /* There is no way actually to override the default font in PrimeReact */
+}
+
+/* Secondary buttons - harmonized style */
+.p-button.p-button-secondary {
+  @apply bg-white! text-gray-900!;
+  @apply border border-gray-200!;
+  @apply transition-colors;
+  box-shadow: none !important;
+}
+
+.p-button.p-button-secondary:not(:disabled):hover {
+  @apply bg-[#426A45]! text-white!;
+  @apply border-[#426A45]!;
+}
+
+.p-button.p-button-secondary:not(:disabled):hover .pi {
+  color: white !important;
+}
+
+/* Outlined secondary buttons */
+.p-button.p-button-outlined.p-button-secondary {
+  @apply bg-white! text-gray-900!;
+  @apply border border-gray-200!;
+}
+
+.p-button.p-button-outlined.p-button-secondary:not(:disabled):hover {
+  @apply bg-[#426A45]! text-white!;
+  @apply border-[#426A45]!;
+}
+
+/* Remove default PrimeVue shadows */
+.p-button:focus {
+  box-shadow: none !important;
+}
+
+.p-button:active {
+  box-shadow: none !important;
 }
 
 .card {

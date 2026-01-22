@@ -60,22 +60,27 @@ const switchMode = (mode: SelectionMode) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-0 bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="flex flex-col gap-0 overflow-hidden rounded-lg">
     <Button
       v-for="drawingMode in drawingModes"
       :key="drawingMode.mode"
       v-tooltip.left="drawingMode.label"
+      :class="[
+        'w-10 h-10 p-0 flex items-center justify-center border rounded-none! border-gray-200! selection-mode-btn',
+        isActive(drawingMode.mode).value ? 'bg-primary active' : 'bg-white!'
+      ]"
       :data-cy="drawingMode.dataCy"
+      severity=""
       size="small"
-      :severity="isActive(drawingMode.mode).value ? 'primary' : 'secondary'"
-      class="w-10 h-10 p-0 flex items-center justify-center rounded-none! border-0!"
       @click="switchMode(drawingMode.mode)"
     >
       <img
-        :src="`/icons/${drawingMode.icon}${isActive(drawingMode.mode).value ? '-white' : ''}.svg`"
         :alt="drawingMode.label"
-        class="w-6 h-6"
+        :src="`/icons/${drawingMode.icon}${isActive(drawingMode.mode).value ? '-white' : ''}.svg`"
+        class="w-6 h-6 selection-mode-icon"
       />
     </Button>
   </div>
 </template>
+
+<style scoped></style>

@@ -47,20 +47,16 @@ const gridSize = computed(() => {
     :class="containerClasses"
     role="dialog"
   >
-    <map-context-header v-if="!hideDescription" :description="description" :title="title" />
-    <div v-if="gridSize && title === 'plantability'" class="mt-2 text-sm text-center font-sans">
-      Taille d'un carreau: {{ gridSize }}m <span class="text-xs">(précision maximum de 5m).</span>
-    </div>
     <div class="map-context-panel-content">
       <div v-if="data">
-        <slot name="score" :data="data" />
-        <slot name="content" :data="data" :full-height="fullHeight" />
-        <slot name="legend" :data="data" />
+        <slot :data="data" name="score" />
+        <slot :data="data" :full-height="fullHeight" name="content" />
+        <slot :data="data" name="legend" />
       </div>
       <empty-message
         v-else-if="!hideEmptyMessage"
-        data-cy="empty-message"
         :message="emptyMessage"
+        data-cy="empty-message"
       />
     </div>
   </div>

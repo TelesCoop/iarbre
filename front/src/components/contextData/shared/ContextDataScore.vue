@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import type { ContextDataScoreConfig, CircularScoreSize } from "@/types/contextData"
+import type { ContextDataScoreConfig } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 
 const props = withDefaults(defineProps<ContextDataScoreConfig>(), {
@@ -56,15 +56,15 @@ const scoreSizeClass = computed(() => {
 </script>
 
 <template>
-  <section class="text-center" :aria-labelledby="`score-section-${label}`">
+  <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
     <div class="relative inline-block">
       <circular-progress
-        :percentage="percentage"
-        :background-color="textColor"
-        :size="size"
         :aria-label="ariaLabel"
+        :background-color="textColor"
+        :percentage="percentage"
+        :size="size"
         data-cy="circular-progress"
       />
 

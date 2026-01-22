@@ -19,6 +19,9 @@ interface ContextDataListContainerProps {
 const props = withDefaults(defineProps<ContextDataListContainerProps>(), {
   fullHeight: false,
   scrollable: false,
+  getCategoryScore: undefined,
+  getScoreColor: undefined,
+  getScoreLabel: undefined,
   ariaLabel: "Liste des paramètres par catégorie"
 })
 

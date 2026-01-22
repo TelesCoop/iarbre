@@ -6,19 +6,20 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="bg-white rounded-lg overflow-hidden">
     <Button
+      :class="[
+        'w-10 h-10 p-0 flex items-center justify-center transition-colors drawing-mode-btn',
+        { active: mapStore.isToolbarVisible }
+      ]"
       data-cy="drawing-mode-toggle"
+      severity="secondary"
       size="small"
-      :severity="mapStore.isToolbarVisible ? 'primary' : 'secondary'"
-      class="w-10 h-10 p-0 flex items-center justify-center rounded-none! border-0!"
       @click="mapStore.toggleToolbar()"
     >
-      <img
-        :src="`/icons/map-draw${mapStore.isToolbarVisible ? '-white' : ''}.svg`"
-        alt="Mode dessin"
-        class="w-6 h-6"
-      />
+      <img :src="`/icons/map-draw.svg`" alt="Mode dessin" class="w-6 h-6 drawing-mode-icon" />
     </Button>
   </div>
 </template>
+
+<style scoped></style>
