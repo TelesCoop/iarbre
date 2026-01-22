@@ -23,8 +23,8 @@ server {
 
     server_name {{ " ".join(all_hostnames) }};
 
-    access_log /var/log/nginx/access_{{ main_hostname.replace('.', '_') }}.log;
-    error_log /var/log/nginx/error_{{ main_hostname.replace('.', '_') }}.log;
+    access_log /var/log/nginx/access_{{ main_hostname | lower | replace('.', '_') }}.log;
+    error_log /var/log/nginx/error_{{ main_hostname | lower | replace('.', '_') }}.log;
 
     {% for hostname in redirect_hostnames -%}
     if ($host = {{ hostname }}) {
