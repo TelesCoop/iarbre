@@ -475,7 +475,7 @@ class MVTGeneratorWorker:
             map_geometry__intersects=tile_polygon
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if len(clipped_queryset) > 0:
+        if clipped_queryset.exists():
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
                 "features": [],
@@ -485,7 +485,7 @@ class MVTGeneratorWorker:
                 clipped_geom = obj.clipped_geometry
                 transformed_geometries["features"].append(
                     {
-                        "geometry": clipped_geom.wkt,
+                        "geometry": clipped_geom.make_valid().wkt,
                         "properties": properties,
                     }
                 )
@@ -614,14 +614,14 @@ class MVTGenerator:
                         4,
                     )
                 )
-                # process_executor.submit(self.process_tiles, funct, tiles, 32)#)
             for future in as_completed(futures):
                 future.exception()
                 progress += future.result()
                 print(
-                    f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(progress/len(tiles_to_generate), 2)}%)"
+                    f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(100*progress/len(tiles_to_generate), 2)}%)"
                 )
-                # futures.pop()
+                # Free ram
+                futures.pop(futures.index(future))
                 gc.collect()
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
