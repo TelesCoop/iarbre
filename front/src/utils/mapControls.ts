@@ -1,4 +1,42 @@
 import { Map } from "maplibre-gl"
+import type { Ref } from "vue"
+
+export const add3DControl = (use3D: Ref<boolean>, toggle3D: () => void) => {
+  const button = document.createElement("button")
+  button.className = "maplibregl-ctrl-3d"
+  button.title = "Activer/désactiver la vue 3D"
+
+  const iconColor = "#426A45"
+  const cubeActiveFill = "#002814"
+
+  const updateButton = () => {
+    button.innerHTML = use3D.value
+      ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 6.5V15.5L12 20L20 15.5V6.5L12 2Z" fill="${cubeActiveFill}" fill-opacity="0.25" stroke="${iconColor}" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 11L4 6.5" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 11L20 6.5" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 11V20" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`
+      : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 6.5V15.5L12 20L20 15.5V6.5L12 2Z" stroke="${iconColor}" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 11L4 6.5" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 11L20 6.5" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 11V20" stroke="${iconColor}" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>`
+  }
+
+  updateButton()
+
+  button.addEventListener("click", () => {
+    toggle3D()
+    updateButton()
+  })
+
+  const container = document.createElement("div")
+  container.className = "maplibregl-ctrl maplibregl-ctrl-group maplibregl-ctrl-3d-container"
+  container.appendChild(button)
+  return container
+}
 
 export const addCenterControl = (map: Map) => {
   const button = document.createElement("button")
