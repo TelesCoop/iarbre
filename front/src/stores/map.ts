@@ -120,14 +120,13 @@ export const useMapStore = defineStore("map", () => {
       customAttribution: ""
     })
   )
-  const navControl = computed(
-    () =>
-      new NavigationControl({
-        visualizePitch: use3D.value,
-        visualizeRoll: false,
-        showZoom: true,
-        showCompass: use3D.value
-      })
+  const navControl = ref(
+    new NavigationControl({
+      visualizePitch: true,
+      visualizeRoll: false,
+      showZoom: true,
+      showCompass: true
+    })
   )
 
   const toggleAndApplyFilter = (value: number | string) => {
@@ -430,6 +429,22 @@ export const useMapStore = defineStore("map", () => {
     changeDataType(selectedDataType.value)
   }
 
+  const refreshLayers = () => {
+    const currentDataType = selectedDataType.value
+    const currentGeoLevel = getGeoLevelFromDataType()
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      const layerId = getLayerId(currentDataType, currentGeoLevel)
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId)
+      }
+      if (currentDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+        mapInstance.removeLayer(`${layerId}-border`)
+      }
+      setupTile(mapInstance, currentDataType, currentGeoLevel)
+    })
+  }
+
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -642,7 +657,7 @@ export const useMapStore = defineStore("map", () => {
         mapInstance.easeTo({ pitch: 0, duration: 500 })
       }
     })
-    refreshDatatype()
+    refreshLayers()
   }
 
   return {
