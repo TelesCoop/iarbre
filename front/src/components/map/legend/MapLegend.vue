@@ -36,5 +36,9 @@ const mapStore = useMapStore()
       v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
       class="w-full"
     />
+    <vegetation-legend
+      v-else-if="mapStore.selectedDataType === DataType.VEGETATION"
+      class="w-full"
+    />
   </div>
 </template>

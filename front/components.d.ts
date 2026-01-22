@@ -56,6 +56,7 @@ declare module 'vue' {
     MapContextDataPlantability: typeof import('./src/components/contextData/MapContextDataPlantability.vue')['default']
     MapContextDataPlantabilityVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabilityVulnerability.vue')['default']
     MapContextDataPlantabiltyVulnerability: typeof import('./src/components/contextData/MapContextDataPlantabiltyVulnerability.vue')['default']
+    MapContextDataVegetation: typeof import('./src/components/contextData/MapContextDataVegetation.vue')['default']
     MapContextDataVulnerability: typeof import('./src/components/contextData/MapContextDataVulnerability.vue')['default']
     MapContextHeader: typeof import('./src/components/contextData/MapContextHeader.vue')['default']
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
@@ -95,6 +96,7 @@ declare module 'vue' {
     Toast: typeof import('primevue/toast')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']
     UnsupportedShapeModeMessage: typeof import('./src/components/contextData/shared/UnsupportedShapeModeMessage.vue')['default']
+    VegetationLegend: typeof import('./src/components/map/legend/VegetationLegend.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
     VulnerabilityContextDataList: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataList.vue')['default']
     VulnerabilityContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataScore.vue')['default']
@@ -105,7 +107,7 @@ declare module 'vue' {
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
   }
-  export interface ComponentCustomProperties {
+  export interface GlobalDirectives {
     Tooltip: typeof import('primevue/tooltip')['default']
   }
 }

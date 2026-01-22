@@ -132,6 +132,7 @@ class Tile(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        db_constraint=False,  # No DB-level FK constraint
     )
 
     iris = models.ForeignKey(
@@ -280,8 +281,8 @@ class BiosphereFunctionalIntegrity(models.Model):
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
     indice = models.IntegerField()
 
-    geolevel = GeoLevel.BIOSPHERE_INTEGRITY.value
-    datatype = DataType.BIOSPHERE_INTEGRITY.value
+    geolevel = GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+    datatype = DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
 
     def get_layer_properties(self):
         """Return the properties of the hotspot point for the MVT datatype."""

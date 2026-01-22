@@ -4,7 +4,7 @@ import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 
-const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY})`
+const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGETATION})`
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

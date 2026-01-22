@@ -109,8 +109,8 @@ class Command(BaseCommand):
         ):
             mdl = Cadastre
         elif (
-            geolevel == GeoLevel.BIOSPHERE_INTEGRITY.value
-            and datatype == DataType.BIOSPHERE_INTEGRITY.value
+            geolevel == GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+            and datatype == DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
         ):
             mdl = BiosphereFunctionalIntegrity
         else:
@@ -118,7 +118,7 @@ class Command(BaseCommand):
                 GeoLevel.TILE.value,
                 GeoLevel.LCZ.value,
                 GeoLevel.CADASTRE.value,
-                GeoLevel.BIOSPHERE_INTEGRITY.value,
+                GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value,
             ]
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"

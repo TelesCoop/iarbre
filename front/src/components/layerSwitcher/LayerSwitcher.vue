@@ -30,6 +30,10 @@ const options = [
   {
     label: DataTypeToLabel[DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY],
     value: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+  },
+  {
+    label: DataTypeToLabel[DataType.VEGETATION],
+    value: DataType.VEGETATION
   }
 ]
 </script>

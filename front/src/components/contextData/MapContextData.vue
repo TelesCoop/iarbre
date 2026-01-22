@@ -5,6 +5,7 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
+import type { VegetationData } from "@/types/vegetation"
 import ProgressSpinner from "primevue/progressspinner"
 
 const mapStore = useMapStore()
@@ -43,6 +44,10 @@ defineProps({
       <map-context-data-biosphere-integrity
         v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
+      />
+      <map-context-data-vegetation
+        v-if="mapStore.selectedDataType === DataType.VEGETATION"
+        :data="mapStore.contextData.data as VegetationData"
       />
     </template>
   </div>

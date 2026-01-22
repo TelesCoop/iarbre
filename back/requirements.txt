@@ -17,6 +17,7 @@ mapbox_vector_tile==2.2.0
 mercantile==1.2.1
 numpy==2.0.1
 openpyxl==3.1.5
+pillow==11.0.0
 protobuf==6.33.4
 psycopg2==2.9.9
 pyproj==3.7.0
