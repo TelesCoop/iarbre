@@ -65,7 +65,7 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
     header="Bienvenue !"
     modal
     data-cy="welcome-dialog"
-    :closable="false"
+    :closable="true"
   >
     <div class="flex flex-col gap-4 bg-white">
       <p class="mb-2">Découvrez les fonctionnalités :</p>

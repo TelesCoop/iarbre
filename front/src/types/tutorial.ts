@@ -22,5 +22,6 @@ export const TutorialSelector = {
   CLIMATE_ZONES_LEGEND: '[data-cy="climate-zones-legend"]',
   PLANT_VULNERABILITY_LEGEND: '[data-cy="plant-vulnerability-legend"]',
   OPEN_FEEDBACK_BUTTON: '[data-cy="open-feedback-button"]',
+  MOBILE_MENU_BUTTON: '[data-cy="mobile-menu-button"]',
   MAP_FILTERS_STATUS: '[data-cy="map-filters-status"]'
 } as const

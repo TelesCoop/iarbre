@@ -266,16 +266,52 @@ export function useTutorial() {
   }
 
   const startFeedbackTutorial = () => {
-    startTutorial([
-      {
-        element: TutorialSelector.OPEN_FEEDBACK_BUTTON,
+    const steps: DriveStep[] = []
+
+    // Add mobile-specific step to open mobile menu first
+    if (appStore.isMobileOrTablet) {
+      steps.push({
+        element: TutorialSelector.MOBILE_MENU_BUTTON,
         popover: {
-          title: "Donnez votre avis",
-          description:
-            "Cliquez ici pour partager vos commentaires et nous aider à améliorer la plateforme."
+          title: "Ouvrir le menu",
+          description: "Cliquez sur le bouton menu pour accéder aux fonctionnalités.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () => {
+          const mobileMenuButton = document.querySelector(TutorialSelector.MOBILE_MENU_BUTTON)
+          const handleMenuClick = () => {
+            mobileMenuButton?.removeEventListener("click", handleMenuClick)
+            // Wait for mobile menu to open
+            nextTick(() => {
+              tutorialStore.nextStep()
+            })
+          }
+          mobileMenuButton?.addEventListener("click", handleMenuClick)
         }
+      })
+    }
+
+    // Common step for both mobile and desktop - use OPEN_FEEDBACK_BUTTON
+    steps.push({
+      element: TutorialSelector.OPEN_FEEDBACK_BUTTON,
+      popover: {
+        title: "Donnez votre avis",
+        description:
+          "Cliquez ici pour partager vos commentaires et nous aider à améliorer la plateforme.",
+        showButtons: [DriverButton.CLOSE]
+      },
+      onHighlighted: () => {
+        const feedbackButton = document.querySelector(TutorialSelector.OPEN_FEEDBACK_BUTTON)
+        const handleFeedbackClick = () => {
+          feedbackButton?.removeEventListener("click", handleFeedbackClick)
+          // Close the tutorial when feedback button is clicked
+          tutorialStore.stopTutorial()
+        }
+        feedbackButton?.addEventListener("click", handleFeedbackClick)
       }
-    ])
+    })
+
+    startTutorial(steps)
   }
 
   return {

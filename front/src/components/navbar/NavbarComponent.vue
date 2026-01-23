@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { useApiPost } from "@/api"
+import { useAppStore } from "@/stores/app"
 import AppDrawer from "@/components/AppDrawer.vue"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
@@ -8,6 +9,7 @@ import type { Feedback } from "@/types/map"
 import Button from "primevue/button"
 import { useToast } from "primevue"
 
+const appStore = useAppStore()
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
 const mobileMenuVisible = ref(false)
@@ -49,7 +51,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       <img alt="Logo I-Arbre" class="h-8 sm:h-10 w-auto" src="/images/logo-iarbre.png" />
     </a>
   </div>
-  <nav class="header-nav ml-auto hidden sm:block">
+  <nav v-if="appStore.isDesktop" class="header-nav ml-auto block">
     <ul class="nav-list">
       <li>
         <Button
@@ -77,7 +79,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   </nav>
 
   <!-- Mobile menu button -->
-  <div class="sm:hidden ml-auto">
+  <nav v-else class="block ml-auto">
     <Button
       icon="pi pi-bars"
       severity="primary"
@@ -87,7 +89,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       data-cy="mobile-menu-button"
       @click="toggleMobileMenu"
     />
-  </div>
+  </nav>
 
   <!-- Mobile menu -->
   <AppDrawer
@@ -132,7 +134,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
         </li>
         <li>
           <Button
-            data-cy="mobile-feedback-button"
+            data-cy="open-feedback-button"
             severity="primary"
             size="small"
             type="button"
