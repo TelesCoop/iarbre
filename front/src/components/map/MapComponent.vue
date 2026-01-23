@@ -54,7 +54,7 @@ onMounted(() => {
       data-cy="map-component"
     ></div>
   </div>
-  <div class="absolute right-0 top-0 lg:hidden mt-2 mr-2">
+  <div class="absolute left-0 top-0 lg:hidden mt-2 ml-2">
     <map-config-drawer-toggle />
   </div>
 
