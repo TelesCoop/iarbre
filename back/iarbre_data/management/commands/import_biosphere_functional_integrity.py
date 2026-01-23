@@ -1,4 +1,4 @@
-from iarbre_data.utils.database import select_city, log_progress
+from iarbre_data.utils.database import log_progress
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from iarbre_data.models import BiosphereFunctionalIntegrity
@@ -23,11 +23,7 @@ def split_data(shp_folder, shp_filename, batch_folder) -> geopandas.GeoDataFrame
     for start in tqdm(range(0, gdf.shape[0], batch_size)):
         end = start + batch_size
         batch = gdf.iloc[start:end]
-        print("before: ", batch.shape)
-        print("start dissolve")
         batch = batch.dissolve(by="class")
-        print("end dissolve")
-        print("after: ", batch.shape)
         batch.to_file(os.path.join(batch_folder, f"part_{index}.shp"))
         index += 1
 
@@ -44,22 +40,12 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
     gdf = geopandas.read_file(shp_path)
 
     gdf = gdf[["class", "geometry"]]
-    print("37")
     gdf.to_crs(TARGET_PROJ, inplace=True)
-    # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
-    # all_cities_boundary = select_city(None).union_all()
-    print("41")
-    # Ces deux étapes sont très longues
-    gdf_filtered = gdf  # [gdf.geometry.intersects(all_cities_boundary)]
-    print("43")
-    # gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
-    print("44")
-
-    print("split geometries")
+    gdf_filtered = gdf
 
     # Split large geometries using 100m x 100m grid
     def worker(row, progress):
-        print(f"splitting row : { progress }%")
+        print(f"splitting row : { round(progress, 2) }%")
         split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
         for geom in split_geoms:
             split_geometries.append({**row.to_dict(), "geometry": geom})
@@ -88,7 +74,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     """Save LCZ to the database.
 
     Args:
-        lcz_datas (GeoDataFrame): GeoDataFrame to save to the database.
+        lcz_datas (GeoDataFrame): GeoDataFrame to saselectve to the database.
 
     Returns:
         None
