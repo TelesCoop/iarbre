@@ -23,6 +23,7 @@ const drawerVisible = computed({
     <map-layer-switcher :with-border="false" />
     <map-bg-switcher :with-border="false" />
     <map-legend />
+    <map-filters-status />
     <map-context-data />
   </AppDrawer>
 </template>

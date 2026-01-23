@@ -14,6 +14,7 @@ export const TutorialSelector = {
   MAP_SIDE_PANEL: '[data-cy="map-side-panel"]',
   MAP_CONFIG_DRAWER: '[data-cy="map-config-drawer"]',
   DRAWER_TOGGLE: '[data-cy="drawer-toggle"]',
+  DRAWER_CLOSE_BUTTON: '[data-cy="map-config-drawer"] .p-drawer-close-button',
   LAYER_SWITCHER: '[data-cy="layer-switcher"]',
   MAP_BG_SWITCHER: '[data-cy="map-bg-switcher"]',
   PLANTABILITY_LEGEND: '[data-cy="plantability-legend"]',

@@ -45,6 +45,7 @@ const drawerVisible = computed({
     :position="position"
     class="app-drawer"
     :style="drawerStyle"
+    data-cy="app-drawer"
   >
     <template #header>
       <slot name="header">

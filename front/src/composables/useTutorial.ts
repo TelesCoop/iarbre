@@ -118,9 +118,9 @@ export function useTutorial() {
           const handleToggleClick = () => {
             toggleElement?.removeEventListener("click", handleToggleClick)
             // Wait 500ms to allow drawer animation to complete
-            setTimeout(() => {
+            nextTick(() => {
               tutorialStore.nextStep()
-            }, 500)
+            })
           }
           toggleElement?.addEventListener("click", handleToggleClick)
         }
@@ -146,10 +146,13 @@ export function useTutorial() {
           const handleLegendClick = (event: Event) => {
             // Check if the click was on a legend item (score, zone, or climate zone)
             const target = event.target as HTMLElement
+            const mapFiltersStatus = document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)
+
             if (
-              target.hasAttribute("data-score") ||
-              target.hasAttribute("data-zone") ||
-              target.hasAttribute("data-climate-zone")
+              (target.hasAttribute("data-score") ||
+                target.hasAttribute("data-zone") ||
+                target.hasAttribute("data-climate-zone")) &&
+              mapFiltersStatus
             ) {
               // Remove event listeners to prevent multiple triggers
               plantabilityLegend?.removeEventListener("click", handleLegendClick)
@@ -157,18 +160,9 @@ export function useTutorial() {
               climateZonesLegend?.removeEventListener("click", handleLegendClick)
 
               // Wait for the filter status to appear and check if it exists
-              const checkFilterStatus = () => {
-                const filterStatus = document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)
-                if (filterStatus) {
-                  tutorialStore.nextStep()
-                } else {
-                  // If filter status doesn't appear, try again after a short delay
-                  setTimeout(checkFilterStatus, 100)
-                }
-              }
 
               // Start checking for filter status after a brief delay
-              setTimeout(checkFilterStatus, 500)
+              tutorialStore.nextStep()
             }
           }
 
@@ -184,16 +178,40 @@ export function useTutorial() {
           description:
             "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres."
         }
-      },
-      {
-        element: TutorialSelector.MAP_COMPONENT,
-        popover: {
-          title: "Visualisation des filtres",
-          description:
-            "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
-        }
       }
     )
+
+    // Add mobile-specific step to close drawer
+    if (appStore.isMobileOrTablet) {
+      steps.push({
+        element: TutorialSelector.DRAWER_CLOSE_BUTTON,
+        popover: {
+          title: "Fermer le panneau",
+          description: "Cliquez sur la croix pour fermer le panneau de configuration.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () => {
+          const closeButton = document.querySelector(TutorialSelector.DRAWER_CLOSE_BUTTON)
+          const handleCloseClick = () => {
+            closeButton?.removeEventListener("click", handleCloseClick)
+            // Wait for drawer animation to complete before advancing
+            nextTick(() => {
+              tutorialStore.nextStep()
+            })
+          }
+          closeButton?.addEventListener("click", handleCloseClick)
+        }
+      })
+    }
+
+    steps.push({
+      element: TutorialSelector.MAP_COMPONENT,
+      popover: {
+        title: "Visualisation des filtres",
+        description:
+          "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
+      }
+    })
 
     startTutorial(steps)
   }
