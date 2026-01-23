@@ -1,6 +1,6 @@
 import { nextTick } from "vue"
 import { useTutorialStore } from "@/stores/tutorial"
-import { Drawer, useAppStore } from "@/stores/app"
+import { useAppStore } from "@/stores/app"
 import { DriverButton, TutorialSelector } from "@/types/tutorial"
 import type { DriveStep } from "driver.js"
 
@@ -101,7 +101,34 @@ export function useTutorial() {
   }
 
   const startLegendTutorial = () => {
-    startTutorial([
+    const steps: DriveStep[] = []
+
+    // Add mobile-specific step to open drawer first
+    if (appStore.isMobileOrTablet) {
+      steps.push({
+        element: TutorialSelector.DRAWER_TOGGLE,
+        popover: {
+          title: "Ouvrir le panneau de configuration",
+          description:
+            "Cliquez ici pour ouvrir le panneau de configuration et accéder à la légende.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () => {
+          const toggleElement = document.querySelector(TutorialSelector.DRAWER_TOGGLE)
+          const handleToggleClick = () => {
+            toggleElement?.removeEventListener("click", handleToggleClick)
+            // Wait 500ms to allow drawer animation to complete
+            setTimeout(() => {
+              tutorialStore.nextStep()
+            }, 500)
+          }
+          toggleElement?.addEventListener("click", handleToggleClick)
+        }
+      })
+    }
+
+    // Add the original legend tutorial steps
+    steps.push(
       {
         element: `${TutorialSelector.PLANTABILITY_LEGEND}, ${TutorialSelector.VULNERABILITY_LEGEND}, ${TutorialSelector.CLIMATE_ZONES_LEGEND}`,
         popover: {
@@ -166,17 +193,46 @@ export function useTutorial() {
             "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
         }
       }
-    ])
+    )
+
+    startTutorial(steps)
   }
 
   const startLayerSwitcherTutorial = () => {
-    startTutorial([
+    const steps: DriveStep[] = []
+
+    // Add mobile-specific step to open drawer first
+    if (appStore.isMobileOrTablet) {
+      steps.push({
+        element: TutorialSelector.DRAWER_TOGGLE,
+        popover: {
+          title: "Ouvrir le panneau de configuration",
+          description:
+            "Cliquez ici pour ouvrir le panneau de configuration et accéder aux options de calques.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () => {
+          const toggleElement = document.querySelector(TutorialSelector.DRAWER_TOGGLE)
+          const handleToggleClick = () => {
+            toggleElement?.removeEventListener("click", handleToggleClick)
+            nextTick(() => {
+              tutorialStore.nextStep()
+            })
+          }
+          toggleElement?.addEventListener("click", handleToggleClick)
+        }
+      })
+    }
+
+    // Add the original steps
+    steps.push(
       {
         element: TutorialSelector.LAYER_SWITCHER,
         popover: {
           title: "Changement de calque",
           description:
-            "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte."
+            "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
+          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
         }
       },
       {
@@ -186,7 +242,9 @@ export function useTutorial() {
           description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.)."
         }
       }
-    ])
+    )
+
+    startTutorial(steps)
   }
 
   const startFeedbackTutorial = () => {
