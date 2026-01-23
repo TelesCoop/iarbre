@@ -561,14 +561,14 @@ class MVTGenerator:
 
         tiles_to_generate = []
         for zoom in range(self.min_zoom, self.max_zoom + 1):
-            has_mvt_tiles = (
-                MVTTile.objects.filter(
-                    geolevel=self.mdl.geolevel,
-                    datatype=self.mdl.datatype,
-                    zoom_level=zoom,
-                ).count()
-                > 0
-            )
+            existing_mvt_tiles = MVTTile.objects.filter(
+                geolevel=self.mdl.geolevel,
+                datatype=self.mdl.datatype,
+                zoom_level=zoom,
+            ).values_list("tile_x", "tile_y")
+            has_mvt_tiles = len(existing_mvt_tiles) > 0
+
+            existing_tiles = set(existing_mvt_tiles)
             # Get all tiles that cover the entire geometry bounds
             # bbox needs to be in 4326
             tiles = list(
@@ -585,18 +585,10 @@ class MVTGenerator:
             for tile in tiles:
                 if ignore_existing or not has_mvt_tiles:
                     tiles_to_generate.append((tile, zoom))
-                else:
-                    try:
-                        MVTTile.objects.get(
-                            tile_x=tile.x,
-                            tile_y=tile.y,
-                            zoom_level=zoom,
-                            geolevel=self.mdl.geolevel,
-                            datatype=self.mdl.datatype,
-                        )
-                    except MVTTile.DoesNotExist:
-                        tiles_to_generate.append((tile, zoom))
+                elif not (tile.x, tile.y) in existing_tiles:
+                    tiles_to_generate.append((tile, zoom))
 
+        print(f"Start to generate {len(tiles_to_generate)} tiles")
         tiles_to_generate_by_process = partition(
             tiles_to_generate, int(len(tiles_to_generate) / 100)
         )
