@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { useApiPost } from "@/api"
+import AppDrawer from "@/components/AppDrawer.vue"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import type { Feedback } from "@/types/map"
@@ -9,7 +10,16 @@ import { useToast } from "primevue"
 
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
+const mobileMenuVisible = ref(false)
 const toast = useToast()
+
+const toggleMobileMenu = () => {
+  mobileMenuVisible.value = !mobileMenuVisible.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuVisible.value = false
+}
 
 const sendFeedbackToAPI = async (data: Feedback) => {
   const { error } = await useApiPost<Feedback>("feedback/", data)
@@ -65,6 +75,81 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       </li>
     </ul>
   </nav>
+
+  <!-- Mobile menu button -->
+  <div class="sm:hidden ml-auto">
+    <Button
+      icon="pi pi-bars"
+      severity="primary"
+      size="small"
+      type="button"
+      variant="text"
+      data-cy="mobile-menu-button"
+      @click="toggleMobileMenu"
+    />
+  </div>
+
+  <!-- Mobile menu -->
+  <AppDrawer
+    v-model:visible="mobileMenuVisible"
+    position="right"
+    :custom-styles="{ width: '16rem', maxWidth: '16rem' }"
+    class="sm:hidden"
+    data-cy="mobile-menu"
+  >
+    <template #header>
+      <div class="flex justify-end">
+        <Button
+          icon="pi pi-times"
+          severity="primary"
+          size="small"
+          type="button"
+          variant="text"
+          data-cy="mobile-menu-close"
+          @click="closeMobileMenu"
+        />
+      </div>
+    </template>
+
+    <div class="p-4">
+      <ul class="space-y-4">
+        <li>
+          <Button
+            data-cy="mobile-features-button"
+            severity="primary"
+            size="small"
+            type="button"
+            variant="text"
+            class="w-full justify-start"
+            @click="
+              () => {
+                welcomeIsVisible = true
+                closeMobileMenu()
+              }
+            "
+            >Afficher les fonctionnalités
+          </Button>
+        </li>
+        <li>
+          <Button
+            data-cy="mobile-feedback-button"
+            severity="primary"
+            size="small"
+            type="button"
+            variant="text"
+            class="w-full justify-start"
+            @click="
+              () => {
+                feedbackIsVisible = true
+                closeMobileMenu()
+              }
+            "
+            >Envoyer votre avis
+          </Button>
+        </li>
+      </ul>
+    </div>
+  </AppDrawer>
 
   <welcome-message v-model="welcomeIsVisible" />
 

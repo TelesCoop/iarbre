@@ -18,5 +18,8 @@ export const TutorialSelector = {
   MAP_BG_SWITCHER: '[data-cy="map-bg-switcher"]',
   PLANTABILITY_LEGEND: '[data-cy="plantability-legend"]',
   VULNERABILITY_LEGEND: '[data-cy="vulnerability-zones-legend"]',
-  OPEN_FEEDBACK_BUTTON: '[data-cy="open-feedback-button"]'
+  CLIMATE_ZONES_LEGEND: '[data-cy="climate-zones-legend"]',
+  PLANT_VULNERABILITY_LEGEND: '[data-cy="plant-vulnerability-legend"]',
+  OPEN_FEEDBACK_BUTTON: '[data-cy="open-feedback-button"]',
+  MAP_FILTERS_STATUS: '[data-cy="map-filters-status"]'
 } as const

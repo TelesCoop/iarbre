@@ -103,11 +103,67 @@ export function useTutorial() {
   const startLegendTutorial = () => {
     startTutorial([
       {
-        element: `${TutorialSelector.PLANTABILITY_LEGEND}, ${TutorialSelector.VULNERABILITY_LEGEND}`,
+        element: `${TutorialSelector.PLANTABILITY_LEGEND}, ${TutorialSelector.VULNERABILITY_LEGEND}, ${TutorialSelector.CLIMATE_ZONES_LEGEND}`,
         popover: {
           title: "La légende",
           description:
-            "Cliquez sur les éléments de la légende pour filtrer et masquer certaines zones selon vos préférences."
+            "Cliquez sur les éléments de la légende pour filtrer et masquer certaines zones selon vos préférences.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () => {
+          // Add event listener to legend items to detect when user clicks on them
+          const plantabilityLegend = document.querySelector(TutorialSelector.PLANTABILITY_LEGEND)
+          const vulnerabilityLegend = document.querySelector(TutorialSelector.VULNERABILITY_LEGEND)
+          const climateZonesLegend = document.querySelector(TutorialSelector.CLIMATE_ZONES_LEGEND)
+
+          const handleLegendClick = (event: Event) => {
+            // Check if the click was on a legend item (score, zone, or climate zone)
+            const target = event.target as HTMLElement
+            if (
+              target.hasAttribute("data-score") ||
+              target.hasAttribute("data-zone") ||
+              target.hasAttribute("data-climate-zone")
+            ) {
+              // Remove event listeners to prevent multiple triggers
+              plantabilityLegend?.removeEventListener("click", handleLegendClick)
+              vulnerabilityLegend?.removeEventListener("click", handleLegendClick)
+              climateZonesLegend?.removeEventListener("click", handleLegendClick)
+
+              // Wait for the filter status to appear and check if it exists
+              const checkFilterStatus = () => {
+                const filterStatus = document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)
+                if (filterStatus) {
+                  tutorialStore.nextStep()
+                } else {
+                  // If filter status doesn't appear, try again after a short delay
+                  setTimeout(checkFilterStatus, 100)
+                }
+              }
+
+              // Start checking for filter status after a brief delay
+              setTimeout(checkFilterStatus, 500)
+            }
+          }
+
+          plantabilityLegend?.addEventListener("click", handleLegendClick)
+          vulnerabilityLegend?.addEventListener("click", handleLegendClick)
+          climateZonesLegend?.addEventListener("click", handleLegendClick)
+        }
+      },
+      {
+        element: TutorialSelector.MAP_FILTERS_STATUS,
+        popover: {
+          title: "Filtres actifs",
+          description:
+            "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres."
+        }
+      },
+      {
+        element: TutorialSelector.MAP_COMPONENT,
+        popover: {
+          title: "Visualisation des filtres",
+          description:
+            "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
         }
       }
     ])

@@ -123,18 +123,20 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
           </div>
         </button>
 
-        <div class="welcome-functionnality">
+        <a
+          href="https://iarbre.fr/#newsletter"
+          target="_blank"
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+        >
           <span class="text-2xl">✉️</span>
           <div>
             <h4 class="font-medium">En savoir plus</h4>
             <p class="text-sm">
               en vous abonnant à la
-              <a href="https://iarbre.fr/#newsletter" class="text-primary-900 font-medium underline"
-                >newsletter</a
-              >.
+              <span class="text-primary-900 font-medium underline">newsletter</span>.
             </p>
           </div>
-        </div>
+        </a>
       </div>
     </div>
 
