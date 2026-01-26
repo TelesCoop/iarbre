@@ -555,7 +555,7 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = initialDatatype
 
     mapInstancesByIds.value[mapId] = new Map({
-      container: mapId, // container id
+      container: mapId,
       style: mapStyles.OSM as maplibregl.StyleSpecification,
       maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
@@ -563,32 +563,38 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-    mapInstance.on("style.load", async () => {
+
+    const onMapReady = async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
-      // Initialize shape drawing
       shapeDrawing.initDraw(mapInstance)
       // Configure automatic calculation when a shape is finished
       shapeDrawing.onShapeFinished(() => {
         finishShapeSelection()
       })
-    })
+      mapInstance.once("render", () => {
+        console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
+        console.info(
+          `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
+        )
+      })
+    }
+
+    if (mapInstance.isStyleLoaded()) {
+      onMapReady()
+    } else {
+      mapInstance.once("style.load", onMapReady)
+    }
 
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
-    mapInstance.on("load", () => {
+    mapInstance.once("load", () => {
       const center = mapInstance.getCenter()
       clickCoordinates.value = {
         lat: center.lat,
         lng: center.lng
       }
-    })
-    mapInstance.once("render", () => {
-      console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
-      console.info(
-        `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
-      )
     })
   }
 
