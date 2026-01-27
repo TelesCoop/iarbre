@@ -67,7 +67,7 @@ const switchMode = (mode: SelectionMode) => {
       v-tooltip.left="drawingMode.label"
       :data-cy="drawingMode.dataCy"
       size="small"
-      :severity="isActive(drawingMode.mode).value ? 'secondary' : ''"
+      :severity="isActive(drawingMode.mode).value ? 'primary' : 'secondary'"
       class="w-10 h-10 p-0 flex items-center justify-center rounded-none! border-0!"
       @click="switchMode(drawingMode.mode)"
     >

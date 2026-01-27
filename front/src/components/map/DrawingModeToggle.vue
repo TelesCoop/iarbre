@@ -10,7 +10,7 @@ const mapStore = useMapStore()
     <Button
       data-cy="drawing-mode-toggle"
       size="small"
-      :severity="mapStore.isToolbarVisible ? 'secondary' : ''"
+      :severity="mapStore.isToolbarVisible ? 'primary' : 'secondary'"
       class="w-10 h-10 p-0 flex items-center justify-center rounded-none! border-0!"
       @click="mapStore.toggleToolbar()"
     >
