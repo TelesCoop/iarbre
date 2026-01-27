@@ -1,15 +1,27 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import { useApiPost } from "@/api"
+import { useAppStore } from "@/stores/app"
+import AppDrawer from "@/components/AppDrawer.vue"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import type { Feedback } from "@/types/map"
 import Button from "primevue/button"
 import { useToast } from "primevue"
 
+const appStore = useAppStore()
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
+const mobileMenuVisible = ref(false)
 const toast = useToast()
+
+const toggleMobileMenu = () => {
+  mobileMenuVisible.value = !mobileMenuVisible.value
+}
+
+const closeMobileMenu = () => {
+  mobileMenuVisible.value = false
+}
 
 const sendFeedbackToAPI = async (data: Feedback) => {
   const { error } = await useApiPost<Feedback>("feedback/", data)
@@ -39,7 +51,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       <img alt="Logo I-Arbre" class="h-8 sm:h-10 w-auto" src="/images/logo-iarbre.png" />
     </a>
   </div>
-  <nav class="header-nav ml-auto hidden sm:block">
+  <nav v-if="appStore.isDesktop" class="header-nav ml-auto block">
     <ul class="nav-list">
       <li>
         <Button
@@ -49,7 +61,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
           type="button"
           variant="text"
           @click="welcomeIsVisible = true"
-          >Afficher les fonctionnalités
+          >Tutoriel
         </Button>
       </li>
       <li>
@@ -65,6 +77,81 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       </li>
     </ul>
   </nav>
+
+  <!-- Mobile menu button -->
+  <nav v-else class="block ml-auto">
+    <Button
+      icon="pi pi-bars"
+      severity="primary"
+      size="small"
+      type="button"
+      variant="text"
+      data-cy="mobile-menu-button"
+      @click="toggleMobileMenu"
+    />
+  </nav>
+
+  <!-- Mobile menu -->
+  <AppDrawer
+    v-model:visible="mobileMenuVisible"
+    position="right"
+    :custom-styles="{ width: '16rem', maxWidth: '16rem' }"
+    class="sm:hidden"
+    data-cy="mobile-menu"
+  >
+    <template #header>
+      <div class="flex justify-end">
+        <Button
+          icon="pi pi-times"
+          severity="primary"
+          size="small"
+          type="button"
+          variant="text"
+          data-cy="mobile-menu-close"
+          @click="closeMobileMenu"
+        />
+      </div>
+    </template>
+
+    <div class="p-4">
+      <ul class="space-y-4">
+        <li>
+          <Button
+            data-cy="mobile-features-button"
+            severity="primary"
+            size="small"
+            type="button"
+            variant="text"
+            class="w-full justify-start"
+            @click="
+              () => {
+                welcomeIsVisible = true
+                closeMobileMenu()
+              }
+            "
+            >Tutoriel
+          </Button>
+        </li>
+        <li>
+          <Button
+            data-cy="open-feedback-button"
+            severity="primary"
+            size="small"
+            type="button"
+            variant="text"
+            class="w-full justify-start"
+            @click="
+              () => {
+                feedbackIsVisible = true
+                closeMobileMenu()
+              }
+            "
+            >Envoyer votre avis
+          </Button>
+        </li>
+      </ul>
+    </div>
+  </AppDrawer>
 
   <welcome-message v-model="welcomeIsVisible" />
 

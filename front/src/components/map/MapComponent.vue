@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
+import { useAppStore } from "@/stores/app"
 import { onMounted, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
 
@@ -20,6 +21,7 @@ const emit = defineEmits<{
 }>()
 
 const mapStore = useMapStore()
+const appStore = useAppStore()
 
 onMounted(() => {
   mapStore.initMap(props.mapId, model.value.dataType!)
@@ -47,14 +49,14 @@ onMounted(() => {
 
 <template>
   <div class="block w-full h-full lg:flex">
-    <map-side-panel />
+    <map-side-panel v-if="appStore.isDesktop" />
     <div
       :id="mapId"
       class="relative w-screen h-full lg:ml-auto lg:w-screen-without-sidepanel"
       data-cy="map-component"
     ></div>
   </div>
-  <div class="absolute left-0 top-0 lg:hidden mt-2 ml-2">
+  <div v-if="appStore.isMobileOrTablet" class="absolute left-0 top-0 mt-2 ml-2">
     <map-config-drawer-toggle />
   </div>
 
@@ -71,11 +73,11 @@ onMounted(() => {
   <!-- Drawing controls - only visible in shape mode -->
   <drawing-controls />
 
-  <div class="legend-container hidden lg:flex">
+  <div v-if="appStore.isDesktop" class="legend-container flex">
     <map-legend />
     <map-filters-status />
   </div>
-  <div class="lg:hidden flex items-center justify-center">
+  <div v-else class="flex items-center justify-center">
     <map-context-data-mobile />
   </div>
   <welcome-message />
