@@ -2,10 +2,12 @@ import { nextTick } from "vue"
 import { useTutorialStore } from "@/stores/tutorial"
 import { useAppStore } from "@/stores/app"
 import { DriverButton, TutorialSelector } from "@/types/tutorial"
-import type { DriveStep } from "driver.js"
+import type { AllowedButtons, DriveStep } from "driver.js"
 
 type ClickAction = "nextStep" | "stopTutorial"
 type ClickDelay = number | "nextTick" | undefined
+
+const NAV_BUTTONS: AllowedButtons[] = [DriverButton.CLOSE, DriverButton.PREVIOUS, DriverButton.NEXT]
 
 export function useTutorial() {
   const tutorialStore = useTutorialStore()
@@ -52,6 +54,7 @@ export function useTutorial() {
   }
 
   const createLegendClickHandler = () => {
+    setupOverlayClickAdvance()
     const legends = [
       TutorialSelector.PLANTABILITY_LEGEND,
       TutorialSelector.VULNERABILITY_LEGEND,
@@ -89,7 +92,7 @@ export function useTutorial() {
             title: "La carte interactive",
             description:
               "Cliquez n'importe où sur la carte pour obtenir des informations détaillées sur cette zone.",
-            showButtons: [DriverButton.CLOSE]
+            showButtons: NAV_BUTTONS
           },
           onHighlighted: () => onClickAdvance(TutorialSelector.MAP_COMPONENT, "nextStep", 500)
         },
@@ -98,7 +101,7 @@ export function useTutorial() {
           popover: {
             title: "Ouvrir le panneau",
             description: "Cliquez ici pour afficher les informations détaillées.",
-            showButtons: [DriverButton.CLOSE]
+            showButtons: NAV_BUTTONS
           },
           onHighlighted: () =>
             onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
@@ -108,7 +111,7 @@ export function useTutorial() {
           popover: {
             title: "Panneau d'informations",
             description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
-            showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+            showButtons: NAV_BUTTONS
           },
           onHighlighted: setupOverlayClickAdvance
         }
@@ -121,7 +124,7 @@ export function useTutorial() {
           title: "La carte interactive",
           description:
             "Cliquez n'importe où sur la carte pour obtenir des informations détaillées sur cette zone.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () => onClickAdvance(TutorialSelector.MAP_COMPONENT)
       },
@@ -130,7 +133,7 @@ export function useTutorial() {
         popover: {
           title: "Panneau d'informations",
           description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
-          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: setupOverlayClickAdvance
       }
@@ -147,7 +150,7 @@ export function useTutorial() {
           title: "Ouvrir le panneau de configuration",
           description:
             "Cliquez ici pour ouvrir le panneau de configuration et accéder à la légende.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () => onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
       })
@@ -160,7 +163,7 @@ export function useTutorial() {
           title: "La légende",
           description:
             "Cliquez sur les éléments de la légende pour filtrer et masquer certaines zones selon vos préférences.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: createLegendClickHandler
       },
@@ -170,7 +173,7 @@ export function useTutorial() {
           title: "Filtres actifs",
           description:
             "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres.",
-          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: setupOverlayClickAdvance
       }
@@ -188,7 +191,7 @@ export function useTutorial() {
         popover: {
           title: "Fermer le panneau",
           description: "Cliquez sur la croix pour fermer le panneau de configuration.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () =>
           onClickAdvance(TutorialSelector.DRAWER_CLOSE_BUTTON, "nextStep", "nextTick")
@@ -200,7 +203,8 @@ export function useTutorial() {
       popover: {
         title: "Visualisation des filtres",
         description:
-          "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
+          "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment.",
+        showButtons: NAV_BUTTONS
       },
       onHighlighted: setupOverlayClickAdvance
     })
@@ -218,7 +222,7 @@ export function useTutorial() {
           title: "Ouvrir le panneau de configuration",
           description:
             "Cliquez ici pour ouvrir le panneau de configuration et accéder aux options de calques.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () => onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
       })
@@ -231,15 +235,18 @@ export function useTutorial() {
           title: "Changement de calque",
           description:
             "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
-          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
-        }
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
       },
       {
         element: TutorialSelector.MAP_BG_SWITCHER,
         popover: {
           title: "Fond de carte",
-          description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.)."
-        }
+          description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.).",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
       }
     )
 
@@ -272,7 +279,7 @@ export function useTutorial() {
         popover: {
           title: "Fermer le panneau",
           description: "Cliquez sur la croix pour fermer le panneau.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () =>
           onClickAdvance(TutorialSelector.DRAWER_CLOSE_BUTTON, "nextStep", "nextTick")
@@ -283,8 +290,10 @@ export function useTutorial() {
       element: TutorialSelector.MAP_COMPONENT,
       popover: {
         title: "Tutoriel terminé",
-        description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !"
-      }
+        description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !",
+        showButtons: NAV_BUTTONS
+      },
+      onHighlighted: setupOverlayClickAdvance
     })
 
     runTutorial(steps)
@@ -299,7 +308,7 @@ export function useTutorial() {
         popover: {
           title: "Ouvrir le menu",
           description: "Cliquez sur le bouton menu pour accéder aux fonctionnalités.",
-          showButtons: [DriverButton.CLOSE]
+          showButtons: NAV_BUTTONS
         },
         onHighlighted: () =>
           onClickAdvance(TutorialSelector.MOBILE_MENU_BUTTON, "nextStep", "nextTick")
@@ -312,7 +321,7 @@ export function useTutorial() {
         title: "Donnez votre avis",
         description:
           "Cliquez ici pour partager vos commentaires et nous aider à améliorer la plateforme.",
-        showButtons: [DriverButton.CLOSE]
+        showButtons: NAV_BUTTONS
       },
       onHighlighted: () => onClickAdvance(TutorialSelector.OPEN_FEEDBACK_BUTTON, "stopTutorial")
     })
