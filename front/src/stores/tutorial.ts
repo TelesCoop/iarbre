@@ -20,9 +20,11 @@ export const useTutorialStore = defineStore("tutorial", () => {
       stagePadding: 10,
       allowClose: true,
       stageRadius: 5,
+      showProgress: true,
       nextBtnText: "Suivant",
       prevBtnText: "Précédent",
       doneBtnText: "Terminer",
+      progressText: "{{current}} sur {{total}}",
       allowKeyboardControl: true,
       onHighlightStarted: () => {
         isActive.value = true

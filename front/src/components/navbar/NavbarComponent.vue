@@ -61,7 +61,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
           type="button"
           variant="text"
           @click="welcomeIsVisible = true"
-          >Afficher les fonctionnalités
+          >Tutoriel
         </Button>
       </li>
       <li>
@@ -129,7 +129,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
                 closeMobileMenu()
               }
             "
-            >Afficher les fonctionnalités
+            >Tutoriel
           </Button>
         </li>
         <li>

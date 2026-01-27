@@ -11,6 +11,28 @@ export function useTutorial() {
   const tutorialStore = useTutorialStore()
   const appStore = useAppStore()
 
+  let overlayClickHandler: (() => void) | null = null
+
+  const cleanupOverlayClick = () => {
+    if (overlayClickHandler) {
+      const overlay = document.querySelector(".driver-overlay")
+      overlay?.removeEventListener("click", overlayClickHandler)
+      overlayClickHandler = null
+    }
+  }
+
+  const setupOverlayClickAdvance = () => {
+    cleanupOverlayClick()
+    const overlay = document.querySelector(".driver-overlay")
+    if (overlay) {
+      overlayClickHandler = () => {
+        cleanupOverlayClick()
+        tutorialStore.nextStep()
+      }
+      overlay.addEventListener("click", overlayClickHandler)
+    }
+  }
+
   const onClickAdvance = (
     selector: string,
     action: ClickAction = "nextStep",
@@ -19,6 +41,7 @@ export function useTutorial() {
     const element = document.querySelector(selector)
     const handleClick = () => {
       element?.removeEventListener("click", handleClick)
+      cleanupOverlayClick()
       const execute = () =>
         action === "nextStep" ? tutorialStore.nextStep() : tutorialStore.stopTutorial()
       if (delay === "nextTick") nextTick(execute)
@@ -28,44 +51,70 @@ export function useTutorial() {
     element?.addEventListener("click", handleClick)
   }
 
-  const startTutorial = (steps: DriveStep[]) => {
+  const createLegendClickHandler = () => {
+    const legends = [
+      TutorialSelector.PLANTABILITY_LEGEND,
+      TutorialSelector.VULNERABILITY_LEGEND,
+      TutorialSelector.CLIMATE_ZONES_LEGEND
+    ].map((s) => document.querySelector(s))
+
+    const handleLegendClick = (event: Event) => {
+      const target = event.target as HTMLElement
+      const hasFilterAttr =
+        target.hasAttribute("data-score") ||
+        target.hasAttribute("data-zone") ||
+        target.hasAttribute("data-climate-zone")
+
+      if (hasFilterAttr && document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)) {
+        legends.forEach((el) => el?.removeEventListener("click", handleLegendClick))
+        cleanupOverlayClick()
+        tutorialStore.nextStep()
+      }
+    }
+
+    legends.forEach((el) => el?.addEventListener("click", handleLegendClick))
+  }
+
+  const runTutorial = (steps: DriveStep[]) => {
+    cleanupOverlayClick()
     tutorialStore.startTutorial(steps)
   }
 
-  const startMapTutorialMobile = () => {
-    startTutorial([
-      {
-        element: TutorialSelector.MAP_COMPONENT,
-        popover: {
-          title: "La carte interactive",
-          description:
-            "Cliquez n'importe où sur la carte pour obtenir des informations détaillées sur cette zone.",
-          showButtons: [DriverButton.CLOSE]
+  const getMapSteps = (): DriveStep[] => {
+    if (appStore.isMobileOrTablet) {
+      return [
+        {
+          element: TutorialSelector.MAP_COMPONENT,
+          popover: {
+            title: "La carte interactive",
+            description:
+              "Cliquez n'importe où sur la carte pour obtenir des informations détaillées sur cette zone.",
+            showButtons: [DriverButton.CLOSE]
+          },
+          onHighlighted: () => onClickAdvance(TutorialSelector.MAP_COMPONENT, "nextStep", 500)
         },
-        onHighlighted: () => onClickAdvance(TutorialSelector.MAP_COMPONENT, "nextStep", 500)
-      },
-      {
-        element: TutorialSelector.DRAWER_TOGGLE,
-        popover: {
-          title: "Ouvrir le panneau",
-          description: "Cliquez ici pour afficher les informations détaillées.",
-          showButtons: [DriverButton.CLOSE]
+        {
+          element: TutorialSelector.DRAWER_TOGGLE,
+          popover: {
+            title: "Ouvrir le panneau",
+            description: "Cliquez ici pour afficher les informations détaillées.",
+            showButtons: [DriverButton.CLOSE]
+          },
+          onHighlighted: () =>
+            onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
         },
-        onHighlighted: () => onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
-      },
-      {
-        element: TutorialSelector.MAP_CONFIG_DRAWER,
-        popover: {
-          title: "Panneau d'informations",
-          description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
-          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+        {
+          element: TutorialSelector.MAP_CONFIG_DRAWER,
+          popover: {
+            title: "Panneau d'informations",
+            description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
+            showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+          },
+          onHighlighted: setupOverlayClickAdvance
         }
-      }
-    ])
-  }
-
-  const startMapTutorialDesktop = () => {
-    startTutorial([
+      ]
+    }
+    return [
       {
         element: TutorialSelector.MAP_COMPONENT,
         popover: {
@@ -80,24 +129,18 @@ export function useTutorial() {
         element: TutorialSelector.MAP_SIDE_PANEL,
         popover: {
           title: "Panneau d'informations",
-          description: "Les informations détaillées sur la zone sélectionnée s'affichent ici."
-        }
+          description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
+          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+        },
+        onHighlighted: setupOverlayClickAdvance
       }
-    ])
+    ]
   }
 
-  const startMapTutorial = () => {
-    if (appStore.isMobileOrTablet) {
-      startMapTutorialMobile()
-    } else {
-      startMapTutorialDesktop()
-    }
-  }
-
-  const startLegendTutorial = () => {
+  const getLegendSteps = (options?: { skipOpenDrawer?: boolean }): DriveStep[] => {
     const steps: DriveStep[] = []
 
-    if (appStore.isMobileOrTablet) {
+    if (appStore.isMobileOrTablet && !options?.skipOpenDrawer) {
       steps.push({
         element: TutorialSelector.DRAWER_TOGGLE,
         popover: {
@@ -119,38 +162,25 @@ export function useTutorial() {
             "Cliquez sur les éléments de la légende pour filtrer et masquer certaines zones selon vos préférences.",
           showButtons: [DriverButton.CLOSE]
         },
-        onHighlighted: () => {
-          const legends = [
-            TutorialSelector.PLANTABILITY_LEGEND,
-            TutorialSelector.VULNERABILITY_LEGEND,
-            TutorialSelector.CLIMATE_ZONES_LEGEND
-          ].map((s) => document.querySelector(s))
-
-          const handleLegendClick = (event: Event) => {
-            const target = event.target as HTMLElement
-            const hasFilterAttr =
-              target.hasAttribute("data-score") ||
-              target.hasAttribute("data-zone") ||
-              target.hasAttribute("data-climate-zone")
-
-            if (hasFilterAttr && document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)) {
-              legends.forEach((el) => el?.removeEventListener("click", handleLegendClick))
-              tutorialStore.nextStep()
-            }
-          }
-
-          legends.forEach((el) => el?.addEventListener("click", handleLegendClick))
-        }
+        onHighlighted: createLegendClickHandler
       },
       {
         element: TutorialSelector.MAP_FILTERS_STATUS,
         popover: {
           title: "Filtres actifs",
           description:
-            "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres."
-        }
+            "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres.",
+          showButtons: [DriverButton.CLOSE, DriverButton.NEXT]
+        },
+        onHighlighted: setupOverlayClickAdvance
       }
     )
+
+    return steps
+  }
+
+  const getLegendCloseSteps = (): DriveStep[] => {
+    const steps: DriveStep[] = []
 
     if (appStore.isMobileOrTablet) {
       steps.push({
@@ -171,16 +201,17 @@ export function useTutorial() {
         title: "Visualisation des filtres",
         description:
           "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment."
-      }
+      },
+      onHighlighted: setupOverlayClickAdvance
     })
 
-    startTutorial(steps)
+    return steps
   }
 
-  const startLayerSwitcherTutorial = () => {
+  const getLayerSwitcherSteps = (options?: { skipOpenDrawer?: boolean }): DriveStep[] => {
     const steps: DriveStep[] = []
 
-    if (appStore.isMobileOrTablet) {
+    if (appStore.isMobileOrTablet && !options?.skipOpenDrawer) {
       steps.push({
         element: TutorialSelector.DRAWER_TOGGLE,
         popover: {
@@ -212,7 +243,51 @@ export function useTutorial() {
       }
     )
 
-    startTutorial(steps)
+    return steps
+  }
+
+  const startMapTutorial = () => {
+    runTutorial(getMapSteps())
+  }
+
+  const startLegendTutorial = () => {
+    runTutorial([...getLegendSteps(), ...getLegendCloseSteps()])
+  }
+
+  const startLayerSwitcherTutorial = () => {
+    runTutorial(getLayerSwitcherSteps())
+  }
+
+  const startFullTutorial = () => {
+    const isMobile = appStore.isMobileOrTablet
+    const steps: DriveStep[] = [
+      ...getMapSteps(),
+      ...getLegendSteps({ skipOpenDrawer: isMobile }),
+      ...getLayerSwitcherSteps({ skipOpenDrawer: isMobile })
+    ]
+
+    if (isMobile) {
+      steps.push({
+        element: TutorialSelector.DRAWER_CLOSE_BUTTON,
+        popover: {
+          title: "Fermer le panneau",
+          description: "Cliquez sur la croix pour fermer le panneau.",
+          showButtons: [DriverButton.CLOSE]
+        },
+        onHighlighted: () =>
+          onClickAdvance(TutorialSelector.DRAWER_CLOSE_BUTTON, "nextStep", "nextTick")
+      })
+    }
+
+    steps.push({
+      element: TutorialSelector.MAP_COMPONENT,
+      popover: {
+        title: "Tutoriel terminé",
+        description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !"
+      }
+    })
+
+    runTutorial(steps)
   }
 
   const startFeedbackTutorial = () => {
@@ -242,11 +317,11 @@ export function useTutorial() {
       onHighlighted: () => onClickAdvance(TutorialSelector.OPEN_FEEDBACK_BUTTON, "stopTutorial")
     })
 
-    startTutorial(steps)
+    runTutorial(steps)
   }
 
   return {
-    startTutorial,
+    startFullTutorial,
     startMapTutorial,
     startLegendTutorial,
     startLayerSwitcherTutorial,

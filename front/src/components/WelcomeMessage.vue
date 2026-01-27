@@ -51,9 +51,7 @@ const startTutorialAndClose = (tutorialFn: () => void) => {
   setTimeout(tutorialFn, 300)
 }
 
-const startMapTutorial = () => startTutorialAndClose(tutorial.startMapTutorial)
-const startLegendTutorial = () => startTutorialAndClose(tutorial.startLegendTutorial)
-const startLayerSwitcherTutorial = () => startTutorialAndClose(tutorial.startLayerSwitcherTutorial)
+const startTutorial = () => startTutorialAndClose(tutorial.startFullTutorial)
 const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedbackTutorial)
 </script>
 
@@ -66,46 +64,27 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
     modal
     data-cy="welcome-dialog"
     :closable="true"
+    :pt="{
+      closeButton: {
+        class: 'text-primary-500 hover:text-primary-700 hover:bg-transparent! transition-colors'
+      }
+    }"
   >
     <div class="flex flex-col gap-4 bg-white">
-      <p class="mb-2">Découvrez les fonctionnalités :</p>
-
       <div class="space-y-4">
         <button
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
           data-cy="welcome-map-tutorial"
-          @click="startMapTutorial"
+          @click="startTutorial"
         >
           <span class="text-2xl">🗺️</span>
           <div>
-            <h4 class="font-medium">Cliquez sur la carte</h4>
-            <p class="text-sm">pour obtenir des informations détaillées sur une zone.</p>
-          </div>
-        </button>
-
-        <button
-          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
-          data-cy="welcome-legend-tutorial"
-          @click="startLegendTutorial"
-        >
-          <legend-icon />
-          <div>
-            <h4 class="font-medium">Cliquez sur la légende</h4>
-            <p class="text-sm">pour filtrer et masquer certaines zones selon vos préférences.</p>
-          </div>
-        </button>
-
-        <button
-          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
-          data-cy="welcome-layer-tutorial"
-          @click="startLayerSwitcherTutorial"
-        >
-          <layer-switcher-icon />
-          <div>
-            <h4 class="font-medium">Changez de calque</h4>
-            <p class="text-sm">
-              en utilisant les menus à gauche, vous pouvez aussi changer le fond de carte.
-            </p>
+            <h4 class="font-medium">Cliquez ici pour découvrir IA·rbre pas à pas</h4>
+            <div class="space-y-1 mt-2">
+              <li class="text-sm">Explorez la carte</li>
+              <li class="text-sm">Utilisez la légende pour filtrer</li>
+              <li class="text-sm">Changez de calque et de fond de carte</li>
+            </div>
           </div>
         </button>
 
