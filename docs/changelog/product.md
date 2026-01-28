@@ -8,6 +8,8 @@ Le bouton **3D**, en bas à droite, permet de changer l'axe de visualisation. En
 
 &rarr; Commit [9cc2190](https://github.com/TelesCoop/iarbre/commit/9cc2190b37792fba60640cfaf4309267953db4ac)
 
+![Vue 3D](../assets/images/changelog/v0.23.0/3D_view.jpg)
+
 ### ✨ feat: Tutoriel
 
 Pour découvrir ou re-découvrir, les fonctionnalités de base de la carte pas à pas !
