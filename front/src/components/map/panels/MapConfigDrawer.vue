@@ -18,10 +18,12 @@ const drawerVisible = computed({
     header-icon="pi pi-cog"
     header-title="Carte"
     class="map-config-drawer"
+    data-cy="map-config-drawer"
   >
     <map-layer-switcher :with-border="false" />
     <map-bg-switcher :with-border="false" />
     <map-legend />
+    <map-filters-status />
     <map-context-data />
   </AppDrawer>
 </template>

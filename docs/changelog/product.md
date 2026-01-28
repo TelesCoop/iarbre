@@ -1,5 +1,25 @@
 # Journal des changements
 
+## 🔖 0.23.0 (2026-01-28) : Vue 3D et tutoriel
+
+### ✨ feat: Vue 3D
+
+Le bouton **3D**, en bas à droite, permet de changer l'axe de visualisation. En mode 3D, les indicateurs ne sont plus seulement représentés par la couleur : leur valeur est également représentée par la hauteur des barres, une barre plus haute correspond à un score plus élevé.
+
+&rarr; Commit [9cc2190](https://github.com/TelesCoop/iarbre/commit/9cc2190b37792fba60640cfaf4309267953db4ac)
+
+![Vue 3D](../assets/images/changelog/v0.23.0/3D_view.jpg)
+
+### ✨ feat: Tutoriel
+
+Pour découvrir ou re-découvrir, les fonctionnalités de base de la carte pas à pas !
+
+&rarr; Commit [a9a60f6](https://github.com/TelesCoop/iarbre/commit/a9a60f6c6d9fd9d2741fc889d34c02256f70f1d0)
+
+### 🐛 fix: Correction de bugs en mobile
+
+Correction de petits bugs d'affichage mobile.
+
 ## 🔖 0.22.0 (2026-01-21) : Ajout du calque inventaire du végétal stratifié
 
 ### ✨ feat : nouveau calque du végétal stratifié sur la métropole

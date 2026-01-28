@@ -45,6 +45,7 @@ const drawerVisible = computed({
     :position="position"
     class="app-drawer"
     :style="drawerStyle"
+    data-cy="app-drawer"
   >
     <template #header>
       <slot name="header">
@@ -55,7 +56,7 @@ const drawerVisible = computed({
       </slot>
     </template>
 
-    <div class="drawer-content">
+    <div class="drawer-content" data-cy="drawer-content">
       <slot></slot>
     </div>
   </Drawer>
