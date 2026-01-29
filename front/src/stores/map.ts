@@ -364,11 +364,21 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const removeControls = (map: Map) => {
-    map.removeControl(attributionControl.value)
-    map.removeControl(navControl.value)
-    map.removeControl(centerControl.value)
-    map.removeControl(control3D.value)
-    map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+    if (map.hasControl(attributionControl.value)) {
+      map.removeControl(attributionControl.value)
+    }
+    if (map.hasControl(navControl.value)) {
+      map.removeControl(navControl.value)
+    }
+    if (map.hasControl(centerControl.value)) {
+      map.removeControl(centerControl.value)
+    }
+    if (map.hasControl(control3D.value)) {
+      map.removeControl(control3D.value)
+    }
+    if (map.hasControl(geocoderControl.value as unknown as maplibreGl.IControl)) {
+      map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+    }
   }
   const setupControls = async (map: Map) => {
     const attribution = await getAttributionSource()
@@ -401,12 +411,16 @@ export const useMapStore = defineStore("map", () => {
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
-        mapInstance.removeLayer(layerId)
-        // Only remove border layer for vector data types
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
         if (previousDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
           mapInstance.removeLayer(`${layerId}-border`)
         }
-        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+        const sourceId = getSourceId(previousDataType, previousGeoLevel)
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
@@ -470,13 +484,21 @@ export const useMapStore = defineStore("map", () => {
       }
 
       if (newStyle!) {
-        mapInstance.setStyle(newStyle)
-        mapInstance.once("style.load", () => {
+        const onStyleReady = () => {
+          initTiles(mapInstance)
           setupControls(mapInstance).catch(console.error)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
           }
-        })
+          mapInstance.fire("moveend")
+        }
+
+        mapInstance.setStyle(newStyle)
+        if (mapInstance.isStyleLoaded()) {
+          onStyleReady()
+        } else {
+          mapInstance.once("style.load", onStyleReady)
+        }
       }
     })
   }
