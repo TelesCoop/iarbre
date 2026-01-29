@@ -2,6 +2,7 @@ import { ref, computed, type Ref } from "vue"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
+import { calculateMixedIndice } from "@/utils/plantability_vulnerability"
 
 export function useMapFilters() {
   const filteredValues = ref<(number | string)[]>([])
@@ -54,6 +55,18 @@ export function useMapFilters() {
           "in",
           ["get", `indice_${vulnerabilityMode!.value}`],
           ["literal", filteredValues.value]
+        ]
+      } else if (dataType === DataType.PLANTABILITY_VULNERABILITY) {
+        // Transform "X-Y" format into mixed_indice values
+        const mixedIndices: number[] = filteredValues.value.map((value) => {
+          const [plantabilityCoord, vulnerabilityCoord] = (value as string).split("-").map(Number)
+          return calculateMixedIndice(plantabilityCoord, vulnerabilityCoord)
+        })
+
+        filter = [
+          "in",
+          ["get", `mixed_indice_${vulnerabilityMode!.value}`],
+          ["literal", mixedIndices]
         ]
       }
 
