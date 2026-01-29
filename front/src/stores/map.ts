@@ -494,11 +494,7 @@ export const useMapStore = defineStore("map", () => {
         }
 
         mapInstance.setStyle(newStyle)
-        if (mapInstance.isStyleLoaded()) {
-          onStyleReady()
-        } else {
-          mapInstance.once("style.load", onStyleReady)
-        }
+        onStyleReady()
       }
     })
   }
