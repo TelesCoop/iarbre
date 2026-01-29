@@ -19,28 +19,27 @@ interface ScoreData {
 
 const scoreData = computed((): ScoreData | null => {
   const data = mapStore.contextData.data
-
   if (!data) return null
 
   switch (mapStore.selectedDataType) {
     case DataType.PLANTABILITY: {
       const plantabilityData = data as PlantabilityData
-      if (!plantabilityData?.plantabilityNormalizedIndice) return null
+      const score = plantabilityData.plantabilityNormalizedIndice ?? 0
       return {
-        score: plantabilityData.plantabilityNormalizedIndice,
+        score,
         maxScore: 10,
-        percentage: plantabilityData.plantabilityNormalizedIndice * 10,
+        percentage: score * 10,
         label: "plantabilité",
         colorScheme: "plantability"
       }
     }
     case DataType.VULNERABILITY: {
       const vulnerabilityData = data as VulnerabilityData
-      if (!vulnerabilityData?.vulnerabilityIndexDay) return null
+      const score = vulnerabilityData.vulnerabilityIndexDay ?? 0
       return {
-        score: vulnerabilityData.vulnerabilityIndexDay,
+        score,
         maxScore: 9,
-        percentage: (vulnerabilityData.vulnerabilityIndexDay / 9) * 100,
+        percentage: (score / 9) * 100,
         label: "vulnérabilité",
         colorScheme: "vulnerability"
       }
@@ -67,7 +66,7 @@ const primaryClimateData = computed(() => {
 
 <template>
   <div
-    v-if="hasData"
+    v-if="scoreData || (showClimateText && primaryClimateData)"
     class="absolute bottom-20 bg-white rounded-lg shadow-lg p-2 z-40"
     data-cy="map-context-data-mobile"
   >

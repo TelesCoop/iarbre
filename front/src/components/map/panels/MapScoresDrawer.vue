@@ -18,6 +18,7 @@ const drawerVisible = computed({
     header-icon="pi pi-map"
     header-title="Score"
     class="map-drawer"
+    data-cy="map-drawer"
   >
     <div class="mb-4">
       <map-context-data hide-close-button full-height />

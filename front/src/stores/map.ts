@@ -41,7 +41,7 @@ import maplibreGl from "maplibre-gl"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
-import { addCenterControl } from "@/utils/mapControls"
+import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
 
 export const useMapStore = defineStore("map", () => {
@@ -63,6 +63,7 @@ export const useMapStore = defineStore("map", () => {
   const isCalculating = ref<boolean>(false)
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
+  const use3D = ref<boolean>(false)
 
   const {
     clearAllFilters,
@@ -95,6 +96,20 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
+  const HEIGHT_MULTIPLIER = 15
+  const EXTRUSION_HEIGHT_MAP = computed(() => {
+    return {
+      [DataType.PLANTABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
+      [DataType.VULNERABILITY]: [
+        "*",
+        ["get", `indice_${vulnerabilityMode.value}`],
+        HEIGHT_MULTIPLIER
+      ],
+      [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
+      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER]
+    }
+  })
+
   const getAttributionSource = async () => {
     const sourceCode =
       "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
@@ -113,10 +128,10 @@ export const useMapStore = defineStore("map", () => {
   )
   const navControl = ref(
     new NavigationControl({
-      visualizePitch: false,
+      visualizePitch: true,
       visualizeRoll: false,
       showZoom: true,
-      showCompass: false
+      showCompass: true
     })
   )
 
@@ -158,6 +173,16 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
+  const control3D = ref({
+    onAdd: () => add3DControl(use3D, toggle3D),
+    onRemove: () => {
+      const controlElement = document.getElementsByClassName("maplibregl-ctrl-3d-container")[0]
+      if (controlElement) {
+        controlElement.remove()
+      }
+    }
+  })
+
   const getMapInstance = (mapId: string): Map => {
     return mapInstancesByIds.value[mapId]
   }
@@ -183,12 +208,34 @@ export const useMapStore = defineStore("map", () => {
       return [rasterLayer]
     }
 
-    // Vector layers for other data types
+    const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
+
+    if (use3D.value) {
+      const extrusionLayer: AddLayerObject = {
+        id: layerId,
+        type: "fill-extrusion",
+        source: sourceId,
+        "source-layer": sourceLayer,
+        layout: {},
+        paint: {
+          "fill-extrusion-color": FILL_COLOR_MAP.value[
+            datatype
+          ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
+          "fill-extrusion-height": EXTRUSION_HEIGHT_MAP.value[
+            datatype
+          ] as DataDrivenPropertyValueSpecification<number>,
+          "fill-extrusion-base": 0,
+          "fill-extrusion-opacity": 0.7
+        }
+      }
+      return [extrusionLayer]
+    }
+
     const fillLayer: AddLayerObject = {
       id: layerId,
       type: "fill",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
+      "source-layer": sourceLayer,
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
@@ -203,7 +250,7 @@ export const useMapStore = defineStore("map", () => {
       id: `${layerId}-border`,
       type: "line",
       source: sourceId,
-      "source-layer": `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`,
+      "source-layer": sourceLayer,
       layout: {},
       paint: {
         "line-color": "#00000000",
@@ -323,19 +370,30 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const removeControls = (map: Map) => {
-    map.removeControl(attributionControl.value)
-    map.removeControl(navControl.value)
-    map.removeControl(centerControl.value)
-    map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+    if (map.hasControl(attributionControl.value)) {
+      map.removeControl(attributionControl.value)
+    }
+    if (map.hasControl(navControl.value)) {
+      map.removeControl(navControl.value)
+    }
+    if (map.hasControl(centerControl.value)) {
+      map.removeControl(centerControl.value)
+    }
+    if (map.hasControl(control3D.value)) {
+      map.removeControl(control3D.value)
+    }
+    if (map.hasControl(geocoderControl.value as unknown as maplibreGl.IControl)) {
+      map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+    }
   }
   const setupControls = async (map: Map) => {
-    // Add the new attribution control
     const attribution = await getAttributionSource()
     attributionControl.value = new AttributionControl({
       compact: true,
       customAttribution: attribution
     })
     map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
+    map.addControl(control3D.value, MAP_CONTROL_POSITION)
     map.addControl(navControl.value, MAP_CONTROL_POSITION)
     map.addControl(centerControl.value, MAP_CONTROL_POSITION)
     map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
@@ -359,12 +417,16 @@ export const useMapStore = defineStore("map", () => {
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
-        mapInstance.removeLayer(layerId)
-        // Only remove border layer for vector data types
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId)
+        }
         if (previousDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
           mapInstance.removeLayer(`${layerId}-border`)
         }
-        mapInstance.removeSource(getSourceId(previousDataType, previousGeoLevel))
+        const sourceId = getSourceId(previousDataType, previousGeoLevel)
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId)
+        }
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
@@ -385,6 +447,22 @@ export const useMapStore = defineStore("map", () => {
 
   const refreshDatatype = () => {
     changeDataType(selectedDataType.value)
+  }
+
+  const refreshLayers = () => {
+    const currentDataType = selectedDataType.value
+    const currentGeoLevel = getGeoLevelFromDataType()
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      const layerId = getLayerId(currentDataType, currentGeoLevel)
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId)
+      }
+      if (currentDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+        mapInstance.removeLayer(`${layerId}-border`)
+      }
+      setupTile(mapInstance, currentDataType, currentGeoLevel)
+    })
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
@@ -412,13 +490,17 @@ export const useMapStore = defineStore("map", () => {
       }
 
       if (newStyle!) {
-        mapInstance.setStyle(newStyle)
-        mapInstance.once("style.load", () => {
+        const onStyleReady = () => {
+          initTiles(mapInstance)
           setupControls(mapInstance).catch(console.error)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
           }
-        })
+          mapInstance.fire("moveend")
+        }
+
+        mapInstance.setStyle(newStyle)
+        onStyleReady()
       }
     })
   }
@@ -497,7 +579,7 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = initialDatatype
 
     mapInstancesByIds.value[mapId] = new Map({
-      container: mapId, // container id
+      container: mapId,
       style: mapStyles.OSM as maplibregl.StyleSpecification,
       maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
@@ -505,32 +587,38 @@ export const useMapStore = defineStore("map", () => {
     })
 
     const mapInstance = mapInstancesByIds.value[mapId]
-    mapInstance.on("style.load", async () => {
+
+    const onMapReady = async () => {
       await setupControls(mapInstance)
       initTiles(mapInstance)
-      // Initialize shape drawing
       shapeDrawing.initDraw(mapInstance)
       // Configure automatic calculation when a shape is finished
       shapeDrawing.onShapeFinished(() => {
         finishShapeSelection()
       })
-    })
+      mapInstance.once("render", () => {
+        console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
+        console.info(
+          `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
+        )
+      })
+    }
+
+    if (mapInstance.isStyleLoaded()) {
+      onMapReady()
+    } else {
+      mapInstance.once("style.load", onMapReady)
+    }
 
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
-    mapInstance.on("load", () => {
+    mapInstance.once("load", () => {
       const center = mapInstance.getCenter()
       clickCoordinates.value = {
         lat: center.lat,
         lng: center.lng
       }
-    })
-    mapInstance.once("render", () => {
-      console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
-      console.info(
-        `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
-      )
     })
   }
 
@@ -589,6 +677,19 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const toggle3D = () => {
+    use3D.value = !use3D.value
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      if (use3D.value) {
+        mapInstance.easeTo({ pitch: 45, duration: 500 })
+      } else {
+        mapInstance.easeTo({ pitch: 0, duration: 500 })
+      }
+    })
+    refreshLayers()
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -635,6 +736,8 @@ export const useMapStore = defineStore("map", () => {
     toggleAndApplyFilter,
     resetFilters,
     showQPVLayer,
-    toggleQPVLayer
+    toggleQPVLayer,
+    use3D,
+    toggle3D
   }
 })

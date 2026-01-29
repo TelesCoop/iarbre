@@ -1,9 +1,15 @@
 /// <reference types="cypress" />
+import { createPinia } from "pinia"
 import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 describe("Navbar", () => {
   beforeEach(() => {
-    cy.mount(Navbar)
+    const pinia = createPinia()
+    cy.mount(Navbar, {
+      global: {
+        plugins: [pinia]
+      }
+    })
   })
   it("renders correctly", () => {
     cy.getBySel("open-feedback-button").should("exist")
