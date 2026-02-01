@@ -9,7 +9,7 @@ django-storages[s3]==1.14.4
 djangorestframework==3.15.2
 djangorestframework_camel_case==1.4.2
 factory-boy==3.3.1
-geopandas==1.0.1
+geopandas==1.1.2
 getconf==1.11.0
 gunicorn==23.0.0
 ipython==8.26.0
