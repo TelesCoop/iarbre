@@ -15,7 +15,7 @@ from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet, Model
-from shapely.geometry import shape
+from shapely.geometry import shape, Polygon as ShapelyPolygon
 from tqdm import tqdm
 import mercantile
 import mapbox_vector_tile
@@ -160,6 +160,12 @@ class MVTGeneratorWorker:
 
         mvt_tile.save_mvt(mvt_data, filename)
 
+    def _compute_tile_side_length(self, tile_geom):
+        coords = list(tile_geom.coords[0])
+        point1 = coords[0]
+        point2 = coords[1]
+        return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
+
     def _generate_tile_for_zoom_plantability(
         self, tile: mercantile.Tile, zoom: int
     ) -> None:
@@ -176,17 +182,7 @@ class MVTGeneratorWorker:
         # Get common tile data for MapLibre
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
-        def _compute_plantability_tile_side_lenght(tile_geom):
-            coords = list(tile_geom.coords[0])
-            point1 = coords[0]
-            point2 = coords[1]
-            return math.sqrt(
-                (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
-            )
-
-        side_length = _compute_plantability_tile_side_lenght(
-            self.queryset.first().geometry
-        )
+        side_length = self._compute_tile_side_length(self.queryset.first().geometry)
 
         grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
 
@@ -393,7 +389,7 @@ class MVTGeneratorWorker:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        if zoom > ZOOM_AGGREGATE_BREAKPOINT:
+        if zoom <= ZOOM_AGGREGATE_BREAKPOINT:
             # Bulk load vulnerability data, not for aggregated
             vuln_ids = [
                 getattr(obj, "vulnerability_idx_id", None)
@@ -475,7 +471,60 @@ class MVTGeneratorWorker:
             map_geometry__intersects=tile_polygon
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if clipped_queryset.exists():
+        if not clipped_queryset.exists():
+            return
+        if zoom <= ZOOM_AGGREGATE_BREAKPOINT:
+            gdf = load_geodataframe_from_db(
+                clipped_queryset,
+                [
+                    "id",
+                    "map_geometry",
+                    "indice",  #  todo make it general
+                ],
+            )
+            west, south, east, north = tile_polygon.extent
+            mvt_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
+            mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
+            df_clipped = gpd.clip(gdf, mvt_gdf)
+
+            side_length = self._compute_tile_side_length(tile_polygon)
+
+            grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
+
+            grid = self.create_grid(df_clipped, grid_size)
+            # grid = gpd.clip(grid, df_clipped)
+
+            spatial_join = gpd.sjoin(
+                df_clipped, grid, how="left", predicate="intersects"
+            )
+            aggregated = (
+                spatial_join.groupby("grid_id").agg({"indice": "mean"}).reset_index()
+            )
+            df_clipped = grid.merge(aggregated, on="grid_id", how="left")
+            df_clipped = df_clipped.rename(columns={"indice_mean": "indice"})
+            # except Exception as e:
+            #     print(e)
+            #     return
+            try:
+                transformed_geometries = {
+                    "name": f"{self.geolevel}--{self.datatype}",
+                    "features": [],
+                }
+                for grid_cell in df_clipped.itertuples():
+                    # print(grid_cell)
+                    # print(grid_cell.geometry)
+                    # polygon = grid_cell.geometry.exterior
+                    # print(polygon)
+                    # transformed_geometries.[]
+                    transformed_geometries["features"].append(
+                        {
+                            "geometry": grid_cell.geometry.wkt,
+                            "properties": {"indice": grid_cell.indice},
+                        }
+                    )
+            except Exception as e:
+                print(e)
+        else:
             transformed_geometries = {
                 "name": f"{self.geolevel}--{self.datatype}",
                 "features": [],
@@ -490,8 +539,8 @@ class MVTGeneratorWorker:
                     }
                 )
 
-            # Save the MVT data
-            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+        # Save the MVT data
+        self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     @staticmethod
     def pixel_length(zoom):
@@ -547,7 +596,7 @@ class MVTGenerator:
         with ThreadPoolExecutor(max_workers=number_of_thread) as executor:
             for tile, zoom in tiles:
                 future_to_tiles[executor.submit(funct, tile, zoom)] = tile
-
+                # break
             for future in as_completed(future_to_tiles):
                 future.result()
                 future_to_tiles.pop(future)  # Free RAM after completion
@@ -590,8 +639,9 @@ class MVTGenerator:
 
         print(f"Start to generate {len(tiles_to_generate)} tiles")
         tiles_to_generate_by_process = partition(
-            tiles_to_generate, int(len(tiles_to_generate) / 100)
+            tiles_to_generate, math.ceil(len(tiles_to_generate) / 100)
         )
+
         futures = []
         progress = 0
         with ProcessPoolExecutor(
@@ -606,6 +656,7 @@ class MVTGenerator:
                         4,
                     )
                 )
+                # break
             for future in as_completed(futures):
                 future.exception()
                 progress += future.result()

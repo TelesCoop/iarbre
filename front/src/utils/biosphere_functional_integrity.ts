@@ -37,5 +37,5 @@ export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
   "#12512b",
   122,
   "#00441b",
-  "#ffffffff"
+  "#fff00e"
 ]

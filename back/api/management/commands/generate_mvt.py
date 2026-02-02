@@ -124,11 +124,16 @@ class Command(BaseCommand):
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
             )
 
+        zoom_levels = (15, 16)
+
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
             print(
                 MVTTile.objects.filter(
-                    geolevel=mdl.geolevel, datatype=mdl.datatype
+                    geolevel=mdl.geolevel,
+                    datatype=mdl.datatype,
+                    zoom_level__gte=zoom_levels[0],
+                    zoom_level__lte=zoom_levels[1],
                 ).delete()
             )
 

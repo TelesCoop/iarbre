@@ -89,7 +89,7 @@ export const useMapStore = defineStore("map", () => {
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
         "match",
-        ["get", "indice"],
+        ["round", ["get", "indice"]],
         ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
       ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
