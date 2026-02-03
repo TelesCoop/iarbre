@@ -3,19 +3,18 @@ MVT Generator as django-media.
 """
 
 import json
-from typing import Dict
+from typing import Dict, Type
 import itertools
 import math
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 import gc
 import geopandas as gpd
 import numpy as np
-from shapely.geometry import box, Polygon as ShapelyPolygon
 from django.contrib.gis.db.models.functions import Intersection
 from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
-from django.db.models import QuerySet
-from shapely.geometry import shape
+from django.db.models import QuerySet, Model
+from shapely.geometry import shape, Polygon as ShapelyPolygon, box
 from tqdm import tqdm
 import mercantile
 import mapbox_vector_tile
@@ -24,19 +23,26 @@ from iarbre_data.utils.database import load_geodataframe_from_db
 from iarbre_data.models import MVTTile, Vulnerability
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
+import random
+
 
 MVT_EXTENT = 4096
 ZOOM_AGGREGATE_BREAKPOINT = max(ZOOM_TO_GRID_SIZE.keys())
 
 
-class MVTGenerator:
+def partition(list_in, n):
+    # Use shuffle to distribute the working load
+    # evenly across workers
+    random.shuffle(list_in)
+    return [list_in[i::n] for i in range(n)]
+
+
+class MVTGeneratorWorker:
     def __init__(
         self,
         queryset: QuerySet,
         geolevel: str = "tile",
         datatype: str = "plantability",
-        zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
-        number_of_thread: int = 1,
     ):
         """
         Initialize MVT Generator for Django GeoDjango QuerySet.
@@ -46,86 +52,11 @@ class MVTGenerator:
             geolevel (str): Name of the model to generate MVT tiles for.
             datatype (str): Name of the datatype to generate MVT tiles for.
             zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
-            number_of_thread (int): Number of threads to use for generating tiles.
+            number_of_workers (int): Number of process to use for generating tiles.
         """
         self.queryset = queryset
         self.datatype = datatype
         self.geolevel = geolevel
-        self.min_zoom, self.max_zoom = zoom_levels
-        self.number_of_thread = number_of_thread
-
-    def generate_tiles(self, ignore_existing=False):
-        """Generate MVT tiles for the entire geometry queryset."""
-        # Get total bounds of the queryset
-        bounds = self._get_queryset_bounds()
-
-        for zoom in range(self.min_zoom, self.max_zoom + 1):
-            # Get all tiles that cover the entire geometry bounds
-            # bbox needs to be in 4326
-            tiles = list(
-                mercantile.tiles(
-                    bounds["west"],
-                    bounds["south"],
-                    bounds["east"],
-                    bounds["north"],
-                    zoom,
-                    truncate=True,
-                )
-            )
-            if self.datatype == "plantability":
-                funct = self._generate_tile_for_zoom_plantability
-            else:
-                funct = self._generate_tile_for_zoom
-            if self.number_of_thread == 1:
-                for tile in tiles:
-                    existing_count = MVTTile.objects.filter(
-                        tile_x=tile.x,
-                        tile_y=tile.y,
-                        zoom_level=zoom,
-                        geolevel=self.geolevel,
-                        datatype=self.datatype,
-                    ).count()
-
-                    if (existing_count == 0) or (ignore_existing):
-                        funct(tile, zoom)
-            else:
-                with ThreadPoolExecutor(max_workers=self.number_of_thread) as executor:
-                    future_to_tiles = {}
-
-                    for tile in tiles:
-                        existing_count = MVTTile.objects.filter(
-                            tile_x=tile.x,
-                            tile_y=tile.y,
-                            zoom_level=zoom,
-                            geolevel=self.geolevel,
-                            datatype=self.datatype,
-                        ).count()
-
-                        if (existing_count == 0) or (ignore_existing):
-                            future_to_tiles[executor.submit(funct, tile, zoom)] = tile
-                    for future in as_completed(future_to_tiles):
-                        future.result()
-                        future_to_tiles.pop(future)  # Free RAM after completion
-                        gc.collect()
-
-    def _get_queryset_bounds(self) -> Dict[str, float]:
-        """
-        Compute bounds of the entire queryset.
-
-        Returns:
-            Dictionary containing the bounds of the queryset.
-        """
-        # Assumes the queryset has a geographic field
-        bbox = self.queryset.aggregate(bbox=Extent("map_geometry"))["bbox"]
-        bbox_polygon = Polygon.from_bbox(bbox)
-        bbox_polygon.srid = TARGET_MAP_PROJ
-        bbox_polygon.transform(4326)
-        return {
-            "west": bbox_polygon.extent[0],
-            "south": bbox_polygon.extent[1],
-            "east": bbox_polygon.extent[2],
-            "north": bbox_polygon.extent[3],
-        }
 
     @staticmethod
     def create_grid(zone_polygon, grid_size):
@@ -230,6 +161,12 @@ class MVTGenerator:
 
         mvt_tile.save_mvt(mvt_data, filename)
 
+    def _compute_tile_side_length(self, tile_geom):
+        coords = list(tile_geom.coords[0])
+        point1 = coords[0]
+        point2 = coords[1]
+        return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
+
     def _generate_tile_for_zoom_plantability(
         self, tile: mercantile.Tile, zoom: int
     ) -> None:
@@ -246,17 +183,7 @@ class MVTGenerator:
         # Get common tile data for MapLibre
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
-        def _compute_plantability_tile_side_lenght(tile_geom):
-            coords = list(tile_geom.coords[0])
-            point1 = coords[0]
-            point2 = coords[1]
-            return math.sqrt(
-                (point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2
-            )
-
-        side_length = _compute_plantability_tile_side_lenght(
-            self.queryset.first().geometry
-        )
+        side_length = self._compute_tile_side_length(self.queryset.first().geometry)
 
         grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
 
@@ -463,7 +390,7 @@ class MVTGenerator:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        if zoom > ZOOM_AGGREGATE_BREAKPOINT:
+        if zoom <= ZOOM_AGGREGATE_BREAKPOINT:
             # Bulk load vulnerability data, not for aggregated
             vuln_ids = [
                 getattr(obj, "vulnerability_idx_id", None)
@@ -545,26 +472,25 @@ class MVTGenerator:
             map_geometry__intersects=tile_polygon
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
-        if clipped_queryset.exists():
-            transformed_geometries = {
-                "name": f"{self.geolevel}--{self.datatype}",
-                "features": [],
-            }
-            for obj in tqdm(
-                clipped_queryset,
-                desc=f"Processing MVT Tile: ({tile.x}, {tile.y}, {zoom})",
-            ):
-                properties = obj.get_layer_properties()
-                clipped_geom = obj.clipped_geometry
-                transformed_geometries["features"].append(
-                    {
-                        "geometry": clipped_geom.make_valid().wkt,
-                        "properties": properties,
-                    }
-                )
+        if not clipped_queryset.exists():
+            return
 
-            # Save the MVT data
-            self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
+        transformed_geometries = {
+            "name": f"{self.geolevel}--{self.datatype}",
+            "features": [],
+        }
+        for obj in clipped_queryset:
+            properties = obj.get_layer_properties()
+            clipped_geom = obj.clipped_geometry
+            transformed_geometries["features"].append(
+                {
+                    "geometry": clipped_geom.make_valid().wkt,
+                    "properties": properties,
+                }
+            )
+
+        # Save the MVT data
+        self._save_mvt_data(transformed_geometries, bounds, filename, tile, zoom)
 
     @staticmethod
     def pixel_length(zoom):
@@ -583,3 +509,149 @@ class MVTGenerator:
             if x < PLANTABILITY_NORMALIZED[i]:
                 return PLANTABILITY_NORMALIZED[i - 1]
         return PLANTABILITY_NORMALIZED[-1]
+
+
+class MVTGenerator:
+    def __init__(
+        self,
+        mdl: Type[Model],
+        queryset=None,
+        zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
+        number_of_workers: int = 1,
+        number_of_threads_by_worker: int = 1,
+    ):
+        """
+        Initialize MVT Generator for Django GeoDjango QuerySet.
+
+        Args:
+            queryset (QuerySet): QuerySet of the model.
+            geolevel (str): Name of the model to generate MVT tiles for.
+            datatype (str): Name of the datatype to generate MVT tiles for.
+            zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
+            number_of_workers (int): Number of workers to use for generating tiles.
+            number_of_threads_by_worker (int): Number of workers to use for generating tiles.
+        """
+        self.mdl = mdl
+        self.min_zoom, self.max_zoom = zoom_levels
+        self.number_of_workers = number_of_workers
+        self.number_of_threads_by_worker = number_of_threads_by_worker
+        self.queryset = queryset
+
+    def process_tiles(self, mdl, tiles):
+        worker = MVTGeneratorWorker(
+            self.queryset or mdl.objects.all(),
+            geolevel=mdl.geolevel,
+            datatype=mdl.datatype,
+        )
+        if worker.datatype == "plantability":
+            funct = worker._generate_tile_for_zoom_plantability
+        else:
+            funct = worker._generate_tile_for_zoom
+
+        future_to_tiles = {}
+        # self.queryset is emptied when threadpoolexecutor is executed
+        # on testing configuration.
+        # Do not understand why but it works well on production
+        if self.number_of_threads_by_worker == 1:
+            for tile, zoom in tiles:
+                funct(tile, zoom)
+        else:
+            with ThreadPoolExecutor(
+                max_workers=self.number_of_threads_by_worker
+            ) as executor:
+                for tile, zoom in tiles:
+                    future_to_tiles[executor.submit(funct, tile, zoom)] = tile
+                for future in as_completed(future_to_tiles):
+                    future.result()
+                    future_to_tiles.pop(future)  # Free RAM after completion
+                    gc.collect()
+        return len(tiles)
+
+    def generate_tiles(self, ignore_existing=False):
+        """Generate MVT tiles for the entire geometry queryset."""
+        # Get total bounds of the queryset
+        bounds = self._get_queryset_bounds()
+
+        tiles_to_generate = []
+        for zoom in range(self.min_zoom, self.max_zoom + 1):
+            existing_mvt_tiles = MVTTile.objects.filter(
+                geolevel=self.mdl.geolevel,
+                datatype=self.mdl.datatype,
+                zoom_level=zoom,
+            ).values_list("tile_x", "tile_y")
+            has_mvt_tiles = len(existing_mvt_tiles) > 0
+
+            existing_tiles = set(existing_mvt_tiles)
+            # Get all tiles that cover the entire geometry bounds
+            # bbox needs to be in 4326
+            tiles = list(
+                mercantile.tiles(
+                    bounds["west"],
+                    bounds["south"],
+                    bounds["east"],
+                    bounds["north"],
+                    zoom,
+                    truncate=True,
+                )
+            )
+
+            for tile in tiles:
+                if ignore_existing or not has_mvt_tiles:
+                    tiles_to_generate.append((tile, zoom))
+                elif not (tile.x, tile.y) in existing_tiles:
+                    tiles_to_generate.append((tile, zoom))
+
+        print(f"Start to generate {len(tiles_to_generate)} tiles")
+        tiles_to_generate_by_process = partition(
+            tiles_to_generate, math.ceil(len(tiles_to_generate) / 100)
+        )
+
+        futures = []
+        progress = 0
+        # Necessary for testing.
+        # Testing database seems to be deleted on
+        # process close
+        # (it means that child process destroyed main db)
+        if self.number_of_workers == 1:
+            for tiles in tiles_to_generate_by_process:
+                self.process_tiles(self.mdl, tiles)
+        else:
+            with ProcessPoolExecutor(
+                max_workers=self.number_of_workers
+            ) as process_executor:
+                for tiles in tiles_to_generate_by_process:
+                    futures.append(
+                        process_executor.submit(
+                            self.process_tiles,
+                            self.mdl,
+                            tiles,
+                        )
+                    )
+                for future in as_completed(futures):
+                    future.exception()
+                    progress += future.result()
+                    print(
+                        f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(100*progress/len(tiles_to_generate), 2)}%)"
+                    )
+                    # Free RAM
+                    futures.pop(futures.index(future))
+                    gc.collect()
+
+    def _get_queryset_bounds(self) -> Dict[str, float]:
+        """
+        Compute bounds of the entire queryset.
+
+        Returns:
+            Dictionary containing the bounds of the queryset.
+        """
+        # Assumes the queryset has a geographic field
+        bbox = self.mdl.objects.all().aggregate(bbox=Extent("map_geometry"))["bbox"]
+        bbox_polygon = Polygon.from_bbox(bbox)
+        bbox_polygon.srid = TARGET_MAP_PROJ
+        bbox_polygon.transform(4326)
+        return {
+            "west": bbox_polygon.extent[0],
+            "south": bbox_polygon.extent[1],
+            "east": bbox_polygon.extent[2],
+            "north": bbox_polygon.extent[3],
+        }

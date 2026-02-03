@@ -6,7 +6,7 @@ from iarbre_data.factories import TileFactory
 from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
-from api.utils.mvt_generator import MVTGenerator
+from api.utils.mvt_generator import MVTGenerator, MVTGeneratorWorker
 from django.contrib.gis.geos import Polygon
 from django.urls import reverse
 
@@ -50,8 +50,7 @@ class MVTGeneratorTestCase(TestCase):
         poly2.srid = 2154
         TileFactory.create(geometry=poly2)
 
-        qs = Tile.objects.all()
-        mvt_generator = MVTGenerator(qs, zoom_levels=(8, 10))
+        mvt_generator = MVTGenerator(Tile, zoom_levels=(8, 10))
         actual_bounds = mvt_generator._get_queryset_bounds()
 
         # Define a delta for floating-point comparison
@@ -84,11 +83,15 @@ class MVTGeneratorTestCase(TestCase):
         TileFactory.create(geometry=tile2)
 
         mvt = MVTGenerator(
-            Tile.objects.all(),
+            Tile,
             zoom_levels=(8, 8),
+        )
+        mvt_worker = MVTGeneratorWorker(
+            Tile.objects.all(),
             geolevel="fake_geolevel",
             datatype="fake_datatype",
         )
+
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
             # Get all tiles that cover the entire geometry bounds
@@ -104,7 +107,7 @@ class MVTGeneratorTestCase(TestCase):
                 )
             )
             for tile in tiles:
-                mvt._generate_tile_for_zoom(tile, zoom)
+                mvt_worker._generate_tile_for_zoom(tile, zoom)
 
         qs = MVTTile.objects.all()
         self.assertEqual(len(qs), 1)
@@ -136,11 +139,15 @@ class MVTGeneratorTestCase(TestCase):
         tile2.srid = 2154
         TileFactory.create(geometry=tile2)
         mvt = MVTGenerator(
-            Tile.objects.all(),
+            Tile,
             zoom_levels=(8, 8),
+        )
+        mvt_worker = MVTGeneratorWorker(
+            Tile.objects.all(),
             geolevel="fake_geolevel",
             datatype="fake_datatype",
         )
+
         bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
             # Get all tiles that cover the entire geometry bounds
@@ -156,7 +163,7 @@ class MVTGeneratorTestCase(TestCase):
                 )
             )
             for tile in tiles:
-                mvt._generate_tile_for_zoom(tile, zoom)
+                mvt_worker._generate_tile_for_zoom(tile, zoom)
 
         qs = MVTTile.objects.all()
         explode_url = qs[0].mvt_file.url.split("/")
