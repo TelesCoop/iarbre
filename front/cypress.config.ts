@@ -10,6 +10,15 @@ export default defineConfig({
     viewportHeight: 900,
     setupNodeEvents(on, config) {
       codeCoverageTask(on, config)
+      on("before:browser:launch", (browser, launchOptions) => {
+        if (browser.family === "chromium" && browser.name !== "electron") {
+          launchOptions.args.push("--use-gl=swiftshader")
+          launchOptions.args.push("--enable-webgl")
+          launchOptions.args.push("--ignore-gpu-blocklist")
+          launchOptions.args.push("--enable-unsafe-swiftshader")
+        }
+        return launchOptions
+      })
       return config
     }
   },
