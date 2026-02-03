@@ -536,13 +536,13 @@ class MVTGenerator:
         self.number_of_threads_by_worker = number_of_threads_by_worker
 
     def process_tiles(self, mdl, tiles):
-        mvt_generator = MVTGeneratorWorker(
+        worker = MVTGeneratorWorker(
             mdl.objects.all(), geolevel=mdl.geolevel, datatype=mdl.datatype
         )
-        if mvt_generator.datatype == "plantability":
-            funct = mvt_generator._generate_tile_for_zoom_plantability
+        if worker.datatype == "plantability":
+            funct = worker._generate_tile_for_zoom_plantability
         else:
-            funct = mvt_generator._generate_tile_for_zoom
+            funct = worker._generate_tile_for_zoom
 
         future_to_tiles = {}
         # self.queryset is emptied when threadpoolexecutor is executed
@@ -604,26 +604,34 @@ class MVTGenerator:
 
         futures = []
         progress = 0
-        with ProcessPoolExecutor(
-            max_workers=self.number_of_workers
-        ) as process_executor:
+        # Necessary for testing.
+        # Testing database seems to be deleted on
+        # process close
+        # (it means that child process destroyed main db)
+        if self.number_of_workers == 1:
             for tiles in tiles_to_generate_by_process:
-                futures.append(
-                    process_executor.submit(
-                        self.process_tiles,
-                        self.mdl,
-                        tiles,
+                self.process_tiles(self.mdl, tiles)
+        else:
+            with ProcessPoolExecutor(
+                max_workers=self.number_of_workers
+            ) as process_executor:
+                for tiles in tiles_to_generate_by_process:
+                    futures.append(
+                        process_executor.submit(
+                            self.process_tiles,
+                            self.mdl,
+                            tiles,
+                        )
                     )
-                )
-            for future in as_completed(futures):
-                future.exception()
-                progress += future.result()
-                print(
-                    f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(100*progress/len(tiles_to_generate), 2)}%)"
-                )
-                # Free RAM
-                futures.pop(futures.index(future))
-                gc.collect()
+                for future in as_completed(futures):
+                    future.exception()
+                    progress += future.result()
+                    print(
+                        f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(100*progress/len(tiles_to_generate), 2)}%)"
+                    )
+                    # Free RAM
+                    futures.pop(futures.index(future))
+                    gc.collect()
 
     def _get_queryset_bounds(self) -> Dict[str, float]:
         """
