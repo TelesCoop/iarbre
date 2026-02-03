@@ -26,6 +26,12 @@ class Command(BaseCommand):
             help="Number of workers to use for generating tiles",
         )
         parser.add_argument(
+            "--number_of_threads_by_worker",
+            type=int,
+            default=1,
+            help="Number of threads by worker to use for generating tiles",
+        )
+        parser.add_argument(
             "--geolevel",
             type=str,
             required=True,
@@ -55,6 +61,7 @@ class Command(BaseCommand):
         self,
         model: Type[Model],
         zoom_levels: Tuple[int, int] = DEFAULT_ZOOM_LEVELS,
+        number_of_threads_by_worker: int = 1,
         number_of_workers: int = 1,
     ) -> None:
         """
@@ -73,12 +80,11 @@ class Command(BaseCommand):
         Returns:
             None
         """
-        queryset = model.objects.all()
         mvt_generator = MVTGenerator(
             mdl=model,
-            queryset=queryset,
             zoom_levels=zoom_levels,
             number_of_workers=number_of_workers,
+            number_of_threads_by_worker=number_of_threads_by_worker,
         )
 
         mvt_generator.generate_tiles()
@@ -87,6 +93,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Handle the command."""
         number_of_workers = options["number_of_workers"]
+        number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
         zoom_levels = options["zoom_levels"]
@@ -114,7 +121,6 @@ class Command(BaseCommand):
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
-            print("hello world", mdl)
             print(
                 MVTTile.objects.filter(
                     geolevel=mdl.geolevel,
@@ -128,4 +134,5 @@ class Command(BaseCommand):
             model=mdl,
             zoom_levels=zoom_levels,
             number_of_workers=number_of_workers,
+            number_of_threads_by_worker=number_of_threads_by_worker,
         )

@@ -2,9 +2,8 @@ from django.test import TestCase
 from django.core.files.base import ContentFile
 from api.management.commands.generate_mvt import Command as GenerateMVTCommand
 from api.constants import GeoLevel, DataType
-from iarbre_data.models import MVTTile, City, Tile
+from iarbre_data.models import MVTTile, City
 from iarbre_data.management.commands.populate import Command as PopulateCommand
-import time
 
 
 class GenerateMVTCommandTest(TestCase):
@@ -29,10 +28,7 @@ class GenerateMVTCommandTest(TestCase):
             "zoom_levels": (13, 13),
         }
         try:
-            start = time.time()
             self.command.handle(**options)
-            generate_mvt_duration = time.time() - start
-            print("DURATION", generate_mvt_duration)
             success = True
         except Exception as e:
             print(f"Exception: {e}")
@@ -61,6 +57,7 @@ class GenerateMVTCommandTest(TestCase):
             "geolevel": GeoLevel.TILE.value,
             "datatype": DataType.TILE.value,
             "number_of_workers": 1,
+            "number_of_threads_by_worker": 1,
             "keep": False,
             "zoom_levels": (13, 13),
         }
@@ -90,6 +87,7 @@ class GenerateMVTCommandTest(TestCase):
             "geolevel": GeoLevel.TILE.value,
             "datatype": DataType.TILE.value,
             "number_of_workers": 1,
+            "number_of_threads_by_worker": 1,
             "keep": True,
             "zoom_levels": (13, 13),
         }
