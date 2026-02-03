@@ -20,7 +20,7 @@ import mercantile
 import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
-from iarbre_data.models import MVTTile, Vulnerability
+from iarbre_data.models import MVTTile, Vulnerability, Tile
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 import random
@@ -31,6 +31,8 @@ ZOOM_AGGREGATE_BREAKPOINT = max(ZOOM_TO_GRID_SIZE.keys())
 
 
 def partition(list_in, n):
+    # Use shuffle to distribute the working load
+    # evenly across workers
     random.shuffle(list_in)
     return [list_in[i::n] for i in range(n)]
 
@@ -50,9 +52,10 @@ class MVTGeneratorWorker:
             geolevel (str): Name of the model to generate MVT tiles for.
             datatype (str): Name of the datatype to generate MVT tiles for.
             zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
-            number_of_thread (int): Number of threads to use for generating tiles.
+            number_of_workers (int): Number of process to use for generating tiles.
         """
-        self.queryset = queryset
+        self.queryset = queryset  # .all()
+        print("self.queryset", self.queryset)
         self.datatype = datatype
         self.geolevel = geolevel
 
@@ -178,9 +181,13 @@ class MVTGeneratorWorker:
         Returns:
             None
         """
+        print("queryset 186 ", self.queryset)
         # Get common tile data for MapLibre
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
+        print("queryset 186 ", self.queryset)
+        # self.queryset = Tile.objects.all()
+        print(self.datatype, self.geolevel)
         side_length = self._compute_tile_side_length(self.queryset.first().geometry)
 
         grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
@@ -462,6 +469,7 @@ class MVTGeneratorWorker:
         Reference:
         https://makina-corpus.com/django/generer-des-tuiles-vectorielles-sur-mesure-avec-django
         """
+        print("queryset in generate tile for zoom", self.queryset)
         # Get common tile data
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
 
@@ -513,8 +521,10 @@ class MVTGenerator:
     def __init__(
         self,
         mdl: Type[Model],
+        queryset,
         zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
         number_of_workers: int = 1,
+        number_of_threads_by_worker: int = 1,
     ):
         """
         Initialize MVT Generator for Django GeoDjango QuerySet.
@@ -524,14 +534,17 @@ class MVTGenerator:
             geolevel (str): Name of the model to generate MVT tiles for.
             datatype (str): Name of the datatype to generate MVT tiles for.
             zoom_levels (tuple[int, int]): Tuple of minimum and maximum zoom levels to generate tiles for.
-            number_of_thread (int): Number of threads to use for generating tiles.
+            number_of_workers (int): Number of workers to use for generating tiles.
+            number_of_threads_by_worker (int): Number of workers to use for generating tiles.
         """
         self.mdl = mdl
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_workers = number_of_workers
+        self.number_of_threads_by_worker = number_of_threads_by_worker
+        self.queryset = queryset
+        print("qs mvtgenerator", self.queryset)
 
-    @staticmethod
-    def process_tiles(mdl, tiles, number_of_thread):
+    def process_tiles(self, mdl, tiles):
         mvt_generator = MVTGeneratorWorker(
             mdl.objects.all(), geolevel=mdl.geolevel, datatype=mdl.datatype
         )
@@ -541,14 +554,16 @@ class MVTGenerator:
             funct = mvt_generator._generate_tile_for_zoom
 
         future_to_tiles = {}
-        with ThreadPoolExecutor(max_workers=number_of_thread) as executor:
+        with ThreadPoolExecutor(
+            max_workers=self.number_of_threads_by_worker
+        ) as executor:
             for tile, zoom in tiles:
+                # funct(tile, zoom)
                 future_to_tiles[executor.submit(funct, tile, zoom)] = tile
-                # break
             for future in as_completed(future_to_tiles):
                 future.result()
                 future_to_tiles.pop(future)  # Free RAM after completion
-                gc.collect()
+                # gc.collect()
         return len(tiles)
 
     def generate_tiles(self, ignore_existing=False):
@@ -598,20 +613,18 @@ class MVTGenerator:
             for tiles in tiles_to_generate_by_process:
                 futures.append(
                     process_executor.submit(
-                        MVTGenerator.process_tiles,
+                        self.process_tiles,
                         self.mdl,
                         tiles,
-                        4,
                     )
                 )
-                # break
             for future in as_completed(futures):
                 future.exception()
                 progress += future.result()
                 print(
                     f"> Processing MVT Tiles: {progress} / {len(tiles_to_generate)} ({round(100*progress/len(tiles_to_generate), 2)}%)"
                 )
-                # Free ram
+                # Free RAM
                 futures.pop(futures.index(future))
                 gc.collect()
 

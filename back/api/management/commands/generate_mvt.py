@@ -61,12 +61,11 @@ class Command(BaseCommand):
         Generate MVT tiles for a geographic model.
 
         This method generates MVT (Mapbox Vector Tiles) for a specified geographic model
-        based on the provided queryset and zoom levels. It utilizes multiple threads
+        based on the provided model and zoom levels. It utilizes multiple threads
         to enhance performance.
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
             number_of_workers (int): The number of workers to use for generating tiles.
@@ -74,8 +73,10 @@ class Command(BaseCommand):
         Returns:
             None
         """
+        queryset = model.objects.all()
         mvt_generator = MVTGenerator(
             mdl=model,
+            queryset=queryset,
             zoom_levels=zoom_levels,
             number_of_workers=number_of_workers,
         )
@@ -113,12 +114,13 @@ class Command(BaseCommand):
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
+            print("hello world", mdl)
             print(
                 MVTTile.objects.filter(
                     geolevel=mdl.geolevel,
                     datatype=mdl.datatype,
                     zoom_level__gte=zoom_levels[0],
-                    zoom_levers__lte=zoom_levels[1],
+                    zoom_level__lte=zoom_levels[1],
                 ).delete()
             )
         # Generate new tiles
