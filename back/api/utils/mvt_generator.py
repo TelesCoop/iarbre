@@ -515,6 +515,7 @@ class MVTGenerator:
     def __init__(
         self,
         mdl: Type[Model],
+        queryset=None,
         zoom_levels: tuple[int, int] = DEFAULT_ZOOM_LEVELS,
         number_of_workers: int = 1,
         number_of_threads_by_worker: int = 1,
@@ -534,10 +535,13 @@ class MVTGenerator:
         self.min_zoom, self.max_zoom = zoom_levels
         self.number_of_workers = number_of_workers
         self.number_of_threads_by_worker = number_of_threads_by_worker
+        self.queryset = queryset
 
     def process_tiles(self, mdl, tiles):
         worker = MVTGeneratorWorker(
-            mdl.objects.all(), geolevel=mdl.geolevel, datatype=mdl.datatype
+            self.queryset or mdl.objects.all(),
+            geolevel=mdl.geolevel,
+            datatype=mdl.datatype,
         )
         if worker.datatype == "plantability":
             funct = worker._generate_tile_for_zoom_plantability
