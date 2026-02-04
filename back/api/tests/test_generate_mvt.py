@@ -22,7 +22,8 @@ class GenerateMVTCommandTest(TestCase):
         options = {
             "geolevel": GeoLevel.TILE.value,
             "datatype": DataType.TILE.value,
-            "number_of_thread": 1,
+            "number_of_workers": 1,
+            "number_of_threads_by_worker": 1,
             "keep": False,
             "zoom_levels": (13, 13),
         }
@@ -55,7 +56,8 @@ class GenerateMVTCommandTest(TestCase):
         options = {
             "geolevel": GeoLevel.TILE.value,
             "datatype": DataType.TILE.value,
-            "number_of_thread": 1,
+            "number_of_workers": 1,
+            "number_of_threads_by_worker": 1,
             "keep": False,
             "zoom_levels": (13, 13),
         }
@@ -84,7 +86,8 @@ class GenerateMVTCommandTest(TestCase):
         options = {
             "geolevel": GeoLevel.TILE.value,
             "datatype": DataType.TILE.value,
-            "number_of_thread": 1,
+            "number_of_workers": 1,
+            "number_of_threads_by_worker": 1,
             "keep": True,
             "zoom_levels": (13, 13),
         }
