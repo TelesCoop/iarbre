@@ -73,9 +73,8 @@ const handleKeydown = (event: KeyboardEvent) => {
       </button>
 
       <div
-        v-if="isExpanded"
         id="bg-selector-options"
-        class="bg-selector-options"
+        :class="['bg-selector-options', { 'is-expanded': isExpanded }]"
         role="listbox"
         aria-label="Options de fond de carte"
       >
@@ -139,6 +138,21 @@ const handleKeydown = (event: KeyboardEvent) => {
 .bg-selector-options {
   @apply flex items-center gap-2 pl-2 ml-2;
   @apply border-l border-gray-200;
+  @apply transition-all duration-300 ease-out;
   height: 100%;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding-left: 0;
+  margin-left: 0;
+  border-left-width: 0;
+}
+
+.bg-selector-options.is-expanded {
+  max-width: 300px;
+  opacity: 1;
+  padding-left: 0.5rem;
+  margin-left: 0.5rem;
+  border-left-width: 1px;
 }
 </style>

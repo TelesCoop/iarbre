@@ -2,18 +2,70 @@
    MapLibre Controls Styling
    ======================================== */
 
-/* Common control styles */
-.maplibregl-ctrl-group:not(.maplibregl-ctrl-center-container) {
+/* ========================================
+   Shared Map Control Button Styles
+   ======================================== */
+
+.maplibregl-ctrl-zoom-in,
+.maplibregl-ctrl-zoom-out,
+.maplibregl-ctrl-compass,
+.maplibregl-ctrl-center,
+button.maplibregl-ctrl-center,
+.maplibregl-ctrl-3d,
+button.maplibregl-ctrl-3d {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  @apply flex! items-center! justify-center!;
+  @apply bg-white! transition-colors;
+  border: 1px solid rgb(229 231 235) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.maplibregl-ctrl-zoom-in:hover,
+.maplibregl-ctrl-zoom-out:hover,
+.maplibregl-ctrl-compass:hover,
+button.maplibregl-ctrl-center:hover,
+button.maplibregl-ctrl-3d:hover {
+  @apply bg-primary-500! border-primary-500!;
+}
+
+.maplibregl-ctrl-zoom-in:hover .maplibregl-ctrl-icon,
+.maplibregl-ctrl-zoom-out:hover .maplibregl-ctrl-icon,
+.maplibregl-ctrl-compass:hover .maplibregl-ctrl-icon,
+button.maplibregl-ctrl-center:hover svg,
+button.maplibregl-ctrl-3d:hover svg {
+  filter: brightness(0) invert(1);
+}
+
+.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
+.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon,
+.maplibregl-ctrl-compass .maplibregl-ctrl-icon,
+button.maplibregl-ctrl-center svg,
+button.maplibregl-ctrl-3d svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* ========================================
+   Control Group Containers
+   ======================================== */
+
+.maplibregl-ctrl-group:not(.maplibregl-ctrl-center-container):not(.maplibregl-ctrl-3d-container) {
   @apply bg-white rounded-lg overflow-hidden shadow-none!;
   border: none !important;
 }
 
-.maplibregl-ctrl-3d {
-  @apply flex! justify-center items-center;
-}
-
 .maplibregl-ctrl-group:not(:empty) {
   @apply shadow-none!;
+}
+
+.maplibregl-ctrl-center-container,
+.maplibregl-ctrl-3d-container {
+  @apply bg-white rounded-lg overflow-hidden;
+  border: none !important;
 }
 
 /* ========================================
@@ -93,7 +145,7 @@
 
 .maplibregl-ctrl-geocoder--suggestion:hover,
 .maplibregl-ctrl-geocoder--suggestion.active {
-  @apply bg-[#426A45] text-white;
+  @apply bg-primary-500 text-white;
 }
 
 .maplibregl-ctrl-geocoder--suggestion:first-child {
@@ -123,83 +175,18 @@
 }
 
 /* ========================================
-   Zoom Controls
+   Control Positioning
    ======================================== */
 
-.maplibregl-ctrl-zoom-in,
-.maplibregl-ctrl-zoom-out {
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  @apply flex! items-center! justify-center!;
-  @apply bg-white! transition-colors;
-  border: 1px solid rgb(229 231 235) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+.maplibregl-ctrl-bottom-right {
+  bottom: 68px !important;
+  right: 8px !important;
 }
 
-.maplibregl-ctrl-zoom-in:hover,
-.maplibregl-ctrl-zoom-out:hover {
-  @apply bg-[#426A45]! border-[#426A45]!;
-}
-
-.maplibregl-ctrl-zoom-in:hover .maplibregl-ctrl-icon,
-.maplibregl-ctrl-zoom-out:hover .maplibregl-ctrl-icon {
-  filter: brightness(0) invert(1);
-}
-
-.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
-.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon {
-  width: 24px !important;
-  height: 24px !important;
-}
-
-/* ========================================
-   Center Control
-   ======================================== */
-
-.maplibregl-ctrl-center-container {
-  @apply bg-white rounded-lg overflow-hidden;
-}
-
-.maplibregl-ctrl-center,
-button.maplibregl-ctrl-center {
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  @apply flex! items-center justify-center;
-  @apply bg-white! rounded-none! transition-colors;
-  border: 1px solid rgb(229 231 235) !important;
-}
-
-button.maplibregl-ctrl-center:hover {
-  @apply bg-[#426A45]!;
-}
-
-button.maplibregl-ctrl-center:hover svg {
-  filter: brightness(0) invert(1);
-}
-
-button.maplibregl-ctrl-center svg {
-  width: 24px !important;
-  height: 24px !important;
-}
-
-/* ========================================
-   Compass Control
-   ======================================== */
-
-.maplibregl-ctrl-compass {
-  width: 40px !important;
-  height: 40px !important;
-  box-shadow: none !important;
-}
-
-.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
-  width: 24px !important;
-  height: 24px !important;
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-bottom-right {
+    bottom: 8px !important;
+  }
 }
 
 /* ========================================

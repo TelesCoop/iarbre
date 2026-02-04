@@ -54,13 +54,8 @@ const gridSize = computed(() => {
 </script>
 
 <template>
-  <div class="block w-full h-full lg:flex">
-    <map-side-panel v-if="appStore.isDesktop" />
-    <div
-      :id="mapId"
-      class="relative w-screen h-full lg:ml-auto lg:w-screen-without-sidepanel"
-      data-cy="map-component"
-    ></div>
+  <div class="block w-full h-full">
+    <div :id="mapId" class="relative w-full h-full" data-cy="map-component"></div>
   </div>
   <div v-if="appStore.isMobileOrTablet" class="absolute left-0 top-0 mt-2 ml-2">
     <MapConfigDrawerToggle />
@@ -72,10 +67,12 @@ const gridSize = computed(() => {
     <MapGeocoder />
   </div>
 
-  <!-- Drawing controls in bottom-right corner -->
-  <div class="absolute bottom-16 lg:bottom-2 right-2 sm:right-14 z-40 flex flex-col-reverse gap-2">
+  <!-- Drawing controls positioned to the left of maplibre controls -->
+  <div class="drawing-controls-container">
     <DrawingModeToggle />
-    <SelectionModeToolbar v-if="mapStore.isToolbarVisible" />
+  </div>
+  <div v-if="mapStore.isToolbarVisible" class="selection-toolbar-container">
+    <SelectionModeToolbar />
   </div>
 
   <!-- Drawing controls - only visible in shape mode -->
@@ -97,9 +94,6 @@ const gridSize = computed(() => {
       </div>
     </div>
     <MapFiltersStatus />
-  </div>
-  <div v-else class="flex items-center justify-center">
-    <MapContextDataMobile />
   </div>
   <WelcomeMessage />
 </template>
@@ -137,5 +131,30 @@ const gridSize = computed(() => {
 
 .grid-size-unit {
   @apply text-xs font-medium text-gray-500;
+}
+
+/* Drawing controls - aligned with maplibre 3D button */
+.drawing-controls-container {
+  @apply absolute z-40;
+  bottom: 78px;
+  right: 68px;
+}
+
+.selection-toolbar-container {
+  @apply absolute z-40;
+  bottom: 116px;
+  right: 8px;
+}
+
+@media (min-width: 1024px) {
+  .drawing-controls-container {
+    bottom: 18px;
+    right: 68px;
+  }
+
+  .selection-toolbar-container {
+    bottom: 18px;
+    right: 116px;
+  }
 }
 </style>

@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue"
+import { ref, watch } from "vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -87,6 +87,16 @@ const isPanelOpen = ref(false)
 const togglePanel = () => {
   isPanelOpen.value = !isPanelOpen.value
 }
+
+// Open panel automatically when context data is set
+watch(
+  () => mapStore.contextData.data,
+  (newData) => {
+    if (newData) {
+      isPanelOpen.value = true
+    }
+  }
+)
 </script>
 <style scoped>
 @reference "@/styles/main.css";

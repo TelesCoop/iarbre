@@ -233,8 +233,13 @@
   @apply bg-white rounded-lg border border-gray-200;
   @apply flex items-center justify-center;
   @apply cursor-pointer transition-colors duration-200;
-  @apply hover:border-primary-300 hover:text-primary-500;
+  @apply hover:bg-primary-500 hover:border-primary-500 hover:text-white;
   @apply focus:outline-none focus:ring-2 focus:ring-primary-200;
+}
+
+.map-control-btn:hover img,
+.map-control-btn:hover svg {
+  filter: brightness(0) invert(1);
 }
 
 .map-control-btn-sm {
@@ -255,7 +260,12 @@
   @apply bg-white rounded-lg border border-gray-200;
   @apply flex items-center justify-center;
   @apply cursor-pointer transition-colors duration-200;
-  @apply hover:border-primary-300;
+  @apply hover:bg-primary-500 hover:border-primary-500 hover:text-white;
+}
+
+.map-control-icon-btn:hover img,
+.map-control-icon-btn:hover svg {
+  filter: brightness(0) invert(1);
 }
 
 .map-control-group {

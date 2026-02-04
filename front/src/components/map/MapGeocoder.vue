@@ -10,7 +10,7 @@ const geocoderContainer = ref<HTMLDivElement>()
 const mapStore = useMapStore()
 let geocoderInstance: MaplibreGeocoder | null = null
 
-const initGeocoder = (mapInstance: maplibregl.Map) => {
+const initGeocoder = (_mapInstance: maplibregl.Map) => {
   if (!geocoderContainer.value || geocoderInstance) {
     return
   }

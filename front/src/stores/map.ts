@@ -15,14 +15,7 @@ import {
   DEFAULT_MAP_CENTER,
   TERRA_DRAW_POLYGON_LAYER
 } from "@/utils/constants"
-import {
-  GeoLevel,
-  DataType,
-  MapStyle,
-  SelectionMode,
-  DataTypeToGeolevel,
-  getDataTypeAttributionSource
-} from "@/utils/enum"
+import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
@@ -100,13 +93,6 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
-  const getAttributionSource = async () => {
-    const sourceCode =
-      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
-    if (!selectedDataType.value) return sourceCode
-    const attribution = await getDataTypeAttributionSource(selectedDataType.value)
-    return `${attribution} | ${sourceCode}`
-  }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
   }
@@ -353,16 +339,9 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const setupControls = async (map: Map) => {
+  const setupControls = (map: Map) => {
     const mapId = getMapId(map)
-    // Only add controls if they are not already added
     if (!controlsAdded.value[mapId]) {
-      const attribution = await getAttributionSource()
-      const attributionControl = new AttributionControl({
-        compact: true,
-        customAttribution: attribution
-      })
-      map.addControl(attributionControl, MAP_CONTROL_POSITION)
       map.addControl(control3D.value, MAP_CONTROL_POSITION)
       map.addControl(navControl.value, MAP_CONTROL_POSITION)
       map.addControl(centerControl.value, MAP_CONTROL_POSITION)
@@ -404,7 +383,7 @@ export const useMapStore = defineStore("map", () => {
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
       }
-      setupControls(mapInstance).catch(console.error)
+      setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -463,7 +442,7 @@ export const useMapStore = defineStore("map", () => {
       if (newStyle!) {
         const onStyleReady = () => {
           initTiles(mapInstance)
-          setupControls(mapInstance).catch(console.error)
+          setupControls(mapInstance)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
           }
@@ -561,7 +540,7 @@ export const useMapStore = defineStore("map", () => {
     const mapInstance = mapInstancesByIds.value[mapId]
 
     const onMapReady = async () => {
-      await setupControls(mapInstance)
+      setupControls(mapInstance)
       initTiles(mapInstance)
       shapeDrawing.initDraw(mapInstance)
       // Configure automatic calculation when a shape is finished
@@ -682,7 +661,6 @@ export const useMapStore = defineStore("map", () => {
     changeSelectionMode,
     finishShapeSelection,
     isCalculating,
-    getAttributionSource,
     shapeDrawing: {
       isDrawing: shapeDrawing.isDrawing,
       drawingPoints: shapeDrawing.drawingPoints,
