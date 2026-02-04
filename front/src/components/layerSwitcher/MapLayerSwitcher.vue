@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 <template>
   <div :class="{ 'map-tool-container': props.withBorder }" data-cy="map-layer-switcher">
-    <layer-switcher />
-    <map-context-tools />
+    <LayerSwitcher />
+    <MapContextTools />
   </div>
 </template>

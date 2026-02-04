@@ -44,7 +44,7 @@ const climateGroups = computed((): ContextDataFactorGroup[] => {
 </script>
 
 <template>
-  <context-data-list-container
+  <ContextDataListContainer
     :groups="climateGroups"
     color-scheme="climate"
     :full-height="fullHeight"

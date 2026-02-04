@@ -60,7 +60,7 @@ const scoreSizeClass = computed(() => {
     case "small":
       return "text-lg md:text-xl"
     case "large":
-      return "text-2xl md:text-xl"
+      return "text-2xl md:text-3xl"
     case "normal":
     default:
       return "text-xl md:text-2xl"
@@ -69,20 +69,22 @@ const scoreSizeClass = computed(() => {
 </script>
 
 <template>
-  <section class="text-center" :aria-labelledby="`score-section-${label}`">
+  <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
     <div class="relative inline-block">
-      <circular-progress
-        :percentage="percentage"
-        :background-color="textColor"
-        :size="size"
+      <CircularProgress
         :aria-label="ariaLabel"
+        :background-color="textColor"
+        :percentage="percentage"
+        :size="size"
         data-cy="circular-progress"
       />
 
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span v-if="name" :class="[labelSizeClass, 'text-gray-600']">{{ name }}:</span>
+        <span v-if="name" :class="[labelSizeClass, 'text-gray-600', 'font-serif']"
+          >{{ name }}:</span
+        >
         <span v-else :class="[labelSizeClass, 'text-gray-600']">Score :</span>
         <span :class="[scoreSizeClass, textColor, 'font-bold']" data-cy="context-data-score">
           {{ scoreDisplay }}

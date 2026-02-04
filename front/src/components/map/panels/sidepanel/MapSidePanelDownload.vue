@@ -13,12 +13,12 @@ const handleDownload = () => {
 </script>
 
 <template>
-  <div class="flex w-full font-sans text-white text-base text-center px-3 py-2">
-    <div class="w-full flex flex-col items-center justify-center gap-1.5">
-      <span class="text-sm">🌱 Collectivités, aménageurs, urbanistes</span>
-      <span class="text-xs">Demandez les données pour ce calque</span>
+  <div class="flex w-full font-sans text-white text-base text-center px-3 pt-2">
+    <div class="w-full flex flex-col items-center justify-center gap-2">
+      <span class="text-base font-serif font-bold">🌱 Collectivités, aménageurs, urbanistes</span>
+      <span class="text-sm">Demandez les données pour ce calque</span>
       <button
-        class="cursor-pointer bg-white font-sans flex items-center px-3 py-1.5 rounded-3xl text-sm text-primary-500"
+        class="cursor-pointer bg-white font-sans flex items-center px-4 py-2 rounded-3xl text-sm text-primary-500"
         data-cy="download-data"
         @click="handleDownload"
       >

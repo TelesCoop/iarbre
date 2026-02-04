@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from "vue"
+import { ref, watch, onUnmounted } from "vue"
 import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
 import { geocoderApi } from "@/utils/geocoder"
 import { useMapStore } from "@/stores/map"
@@ -8,37 +8,57 @@ import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
 
 const geocoderContainer = ref<HTMLDivElement>()
 const mapStore = useMapStore()
+let geocoderInstance: MaplibreGeocoder | null = null
 
-onMounted(() => {
-  if (geocoderContainer.value) {
-    const mapInstance = mapStore.getMapInstance("map")
-    const geocoder = new MaplibreGeocoder(
-      {
-        forwardGeocode: geocoderApi.forwardGeocode
-      },
-      {
-        maplibregl: maplibregl,
-        marker: false,
-        showResultsWhileTyping: true,
-        countries: "FR",
-        placeholder: "Recherche",
-        clearOnBlur: true,
-        collapsed: false,
-        enableEventLogging: false
-      }
-    )
+const initGeocoder = (mapInstance: maplibregl.Map) => {
+  if (!geocoderContainer.value || geocoderInstance) {
+    return
+  }
 
-    geocoder.on("result", (e: any) => {
-      if (e.result && e.result.center) {
-        mapInstance.flyTo({
+  const geocoder = new MaplibreGeocoder(
+    {
+      forwardGeocode: geocoderApi.forwardGeocode
+    },
+    {
+      maplibregl: maplibregl,
+      marker: false,
+      showResultsWhileTyping: true,
+      countries: "FR",
+      placeholder: "Recherche",
+      clearOnBlur: true,
+      collapsed: false,
+      enableEventLogging: false
+    }
+  )
+
+  geocoder.on("result", (e: any) => {
+    if (e.result && e.result.center) {
+      const currentMap = mapStore.getMapInstance("default")
+      if (currentMap) {
+        currentMap.flyTo({
           center: e.result.center,
           zoom: 14
         })
       }
-    })
+    }
+  })
 
-    geocoder.addTo(geocoderContainer.value)
-  }
+  geocoder.addTo(geocoderContainer.value)
+  geocoderInstance = geocoder
+}
+
+watch(
+  [() => mapStore.mapInstancesByIds["default"], geocoderContainer],
+  ([mapInstance, container]) => {
+    if (mapInstance && container) {
+      initGeocoder(mapInstance)
+    }
+  },
+  { immediate: true }
+)
+
+onUnmounted(() => {
+  geocoderInstance = null
 })
 </script>
 

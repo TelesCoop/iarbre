@@ -5,7 +5,6 @@ import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
-  AttributionControl,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -46,7 +45,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
-  const contextData = useContextData()
+  const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const isToolbarVisible = ref<boolean>(false)

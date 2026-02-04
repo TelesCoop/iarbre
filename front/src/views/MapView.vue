@@ -52,18 +52,18 @@ const handleMapUpdate = (params: MapParams) => {
 
 <template>
   <div class="map-view-wrapper">
-    <sidebar-component />
-    <map-side-panel />
+    <SidebarComponent />
+    <MapSidePanel />
     <div class="map-container max-w-screen overflow-hidden relative">
-      <map-component
+      <MapComponent
         :model-value="mapParams"
         map-id="default"
         @update:model-value="handleMapUpdate"
       />
 
       <!-- Drawer -->
-      <map-config-drawer />
-      <map-scores-drawer />
+      <MapConfigDrawer />
+      <MapScoresDrawer />
     </div>
   </div>
 </template>
@@ -74,11 +74,13 @@ const handleMapUpdate = (params: MapParams) => {
 .map-view-wrapper {
   @apply flex;
   height: 100vh;
+  height: 100dvh;
   margin-left: 64px;
 }
 
 .map-container {
   @apply flex-1;
   height: 100vh;
+  height: 100dvh;
 }
 </style>

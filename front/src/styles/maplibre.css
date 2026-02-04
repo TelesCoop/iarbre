@@ -33,7 +33,7 @@
 }
 
 .maplibregl-ctrl-geocoder--input {
-  @apply w-full h-full bg-white! border-0 text-sm rounded-lg shadow-none!;
+  @apply w-full h-full bg-white! border-0 text-sm rounded-lg shadow-none! h-auto!;
   padding: 0 40px 0 12px !important;
 }
 

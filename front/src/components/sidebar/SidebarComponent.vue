@@ -4,8 +4,7 @@ import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import type { Feedback } from "@/types/map"
-import Toast from "primevue/toast"
-import { useToast } from "primevue"
+import { useToast } from "@/composables/useToast"
 
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
@@ -275,17 +274,13 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
   </aside>
 
-  <welcome-message v-model="welcomeIsVisible" />
+  <WelcomeMessage v-model="welcomeIsVisible" />
 
-  <feedback-popin
+  <FeedbackPopin
     :model-value="feedbackIsVisible"
     @close="feedbackIsVisible = false"
     @submit-feedback="sendFeedbackToAPI"
   />
-  <Toast group="tl" position="top-left" />
-  <Toast group="tr" position="top-right" />
-  <Toast group="bl" position="bottom-left" />
-  <Toast group="br" position="bottom-right" />
 </template>
 
 <style scoped>

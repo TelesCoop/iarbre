@@ -31,7 +31,7 @@ const containerClasses = getContextListClassesComputed(props.fullHeight, props.s
 
 <template>
   <div :class="containerClasses" :aria-label="ariaLabel" role="list">
-    <context-data-accordion-item
+    <ContextDataAccordionItem
       v-for="group in groups"
       :key="group.category"
       :group="group"

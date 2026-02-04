@@ -2,18 +2,17 @@
 import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { SelectionMode } from "@/utils/enum"
-import Button from "primevue/button"
 
-const mapStore = useMapStore()
-
-interface DrawingMode {
+interface SelectionModeOption {
   mode: SelectionMode
   icon: string
   label: string
   dataCy: string
 }
 
-const drawingModes: DrawingMode[] = [
+const mapStore = useMapStore()
+
+const selectionModes: SelectionModeOption[] = [
   {
     mode: SelectionMode.POINT,
     icon: "point",
@@ -52,35 +51,26 @@ const drawingModes: DrawingMode[] = [
   }
 ]
 
-const isActive = (mode: SelectionMode) => computed(() => mapStore.selectionMode === mode)
+const currentMode = computed(() => mapStore.selectionMode)
 
-const switchMode = (mode: SelectionMode) => {
+const isActive = (mode: SelectionMode): boolean => currentMode.value === mode
+
+const handleModeChange = (mode: SelectionMode) => {
   mapStore.changeSelectionMode(mode)
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-0 overflow-hidden rounded-lg">
-    <Button
-      v-for="drawingMode in drawingModes"
-      :key="drawingMode.mode"
-      v-tooltip.left="drawingMode.label"
-      :class="[
-        'w-10 h-10 p-0 flex items-center justify-center border rounded-none! border-gray-200! selection-mode-btn',
-        isActive(drawingMode.mode).value ? 'bg-primary active' : 'bg-white!'
-      ]"
-      :data-cy="drawingMode.dataCy"
-      severity=""
-      size="small"
-      @click="switchMode(drawingMode.mode)"
-    >
-      <img
-        :alt="drawingMode.label"
-        :src="`/icons/${drawingMode.icon}${isActive(drawingMode.mode).value ? '-white' : ''}.svg`"
-        class="w-6 h-6 selection-mode-icon"
-      />
-    </Button>
+  <div class="map-control-group" role="toolbar" aria-label="Modes de sélection">
+    <SelectionModeButton
+      v-for="option in selectionModes"
+      :key="option.mode"
+      :active="isActive(option.mode)"
+      :data-cy="option.dataCy"
+      :icon="option.icon"
+      :label="option.label"
+      :mode="option.mode"
+      @select="handleModeChange"
+    />
   </div>
 </template>
-
-<style scoped></style>

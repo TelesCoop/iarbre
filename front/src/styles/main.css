@@ -1,47 +1,23 @@
 /* Import external stylesheets */
-@import "tailwindcss-primeui";
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
-@import "primeicons/primeicons.css";
-
-/* Define custom fonts */
-@font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/IBMPlexMono-Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/IBMPlexMono-SemiBold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/IBMPlexMono-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Sligoil";
-  src: url("/fonts/Sligoil-Micro.otf") format("opentype");
-}
 
 /* Define theme variables */
 @theme {
+  /* Primary colors */
+  --color-primary-50: #edf5e9;
+  --color-primary-100: #c7dbc0;
+  --color-primary-200: #97b090;
+  --color-primary-300: #7a9374;
+  --color-primary-400: #6d8766;
+  --color-primary-500: #426a45;
+  --color-primary-600: #49673f;
+  --color-primary-700: #34522a;
+  --color-primary-800: #2b4822;
+  --color-primary-900: #002814;
+  /* Scale colors */
   --color-scale-0: #c4c4c4;
   --color-scale-1: #d1a99d;
   --color-scale-2: #bf5a16;
@@ -53,16 +29,47 @@
   --color-scale-8: #55b250;
   --color-scale-9: #2d8328;
   --color-scale-10: #025400;
+  /* Other colors */
   --color-off-white: #efefed;
   --color-light-green: #92a48d;
   --color-brown: #32312d;
   --color-green-500: #78c679;
-  --font-sans: "IBM Plex Mono", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
-  --font-accent: "Sligoil", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji";
+  --font-serif: "Libre Baskerville", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --font-accent: var(--font-sans);
   --font-main: var(--font-sans);
+  /* Font weights - DM Sans (100-1000), Libre Baskerville (400, 700) */
+  --font-weight-thin: 100;
+  --font-weight-extralight: 200;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  /* Typography scale - aligned with design system */
+  --text-2xs: 0.625rem;
+  --text-xs: 0.8rem;
+  --text-sm: 0.875rem;
+  --text-md: 0.9rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.5rem;
+  /* Spacing scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
   --breakpoint-xs: 23rem;
   --width-sidepanel: 25rem;
   --width-screen-without-sidepanel: calc(100vw - var(--width-sidepanel));
@@ -87,62 +94,78 @@
   @apply hover:bg-gray-100 hover:border-gray-300;
 }
 
-/* PrimeVue Button harmonization */
-.p-button {
-  @apply font-sans!;
-  /* There is no way actually to override the default font in PrimeReact */
+/* Custom Tooltip Styles */
+.app-tooltip {
+  position: fixed;
+  z-index: 10000;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.813rem;
+  font-weight: 500;
+  color: white;
+  background-color: #1f2937;
+  border-radius: 0.375rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  max-width: 250px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-/* Secondary buttons - harmonized style */
-.p-button.p-button-secondary {
-  @apply bg-white! text-gray-900!;
-  @apply border border-gray-200!;
-  @apply transition-colors;
-  box-shadow: none !important;
+.app-tooltip.visible {
+  opacity: 1;
 }
 
-.p-button.p-button-secondary:not(:disabled):hover {
-  @apply bg-[#426A45]! text-white!;
-  @apply border-[#426A45]!;
+.app-tooltip-top {
+  transform: translateY(4px);
 }
 
-.p-button.p-button-secondary:not(:disabled):hover .pi {
-  color: white !important;
+.app-tooltip-top.visible {
+  transform: translateY(0);
 }
 
-/* Outlined secondary buttons */
-.p-button.p-button-outlined.p-button-secondary {
-  @apply bg-white! text-gray-900!;
-  @apply border border-gray-200!;
+.app-tooltip-bottom {
+  transform: translateY(-4px);
 }
 
-.p-button.p-button-outlined.p-button-secondary:not(:disabled):hover {
-  @apply bg-[#426A45]! text-white!;
-  @apply border-[#426A45]!;
+.app-tooltip-bottom.visible {
+  transform: translateY(0);
 }
 
-/* Remove default PrimeVue shadows */
-.p-button:focus {
-  box-shadow: none !important;
+.app-tooltip-left {
+  transform: translateX(4px);
 }
 
-.p-button:active {
-  box-shadow: none !important;
+.app-tooltip-left.visible {
+  transform: translateX(0);
+}
+
+.app-tooltip-right {
+  transform: translateX(-4px);
+}
+
+.app-tooltip-right.visible {
+  transform: translateX(0);
 }
 
 .card {
-  @apply bg-white rounded-xl p-5;
+  @apply bg-white rounded-xl p-4;
 }
 
 .map-tool-container {
-  @apply flex flex-col items-center gap-2 sm:gap-4;
+  @apply flex flex-col items-center gap-2 md:gap-4;
   @apply bg-white z-10;
   @apply md:pt-4;
   @apply max-w-full;
 }
 
 .map-bg-tool-container {
-  @apply flex flex-col items-start gap-2 sm:gap-4;
+  @apply flex flex-col items-start gap-2 md:gap-4;
   @apply bg-gray-100 z-10;
   @apply px-4 py-2;
   @apply max-w-full;
@@ -164,18 +187,15 @@
 }
 
 .map-context-card {
-  @apply flex w-full;
+  @apply flex w-full items-center justify-center;
   @apply font-sans;
-  @apply items-center;
   @apply px-4 py-2 mb-4;
-  @apply py-2;
-  @apply mb-4;
-  @apply rounded-md border border-gray-200 justify-center;
+  @apply rounded-md border border-gray-200;
 }
 
 .map-context-panel-content {
-  @apply py-1 sm:py-2 md:py-4;
-  @apply flex flex-col gap-1 sm:gap-2 md:gap-4;
+  @apply py-2 md:py-4;
+  @apply flex flex-col gap-2 md:gap-4;
   @apply text-xs min-h-0;
 }
 
@@ -192,10 +212,63 @@
 }
 
 .vulnerability-table-row {
-  @apply grid grid-cols-12 gap-1 sm:gap-3 p-2 sm:p-3 2xl:p-4;
+  @apply grid grid-cols-12 gap-2 md:gap-4 p-2 md:p-4;
   @apply hover:bg-primary-100;
   @apply transition-all duration-200 items-center;
   @apply border-l-2 border-transparent;
+}
+
+/* Map Control Styles */
+.map-control {
+  @apply bg-white rounded-lg border border-gray-200;
+  @apply shadow-sm;
+}
+
+.map-control-panel {
+  @apply bg-white rounded-lg border border-gray-200;
+  @apply shadow-sm p-3;
+}
+
+.map-control-btn {
+  @apply bg-white rounded-lg border border-gray-200;
+  @apply flex items-center justify-center;
+  @apply cursor-pointer transition-colors duration-200;
+  @apply hover:border-primary-300 hover:text-primary-500;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-200;
+}
+
+.map-control-btn-sm {
+  @apply w-10 h-10;
+}
+
+.map-control-btn-md {
+  @apply px-3 py-2 h-10;
+}
+
+.map-control-btn-active {
+  @apply bg-primary-500 border-primary-500 text-white;
+  @apply hover:bg-primary-600 hover:border-primary-600 hover:text-white;
+}
+
+.map-control-icon-btn {
+  @apply w-10 h-10 p-0;
+  @apply bg-white rounded-lg border border-gray-200;
+  @apply flex items-center justify-center;
+  @apply cursor-pointer transition-colors duration-200;
+  @apply hover:border-primary-300;
+}
+
+.map-control-group {
+  @apply flex flex-col gap-0 overflow-hidden rounded-lg;
+  @apply border border-gray-200;
+}
+
+.map-control-group > * {
+  @apply border-0 border-b border-gray-200 rounded-none;
+}
+
+.map-control-group > *:last-child {
+  @apply border-b-0;
 }
 
 /* Scroll bars */

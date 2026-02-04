@@ -6,7 +6,7 @@ import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import type { VegetationData } from "@/types/vegetation"
-import ProgressSpinner from "primevue/progressspinner"
+import AppSpinner from "@/components/shared/AppSpinner.vue"
 
 const mapStore = useMapStore()
 
@@ -20,24 +20,24 @@ defineProps({
 
 <template>
   <div class="map-context-data-container w-full" data-cy="map-context-data">
-    <div v-if="mapStore.isCalculating" class="flex flex-col items-center justify-center gap-3 p-8">
-      <ProgressSpinner style="width: 50px; height: 50px" stroke-width="4" animation-duration="1s" />
+    <div v-if="mapStore.isCalculating" class="flex flex-col items-center justify-center gap-4 p-8">
+      <AppSpinner size="md" color="#426A45" />
       <div class="text-brown text-center">Calcul en cours...</div>
     </div>
     <template v-else>
-      <map-context-data-plantability
+      <MapContextDataPlantability
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
         :data="mapStore.contextData.data as PlantabilityData"
       />
-      <map-context-data-vulnerability
+      <MapContextDataVulnerability
         v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
         :data="mapStore.contextData.data as VulnerabilityData"
       />
-      <map-context-data-climate-zone
+      <MapContextDataClimateZone
         v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
         :data="mapStore.contextData.data as ClimateData"
       />
-      <map-context-data-plantability-vulnerability
+      <MapContextDataPlantabilityVulnerability
         v-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
       />

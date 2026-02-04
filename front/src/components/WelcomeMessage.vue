@@ -56,19 +56,15 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
 </script>
 
 <template>
-  <Dialog
-    v-model:visible="isVisible"
+  <AppDialog
+    :visible="isVisible"
     :draggable="false"
-    :style="{ width: '28rem' }"
+    width="28rem"
     header="Bienvenue !"
     modal
     data-cy="welcome-dialog"
     :closable="true"
-    :pt="{
-      closeButton: {
-        class: 'text-primary-500 hover:text-primary-700 hover:bg-transparent! transition-colors'
-      }
-    }"
+    @update:visible="isVisible = $event"
   >
     <div class="flex flex-col gap-4 bg-white">
       <div class="space-y-4">
@@ -120,7 +116,7 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
     </div>
 
     <template #footer>
-      <Button label="Compris !" data-cy="welcome-click" class="w-full" @click="closeWelcome" />
+      <AppButton data-cy="welcome-click" full-width @click="closeWelcome"> Compris ! </AppButton>
     </template>
-  </Dialog>
+  </AppDialog>
 </template>

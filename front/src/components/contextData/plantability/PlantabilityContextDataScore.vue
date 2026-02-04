@@ -12,7 +12,7 @@ defineProps<PlantabilityScoreProps>()
 </script>
 
 <template>
-  <circular-score
+  <CircularScore
     :score="score"
     :max-score="10"
     :percentage="percentage"

@@ -19,11 +19,9 @@ import "./commands"
 import "@cypress/code-coverage/support"
 
 import "@/styles/main.css"
-import Primevue from "primevue/config"
+import { createPinia } from "pinia"
 
 import { mount } from "cypress/vue"
-import { IArbrePreset } from "../../src/theme/iArbre"
-import ToastService from "primevue/toastservice"
 
 beforeEach(() => {
   cy.window()
@@ -70,12 +68,7 @@ Cypress.Commands.add("mount", (component, options) => {
   options.global.plugins = options?.global.plugins || []
   options.global.plugins.push({
     install(app) {
-      app.use(Primevue, {
-        theme: {
-          preset: IArbrePreset
-        }
-      })
-      app.use(ToastService)
+      app.use(createPinia())
     }
   })
 

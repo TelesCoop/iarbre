@@ -15,7 +15,7 @@ describe("Map feedback", () => {
   it("Open, close and reopen feedback popin", () => {
     cy.get(".sidebar-icon-button").first().click()
 
-    cy.get("[data-pc-name='pcclosebutton']").click()
+    cy.get(".dialog-close").click()
     cy.getBySel("feedback-popin").should("not.exist")
 
     cy.get(".sidebar-icon-button").first().click()

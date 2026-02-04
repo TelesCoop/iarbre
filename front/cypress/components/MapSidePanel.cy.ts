@@ -17,7 +17,6 @@ describe("MapSidePanel", () => {
 
   it("should include all sub-components", () => {
     cy.get('[data-cy="map-side-panel-header"]').should("exist")
-    cy.get('[data-cy="map-bg-switcher"]').should("exist")
     cy.contains("QPV").should("be.visible")
     cy.get('[data-cy="map-layer-switcher"]').should("exist")
     cy.get('[data-cy="map-context-data"]').should("exist")

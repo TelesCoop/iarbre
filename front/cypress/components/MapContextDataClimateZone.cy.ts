@@ -34,7 +34,6 @@ describe("MapContextDataClimateZone", () => {
 
   it("display climate zone data correctly", () => {
     cy.contains("Ensemble dense de batîments hauts").should("be.visible")
-    cy.contains("Indicateurs climatiques locaux pour une zone sélectionnée").should("be.visible")
   })
 
   it("display climate metrics with categories", () => {

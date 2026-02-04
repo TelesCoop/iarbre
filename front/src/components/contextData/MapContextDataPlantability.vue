@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, withDefaults } from "vue"
+import { computed, ref, withDefaults } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
@@ -36,10 +36,12 @@ const tileCount = computed(() => {
   const count = id?.split("-")[1]
   return count ? parseInt(count) : 0
 })
+
+const activeTab = ref<"details" | "divisions">("details")
 </script>
 
 <template>
-  <context-data-main-container
+  <ContextDataMainContainer
     color-scheme="plantability"
     title="plantability"
     :description="
@@ -52,15 +54,57 @@ const tileCount = computed(() => {
     :zoom-level="zoomLevel"
   >
     <template #score="{ data: plantabilityData }">
-      <plantability-context-data-score
+      <PlantabilityContextDataScore
         v-if="scorePercentage !== null"
         :percentage="scorePercentage"
         :score="plantabilityData.plantabilityNormalizedIndice"
       />
     </template>
     <template #content="{ data: plantabilityData }">
-      <plantability-context-data-list :data="plantabilityData" />
-      <click-plantability-division-data :plantability-data="plantabilityData" />
+      <!-- Tabs -->
+      <div class="tabs-container">
+        <button
+          :class="['tab-button', { active: activeTab === 'details' }]"
+          @click="activeTab = 'details'"
+        >
+          Détails
+        </button>
+        <button
+          :class="['tab-button', { active: activeTab === 'divisions' }]"
+          @click="activeTab = 'divisions'"
+        >
+          Échelons supérieurs
+        </button>
+      </div>
+
+      <!-- Tab content -->
+      <div class="tab-content">
+        <PlantabilityContextDataList v-if="activeTab === 'details'" :data="plantabilityData" />
+        <ClickPlantabilityDivisionData
+          v-else-if="activeTab === 'divisions'"
+          :plantability-data="plantabilityData"
+        />
+      </div>
     </template>
-  </context-data-main-container>
+  </ContextDataMainContainer>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.tabs-container {
+  @apply flex gap-1 mb-4 p-1 bg-gray-100 rounded-lg;
+}
+
+.tab-button {
+  @apply flex-1 py-2 px-3 text-sm font-medium rounded-md bg-transparent transition-all duration-200 cursor-pointer border-none text-gray-600 hover:text-gray-900;
+}
+
+.tab-button.active {
+  @apply bg-white text-primary-600;
+}
+
+.tab-content {
+  @apply min-h-0;
+}
+</style>

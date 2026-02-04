@@ -41,7 +41,7 @@ const codeLabel = computed(() => "Code INSEE")
 
     <!-- Average Indice Score -->
     <div class="mb-6">
-      <circular-score
+      <CircularScore
         v-if="hasScore"
         :score="score"
         :max-score="10"
@@ -56,7 +56,7 @@ const codeLabel = computed(() => "Code INSEE")
     </div>
 
     <!-- Plantability Distribution -->
-    <plantability-distribution-chart
+    <PlantabilityDistributionChart
       v-if="plantabilityEntries.length > 0"
       :entries="plantabilityEntries"
       :show-legend="true"

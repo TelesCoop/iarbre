@@ -2,8 +2,11 @@
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
-describe("Legend Filtering", () => {
+const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+
+describe("Legend Filtering - Desktop", () => {
   beforeEach(() => {
+    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
@@ -52,11 +55,13 @@ describe("Legend Filtering", () => {
 
       cy.getBySel("plantability-legend").find('[data-score="6"]').should("have.class", "border-2")
 
-      // Switch to vulnerability
-      cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
+      // Switch to vulnerability via desktop sidebar
+      cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+      cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
       // Switch back to plantability
-      cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+      cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+      cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
 
       // Verify the filter has been cleared
       cy.getBySel("plantability-legend")
@@ -111,7 +116,7 @@ describe("Legend Filtering", () => {
       cy.getBySel("map-filters-status").should("contain", "Filtres")
       cy.getBySel("reset-filters-button")
         .should("be.visible")
-        .should("have.attr", "title", "Supprimer tous les filtres")
+        .should("have.attr", "aria-label", "Supprimer tous les filtres")
     })
   })
 })

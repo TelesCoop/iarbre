@@ -63,75 +63,79 @@ const gridSize = computed(() => {
     ></div>
   </div>
   <div v-if="appStore.isMobileOrTablet" class="absolute left-0 top-0 mt-2 ml-2">
-    <map-config-drawer-toggle />
+    <MapConfigDrawerToggle />
   </div>
 
   <!-- Top-right controls stack -->
-  <div class="absolute right-0 top-0 mt-2 mr-2 flex flex-col gap-2" style="z-index: 50">
-    <map-coordinates />
-    <map-geocoder />
+  <div class="absolute right-2 top-2 flex flex-col gap-2 z-50">
+    <MapCoordinates />
+    <MapGeocoder />
   </div>
 
   <!-- Drawing controls in bottom-right corner -->
-  <div class="absolute bottom-2 z-40 flex flex-col-reverse gap-2" style="right: 56px">
-    <drawing-mode-toggle />
-    <selection-mode-toolbar v-if="mapStore.isToolbarVisible" />
+  <div class="absolute bottom-16 lg:bottom-2 right-2 sm:right-14 z-40 flex flex-col-reverse gap-2">
+    <DrawingModeToggle />
+    <SelectionModeToolbar v-if="mapStore.isToolbarVisible" />
   </div>
 
   <!-- Drawing controls - only visible in shape mode -->
-  <drawing-controls />
+  <DrawingControls />
 
-<!-- Background selector in bottom-left corner -->
-  <div class="absolute bottom-2 left-2 z-40 hidden lg:block">
-    <map-background-selector />
+  <!-- Background selector in bottom-left corner -->
+  <div class="absolute bottom-16 lg:bottom-2 left-2 z-40 hidden lg:block">
+    <MapBackgroundSelector />
   </div>
 
-  <div v-if="appStore.isDesktop" class="legend-container flex">
-    <map-legend />
+  <div v-if="appStore.isDesktop" class="legend-container">
+    <MapLegend />
     <div v-if="mapStore.selectedDataType === 'plantability' && gridSize" class="grid-size-info">
-      <div class="flex items-center gap-2">
+      <div class="grid-size-label">Résolution</div>
+      <div class="grid-size-value">
         <div class="tile-pixel"></div>
-        <span>{{ gridSize }}m</span>
+        <span class="grid-size-number">{{ gridSize }}</span>
+        <span class="grid-size-unit">m</span>
       </div>
     </div>
-    <map-filters-status />
+    <MapFiltersStatus />
   </div>
   <div v-else class="flex items-center justify-center">
-    <map-context-data-mobile />
+    <MapContextDataMobile />
   </div>
-  <welcome-message />
+  <WelcomeMessage />
 </template>
 
 <style>
 @reference "@/styles/main.css";
 
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-2 top-0 mx-1 mt-2;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-2 top-0 mx-1 mt-2 lg:mr-8;
 }
 
 .legend-container > * {
-  pointer-events: auto;
-  flex: 1;
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .legend-container {
-    margin-right: 2rem;
-  }
+  @apply pointer-events-auto flex-1 w-full;
 }
 
 .grid-size-info {
-  @apply text-sm text-center font-sans font-bold;
-  @apply bg-white px-3 py-2 rounded-lg border border-gray-200;
-  @apply pointer-events-auto;
+  @apply flex flex-row items-center gap-2.5 py-2 px-3 bg-white border border-gray-200 rounded-lg pointer-events-auto font-sans;
+}
+
+.grid-size-label {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+}
+
+.grid-size-value {
+  @apply flex items-center gap-1;
 }
 
 .tile-pixel {
-  width: 12px;
-  height: 12px;
-  background-color: #a6d5a3;
-  border-radius: 2px;
-  flex-shrink: 0;
+  @apply w-3 h-3 bg-scale-8 rounded-sm shrink-0;
+}
+
+.grid-size-number {
+  @apply text-base font-bold text-gray-800 leading-none tabular-nums;
+}
+
+.grid-size-unit {
+  @apply text-xs font-medium text-gray-500;
 }
 </style>

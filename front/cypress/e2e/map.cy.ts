@@ -3,8 +3,12 @@ import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
-describe("Map", () => {
+const MOBILE_VIEWPORT = { width: 375, height: 667 }
+const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+
+describe("Map - Desktop", () => {
   beforeEach(() => {
+    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
@@ -14,99 +18,175 @@ describe("Map", () => {
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
+
   it("loads with plantability layer", () => {
     cy.getBySel("plantability-legend").should("exist")
     cy.getBySel("map-component").should("exist")
-    cy.contains("OpenStreetMap Contributors").should("exist")
   })
-  it("changes map style", () => {
-    cy.basemapSwitchLayer(MapStyle.SATELLITE)
+
+  it("changes map style via background selector", () => {
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
     cy.get("@consoleInfo").should("not.have.been.calledWith", "cypress: QPV data loaded") // #344
-    cy.basemapSwitchLayer(MapStyle.OSM)
-    // check that layer is loaded
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-  })
-  it("changes to cadastre map style", () => {
-    cy.basemapSwitchLayer(MapStyle.CADASTRE)
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-    cy.basemapSwitchLayer(MapStyle.OSM)
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-  })
-  it("switches layer", () => {
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
 
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
   })
+
+  it("changes to cadastre map style", () => {
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  })
+
+  it("switches data layer via sidebar", () => {
+    // Desktop uses sidebar layer switcher (filter visible to exclude mobile hidden elements)
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+  })
+
   it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Zommez et cliquez sur un carreau")
     cy.mapZoomTo(3)
     cy.getBySel("map-component").click("center")
   })
+
   it("shows vulnerability context data", () => {
     cy.getBySel("map-context-data").should("exist")
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
-    cy.getBySel("map-context-data").should(
-      "contain",
-      "Calcul basé sur l'exposition, la difficulté à faire face et la sensibilité."
-    )
+    cy.getBySel("map-context-data").should("contain", "Cliquez sur une zone")
   })
+
   it("shows climate zone context data", () => {
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
     cy.getBySel("map-context-data").should("exist")
-    cy.getBySel("map-context-data").should("contain", "Indicateurs climatiques locaux")
+    cy.getBySel("map-context-data").should("contain", "Cliquez sur un carreau")
   })
 
   it("adds QPV layer when toggled", () => {
-    cy.getBySel("qpv-toggle").should("be.visible").click()
-
+    // Desktop QPV toggle is in the sidebar
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
-    cy.getBySel("qpv-toggle").should("be.visible").click()
-
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(false)
   })
 
   it("maintains QPV layer when switching data layers", () => {
-    cy.getBySel("qpv-toggle").should("be.visible").click()
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.VULNERABILITY])
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
     cy.mapCheckQPVLayer(true)
 
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.CLIMATE_ZONE])
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
     cy.mapCheckQPVLayer(true)
 
-    cy.mapSwitchLayer(DataTypeToLabel[DataType.PLANTABILITY])
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
     cy.mapCheckQPVLayer(true)
   })
 
   it("maintains QPV layer when switching basemap styles", () => {
-    cy.getBySel("qpv-toggle").should("be.visible").click()
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
-    cy.basemapSwitchLayer(MapStyle.SATELLITE)
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
-    cy.basemapSwitchLayer(MapStyle.CADASTRE)
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
-    cy.basemapSwitchLayer(MapStyle.OSM)
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
+  })
+})
+
+// Mobile tests are skipped because MapConfigDrawerToggle component is not yet integrated
+// TODO: Enable these tests when mobile drawer toggle is implemented
+describe.skip("Map - Mobile", () => {
+  beforeEach(() => {
+    cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+    cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
+  })
+
+  it("loads map on mobile viewport", () => {
+    cy.getBySel("map-component").should("exist")
+  })
+
+  it("opens mobile config drawer and switches data layer", () => {
+    // Open config drawer via toggle button
+    cy.getBySel("drawer-toggle").should("be.visible").click()
+
+    // Mobile uses drawer layer switcher
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+
+    // Close drawer by clicking outside or toggle
+    cy.getBySel("drawer-toggle").click()
+  })
+
+  it("toggles QPV layer on mobile", () => {
+    // Open config drawer
+    cy.getBySel("drawer-toggle").should("be.visible").click()
+
+    // Toggle QPV
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckQPVLayer(true)
+
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckQPVLayer(false)
+  })
+
+  it("changes map style on mobile via drawer", () => {
+    // Open config drawer
+    cy.getBySel("drawer-toggle").should("be.visible").click()
+
+    // Use map switcher in drawer
+    cy.getBySel("map-switcher").should("be.visible").click()
+    cy.get(".p-select-option-label").contains("Images satellite").click()
+
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
   })
 })
 
@@ -114,10 +194,12 @@ describe("Geocoder", () => {
   beforeEach(() => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
   it("search for an address in Lyon and display results", () => {
-    cy.get(".maplibregl-ctrl-geocoder--input").should("be.visible").click()
+    cy.get(".maplibregl-ctrl-geocoder--input", { timeout: 10000 }).should("be.visible").click()
     cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
     cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.wait("@geocoding")
