@@ -18,7 +18,7 @@ mercantile==1.2.1
 numpy==2.0.1
 openpyxl==3.1.5
 pillow==11.0.0
-protobuf==6.33.5
+protobuf==5.29.5
 psycopg2==2.9.9
 pyproj==3.7.0
 rasterio==1.4.3
