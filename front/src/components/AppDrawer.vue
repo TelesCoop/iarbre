@@ -15,6 +15,7 @@ interface Props {
   headerTitle?: string
   modal?: boolean
   dismissable?: boolean
+  dataCy?: string
 }
 
 interface Emits {
@@ -26,7 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
   customStyles: () => ({}),
   headerTitle: "",
   modal: true,
-  dismissable: true
+  dismissable: true,
+  dataCy: "app-drawer"
 })
 
 const emit = defineEmits<Emits>()
@@ -129,7 +131,7 @@ onUnmounted(() => {
         :style="drawerStyle"
         role="dialog"
         aria-modal="true"
-        data-cy="app-drawer"
+        :data-cy="dataCy"
       >
         <div class="drawer-header">
           <slot name="header">
@@ -138,7 +140,13 @@ onUnmounted(() => {
               <span v-if="headerTitle" class="font-semibold text-lg">{{ headerTitle }}</span>
             </div>
           </slot>
-          <button type="button" class="drawer-close" aria-label="Fermer" @click="close">
+          <button
+            type="button"
+            class="drawer-close"
+            aria-label="Fermer"
+            data-cy="drawer-close"
+            @click="close"
+          >
             <svg
               width="14"
               height="14"

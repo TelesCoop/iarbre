@@ -38,7 +38,7 @@
   <!-- Mobile bottom panel -->
   <div :class="{ 'is-open': isPanelOpen }" class="mobile-panel">
     <!-- Handle to open/close -->
-    <button class="mobile-panel-handle" @click="togglePanel">
+    <button class="mobile-panel-handle" data-cy="mobile-panel-handle" @click="togglePanel">
       <div class="handle-bar"></div>
       <span class="handle-text">{{ isPanelOpen ? "Fermer" : "Voir les détails" }}</span>
       <svg

@@ -313,3 +313,87 @@
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
 }
+
+/* ========================================
+   Driver.js Tutorial Styling
+   ======================================== */
+
+.driver-popover {
+  @apply bg-white rounded-xl shadow-xl border border-gray-200;
+  @apply p-0 overflow-hidden font-sans;
+  @apply min-w-[280px] max-w-[340px];
+}
+
+.driver-popover-title {
+  @apply text-lg font-semibold text-gray-900;
+  @apply px-5 pt-5 pb-2 m-0 leading-snug;
+}
+
+.driver-popover-description {
+  @apply text-sm text-gray-600 leading-relaxed;
+  @apply px-5 pb-4 m-0;
+}
+
+.driver-popover-close-btn {
+  @apply text-gray-400 hover:text-gray-600;
+  @apply transition-colors duration-200;
+  @apply w-8 h-8 flex items-center justify-center;
+  @apply rounded-full hover:bg-gray-100;
+  @apply top-3 right-3 text-base;
+}
+
+.driver-popover-footer {
+  @apply px-5 py-3 mt-0;
+  @apply bg-gray-50 border-t border-gray-100;
+  @apply flex items-center justify-between gap-3;
+}
+
+.driver-popover-progress-text {
+  @apply text-xs font-medium text-gray-500;
+}
+
+.driver-popover-footer button {
+  @apply px-4 py-2 text-sm font-medium rounded-lg;
+  @apply transition-all duration-200;
+  @apply border-0 cursor-pointer leading-tight;
+}
+
+.driver-popover-prev-btn {
+  @apply bg-white text-gray-700 border border-gray-200;
+  @apply hover:bg-gray-50 hover:border-gray-300;
+}
+
+.driver-popover-next-btn {
+  @apply bg-primary-500 text-white;
+  @apply hover:bg-primary-600;
+}
+
+.driver-popover-navigation-btns {
+  @apply flex gap-2;
+}
+
+/* Driver.js arrow styling */
+.driver-popover-arrow {
+  @apply border-8 border-transparent;
+}
+
+.driver-popover-arrow-side-left {
+  @apply border-l-white;
+}
+
+.driver-popover-arrow-side-right {
+  @apply border-r-white;
+}
+
+.driver-popover-arrow-side-top {
+  @apply border-t-white;
+}
+
+.driver-popover-arrow-side-bottom {
+  @apply border-b-white;
+}
+
+/* Driver.js overlay */
+.driver-overlay {
+  @apply bg-black/50;
+}

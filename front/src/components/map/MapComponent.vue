@@ -106,7 +106,7 @@ const gridSize = computed(() => {
 }
 
 .legend-container > * {
-  @apply pointer-events-auto flex-1 w-full;
+  @apply pointer-events-auto flex-1;
 }
 
 .grid-size-info {

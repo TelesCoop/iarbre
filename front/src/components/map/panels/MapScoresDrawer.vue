@@ -18,7 +18,7 @@ const drawerVisible = computed({
     position="bottom"
     header-title="Score"
     class="map-drawer"
-    data-cy="map-drawer"
+    data-cy="map-scores-drawer"
   >
     <template #icon>
       <IconMap :size="20" />

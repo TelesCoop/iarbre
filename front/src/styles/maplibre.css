@@ -74,24 +74,22 @@ button.maplibregl-ctrl-3d svg {
 
 .maplibregl-ctrl-geocoder {
   @apply flex rounded-lg border border-gray-200 bg-white shadow-none! rounded-lg!;
-  width: 240px !important;
-  max-width: 240px !important;
-  min-width: 240px !important;
-  min-height: 40px !important;
-  max-height: 40px !important;
-  overflow: visible !important;
-  position: relative !important;
-  z-index: 1 !important;
+  @apply w-60! min-w-60! max-w-60! min-h-10! max-h-10!;
+  @apply overflow-visible! relative! z-[1]!;
+  @apply transition-all duration-200;
+}
+
+.maplibregl-ctrl-geocoder:focus-within {
+  @apply border-primary-300 ring-2 ring-primary-100;
 }
 
 .maplibregl-ctrl-geocoder--input {
   @apply w-full h-full bg-white! border-0 text-sm rounded-lg shadow-none! h-auto!;
-  padding: 0 40px 0 12px !important;
+  @apply pr-10! pl-3! font-sans;
 }
 
 .maplibregl-ctrl-geocoder--input::placeholder {
-  @apply text-primary-500 whitespace-nowrap overflow-hidden text-ellipsis;
-  opacity: 1 !important;
+  @apply text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis opacity-100!;
 }
 
 .maplibregl-ctrl-geocoder--icon {
@@ -99,27 +97,16 @@ button.maplibregl-ctrl-3d svg {
 }
 
 .maplibregl-ctrl-geocoder--icon-search {
-  @apply absolute;
-  top: 12px !important;
-  right: 12px !important;
-  left: auto !important;
-  width: 16px !important;
-  height: 16px !important;
+  @apply absolute top-3! right-3! left-auto! w-4! h-4!;
 }
 
 .maplibregl-ctrl-geocoder--icon-loading {
-  top: 12px !important;
-  right: 12px !important;
-  width: 16px !important;
-  height: 16px !important;
+  @apply top-3! right-3! w-4! h-4!;
 }
 
 .maplibregl-ctrl-geocoder--button {
   @apply rounded-full transition-colors;
-  top: 8px !important;
-  right: 8px !important;
-  width: 24px !important;
-  height: 24px !important;
+  @apply top-2! right-2! w-6! h-6!;
 }
 
 .maplibregl-ctrl-geocoder--button:hover {
@@ -127,51 +114,63 @@ button.maplibregl-ctrl-3d svg {
 }
 
 /* Geocoder suggestions dropdown */
-.maplibregl-ctrl-geocoder--suggestions {
-  @apply rounded-lg mt-2 bg-white border border-gray-200 shadow-lg;
-  overflow: visible !important;
-  max-height: 300px !important;
-  z-index: 9999 !important;
+.maplibregl-ctrl-geocoder .suggestions {
+  @apply rounded-xl bg-white border border-gray-200 shadow-xl;
+  @apply m-0 p-0 mt-2!;
+  @apply overflow-hidden! overflow-y-auto! max-h-80!;
+  @apply z-[9999]! list-none! absolute! w-full! left-0!;
 }
 
-.maplibregl-ctrl-geocoder--suggestion {
-  @apply px-4 py-3 text-sm transition-all duration-200 cursor-pointer;
+.maplibregl-ctrl-geocoder .suggestions > li {
   @apply border-b border-gray-100;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:last-child {
+.maplibregl-ctrl-geocoder .suggestions > li:last-child {
   @apply border-b-0;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:hover,
-.maplibregl-ctrl-geocoder--suggestion.active {
-  @apply bg-primary-500 text-white;
+.maplibregl-ctrl-geocoder .suggestions > li > a {
+  @apply block px-3 py-3 cursor-pointer no-underline!;
+  @apply transition-colors duration-150;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:first-child {
-  @apply rounded-t-lg;
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a {
+  @apply bg-primary-500;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:last-child {
-  @apply rounded-b-lg;
+.maplibregl-ctrl-geocoder--result {
+  @apply flex items-start gap-3;
 }
 
-.maplibregl-ctrl-geocoder--suggestion-title {
-  @apply font-medium text-gray-900 transition-colors duration-200;
+.maplibregl-ctrl-geocoder--result-icon {
+  @apply w-5 h-5 shrink-0 mt-0.5;
+  @apply transition-colors duration-150;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:hover .maplibregl-ctrl-geocoder--suggestion-title,
-.maplibregl-ctrl-geocoder--suggestion.active .maplibregl-ctrl-geocoder--suggestion-title {
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-icon path,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-icon path {
+  fill: white !important;
+}
+
+.maplibregl-ctrl-geocoder--result-title {
+  @apply font-medium text-gray-900 text-sm font-sans;
+  @apply transition-colors duration-150;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-title,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-title {
   @apply text-white;
 }
 
-.maplibregl-ctrl-geocoder--suggestion-address {
-  @apply text-gray-500 text-xs mt-1 transition-colors duration-200;
+.maplibregl-ctrl-geocoder--result-address {
+  @apply text-gray-500 text-xs font-sans;
+  @apply transition-colors duration-150;
 }
 
-.maplibregl-ctrl-geocoder--suggestion:hover .maplibregl-ctrl-geocoder--suggestion-address,
-.maplibregl-ctrl-geocoder--suggestion.active .maplibregl-ctrl-geocoder--suggestion-address {
-  @apply text-white opacity-90;
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-address,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-address {
+  @apply text-white/80;
 }
 
 /* ========================================
@@ -198,18 +197,12 @@ button.maplibregl-ctrl-3d svg {
 }
 
 .maplibregl-popup-content {
-  @apply border-0.5 border-primary-500;
-  border-radius: 10px;
-  padding: 10px;
+  @apply border-0.5 border-primary-500 rounded-lg p-2.5;
 }
 
 .maplibregl-popup-close-button {
   @apply text-primary-500 rounded-full transition-colors;
-  top: 10px;
-  right: 10px;
-  font-size: 18px;
-  width: 24px !important;
-  height: 24px !important;
+  @apply top-2.5 right-2.5 text-lg w-6! h-6!;
 }
 
 .maplibregl-popup-close-button:hover {

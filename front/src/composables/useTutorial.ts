@@ -214,8 +214,9 @@ export function useTutorial() {
 
   const getLayerSwitcherSteps = (options?: { skipOpenDrawer?: boolean }): DriveStep[] => {
     const steps: DriveStep[] = []
+    const isMobile = appStore.isMobileOrTablet
 
-    if (appStore.isMobileOrTablet && !options?.skipOpenDrawer) {
+    if (isMobile && !options?.skipOpenDrawer) {
       steps.push({
         element: TutorialSelector.DRAWER_TOGGLE,
         popover: {
@@ -228,27 +229,31 @@ export function useTutorial() {
       })
     }
 
-    steps.push(
-      {
-        element: TutorialSelector.LAYER_SWITCHER,
-        popover: {
-          title: "Changement de calque",
-          description:
-            "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: setupOverlayClickAdvance
+    steps.push({
+      element: TutorialSelector.LAYER_SWITCHER,
+      popover: {
+        title: "Changement de calque",
+        description:
+          "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
+        showButtons: NAV_BUTTONS
       },
-      {
-        element: TutorialSelector.MAP_BG_SWITCHER,
-        popover: {
-          title: "Fond de carte",
-          description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.).",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: setupOverlayClickAdvance
-      }
-    )
+      onHighlighted: setupOverlayClickAdvance
+    })
+
+    // Use different background selector based on device type
+    const bgSelector = isMobile
+      ? TutorialSelector.MAP_BG_SWITCHER
+      : TutorialSelector.MAP_BACKGROUND_SELECTOR
+
+    steps.push({
+      element: bgSelector,
+      popover: {
+        title: "Fond de carte",
+        description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.).",
+        showButtons: NAV_BUTTONS
+      },
+      onHighlighted: setupOverlayClickAdvance
+    })
 
     return steps
   }
