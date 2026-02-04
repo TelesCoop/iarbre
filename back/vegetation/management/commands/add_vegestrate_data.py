@@ -1,6 +1,8 @@
 import geopandas
+from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
+from django.db.models import Sum
 from tqdm import tqdm
 
 from iarbre_data.utils.database import log_progress
@@ -8,9 +10,18 @@ from iarbre_data.models import Vegestrate, City
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
 from iarbre_data.utils.data_processing import make_valid
 
+STRATE_TREES = 3
+STRATE_BUSHES = 2
+STRATE_GRASS = 1
+
+STRATE_MAPPING = {
+    STRATE_TREES: "arborescent",
+    STRATE_BUSHES: "arbustif",
+    STRATE_GRASS: "herbacee",
+}
+
 PATHS = [
-    "file_data/vegestrate/vegestrate.shp",
-    "file_data/vegestrate/kpi_vegestrate.shp",
+    "file_data/vegestrate/merged_fullmetropole_08.gpkg",
 ]
 
 
@@ -35,18 +46,18 @@ def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
     return gdf
 
 
-def process_vegestrate_data_in_chunks(shp_path: str, chunk_size: int = 50000) -> None:
+def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -> None:
     """Process and save large shapefile in chunks.
 
     Args:
-        shp_path (str): Path to the shapefile to load.
+        gpkg_path (str): Path to the geopackage to load.
         chunk_size (int): Number of rows to process at a time.
 
     Returns:
         None
     """
 
-    gdf_full = geopandas.read_file(shp_path)
+    gdf_full = geopandas.read_file(gpkg_path)
     total_features = len(gdf_full)
     log_progress(f"Total features to process: {total_features}")
 
@@ -74,59 +85,59 @@ def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
         end = start + batch_size
         batch = vegestrate_datas.loc[start:end]
 
-        ipave_objects = []
+        veget_objects = []
         for _, data in batch.iterrows():
+            strate = STRATE_MAPPING.get(data["strate"])
+            if strate is None:
+                continue
+
             geom = GEOSGeometry(data["geometry"].wkt)
             map_geom = GEOSGeometry(data["map_geometry"].wkt)
-            # If multiPolygon persists only take the first one
             if geom.geom_type == "MultiPolygon":
                 geom = geom[0]
             if map_geom.geom_type == "MultiPolygon":
                 map_geom = map_geom[0]
 
-            ipave_objects.append(
+            veget_objects.append(
                 Vegestrate(
                     geometry=geom,
                     map_geometry=map_geom,
-                    strate=data["strate"],
-                    surface=round(data["surface_m2"], 4),
+                    strate=strate,
+                    surface=round(geom.area, 4),
                 )
             )
 
-        Vegestrate.objects.bulk_create(ipave_objects)
+        Vegestrate.objects.bulk_create(veget_objects)
 
 
-def save_to_cities(kpi_datas: geopandas.GeoDataFrame) -> None:
-    """Save KPIs data to the database.
+def compute_city_vegetation_surfaces():
+    log_progress("Computing vegetation surfaces for cities")
+    for city in tqdm(City.objects.all(), desc="Computing city vegetation surfaces"):
+        vegestrate_qs = Vegestrate.objects.filter(geometry__intersects=city.geometry)
 
-    Args:
-        kpi_datas (GeoDataFrame): GeoDataFrame to save to the database.
+        def get_surface_for_strate(strate_value: str) -> float:
+            result = (
+                vegestrate_qs.filter(strate=strate_value)
+                .annotate(clipped_area=Area(Intersection("geometry", city.geometry)))
+                .aggregate(total=Sum("clipped_area"))["total"]
+            )
+            return result.sq_m if result else 0.0
 
-    Returns:
-        None
-    """
-    cities_to_update = []
-    for _, data in tqdm(kpi_datas.iterrows()):
-        try:
-            city = City.objects.get(code=data["insee"])
-            city.vegetation_voirie_haute = data["v_veg_h_ha"]
-            city.vegetation_voirie_moyenne = data["v_veg_m_ha"]
-            city.vegetation_voirie_basse = data["v_veg_b_ha"]
-            city.vegetation_voirie_total = data["v_veg_t_ha"]
-            cities_to_update.append(city)
-        except City.DoesNotExist:
-            print(f"City {data['nom']} does not exist in the DB.")
-            continue
+        trees = get_surface_for_strate(STRATE_MAPPING[STRATE_TREES])
+        bushes = get_surface_for_strate(STRATE_MAPPING[STRATE_BUSHES])
+        grass = get_surface_for_strate(STRATE_MAPPING[STRATE_GRASS])
 
-    if cities_to_update:
-        City.objects.bulk_update(
-            cities_to_update,
-            [
-                "vegetation_voirie_haute",
-                "vegetation_voirie_moyenne",
-                "vegetation_voirie_basse",
-                "vegetation_voirie_total",
-            ],
+        city.trees_surface = trees
+        city.bushes_surface = bushes
+        city.grass_surface = grass
+        city.total_vegetation_surface = trees + bushes + grass
+        city.save(
+            update_fields=[
+                "trees_surface",
+                "bushes_surface",
+                "grass_surface",
+                "total_vegetation_surface",
+            ]
         )
 
 
@@ -135,13 +146,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Load Vegestrate data, and stats for cities and save them all in the DB."""
-        log_progress("Load KPIs data and add them to City")
-        gdf_kpis = geopandas.read_file(PATHS[1])
-        kpi_datas = simplify_geom(gdf_kpis)
-        save_to_cities(kpi_datas)
-        log_progress("KPIs added to City model")
-        del gdf_kpis, kpi_datas
         log_progress("Cleaning Vegestrate model")
         print(Vegestrate.objects.all().delete())
         log_progress("Process and save large Vegestrate data in chunks")
         process_vegestrate_data_in_chunks(PATHS[0], chunk_size=5000)
+        compute_city_vegetation_surfaces()

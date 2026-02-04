@@ -66,10 +66,10 @@ class City(TileAggregateBase, PlantabilityCount):
     tiles_generated = models.BooleanField(default=False)
     tiles_computed = models.BooleanField(default=False)
 
-    vegetation_voirie_haute = models.FloatField(null=True, blank=True)
-    vegetation_voirie_moyenne = models.FloatField(null=True, blank=True)
-    vegetation_voirie_basse = models.FloatField(null=True, blank=True)
-    vegetation_voirie_total = models.FloatField(null=True, blank=True)
+    trees_surface = models.FloatField(null=True, blank=True)
+    bushes_surface = models.FloatField(null=True, blank=True)
+    grass_surface = models.FloatField(null=True, blank=True)
+    total_vegetation_surface = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"CITY name: {self.name}"
