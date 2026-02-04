@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "iarbre_data",
     "api",
     "plantability",
+    "vegetation",
     "storages",
     "django_extensions",
     "telescoop_backup",

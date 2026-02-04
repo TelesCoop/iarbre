@@ -87,7 +87,8 @@ def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
 
         veget_objects = []
         for _, data in batch.iterrows():
-            strate = STRATE_MAPPING.get(data["strate"])
+            strate = STRATE_MAPPING.get(data["class"])
+
             if strate is None:
                 continue
 
