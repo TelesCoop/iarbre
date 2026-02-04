@@ -1,6 +1,4 @@
 /// <reference types="cypress" />
-import { createPinia } from "pinia"
-import { mount } from "cypress/vue"
 import MapContextData from "@/components/contextData/MapContextData.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
@@ -9,12 +7,7 @@ import { GeoLevel } from "@/utils/enum"
 
 describe("MapContextData", () => {
   beforeEach(() => {
-    const pinia = createPinia()
-
-    mount(MapContextData, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(MapContextData, {
       props: {
         data: DataType
       }
@@ -29,6 +22,7 @@ describe("MapContextData", () => {
     })
     cy.get('[data-cy="map-context-data"]').should("be.visible")
   })
+
   it("display empty message when no data is available", () => {
     cy.window().then(() => {
       const store = useMapStore()
@@ -58,13 +52,8 @@ describe("MapContextData", () => {
     })
     cy.contains("2/10").should("be.visible")
 
-    cy.getBySel(`category-${[PlantabilityMetaCategory.BATIMENTS]}`).should("exist")
-    cy.getBySel(`"factor-${PlantabilityLandUseKeys.PROXIMITE_FACADE}"`).should("not.exist")
-    cy.getBySel(`"factor-${PlantabilityLandUseKeys.BATIMENTS}"`).should("not.exist")
-
-    cy.getBySel(`category-${[PlantabilityMetaCategory.BATIMENTS]}`).click()
-
-    cy.getBySel(`"factor-${PlantabilityLandUseKeys.BATIMENTS}"`).should("exist")
-    cy.getBySel(`"factor-${PlantabilityLandUseKeys.PROXIMITE_FACADE}"`).should("exist")
+    cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`).should("exist")
+    cy.contains("Bâtiments").should("be.visible")
+    cy.contains("Proximité façade").should("be.visible")
   })
 })

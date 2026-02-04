@@ -1,6 +1,4 @@
 /// <reference types="cypress" />
-import { createPinia } from "pinia"
-import { mount } from "cypress/vue"
 import MapContextDataClimateZone from "@/components/contextData/MapContextDataClimateZone.vue"
 import { DataType, GeoLevel } from "@/utils/enum"
 import type { ClimateData } from "@/types/climate"
@@ -19,24 +17,24 @@ describe("MapContextDataClimateZone", () => {
       [ClimateDataDetailsKey.ARE]: 250.0
     }
   }
-  beforeEach(() => {
-    const pinia = createPinia()
 
-    mount(MapContextDataClimateZone, {
-      global: {
-        plugins: [pinia]
-      },
+  it("display climate zone data correctly", () => {
+    cy.mount(MapContextDataClimateZone, {
       props: {
         data: mockClimateData
       }
     })
-  })
 
-  it("display climate zone data correctly", () => {
     cy.contains("Ensemble dense de batîments hauts").should("be.visible")
   })
 
   it("display climate metrics with categories", () => {
+    cy.mount(MapContextDataClimateZone, {
+      props: {
+        data: mockClimateData
+      }
+    })
+
     const { climateCategoryKey } = useClimateZone()
     cy.contains(ClimateCategory.BUILDING).should("be.visible")
     cy.getBySel(`category-${climateCategoryKey[ClimateCategory.BUILDING]}`).click()
@@ -47,10 +45,7 @@ describe("MapContextDataClimateZone", () => {
   })
 
   it("display empty message when climate data is null", () => {
-    mount(MapContextDataClimateZone, {
-      global: {
-        plugins: [createPinia()]
-      },
+    cy.mount(MapContextDataClimateZone, {
       props: {
         data: null
       }

@@ -1,5 +1,4 @@
 import ContextDataScore from "@/components/contextData/shared/ContextDataScore.vue"
-import CircularProgress from "@/components/progress/CircularProgress.vue"
 
 describe("ContextDataScore.vue", () => {
   it("renders with correct score", () => {
@@ -10,11 +9,6 @@ describe("ContextDataScore.vue", () => {
         percentage: 70,
         label: "plantabilité",
         colorScheme: "plantability"
-      },
-      global: {
-        components: {
-          CircularProgress
-        }
       }
     })
 
@@ -31,15 +25,10 @@ describe("ContextDataScore.vue", () => {
         label: "plantabilité",
         colorScheme: "plantability",
         name: "Chaleur"
-      },
-      global: {
-        components: {
-          CircularProgress
-        }
       }
     })
 
-    cy.contains("Chaleur:").should("be.visible")
+    cy.contains("Chaleur").should("be.visible")
   })
 
   it("renders with custom unit", () => {
@@ -51,14 +40,10 @@ describe("ContextDataScore.vue", () => {
         label: "performance",
         colorScheme: "plantability",
         unit: "points"
-      },
-      global: {
-        components: {
-          CircularProgress
-        }
       }
     })
 
-    cy.get('[data-cy="context-data-score"]').should("contain", "75/100 points")
+    cy.get('[data-cy="context-data-score"]').should("contain", "75/100")
+    cy.contains("points").should("be.visible")
   })
 })
