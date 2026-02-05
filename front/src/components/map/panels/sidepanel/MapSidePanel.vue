@@ -154,7 +154,7 @@ watch(
 }
 
 .mobile-panel-handle {
-  @apply w-full flex flex-col items-center py-3 cursor-pointer;
+  @apply w-full flex flex-col items-center pt-1 pb-2 cursor-pointer;
   @apply bg-white rounded-t-2xl border-b border-gray-200;
 }
 
