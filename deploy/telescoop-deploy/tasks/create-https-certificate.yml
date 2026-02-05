@@ -4,7 +4,7 @@
 ---
 - name: Check that the ssl exists.conf exists for {{ main_hostname }}
   ansible.builtin.stat:
-    path: /etc/letsencrypt/live/{{ main_hostname }}/fullchain.pem
+    path: /etc/letsencrypt/live/{{ main_hostname | lower }}/fullchain.pem
   become: true
   register: ssl_exists
 
@@ -23,7 +23,7 @@
 - name: Create certificate
   ansible.builtin.command: "certbot -n --nginx certonly -d {{ main_hostname }}"
   args:
-    creates: "/etc/letsencrypt/live/{{ main_hostname }}"
+    creates: "/etc/letsencrypt/live/{{ main_hostname | lower }}"
   ignore_errors: false
   become: true
   tags:

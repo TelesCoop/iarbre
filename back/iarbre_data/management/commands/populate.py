@@ -101,13 +101,13 @@ class Command(BaseCommand):
         )
         self.stdout.write(self.style.SUCCESS("> Plantability Score computed"))
 
-    def _generate_mvt(self, queryset, datatype, geolevel, zoom_levels, n_threads=4):
+    def _generate_mvt(self, model, queryset, zoom_levels, nb_workers=4):
         mvt_generator = MVTGenerator(
+            mdl=model,
             queryset=queryset,
             zoom_levels=zoom_levels,
-            datatype=datatype,
-            geolevel=geolevel,
-            number_of_thread=n_threads,
+            number_of_workers=nb_workers,
+            number_of_threads_by_worker=2,
         )
         mvt_generator.generate_tiles(ignore_existing=False)
 
@@ -265,19 +265,17 @@ class Command(BaseCommand):
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
 
-        self._generate_mvt(lczs, Lcz.datatype, Lcz.geolevel, zoom_levels=zoom_levels)
+        self._generate_mvt(Lcz, lczs, zoom_levels=zoom_levels)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for LCZ computed"))
 
-    def generate_plantability_mvt_tiles(self, zoom_levels: tuple, n_threads=4):
+    def generate_plantability_mvt_tiles(self, zoom_levels: tuple):
         tiles_plantability = Tile.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
         self._generate_mvt(
+            Tile,
             tiles_plantability,
-            Tile.datatype,
-            Tile.geolevel,
             zoom_levels,
-            n_threads=n_threads,
         )
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for plantability computed"))
 
@@ -285,9 +283,7 @@ class Command(BaseCommand):
         vulnerabilities = Vulnerability.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt)
         )
-        self._generate_mvt(
-            vulnerabilities, Vulnerability.datatype, Vulnerability.geolevel, zoom_levels
-        )
+        self._generate_mvt(Vulnerability, vulnerabilities, zoom_levels)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
     def _generate_qpv_data(self):

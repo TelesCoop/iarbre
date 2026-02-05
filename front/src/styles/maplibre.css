@@ -2,6 +2,10 @@
   @apply flex! justify-center items-center;
 }
 
+.maplibregl-ctrl-3d {
+  @apply flex! justify-center items-center;
+}
+
 .maplibregl-popup {
   @apply z-50;
 }

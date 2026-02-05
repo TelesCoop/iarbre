@@ -1,4 +1,29 @@
 import { Map } from "maplibre-gl"
+import type { Ref } from "vue"
+
+export const add3DControl = (use3D: Ref<boolean>, toggle3D: () => void) => {
+  const button = document.createElement("button")
+  button.className = "maplibregl-ctrl-3d"
+  button.title = "Activer/désactiver la vue 3D"
+
+  const updateButton = () => {
+    button.innerHTML = "3D"
+    button.style.fontWeight = use3D.value ? "700" : "500"
+    button.style.opacity = use3D.value ? "1" : "0.7"
+  }
+
+  updateButton()
+
+  button.addEventListener("click", () => {
+    toggle3D()
+    updateButton()
+  })
+
+  const container = document.createElement("div")
+  container.className = "maplibregl-ctrl maplibregl-ctrl-group maplibregl-ctrl-3d-container"
+  container.appendChild(button)
+  return container
+}
 
 export const addCenterControl = (map: Map) => {
   const button = document.createElement("button")

@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "iarbre_data",
     "api",
     "plantability",
+    "vegetation",
     "storages",
     "django_extensions",
     "telescoop_backup",
@@ -200,9 +201,14 @@ if IS_LOCAL_DEV:
     STATIC_ROOT = BASE_DIR / "collected_static"
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 else:
+    STATIC_ROOT = config.getstr("staticfiles.static_root")
+    MEDIA_ROOT = config.getstr("media.media_root")
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
+            "OPTIONS": {
+                "location": MEDIA_ROOT,
+            },
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
@@ -211,8 +217,6 @@ else:
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         },
     }
-    STATIC_ROOT = config.getstr("staticfiles.static_root")
-    MEDIA_ROOT = config.getstr("mediafiles.media_root")
     AWS_S3_ACCESS_KEY_ID = config.getstr("external_file_storage.access")
     AWS_S3_SECRET_ACCESS_KEY = config.getstr("external_file_storage.secret")
     AWS_STORAGE_BUCKET_NAME = config.getstr("external_file_storage.bucket")
@@ -264,3 +268,57 @@ DECAP_CMS_AUTH = {
 if sys.platform == "darwin":
     GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
     GEOS_LIBRARY_PATH = os.environ.get("GEOS_LIBRARY_PATH")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file_all": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "logs" / "iarbre.log"),
+            "maxBytes": 10 * 1024 * 1024,  # 10MB
+            "backupCount": 3,
+            "formatter": "verbose",
+        },
+        "file_errors": {
+            "level": "WARNING",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "logs" / "iarbre_errors.log"),
+            "maxBytes": 5 * 1024 * 1024,  # 5MB
+            "backupCount": 2,
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "api": {
+            "handlers": ["file_all", "file_errors", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django": {
+            "handlers": ["file_all", "file_errors"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+    "root": {
+        "handlers": ["console", "file_errors"],
+        "level": "WARNING",
+    },
+}

@@ -1,4 +1,5 @@
-logs/
+logs/*
+!logs/.gitkeep
 tmp/
 Dockerfiles/python/.env
 ! Dockerfiles/python/.env.example
@@ -17,3 +18,4 @@ site/*
 compress.dump.*
 
 front/.nyc_output/
+components.d.ts
