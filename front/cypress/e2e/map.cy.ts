@@ -60,10 +60,10 @@ describe("Map - Desktop", () => {
   it("switches data layer via sidebar", () => {
     // Desktop uses sidebar layer switcher (filter visible to exclude mobile hidden elements)
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
   })
 
   it("shows plantability context data", () => {
@@ -76,14 +76,14 @@ describe("Map - Desktop", () => {
   it("shows vulnerability context data", () => {
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
     cy.getBySel("map-context-data").should("contain", "Cliquez sur une zone")
   })
 
   it("shows climate zone context data", () => {
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
     cy.getBySel("map-context-data").should("exist")
     cy.getBySel("map-context-data").should("contain", "Cliquez sur un carreau")
   })
@@ -102,15 +102,15 @@ describe("Map - Desktop", () => {
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.CLIMATE_ZONE]).click()
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
     cy.mapCheckQPVLayer(true)
   })
 
@@ -157,7 +157,7 @@ describe.skip("Map - Mobile", () => {
 
     // Mobile uses drawer layer switcher
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
     // Close drawer by clicking outside or toggle
     cy.getBySel("drawer-toggle").click()
@@ -181,7 +181,7 @@ describe.skip("Map - Mobile", () => {
 
     // Use map switcher in drawer
     cy.getBySel("map-switcher").should("be.visible").click()
-    cy.get(".p-select-option-label").contains("Images satellite").click()
+    cy.get(".select-option-label").contains("Images satellite").click()
 
     cy.get("@consoleInfo").should(
       "have.been.calledWith",

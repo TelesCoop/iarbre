@@ -34,7 +34,7 @@ const mapStore = useMapStore()
   @apply flex flex-col justify-center items-center;
   @apply gap-1 py-1.5 px-2;
   @apply bg-white border border-gray-200 rounded-lg;
-  @apply text-xs text-gray-700;
+  @apply text-xs text-gray-700 font-sans;
 }
 
 @media (min-width: 1024px) {

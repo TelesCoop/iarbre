@@ -90,13 +90,13 @@ button.maplibregl-ctrl-3d svg {
 }
 
 .maplibregl-ctrl-geocoder--input {
-  @apply w-full h-full bg-white! border-0 text-xs rounded-lg shadow-none! h-auto!;
-  @apply pr-8! pl-2! font-sans text-gray-500!;
+  @apply w-full h-full bg-white! border-0 text-xs! rounded-lg shadow-none! h-auto!;
+  @apply pr-8! pl-2! font-sans font-medium text-gray-500 uppercase!;
 }
 
 @media (min-width: 1024px) {
   .maplibregl-ctrl-geocoder--input {
-    @apply text-sm pr-10! pl-3!;
+    @apply text-sm! pr-10! pl-3!;
   }
 }
 

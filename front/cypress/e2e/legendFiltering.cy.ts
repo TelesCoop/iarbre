@@ -57,11 +57,11 @@ describe("Legend Filtering - Desktop", () => {
 
       // Switch to vulnerability via desktop sidebar
       cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-      cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+      cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
       // Switch back to plantability
       cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-      cy.get(".p-select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+      cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
 
       // Verify the filter has been cleared
       cy.getBySel("plantability-legend")

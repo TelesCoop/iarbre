@@ -72,7 +72,7 @@ const handleCopyCoordinates = async () => {
   @apply flex items-center justify-between w-full;
   @apply gap-1 py-1.5 px-2;
   @apply bg-white border border-gray-200 rounded-lg;
-  @apply font-sans text-xs font-medium text-gray-500;
+  @apply font-sans text-xs font-medium text-gray-500 uppercase;
   @apply cursor-pointer transition-all;
 }
 
