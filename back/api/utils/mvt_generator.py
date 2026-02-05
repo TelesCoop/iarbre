@@ -679,3 +679,28 @@ class MVTGenerator:
             "east": bbox_polygon.extent[2],
             "north": bbox_polygon.extent[3],
         }
+        
+    @staticmethod
+    def compute_mixed_indice(
+        plantability_indice: float, vulnerability_indice_day: float
+    ) -> int:
+        """
+        Compute mixed bivariate index from plantability and vulnerability indices.
+
+        It combines plantability (0-10) and vulnerability (1-9) into a single index
+        that maps to a 5x5 bivariate color grid: plantability_coord * 10 + vulnerability_coord.
+
+        Args:
+            plantability_indice: Plantability normalized index (0-10 scale)
+            vulnerability_indice_day: Vulnerability day index (1-9 scale)
+
+        Returns:
+            int: Combined index (values in {1-5, 11-15, 21-25, 31-35, 41-45})
+        """
+        if plantability_indice is None or vulnerability_indice_day is None:
+            return None
+
+        plantability_coord = min(4, max(0, int(plantability_indice / 2.5)))
+        vulnerability_coord = min(5, max(1, 1 + int((vulnerability_indice_day - 1) / 2)))
+
+        return plantability_coord * 10 + vulnerability_coord
