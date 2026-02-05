@@ -679,7 +679,7 @@ class MVTGenerator:
             "east": bbox_polygon.extent[2],
             "north": bbox_polygon.extent[3],
         }
-        
+
     @staticmethod
     def compute_mixed_indice(
         plantability_indice: float, vulnerability_indice_day: float
@@ -701,6 +701,8 @@ class MVTGenerator:
             return None
 
         plantability_coord = min(4, max(0, int(plantability_indice / 2.5)))
-        vulnerability_coord = min(5, max(1, 1 + int((vulnerability_indice_day - 1) / 2)))
+        vulnerability_coord = min(
+            5, max(1, 1 + int((vulnerability_indice_day - 1) / 2))
+        )
 
         return plantability_coord * 10 + vulnerability_coord
