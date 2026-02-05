@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import generics, status
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -7,6 +9,8 @@ from api.models import Feedback
 from api.serializers import FeedbackSerializer
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class FeedbackView(generics.CreateAPIView):
@@ -23,8 +27,6 @@ class FeedbackView(generics.CreateAPIView):
         return response
 
     def send_feedback_email(self, feedback_data):
-        """Send feedback data via email."""
-
         email = feedback_data.get("email", "Anonyme")
         subject = f"Retour utilisateur IA.rbre de {email}"
         created_date = feedback_data["created"]
@@ -38,7 +40,6 @@ class FeedbackView(generics.CreateAPIView):
         ## Commentaire :
         {feedback_data['feedback']}
         """
-
         send_mail(
             subject,
             email_body,

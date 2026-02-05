@@ -1,17 +1,21 @@
-import os
 import io
+import logging
+import os
+
+import mercantile
 import numpy as np
-from django.http import HttpResponse, Http404
-from django.conf import settings
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
-from rest_framework.views import APIView
 import rasterio
+from django.conf import settings
+from django.http import HttpResponse, Http404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from PIL import Image
+from pyproj import Transformer
 from rasterio.warp import Resampling
 from rasterio.windows import from_bounds
-from pyproj import Transformer
-import mercantile
-from PIL import Image
+from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class VegetationTileView(APIView):
@@ -92,15 +96,12 @@ class VegetationTileView(APIView):
 
                     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
-                except Exception as window_error:
-                    print(f"Window error for tile {z}/{x}/{y}: {window_error}")
+                except Exception:
+                    logger.exception("Window error for tile %s/%s/%s", z, x, y)
                     return self._empty_tile()
 
-        except Exception as e:
-            print(f"Error generating vegetation tile {z}/{x}/{y}: {e}")
-            import traceback
-
-            traceback.print_exc()
+        except Exception:
+            logger.exception("Error generating vegetation tile %s/%s/%s", z, x, y)
             return self._empty_tile()
 
     def _empty_tile(self):
