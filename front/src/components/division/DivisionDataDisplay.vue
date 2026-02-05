@@ -43,11 +43,11 @@ const codeLabel = computed(() => "Code INSEE")
     <div class="mb-6">
       <CircularScore
         v-if="hasScore"
-        :score="score"
         :max-score="10"
         :percentage="percentage"
-        label="plantabilité"
+        :score="score"
         color-scheme="plantability"
+        label="plantabilité"
         size="small"
       />
       <div v-else class="text-center text-gray-500 py-8">
@@ -60,7 +60,6 @@ const codeLabel = computed(() => "Code INSEE")
       v-if="plantabilityEntries.length > 0"
       :entries="plantabilityEntries"
       :show-legend="true"
-      :show-details="false"
     />
   </div>
 </template>

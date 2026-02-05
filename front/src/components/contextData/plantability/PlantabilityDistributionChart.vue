@@ -11,13 +11,11 @@ interface PlantabilityDistributionChartProps {
   entries: DistributionEntry[]
   title?: string
   showLegend?: boolean
-  showDetails?: boolean
 }
 
 const props = withDefaults(defineProps<PlantabilityDistributionChartProps>(), {
   title: "Distribution des scores de plantabilité sur la zone.",
-  showLegend: true,
-  showDetails: true
+  showLegend: true
 })
 
 const chartData = computed(() => {
@@ -71,9 +69,6 @@ const chartOptions = computed(() => ({
 
 <template>
   <div v-if="chartData" class="p-4">
-    <Chart type="pie" :data="chartData" :options="chartOptions" class="w-full h-64" />
-    <p v-if="showDetails" class="text-sm font-sans text-center m-2">
-      0/10 signifie non plantable et 10/10 plantable
-    </p>
+    <Chart :data="chartData" :options="chartOptions" class="w-full h-64" type="pie" />
   </div>
 </template>
