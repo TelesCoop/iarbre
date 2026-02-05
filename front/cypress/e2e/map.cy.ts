@@ -10,6 +10,7 @@ describe("Map - Desktop", () => {
   beforeEach(() => {
     cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
