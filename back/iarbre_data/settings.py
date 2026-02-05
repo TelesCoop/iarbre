@@ -311,11 +311,6 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "iarbre_data": {
-            "handlers": ["file_all", "file_errors", "console"],
-            "level": "INFO",
-            "propagate": False,
-        },
         "django": {
             "handlers": ["file_all", "file_errors"],
             "level": "WARNING",
