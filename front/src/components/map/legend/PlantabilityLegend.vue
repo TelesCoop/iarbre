@@ -63,7 +63,13 @@ const SCORE_BG_CLASSES: Record<number, string> = {
 @reference "@/styles/main.css";
 
 .plantability-legend {
-  @apply flex flex-col gap-2 font-sans;
+  @apply flex flex-row items-center gap-2 font-sans;
+}
+
+@media (min-width: 1024px) {
+  .plantability-legend {
+    @apply flex-col gap-2;
+  }
 }
 
 .legend-header {
@@ -74,8 +80,20 @@ const SCORE_BG_CLASSES: Record<number, string> = {
   @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
 }
 
+@media (min-width: 1024px) {
+  .legend-title {
+    @apply text-sm;
+  }
+}
+
 .legend-content {
-  @apply flex items-center justify-center gap-3;
+  @apply flex items-center justify-center gap-1;
+}
+
+@media (min-width: 1024px) {
+  .legend-content {
+    @apply gap-3;
+  }
 }
 
 .legend-label {
@@ -87,7 +105,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
 }
 
 .label-text {
-  @apply font-serif text-sm leading-tight;
+  @apply font-sans text-sm leading-tight;
 }
 
 .legend-label-left .label-text {

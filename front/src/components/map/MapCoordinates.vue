@@ -31,21 +31,19 @@ const handleCopyCoordinates = async () => {
 
 <template>
   <button
+    :class="{ copied: isCopied }"
     aria-label="Copier les coordonnées"
     class="coordinates-button"
-    :class="{ copied: isCopied }"
     data-cy="copy-coords-button"
     type="button"
     @click="handleCopyCoordinates"
   >
     <svg
       class="coordinates-icon"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       stroke-width="2"
+      viewBox="0 0 24 24"
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
@@ -55,89 +53,100 @@ const handleCopyCoordinates = async () => {
       <svg
         v-if="isCopied"
         class="check-icon"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
         stroke-width="2.5"
+        viewBox="0 0 24 24"
       >
         <path d="M20 6L9 17l-5-5" />
       </svg>
-      <IconCopy v-else :size="14" class="copy-icon" />
+      <IconCopy v-else class="copy-icon" />
     </span>
   </button>
 </template>
 
 <style scoped>
+@reference "@/styles/main.css";
+
 .coordinates-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  @apply flex items-center justify-between w-full;
+  @apply gap-1 py-1.5 px-2;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply font-sans text-xs font-medium text-gray-500;
+  @apply cursor-pointer transition-all;
+}
+
+@media (min-width: 1024px) {
+  .coordinates-button {
+    @apply w-auto gap-2 py-2 px-3 text-sm justify-start;
+  }
 }
 
 .coordinates-button:hover {
-  border-color: #426a45;
-  background: #f9fafb;
+  @apply border-primary-500 bg-gray-50;
 }
 
 .coordinates-button:active {
-  transform: scale(0.98);
+  @apply scale-[0.98];
 }
 
 .coordinates-button.copied {
-  border-color: #22c55e;
-  background: #f0fdf4;
+  @apply border-green-500 bg-green-50;
 }
 
 .coordinates-icon {
-  color: #426a45;
-  flex-shrink: 0;
+  @apply text-primary-500 shrink-0 w-2.5 h-2.5;
+}
+
+@media (min-width: 1024px) {
+  .coordinates-icon {
+    @apply w-3.5 h-3.5;
+  }
 }
 
 .coordinates-text {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  @apply tabular-nums tracking-tight;
 }
 
 .copy-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  margin-left: 0.25rem;
-  border-radius: 0.25rem;
-  transition: all 0.15s ease;
+  @apply flex items-center justify-center shrink-0;
+  @apply w-5 h-5 ml-0.5 rounded;
+  @apply transition-all;
+}
+
+@media (min-width: 1024px) {
+  .copy-indicator {
+    @apply w-8 h-8 ml-1;
+  }
 }
 
 .coordinates-button:hover .copy-indicator {
-  background: #edf5e9;
+  @apply bg-primary-100;
 }
 
 .copy-icon {
-  color: #9ca3af;
-  transition: color 0.15s ease;
+  @apply text-gray-400 transition-colors w-4 h-4;
+}
+
+@media (min-width: 1024px) {
+  .copy-icon {
+    @apply w-8 h-8;
+  }
 }
 
 .coordinates-button:hover .copy-icon {
-  color: #426a45;
+  @apply text-primary-500;
 }
 
 .check-icon {
-  color: #22c55e;
+  @apply text-green-500 w-4 h-4;
   animation: checkPop 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+  .check-icon {
+    @apply w-7 h-7;
+  }
 }
 
 @keyframes checkPop {

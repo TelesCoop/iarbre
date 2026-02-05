@@ -75,8 +75,8 @@ const handleKeydown = (event: KeyboardEvent) => {
       <div
         id="bg-selector-options"
         :class="['bg-selector-options', { 'is-expanded': isExpanded }]"
-        role="listbox"
         aria-label="Options de fond de carte"
+        role="listbox"
       >
         <MapStyleOption
           v-for="option in options"
@@ -102,7 +102,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 .bg-selector-container {
   @apply flex items-center gap-2;
-  @apply bg-white rounded-lg shadow-sm;
+  @apply bg-white rounded-lg;
   @apply border border-gray-200;
   padding: 10px;
   height: 90px;
@@ -132,7 +132,13 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 .bg-selector-toggle-label {
-  @apply text-sm font-sans text-gray-700 font-medium;
+  @apply text-xs font-sans text-gray-700 font-medium;
+}
+
+@media (min-width: 1024px) {
+  .bg-selector-toggle-label {
+    @apply text-sm;
+  }
 }
 
 .bg-selector-options {

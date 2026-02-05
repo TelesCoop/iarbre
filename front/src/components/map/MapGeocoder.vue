@@ -63,5 +63,17 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="geocoderContainer" style="width: 240px"></div>
+  <div ref="geocoderContainer" class="geocoder-wrapper"></div>
 </template>
+
+<style scoped>
+.geocoder-wrapper {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .geocoder-wrapper {
+    width: 240px;
+  }
+}
+</style>

@@ -77,7 +77,7 @@ const handleToggle = () => {
 
 .toggle-switch-thumb {
   @apply absolute w-4 h-4 rounded-full;
-  @apply bg-white shadow-sm;
+  @apply bg-white;
   @apply transition-transform duration-200;
   left: 3px;
 }

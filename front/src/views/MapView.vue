@@ -75,7 +75,13 @@ const handleMapUpdate = (params: MapParams) => {
   @apply flex;
   height: 100vh;
   height: 100dvh;
-  margin-left: 64px;
+  margin-left: 0;
+}
+
+@media (min-width: 1024px) {
+  .map-view-wrapper {
+    margin-left: 64px;
+  }
 }
 
 .map-container {

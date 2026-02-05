@@ -4,6 +4,7 @@ import { useAppStore } from "@/stores/app"
 import { onMounted, type PropType, computed } from "vue"
 import { type MapParams } from "@/types/map"
 import { ZoomToGridSize } from "@/utils/plantability"
+import LayerSwitcher from "@/components/layerSwitcher/LayerSwitcher.vue"
 
 const props = defineProps({
   mapId: {
@@ -51,18 +52,17 @@ const gridSize = computed(() => {
   const zoom = Math.floor(mapStore.currentZoom)
   return ZoomToGridSize[zoom] ?? null
 })
+
+const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 </script>
 
 <template>
   <div class="block w-full h-full">
     <div :id="mapId" class="relative w-full h-full" data-cy="map-component"></div>
   </div>
-  <div v-if="appStore.isMobileOrTablet" class="absolute left-0 top-0 mt-2 ml-2">
-    <MapConfigDrawerToggle />
-  </div>
 
   <!-- Top-right controls stack -->
-  <div class="absolute right-2 top-2 flex flex-col gap-2 z-50">
+  <div class="top-right-controls">
     <MapCoordinates />
     <MapGeocoder />
   </div>
@@ -79,13 +79,18 @@ const gridSize = computed(() => {
   <DrawingControls />
 
   <!-- Background selector in bottom-left corner -->
-  <div class="absolute bottom-16 lg:bottom-2 left-2 z-40 hidden lg:block">
+  <div :class="['bg-selector-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapBackgroundSelector />
   </div>
 
-  <div v-if="appStore.isDesktop" class="legend-container">
+  <!-- Legend and controls - top left -->
+  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
+    <LayerSwitcher v-if="appStore.isMobileOrTablet" />
     <MapLegend />
-    <div v-if="mapStore.selectedDataType === 'plantability' && gridSize" class="grid-size-info">
+    <div
+      v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"
+      class="grid-size-info"
+    >
       <div class="grid-size-label">Résolution</div>
       <div class="grid-size-value">
         <div class="tile-pixel"></div>
@@ -93,7 +98,7 @@ const gridSize = computed(() => {
         <span class="grid-size-unit">m</span>
       </div>
     </div>
-    <MapFiltersStatus />
+    <MapFiltersStatus v-if="appStore.isDesktop" />
   </div>
   <WelcomeMessage />
 </template>
@@ -101,12 +106,65 @@ const gridSize = computed(() => {
 <style>
 @reference "@/styles/main.css";
 
+.top-right-controls {
+  @apply absolute right-2 top-2 flex flex-col gap-2 z-50;
+  width: calc(50% - 1rem);
+}
+
+.top-right-controls > * {
+  @apply w-full;
+}
+
+@media (min-width: 1024px) {
+  .top-right-controls {
+    width: auto;
+  }
+
+  .top-right-controls > * {
+    @apply w-auto;
+  }
+}
+
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-2 top-0 mx-1 mt-2 lg:mr-8;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 top-0 mt-2;
+  @apply transition-all duration-300 ease-out;
+  left: 0.5rem;
+  width: calc(50% - 1rem);
 }
 
 .legend-container > * {
-  @apply pointer-events-auto flex-1;
+  @apply pointer-events-auto w-full;
+}
+
+@media (min-width: 1024px) {
+  .legend-container {
+    width: auto;
+  }
+
+  .legend-container > * {
+    @apply w-auto;
+  }
+
+  .legend-container.sidepanel-visible {
+    left: calc(var(--width-sidepanel) + 0.5rem);
+  }
+}
+
+.bg-selector-container {
+  @apply absolute z-30;
+  @apply transition-all duration-300 ease-out;
+  left: 0.5rem;
+  bottom: 64px;
+}
+
+@media (min-width: 1024px) {
+  .bg-selector-container {
+    bottom: 0.5rem;
+  }
+
+  .bg-selector-container.sidepanel-visible {
+    left: calc(var(--width-sidepanel) + 0.5rem);
+  }
 }
 
 .grid-size-info {
@@ -135,15 +193,15 @@ const gridSize = computed(() => {
 
 /* Drawing controls - aligned with maplibre 3D button */
 .drawing-controls-container {
-  @apply absolute z-40;
-  bottom: 78px;
+  @apply absolute z-30;
+  bottom: 130px;
   right: 68px;
 }
 
 .selection-toolbar-container {
-  @apply absolute z-40;
-  bottom: 116px;
-  right: 8px;
+  @apply absolute z-30;
+  bottom: 180px;
+  right: 68px;
 }
 
 @media (min-width: 1024px) {

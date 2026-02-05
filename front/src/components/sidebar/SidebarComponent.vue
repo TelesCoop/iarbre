@@ -1,11 +1,14 @@
 <script lang="ts" setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
+import IconChevron from "@/components/icons/IconChevron.vue"
 import type { Feedback } from "@/types/map"
 import { useToast } from "@/composables/useToast"
+import { useAppStore } from "@/stores/app"
 
+const appStore = useAppStore()
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
 const toast = useToast()
@@ -20,6 +23,12 @@ const handleFeaturesClick = () => {
 
 const handleGithubClick = () => {
   window.open("https://github.com/TelesCoop/iarbre", "_blank")
+}
+
+const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
+
+const handleToggleSidePanel = () => {
+  appStore.toggleSidePanel()
 }
 
 const sendFeedbackToAPI = async (data: Feedback) => {
@@ -45,7 +54,8 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <!-- Desktop sidebar -->
+  <aside class="sidebar hidden lg:flex">
     <div class="sidebar-logo h-28">
       <svg
         fill="none"
@@ -173,6 +183,19 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       </svg>
     </div>
 
+    <button
+      :aria-expanded="isSidePanelVisible"
+      :aria-label="isSidePanelVisible ? 'Masquer le panneau' : 'Afficher le panneau'"
+      class="sidebar-toggle-panel"
+      @click="handleToggleSidePanel"
+    >
+      <IconChevron
+        :direction="isSidePanelVisible ? 'left' : 'right'"
+        :size="20"
+        class="toggle-chevron"
+      />
+    </button>
+
     <div class="sidebar-icons">
       <button aria-label="Contact" class="sidebar-icon-button" @click="handleContactClick">
         <svg
@@ -274,6 +297,107 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
   </aside>
 
+  <!-- Mobile bottom bar -->
+  <div class="mobile-bottom-bar lg:hidden!">
+    <button aria-label="Contact" class="mobile-bar-button" @click="handleContactClick">
+      <svg
+        fill="none"
+        height="20"
+        viewBox="0 0 24 24"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          clip-rule="evenodd"
+          d="M8.61097 18.5931L4.8 21L5.46774 16.7827C3.88371 15.3227 3 13.2947 3 11.0526C3 6.60529 6.47715 3 12 3C17.5228 3 21 6.60529 21 11.0526C21 15.5 17.5228 19.1053 12 19.1053C10.7622 19.1053 9.62714 18.9242 8.61097 18.5931Z"
+          fill-rule="evenodd"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+        <path
+          d="M9 9H15"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+        <path
+          d="M9 13H12"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+      </svg>
+    </button>
+
+    <button aria-label="Features" class="mobile-bar-button" @click="handleFeaturesClick">
+      <svg
+        fill="none"
+        height="20"
+        viewBox="0 0 24 24"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          clip-rule="evenodd"
+          d="M12 3L20 6.6V17.4L12 21L4 17.4V6.6L12 3Z"
+          fill-rule="evenodd"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+        <path
+          d="M12.01 16.5H12"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+        <path
+          d="M12 13.75V12.8929C13.5188 12.8929 14.75 11.7416 14.75 10.3214C14.75 8.90127 13.5188 7.75 12 7.75C10.4812 7.75 9.25 8.90127 9.25 10.3214"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+      </svg>
+    </button>
+
+    <button aria-label="GitHub" class="mobile-bar-button" @click="handleGithubClick">
+      <svg
+        fill="none"
+        height="20"
+        viewBox="0 0 24 24"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <mask
+          id="mask_mobile"
+          height="21"
+          maskUnits="userSpaceOnUse"
+          style="mask-type: luminance"
+          width="20"
+          x="3"
+          y="1"
+        >
+          <path d="M23 1.40381H3V21.5638H23V1.40381Z" fill="white" />
+        </mask>
+        <g mask="url(#mask_mobile)">
+          <path
+            clip-rule="evenodd"
+            d="M13 1.40381C7.475 1.40381 3 5.91461 3 11.4838C3 15.9442 5.8625 19.7116 9.8375 21.0472C10.3375 21.1354 10.525 20.833 10.525 20.5684C10.525 20.329 10.5125 19.5352 10.5125 18.691C8 19.1572 7.35 18.0736 7.15 17.5066C7.0375 17.2168 6.55 16.3222 6.125 16.0828C5.775 15.8938 5.275 15.4276 6.1125 15.415C6.9 15.4024 7.4625 16.1458 7.65 16.4482C8.55 17.9728 9.9875 17.5444 10.5625 17.2798C10.65 16.6246 10.9125 16.1836 11.2 15.9316C8.975 15.6796 6.65 14.8102 6.65 10.9546C6.65 9.85844 7.0375 8.95121 7.675 8.24561C7.575 7.99361 7.225 6.96041 7.775 5.57441C7.775 5.57441 8.6125 5.30981 10.525 6.60761C11.325 6.38081 12.175 6.26741 13.025 6.26741C13.875 6.26741 14.725 6.38081 15.525 6.60761C17.4375 5.29721 18.275 5.57441 18.275 5.57441C18.825 6.96041 18.475 7.99361 18.375 8.24561C19.0125 8.95121 19.4 9.84584 19.4 10.9546C19.4 14.8228 17.0625 15.6796 14.8375 15.9316C15.2 16.2466 15.5125 16.8514 15.5125 17.7964C15.5125 19.1446 15.5 20.2282 15.5 20.5684C15.5 20.833 15.6875 21.148 16.1875 21.0472C20.1375 19.7116 23 15.9316 23 11.4838C23 5.91461 18.525 1.40381 13 1.40381Z"
+            fill="currentColor"
+            fill-rule="evenodd"
+          />
+        </g>
+      </svg>
+    </button>
+  </div>
+
   <WelcomeMessage v-model="welcomeIsVisible" />
 
   <FeedbackPopin
@@ -287,7 +411,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 @reference "@/styles/main.css";
 
 .sidebar {
-  @apply fixed top-0 h-screen flex flex-col;
+  @apply fixed top-0 h-screen flex-col;
   @apply border-r-primary-300 border-r-1;
   @apply bg-white z-50;
   left: 0;
@@ -315,5 +439,34 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply transition-opacity hover:opacity-80;
   width: 24px;
   height: 24px;
+}
+
+.sidebar-toggle-panel {
+  @apply hidden lg:flex items-center justify-center cursor-pointer;
+  @apply bg-gray-100 border-none;
+  @apply transition-all duration-200;
+  @apply hover:bg-gray-200;
+  width: 100%;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.toggle-chevron {
+  @apply text-gray-600;
+  transition: transform 0.3s ease-out;
+}
+
+.mobile-bottom-bar {
+  @apply fixed bottom-0 left-0 right-0 z-50;
+  @apply flex items-center justify-center gap-6;
+  @apply bg-[#426A45];
+  height: 56px;
+}
+
+.mobile-bar-button {
+  @apply flex items-center justify-center cursor-pointer;
+  @apply bg-transparent border-none p-2;
+  @apply text-white;
+  @apply transition-opacity hover:opacity-80;
 }
 </style>

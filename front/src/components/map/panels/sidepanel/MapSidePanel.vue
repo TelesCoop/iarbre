@@ -1,6 +1,6 @@
 <template>
   <!-- Desktop sidepanel -->
-  <div class="map-sidepanel" data-cy="map-side-panel">
+  <div :class="['map-sidepanel', { 'is-hidden': !isSidePanelVisible }]" data-cy="map-side-panel">
     <MapSidePanelHeader class="flex-shrink-0" data-cy="map-side-panel-header" />
     <div class="px-4 w-full overflow-y-auto flex-1 min-h-0" data-cy="map-side-panel-content">
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
@@ -62,7 +62,6 @@
     <!-- Panel content -->
     <div class="mobile-panel-content">
       <div class="px-4 w-full overflow-y-auto flex-1">
-        <MapLayerSwitcher class="w-full mb-4" />
         <MapContextData class="w-full" />
       </div>
       <div class="sidebar-footer-mobile">
@@ -78,10 +77,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue"
+import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
+import { useAppStore } from "@/stores/app"
 
 const mapStore = useMapStore()
+const appStore = useAppStore()
+
+const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 const isPanelOpen = ref(false)
 
 const togglePanel = () => {
@@ -102,14 +105,21 @@ watch(
 @reference "@/styles/main.css";
 
 .map-sidepanel {
-  @apply hidden lg:flex h-full flex-col bg-white w-sidepanel;
+  @apply hidden lg:flex h-full flex-col bg-white;
   @apply border-r border-gray-200;
-  flex-shrink: 0;
+  @apply transition-transform duration-300 ease-out;
+  @apply fixed top-0 z-20;
+  left: 64px;
+  width: var(--width-sidepanel);
+}
+
+.map-sidepanel.is-hidden {
+  transform: translateX(-100%);
 }
 
 .methodology-banner {
   @apply px-4 py-3 flex items-center justify-center w-full;
-  @apply border-b border-b-gray-200;
+  @apply border-b border-b-primary-300;
   flex-shrink: 0;
 }
 
@@ -132,10 +142,10 @@ watch(
 
 /* Mobile bottom panel */
 .mobile-panel {
-  @apply lg:hidden fixed left-16 right-0 bg-white z-40;
-  @apply rounded-t-2xl shadow-lg;
+  @apply lg:hidden fixed left-0 right-0 bg-white z-40;
+  @apply rounded-t-2xl;
   @apply transition-transform duration-300 ease-out;
-  bottom: 0;
+  bottom: 56px;
   transform: translateY(calc(100% - 56px));
 }
 
@@ -162,8 +172,8 @@ watch(
 
 .mobile-panel-content {
   @apply flex flex-col;
-  height: 50vh;
-  max-height: 50vh;
+  height: 42vh;
+  max-height: 42vh;
 }
 
 .sidebar-footer-mobile {

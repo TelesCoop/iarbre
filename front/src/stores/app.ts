@@ -12,6 +12,7 @@ export const useAppStore = defineStore("app", () => {
     [Drawer.MAP_SCORES]: false,
     [Drawer.MAP_CONFIG]: false
   })
+  const sidePanelVisible = ref(true)
 
   const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
   const isMobileOrTablet = computed(() => windowWidth.value < convertRemToPx(Breakpoint.MD))
@@ -38,9 +39,14 @@ export const useAppStore = defineStore("app", () => {
     drawerVisible.value[drawer] = visible
   }
 
+  const toggleSidePanel = () => {
+    sidePanelVisible.value = !sidePanelVisible.value
+  }
+
   return {
     windowWidth,
     drawerVisible,
+    sidePanelVisible,
     isMobile,
     isMobileOrTablet,
     isDesktop,
@@ -48,6 +54,7 @@ export const useAppStore = defineStore("app", () => {
     mountDetectResize,
     unmountDetectResize,
     toggleDrawer,
-    setDrawerVisible
+    setDrawerVisible,
+    toggleSidePanel
   }
 })

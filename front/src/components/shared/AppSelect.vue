@@ -106,7 +106,7 @@ onUnmounted(() => {
           :aria-selected="option[optionValue as keyof SelectOption] === modelValue"
           @click="selectOption(option)"
         >
-          <span class="p-select-option-label">{{ option[optionLabel as keyof SelectOption] }}</span>
+          <span class="select-option-label">{{ option[optionLabel as keyof SelectOption] }}</span>
         </button>
       </div>
     </Transition>
@@ -114,6 +114,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+@reference "@/styles/main.css";
+
 .app-select {
   position: relative;
   width: 100%;
@@ -125,103 +127,80 @@ onUnmounted(() => {
 }
 
 .select-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.625rem 1rem;
-  background: white;
-  border: 1px solid #bcbcbc;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-family: inherit;
-  color: #426a45;
-  transition: all 0.2s;
+  @apply flex items-center justify-between w-full;
+  @apply py-1.5 px-3;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply cursor-pointer text-xs font-sans text-gray-700;
+  @apply transition-all;
+}
+
+@media (min-width: 1024px) {
+  .select-trigger {
+    @apply py-2 px-4 text-sm;
+  }
 }
 
 .select-trigger:hover {
-  border-color: #426a45;
+  @apply border-primary-500;
 }
 
 .select-trigger.open {
-  border-color: #426a45;
+  @apply border-primary-500;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 .select-value {
-  flex: 1;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @apply flex-1 text-left truncate;
 }
 
 .select-value.placeholder {
-  color: #9ca3af;
+  @apply text-gray-400;
 }
 
 .select-icon {
-  flex-shrink: 0;
-  color: #426a45;
-  margin-left: 0.5rem;
+  @apply shrink-0 text-primary-500 ml-2;
 }
 
 .select-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #426a45;
-  border-top: none;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 200px;
-  overflow-y: auto;
+  @apply absolute top-full left-0 right-0;
+  @apply bg-white border border-primary-500 border-t-0;
+  @apply z-[1000] max-h-80 overflow-y-auto rounded-b-lg;
 }
 
 .select-option {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 0.625rem 1rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-family: inherit;
-  color: #374151;
-  text-align: left;
-  transition: background-color 0.15s;
+  @apply flex items-center w-full;
+  @apply py-1.5 px-3;
+  @apply bg-transparent border-none cursor-pointer;
+  @apply text-xs font-sans text-gray-700 text-left;
+  @apply transition-colors;
+}
+
+@media (min-width: 1024px) {
+  .select-option {
+    @apply py-2 px-4 text-sm;
+  }
 }
 
 .select-option:hover {
-  background-color: #c7dbc0;
+  @apply bg-primary-200;
 }
 
 .select-option.selected {
-  background-color: #edf5e9;
-  color: #426a45;
-  font-weight: 500;
+  @apply bg-primary-100 text-primary-500 font-medium;
 }
 
 .select-option:last-child {
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
+  @apply rounded-b-lg;
 }
 
 .select-dropdown-enter-active,
 .select-dropdown-leave-active {
-  transition: all 0.15s ease;
+  @apply transition-all duration-150;
 }
 
 .select-dropdown-enter-from,
 .select-dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
+  @apply opacity-0 -translate-y-2;
 }
 </style>

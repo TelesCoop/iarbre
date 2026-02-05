@@ -31,6 +31,15 @@ const mapStore = useMapStore()
 @reference "@/styles/main.css";
 
 .legend-panel {
-  @apply flex flex-col justify-center items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg;
+  @apply flex flex-col justify-center items-center;
+  @apply gap-1 py-1.5 px-2;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply text-xs text-gray-700;
+}
+
+@media (min-width: 1024px) {
+  .legend-panel {
+    @apply gap-2 py-2 px-3 text-sm;
+  }
 }
 </style>

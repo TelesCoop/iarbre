@@ -159,7 +159,7 @@ const getScoreClass = (value: number | null) => {
 }
 
 .cell-score {
-  @apply text-right font-semibold;
+  @apply font-semibold;
 }
 
 .score-max {

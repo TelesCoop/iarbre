@@ -67,7 +67,7 @@ const primaryClimateData = computed(() => {
 <template>
   <div
     v-if="scoreData || (showClimateText && primaryClimateData)"
-    class="absolute bottom-24 left-1/2 -translate-x-1/2 bg-white rounded-lg p-2 z-40 shadow-lg"
+    class="absolute bottom-24 left-1/2 -translate-x-1/2 bg-white rounded-lg p-2 z-40"
     data-cy="map-context-data-mobile"
   >
     <CircularScore

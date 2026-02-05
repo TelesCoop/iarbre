@@ -73,10 +73,16 @@ button.maplibregl-ctrl-3d svg {
    ======================================== */
 
 .maplibregl-ctrl-geocoder {
-  @apply flex rounded-lg border border-gray-200 bg-white shadow-none! rounded-lg!;
-  @apply w-60! min-w-60! max-w-60! min-h-10! max-h-10!;
+  @apply flex rounded-lg border border-gray-200 bg-white shadow-none!;
+  @apply w-full! min-w-0! max-w-full! min-h-8! max-h-8!;
   @apply overflow-visible! relative! z-[1]!;
   @apply transition-all duration-200;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder {
+    @apply w-60! min-w-60! max-w-60! min-h-10! max-h-10!;
+  }
 }
 
 .maplibregl-ctrl-geocoder:focus-within {
@@ -84,8 +90,14 @@ button.maplibregl-ctrl-3d svg {
 }
 
 .maplibregl-ctrl-geocoder--input {
-  @apply w-full h-full bg-white! border-0 text-sm rounded-lg shadow-none! h-auto!;
-  @apply pr-10! pl-3! font-sans;
+  @apply w-full h-full bg-white! border-0 text-xs rounded-lg shadow-none! h-auto!;
+  @apply pr-8! pl-2! font-sans text-gray-500!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--input {
+    @apply text-sm pr-10! pl-3!;
+  }
 }
 
 .maplibregl-ctrl-geocoder--input::placeholder {
@@ -97,16 +109,34 @@ button.maplibregl-ctrl-3d svg {
 }
 
 .maplibregl-ctrl-geocoder--icon-search {
-  @apply absolute top-3! right-3! left-auto! w-4! h-4!;
+  @apply absolute top-2! right-2! left-auto! w-3! h-3!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--icon-search {
+    @apply top-3! right-3! w-4! h-4!;
+  }
 }
 
 .maplibregl-ctrl-geocoder--icon-loading {
-  @apply top-3! right-3! w-4! h-4!;
+  @apply top-2! right-2! w-3! h-3!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--icon-loading {
+    @apply top-3! right-3! w-4! h-4!;
+  }
 }
 
 .maplibregl-ctrl-geocoder--button {
   @apply rounded-full transition-colors;
-  @apply top-2! right-2! w-6! h-6!;
+  @apply top-1! right-1! w-5! h-5!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--button {
+    @apply top-2! right-2! w-6! h-6!;
+  }
 }
 
 .maplibregl-ctrl-geocoder--button:hover {
@@ -178,7 +208,7 @@ button.maplibregl-ctrl-3d svg {
    ======================================== */
 
 .maplibregl-ctrl-bottom-right {
-  bottom: 68px !important;
+  bottom: 120px !important;
   right: 8px !important;
 }
 
