@@ -72,6 +72,7 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 
 .content-section {
   @apply flex-1 min-h-0;
+  @apply w-full;
 }
 
 .legend-section {

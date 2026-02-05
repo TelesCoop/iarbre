@@ -86,8 +86,8 @@ const distributionEntries = computed(() => {
     <template v-if="hasFactors">
       <ContextDataListContainer
         :groups="genericFactorGroups"
-        color-scheme="plantability"
         aria-label="Liste des paramètres de plantabilité par catégorie"
+        color-scheme="plantability"
       />
     </template>
 
