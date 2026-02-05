@@ -40,14 +40,9 @@ class FeedbackView(generics.CreateAPIView):
         ## Commentaire :
         {feedback_data['feedback']}
         """
-
-        try:
-            send_mail(
-                subject,
-                email_body,
-                settings.DEFAULT_FROM_EMAIL,
-                [settings.RECIPIENT_EMAIL],
-            )
-            logger.info("Feedback email sent from %s", email)
-        except Exception:
-            logger.exception("Failed to send feedback email from %s", email)
+        send_mail(
+            subject,
+            email_body,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.RECIPIENT_EMAIL],
+        )
