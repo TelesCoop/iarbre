@@ -34,7 +34,7 @@ class VegetationTileView(APIView):
         raster_path = os.path.join(
             settings.MEDIA_ROOT,
             "rasters",
-            "merged_fullmetropole_08.tif",
+            "vegestrate_lyonmetro_02m.tif",
         )
 
         if not os.path.exists(raster_path):
