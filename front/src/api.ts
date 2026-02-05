@@ -1,5 +1,5 @@
 export function getFullBaseApiUrl(): string {
-  return import.meta.env.VITE_BASE_API_URL || "http://localhost:8001/api"
+  return import.meta.env.VITE_BASE_API_URL || "http://localhost:8000/api"
 }
 
 type MyHeaders = { [key: string]: string }
