@@ -63,7 +63,7 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 }
 
 .data-layout {
-  @apply flex flex-col gap-4;
+  @apply flex lg:flex-col items-center gap-4;
 }
 
 .score-section {
