@@ -306,6 +306,11 @@ LOGGING = {
         },
     },
     "loggers": {
+        "api": {
+            "handlers": ["file_all", "file_errors", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "iarbre_data": {
             "handlers": ["file_all", "file_errors", "console"],
             "level": "INFO",
