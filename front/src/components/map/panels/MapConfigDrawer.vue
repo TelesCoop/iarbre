@@ -24,7 +24,7 @@ const drawerVisible = computed({
       <IconSettings :size="20" />
     </template>
     <MapLayerSwitcher :with-border="false" />
-    <MapBgSwitcher :with-border="false" />
+    <MapSwitcher />
     <MapLegend />
     <MapFiltersStatus />
     <MapContextData />

@@ -4,7 +4,7 @@ import { useAppStore } from "@/stores/app"
 import { onMounted, type PropType, computed } from "vue"
 import { type MapParams } from "@/types/map"
 import { ZoomToGridSize } from "@/utils/plantability"
-import LayerSwitcher from "@/components/layerSwitcher/LayerSwitcher.vue"
+import MapConfigDrawerToggle from "@/components/map/panels/MapConfigDrawerToggle.vue"
 
 const props = defineProps({
   mapId: {
@@ -85,7 +85,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <!-- Legend and controls - top left -->
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
-    <LayerSwitcher v-if="appStore.isMobileOrTablet" />
+    <MapConfigDrawerToggle v-if="appStore.isMobileOrTablet" />
     <MapLegend />
     <div
       v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"

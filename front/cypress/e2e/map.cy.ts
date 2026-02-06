@@ -133,12 +133,11 @@ describe("Map - Desktop", () => {
   })
 })
 
-// Mobile tests are skipped because MapConfigDrawerToggle component is not yet integrated
-// TODO: Enable these tests when mobile drawer toggle is implemented
-describe.skip("Map - Mobile", () => {
+describe("Map - Mobile", () => {
   beforeEach(() => {
     cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
     cy.get("@consoleInfo").should(
@@ -160,8 +159,7 @@ describe.skip("Map - Mobile", () => {
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
     cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
 
-    // Close drawer by clicking outside or toggle
-    cy.getBySel("drawer-toggle").click()
+    cy.getBySel("drawer-close").click()
   })
 
   it("toggles QPV layer on mobile", () => {
