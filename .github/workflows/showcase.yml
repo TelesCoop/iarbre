@@ -9,8 +9,6 @@ on:
       - main
     types:
       - closed
-  # https://stackoverflow.com/questions/72110820/trigger-github-action-in-submodules-from-parent-repo-action
-  # https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event
   repository_dispatch:
     types: [content-updated]
 
@@ -32,4 +30,5 @@ jobs:
           options: |
             -l prod
             ${{ github.event_name == 'repository_dispatch' && '-e force_update=true' || '' }}
+          # if trigerred by dispatch then force_update
           key: ${{ secrets.SSH_PRIVATE_KEY }}
