@@ -21,18 +21,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--number_of_workers",
+            "-nw",
             type=int,
             default=1,
             help="Number of workers to use for generating tiles",
         )
         parser.add_argument(
             "--number_of_threads_by_worker",
+            "-ntw",
             type=int,
             default=1,
             help="Number of threads by worker to use for generating tiles",
         )
         parser.add_argument(
             "--geolevel",
+            "-g",
             type=str,
             required=True,
             choices=[choice for choice, _ in GeoLevel.choices],
@@ -40,6 +43,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--datatype",
+            "-d",
             type=str,
             required=True,
             choices=[choice for choice, _ in DataType.choices],

@@ -390,7 +390,7 @@ class MVTGeneratorWorker:
         Returns:
             list: The updated list of features with the new MVT features appended.
         """
-        if zoom <= ZOOM_AGGREGATE_BREAKPOINT:
+        if zoom > ZOOM_AGGREGATE_BREAKPOINT:
             # Bulk load vulnerability data, not for aggregated
             vuln_ids = [
                 getattr(obj, "vulnerability_idx_id", None)
