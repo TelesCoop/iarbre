@@ -9,10 +9,17 @@ on:
       - main
     types:
       - closed
+  # https://stackoverflow.com/questions/72110820/trigger-github-action-in-submodules-from-parent-repo-action
+  # https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#create-a-workflow-dispatch-event
+  repository_dispatch:
+    types: [content-updated]
 
 jobs:
   deploy-prod:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    if: >
+      github.event_name == 'push' ||
+      github.event_name == 'repository_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -24,4 +31,5 @@ jobs:
           vault_password: ${{secrets.ANSIBLE_VAULT_KEY}}
           options: |
             -l prod
+            ${{ github.event_name == 'repository_dispatch' && '-e force_update=true' || '' }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
