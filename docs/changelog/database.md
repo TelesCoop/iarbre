@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2026-02-11T19:03_postgres_backup.dump
+
+**Changements :**
+
+- **Tuiles de plantabilité** : L'indice croisé plantabilité et vulnérabilité à la chaleur est maintenant en dur dans les tuiles MVTs pour alléger l'affichage du front et permettre les fonctions de filtrage.
+
 ### 2026-02-11T07:47_postgres_backup.dump
 
 **Changements :**
