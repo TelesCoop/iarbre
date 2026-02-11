@@ -196,7 +196,7 @@ export const useMapStore = defineStore("map", () => {
         source: sourceId,
         layout: {},
         paint: {
-          "raster-opacity": 0.7
+          "raster-opacity": 0.4
         }
       }
       return [rasterLayer]
