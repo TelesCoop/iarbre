@@ -80,6 +80,9 @@ describe("PlantabilityContextDataList", () => {
     })
 
     cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`).should("exist")
+    cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`)
+      .find(".accordion-header")
+      .click()
     cy.contains("Impact").should("be.visible")
     cy.contains("fort").should("be.visible")
   })

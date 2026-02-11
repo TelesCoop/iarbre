@@ -41,6 +41,7 @@ describe("ContextDataAccordionItem", () => {
       }
     })
 
+    cy.get(".accordion-header").click()
     cy.contains("Factor 1").should("be.visible")
     cy.contains("Factor 2").should("be.visible")
     cy.contains("60").should("be.visible")
@@ -68,6 +69,7 @@ describe("ContextDataAccordionItem", () => {
       }
     })
 
+    cy.get(".accordion-header").click()
     cy.contains("Factor A").should("be.visible")
     cy.contains("Factor B").should("be.visible")
     cy.contains("Factor C").should("be.visible")

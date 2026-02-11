@@ -54,6 +54,9 @@ describe("MapContextData", () => {
 
     cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`).should("exist")
     cy.contains("Bâtiments").should("be.visible")
+    cy.get(`[data-cy="category-${PlantabilityMetaCategory.BATIMENTS}"]`)
+      .find(".accordion-header")
+      .click()
     cy.contains("Proximité façade").should("be.visible")
   })
 })

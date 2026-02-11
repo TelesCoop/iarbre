@@ -41,6 +41,10 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
         <div :class="['content-section', colorScheme !== 'plantability' && 'overflow-y-scroll']">
           <slot :data="data" :full-height="fullHeight" name="content" />
         </div>
+
+        <div v-if="$slots.legend" class="legend-section">
+          <slot :data="data" name="legend" />
+        </div>
       </div>
       <EmptyMessage v-else-if="!hideEmptyMessage" :message="emptyMessage" data-cy="empty-message" />
     </div>
