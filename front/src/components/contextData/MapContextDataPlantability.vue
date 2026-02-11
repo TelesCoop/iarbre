@@ -105,6 +105,6 @@ const activeTab = ref<"details" | "divisions">("details")
 }
 
 .tab-content {
-  @apply min-h-0;
+  @apply flex-1 min-h-0 overflow-y-auto;
 }
 </style>

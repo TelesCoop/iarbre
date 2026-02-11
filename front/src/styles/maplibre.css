@@ -40,6 +40,18 @@ button.maplibregl-ctrl-3d:hover svg {
   filter: brightness(0) invert(1);
 }
 
+button.maplibregl-ctrl-3d {
+  @apply font-medium opacity-70;
+}
+
+button.maplibregl-ctrl-3d.is-active {
+  @apply font-bold opacity-100;
+}
+
+button.maplibregl-ctrl-3d:hover {
+  @apply text-white! opacity-100!;
+}
+
 .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
 .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon,
 .maplibregl-ctrl-compass .maplibregl-ctrl-icon,

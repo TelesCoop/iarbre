@@ -101,7 +101,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 .bg-selector-container {
-  @apply flex items-center gap-2;
+  @apply flex items-center;
   @apply bg-white rounded-lg;
   @apply border border-gray-200;
   padding: 10px;
@@ -158,7 +158,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   max-width: 300px;
   opacity: 1;
   padding-left: 0.5rem;
-  margin-left: 0.5rem;
+  margin-left: 1.5rem;
   border-left-width: 1px;
 }
 </style>

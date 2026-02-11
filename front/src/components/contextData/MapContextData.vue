@@ -19,7 +19,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="map-context-data-container w-full" data-cy="map-context-data">
+  <div class="map-context-data-container w-full flex flex-col min-h-0" data-cy="map-context-data">
     <div v-if="mapStore.isCalculating" class="flex flex-col items-center justify-center gap-4 p-8">
       <AppSpinner size="md" color="#426A45" />
       <div class="text-brown text-center">Calcul en cours...</div>

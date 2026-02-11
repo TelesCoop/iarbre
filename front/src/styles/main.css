@@ -159,7 +159,7 @@
 
 .map-tool-container {
   @apply flex flex-col items-center gap-2 md:gap-4;
-  @apply bg-white z-10;
+  @apply bg-white z-50;
   @apply md:pt-4;
   @apply max-w-full;
 }
@@ -188,9 +188,10 @@
 
 .map-context-card {
   @apply flex w-full items-center justify-center;
-  @apply font-sans;
-  @apply px-4 py-2 mb-4;
-  @apply rounded-md border border-gray-200;
+  @apply font-sans text-sm;
+  @apply px-4 py-3 mb-4;
+  @apply rounded-lg border border-gray-200 bg-gray-50;
+  @apply transition-colors duration-200;
 }
 
 .map-context-panel-content {

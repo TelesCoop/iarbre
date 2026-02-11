@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import VulnerabilityContextDataScoreBadge from "@/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue"
 import VulnerabilityContextDataScore from "@/components/contextData/vulnerability/VulnerabilityContextDataScore.vue"
 import type {
@@ -34,6 +34,12 @@ const vulnerabilityCategory = computed(() => {
   return props.group?.category as VulnerabilityCategory
 })
 
+const isExpanded = ref(false)
+
+const toggle = () => {
+  isExpanded.value = !isExpanded.value
+}
+
 const isVulnerabilityFactor = (factor: any) => {
   return (
     props.colorScheme === "vulnerability" &&
@@ -43,8 +49,8 @@ const isVulnerabilityFactor = (factor: any) => {
 </script>
 
 <template>
-  <div class="accordion-item" :data-cy="`category-${group?.category}`">
-    <div class="accordion-header">
+  <div :data-cy="`category-${group?.category}`" class="accordion-item">
+    <button :aria-expanded="isExpanded" class="accordion-header" type="button" @click="toggle">
       <span class="header-icon">{{ group.icon }}</span>
       <span class="header-label">{{ group.label }}</span>
       <VulnerabilityContextDataScoreBadge
@@ -52,8 +58,25 @@ const isVulnerabilityFactor = (factor: any) => {
         :category="vulnerabilityCategory"
         :get-category-score="getCategoryScore"
       />
-    </div>
-    <table class="accordion-table">
+      <svg
+        :class="{ rotated: isExpanded }"
+        class="chevron-icon"
+        fill="none"
+        height="12"
+        viewBox="0 0 12 12"
+        width="12"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M2 4L6 8L10 4"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+      </svg>
+    </button>
+    <table v-show="isExpanded" class="accordion-table">
       <tbody>
         <tr
           v-for="(factor, index) in group.factors"
@@ -108,7 +131,21 @@ const isVulnerabilityFactor = (factor: any) => {
 }
 
 .accordion-header {
-  @apply flex items-center gap-2 px-2.5 py-2 bg-gray-100 border border-gray-200 border-b-0 rounded-t-md;
+  @apply flex items-center gap-2 w-full px-2.5 py-2 bg-gray-100 border border-gray-200 border-b-0 rounded-t-md;
+  @apply cursor-pointer transition-colors duration-200 hover:bg-gray-200;
+  @apply text-left;
+}
+
+.accordion-header[aria-expanded="false"] {
+  @apply rounded-b-md border-b;
+}
+
+.chevron-icon {
+  @apply flex-shrink-0 text-gray-400 transition-transform duration-200;
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
 }
 
 .header-icon {

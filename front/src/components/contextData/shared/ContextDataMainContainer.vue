@@ -38,12 +38,8 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
           <slot :data="data" name="score" />
         </div>
 
-        <div class="content-section">
+        <div :class="['content-section', colorScheme !== 'plantability' && 'overflow-y-scroll']">
           <slot :data="data" :full-height="fullHeight" name="content" />
-        </div>
-
-        <div v-if="$slots.legend" class="legend-section">
-          <slot :data="data" name="legend" />
         </div>
       </div>
       <EmptyMessage v-else-if="!hideEmptyMessage" :message="emptyMessage" data-cy="empty-message" />
@@ -56,26 +52,23 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 
 .context-panel {
   @apply bg-white w-full max-w-full transition-all duration-200;
+  @apply flex flex-col min-h-0 flex-1;
 }
 
 .panel-content {
-  @apply py-3 md:py-4 flex flex-col gap-4 md:gap-5 text-sm min-h-0;
+  @apply py-3 md:py-4 flex flex-col gap-4 md:gap-5 text-sm min-h-0 flex-1 w-full;
 }
 
 .data-layout {
-  @apply flex lg:flex-col items-center gap-4;
+  @apply flex flex-col items-center gap-4 min-h-0 flex-1;
 }
 
 .score-section {
-  @apply flex justify-center pb-3 border-b border-gray-100;
+  @apply flex justify-center gap-8 pb-3 border-b border-gray-100;
 }
 
 .content-section {
-  @apply flex-1 min-h-0;
+  @apply flex-1 min-h-0 flex flex-col;
   @apply w-full;
-}
-
-.legend-section {
-  @apply pt-3 border-t border-gray-100;
 }
 </style>

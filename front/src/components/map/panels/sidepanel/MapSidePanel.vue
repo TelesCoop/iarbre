@@ -2,9 +2,12 @@
   <!-- Desktop sidepanel -->
   <div :class="['map-sidepanel', { 'is-hidden': !isSidePanelVisible }]" data-cy="map-side-panel">
     <MapSidePanelHeader class="flex-shrink-0" data-cy="map-side-panel-header" />
-    <div class="px-4 w-full overflow-y-auto flex-1 min-h-0" data-cy="map-side-panel-content">
+    <div
+      class="px-4 w-full flex-1 min-h-0 flex flex-col overflow-hidden"
+      data-cy="map-side-panel-content"
+    >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <MapContextData class="w-full" data-cy="map-context-data" />
+      <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
       <div class="methodology-banner">
@@ -135,6 +138,7 @@ watch(
 }
 
 .sidebar-footer {
+  @apply relative;
   @apply bg-primary-500 flex-shrink-0;
   @apply w-full;
   height: 152px;
