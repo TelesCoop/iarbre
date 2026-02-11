@@ -6,8 +6,8 @@ import AppDrawer from "@/components/AppDrawer.vue"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import type { Feedback } from "@/types/map"
-import Button from "primevue/button"
-import { useToast } from "primevue"
+import AppButton from "@/components/shared/AppButton.vue"
+import { useToast } from "@/composables/useToast"
 
 const appStore = useAppStore()
 const feedbackIsVisible = ref(false)
@@ -54,41 +54,47 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   <nav v-if="appStore.isDesktop" class="header-nav ml-auto block">
     <ul class="nav-list">
       <li>
-        <Button
+        <AppButton
           data-cy="open-features-button"
-          severity="primary"
-          size="small"
-          type="button"
           variant="text"
+          size="sm"
           @click="welcomeIsVisible = true"
-          >Tutoriel
-        </Button>
+        >
+          Tutoriel
+        </AppButton>
       </li>
       <li>
-        <Button
+        <AppButton
           data-cy="open-feedback-button"
-          severity="primary"
-          size="small"
-          type="button"
           variant="text"
+          size="sm"
           @click="feedbackIsVisible = true"
-          >Envoyer votre avis
-        </Button>
+        >
+          Envoyer votre avis
+        </AppButton>
       </li>
     </ul>
   </nav>
 
   <!-- Mobile menu button -->
   <nav v-else class="block ml-auto">
-    <Button
-      icon="pi pi-bars"
-      severity="primary"
-      size="small"
-      type="button"
-      variant="text"
-      data-cy="mobile-menu-button"
-      @click="toggleMobileMenu"
-    />
+    <AppButton variant="text" size="sm" data-cy="mobile-menu-button" @click="toggleMobileMenu">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 12H21M3 6H21M3 18H21"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </AppButton>
   </nav>
 
   <!-- Mobile menu -->
@@ -99,29 +105,13 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     class="sm:hidden"
     data-cy="mobile-menu"
   >
-    <template #header>
-      <div class="flex justify-end">
-        <Button
-          icon="pi pi-times"
-          severity="primary"
-          size="small"
-          type="button"
-          variant="text"
-          data-cy="mobile-menu-close"
-          @click="closeMobileMenu"
-        />
-      </div>
-    </template>
-
     <div class="p-4">
       <ul class="space-y-4">
         <li>
-          <Button
+          <AppButton
             data-cy="mobile-features-button"
-            severity="primary"
-            size="small"
-            type="button"
             variant="text"
+            size="sm"
             class="w-full justify-start"
             @click="
               () => {
@@ -129,16 +119,15 @@ const sendFeedbackToAPI = async (data: Feedback) => {
                 closeMobileMenu()
               }
             "
-            >Tutoriel
-          </Button>
+          >
+            Tutoriel
+          </AppButton>
         </li>
         <li>
-          <Button
-            data-cy="open-feedback-button"
-            severity="primary"
-            size="small"
-            type="button"
+          <AppButton
+            data-cy="mobile-feedback-button"
             variant="text"
+            size="sm"
             class="w-full justify-start"
             @click="
               () => {
@@ -146,24 +135,21 @@ const sendFeedbackToAPI = async (data: Feedback) => {
                 closeMobileMenu()
               }
             "
-            >Envoyer votre avis
-          </Button>
+          >
+            Envoyer votre avis
+          </AppButton>
         </li>
       </ul>
     </div>
   </AppDrawer>
 
-  <welcome-message v-model="welcomeIsVisible" />
+  <WelcomeMessage v-model="welcomeIsVisible" />
 
-  <feedback-popin
+  <FeedbackPopin
     :model-value="feedbackIsVisible"
     @close="feedbackIsVisible = false"
     @submit-feedback="sendFeedbackToAPI"
   />
-  <Toast group="tl" position="top-left" />
-  <Toast group="tr" position="top-right" />
-  <Toast group="bl" position="bottom-left" />
-  <Toast group="br" position="bottom-right" />
 </template>
 
 <style scoped>

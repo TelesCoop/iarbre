@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2026-02-11T07:47_postgres_backup.dump
+
+**Changements :**
+
+- **Inventaire stratifié du végétal** : Ajout dans les `media` du raster de l'inventaire du végétal stratifié pour la toute la métropole de Lyon mise à jour. Version du code utilisée : https://github.com/TelesCoop/vegestrate/releases/tag/v1.0-metropole-lyon-2023
+
 ### 2026-01-12T20:03_postgres_backup.dump (3.4 GiB)
 
 **Changements :**

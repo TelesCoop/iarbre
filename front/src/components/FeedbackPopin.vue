@@ -1,31 +1,39 @@
 <script lang="ts" setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 import FeedbackForm from "@/components/forms/FeedbackForm.vue"
-import Dialog from "primevue/dialog"
+import AppDialog from "@/components/shared/AppDialog.vue"
 
-const visible = defineModel({
+const modelValue = defineModel({
   type: Boolean,
   required: true
 })
+
+const visible = computed({
+  get: () => modelValue.value,
+  set: (value: boolean) => {
+    modelValue.value = value
+  }
+})
+
 const email = ref("")
 const feedback = ref("")
 const emit = defineEmits(["submit-feedback", "close"])
 </script>
 
 <template>
-  <Dialog
+  <AppDialog
     v-model:visible="visible"
     :draggable="false"
-    :style="{ width: '25rem' }"
+    width="25rem"
     data-cy="feedback-popin"
     header="Votre avis compte !"
     modal
     @hide="emit('close')"
   >
-    <feedback-form
+    <FeedbackForm
       :email="email"
       :feedback="feedback"
       @submit-feedback="emit('submit-feedback', { email: $event.email, feedback: $event.feedback })"
     />
-  </Dialog>
+  </AppDialog>
 </template>

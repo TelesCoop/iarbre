@@ -1,17 +1,16 @@
-import { ref } from "vue"
+import { ref, type Ref } from "vue"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import { getTileDetails } from "@/services/tileService"
-import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
-export function useContextData() {
+export function useContextData(selectedDataTypeRef: Ref<DataType>) {
   const data = ref<
     PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
   >(null)
-  const mapStore = useMapStore()
+  const selectedDataType = selectedDataTypeRef
 
   const setData = async (
     featureId: string | number,
@@ -31,30 +30,29 @@ export function useContextData() {
       | null = null
 
     if (indexValue === undefined) {
-      newData = await getTileDetails(stringId, mapStore.selectedDataType)
+      newData = await getTileDetails(stringId, selectedDataType.value)
 
       if (!newData) {
         return
       }
     } else if (
       indexValue !== undefined &&
-      (mapStore.selectedDataType === DataType.PLANTABILITY ||
-        mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) &&
-      (sourceValues !== undefined ||
-        mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY)
+      (selectedDataType.value === DataType.PLANTABILITY ||
+        selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) &&
+      (sourceValues !== undefined || selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY)
     ) {
-      if (mapStore.selectedDataType === DataType.PLANTABILITY) {
+      if (selectedDataType.value === DataType.PLANTABILITY) {
         newData = {
           id: stringId,
           plantabilityNormalizedIndice: +indexValue,
           plantabilityIndice: +indexValue,
           details: sourceValues,
-          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          geolevel: DataTypeToGeolevel[selectedDataType.value],
           datatype: DataType.PLANTABILITY,
           iris: 0,
           city: 0
         } as PlantabilityData
-      } else if (mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY) {
+      } else if (selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) {
         newData = {
           id: stringId,
           plantabilityNormalizedIndice: +indexValue,
@@ -62,7 +60,7 @@ export function useContextData() {
           vulnerabilityIndiceDay: vulnScoreDay !== undefined ? +vulnScoreDay : 0,
           vulnerabilityIndiceNight: vulnScoreNight !== undefined ? +vulnScoreNight : 0,
           details: sourceValues,
-          geolevel: DataTypeToGeolevel[mapStore.selectedDataType],
+          geolevel: DataTypeToGeolevel[selectedDataType.value],
           datatype: DataType.PLANTABILITY_VULNERABILITY,
           iris: 0,
           city: 0
@@ -79,7 +77,7 @@ export function useContextData() {
     if (featureIds.length === 0) return
 
     const stringId = String(featureIds[0])
-    const tileData = await getTileDetails(stringId, mapStore.selectedDataType)
+    const tileData = await getTileDetails(stringId, selectedDataType.value)
     data.value = tileData
   }
 

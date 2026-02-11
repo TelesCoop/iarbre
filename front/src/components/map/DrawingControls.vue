@@ -2,25 +2,38 @@
 import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { SelectionMode } from "@/utils/enum"
-import Button from "primevue/button"
+import IconClose from "@/components/icons/IconClose.vue"
 
 const mapStore = useMapStore()
 
-const drawingInfo = computed(() => {
-  const mode = mapStore.selectionMode
-  const baseTitle = "Sélection"
-  const modeLabels: Partial<Record<SelectionMode, string>> = {
-    [SelectionMode.POINT]: "Clic simple",
-    [SelectionMode.POLYGON]: `${baseTitle} polygone`,
-    [SelectionMode.RECTANGLE]: `${baseTitle} rectangle`,
-    [SelectionMode.CIRCLE]: `${baseTitle} cercle`,
-    [SelectionMode.ANGLED_RECTANGLE]: `${baseTitle} rectangle incliné`,
-    [SelectionMode.SECTOR]: `${baseTitle} secteur`
-  }
-  return modeLabels[mode] || ""
-})
+const SELECTION_MODE_LABELS: Record<SelectionMode, string> = {
+  [SelectionMode.POINT]: "Clic simple",
+  [SelectionMode.POLYGON]: "Sélection polygone",
+  [SelectionMode.RECTANGLE]: "Sélection rectangle",
+  [SelectionMode.CIRCLE]: "Sélection cercle",
+  [SelectionMode.ANGLED_RECTANGLE]: "Sélection rectangle incliné",
+  [SelectionMode.SECTOR]: "Sélection secteur",
+  [SelectionMode.SELECT]: "Sélection"
+}
 
-const cancelDrawing = () => {
+const isVisible = computed(() => mapStore.isShapeMode)
+const currentMode = computed(() => mapStore.selectionMode)
+
+const title = computed(() => SELECTION_MODE_LABELS[currentMode.value] ?? "")
+
+const instructions: Record<SelectionMode, string> = {
+  [SelectionMode.POLYGON]: "polygon",
+  [SelectionMode.RECTANGLE]: "drag",
+  [SelectionMode.CIRCLE]: "drag",
+  [SelectionMode.ANGLED_RECTANGLE]: "drag",
+  [SelectionMode.SECTOR]: "drag",
+  [SelectionMode.POINT]: "default",
+  [SelectionMode.SELECT]: "default"
+}
+
+const instructionType = computed(() => instructions[currentMode.value] || "default")
+
+const handleCancel = () => {
   mapStore.shapeDrawing.clearDrawing()
   mapStore.changeSelectionMode(SelectionMode.POINT)
 }
@@ -28,40 +41,61 @@ const cancelDrawing = () => {
 
 <template>
   <div
-    v-if="mapStore.isShapeMode"
-    class="absolute bottom-2 left-1/2 z-50 max-w-md"
+    v-if="isVisible"
+    class="drawing-controls-wrapper"
     data-cy="drawing-controls"
+    role="dialog"
+    aria-labelledby="drawing-controls-title"
     @click.stop
   >
-    <div class="bg-white rounded-lg shadow-lg p-4 flex flex-col">
-      <div class="text-center text-brown font-semibold">{{ drawingInfo }}</div>
+    <div class="drawing-controls-panel">
+      <h2 id="drawing-controls-title" class="panel-title">
+        {{ title }}
+      </h2>
 
-      <div class="text-center text-sm text-gray-600 mb-2">
-        <template v-if="mapStore.selectionMode === SelectionMode.POLYGON">
+      <p class="panel-instructions">
+        <template v-if="instructionType === 'polygon'">
           Dessinez un polygone. Appuyez sur <strong>Entrée ⏎</strong> pour terminer (3 points
           minimum).
         </template>
-        <template v-else-if="mapStore.selectionMode === SelectionMode.RECTANGLE">
-          Cliquez et glissez pour dessiner.
-        </template>
-        <template v-else-if="mapStore.selectionMode === SelectionMode.CIRCLE">
+        <template v-else-if="instructionType === 'drag'">
           Cliquez et glissez pour dessiner.
         </template>
         <template v-else> Dessinez votre forme sur la carte. </template>
-      </div>
+      </p>
 
-      <div class="flex justify-center">
-        <Button
-          severity="secondary"
-          outlined
-          size="small"
-          data-cy="drawing-cancel"
-          @click="cancelDrawing"
-        >
-          <i class="pi pi-times mr-2"></i>
+      <div class="panel-actions">
+        <AppButton data-cy="drawing-cancel" size="sm" variant="secondary" @click="handleCancel">
+          <template #icon-left>
+            <IconClose :size="16" aria-hidden="true" />
+          </template>
           Annuler
-        </Button>
+        </AppButton>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.drawing-controls-wrapper {
+  @apply absolute bottom-20 lg:bottom-14 left-1/2 -translate-x-1/2 z-50;
+}
+
+.drawing-controls-panel {
+  @apply flex flex-col gap-2 py-3 px-4 bg-white border border-gray-200 rounded-lg whitespace-nowrap;
+}
+
+.panel-title {
+  @apply text-center text-brown font-semibold;
+}
+
+.panel-instructions {
+  @apply text-center text-sm text-gray-600 mb-2;
+}
+
+.panel-actions {
+  @apply flex justify-center;
+}
+</style>
