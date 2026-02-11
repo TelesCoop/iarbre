@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import MapComponent from "@/components/map/MapComponent.vue"
+import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import { useRouter, useRoute } from "vue-router"
 import { ref } from "vue"
 import type { MapParams } from "@/types/map"
@@ -50,22 +51,42 @@ const handleMapUpdate = (params: MapParams) => {
 </script>
 
 <template>
-  <div class="map-container max-w-screen overflow-hidden relative">
-    <map-component
-      :model-value="mapParams"
-      map-id="default"
-      @update:model-value="handleMapUpdate"
-    />
+  <div class="map-view-wrapper">
+    <SidebarComponent />
+    <MapSidePanel />
+    <div class="map-container max-w-screen overflow-hidden relative">
+      <MapComponent
+        :model-value="mapParams"
+        map-id="default"
+        @update:model-value="handleMapUpdate"
+      />
 
-    <!-- Drawer -->
-    <map-config-drawer />
-    <map-scores-drawer />
+      <!-- Drawer -->
+      <MapConfigDrawer />
+      <MapScoresDrawer />
+    </div>
   </div>
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
+
+.map-view-wrapper {
+  @apply flex;
+  height: 100vh;
+  height: 100dvh;
+  margin-left: 0;
+}
+
+@media (min-width: 1024px) {
+  .map-view-wrapper {
+    margin-left: 64px;
+  }
+}
+
 .map-container {
-  height: var(--content-height);
+  @apply flex-1;
+  height: 100vh;
+  height: 100dvh;
 }
 </style>

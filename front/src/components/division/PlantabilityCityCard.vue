@@ -6,7 +6,7 @@ interface CityCardProps {
   city: City
 }
 
-const props = defineProps<CityCardProps>()
+defineProps<CityCardProps>()
 </script>
 
 <template>

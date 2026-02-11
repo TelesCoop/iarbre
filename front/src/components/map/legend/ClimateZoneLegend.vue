@@ -1,33 +1,3 @@
-<template>
-  <div
-    class="font-accent flex flex-col items-center justify-center text-xs leading-3 gap-2"
-    data-cy="climate-zones-legend"
-  >
-    <div class="flex p-2 justify-center">
-      <div v-for="(zone, index) in zones" :key="index" class="flex items-center">
-        <ClimateZoneScoreLabel
-          :zone="zone"
-          size="compact"
-          :is-first="index === 0"
-          :is-last="index === zones.length - 1"
-          @click="handleZoneClick(zone)"
-        />
-      </div>
-    </div>
-    <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
-    <div v-if="isExpanded" class="flex flex-col items-start mt-2 gap-2">
-      <div
-        v-for="(zone, index) in zones"
-        :key="'vertical-' + index"
-        class="flex items-center gap-2"
-      >
-        <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
-        <span class="text-sm text-primary-900">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import { ref } from "vue"
 import { getZoneDesc } from "@/utils/climateZone"
@@ -44,3 +14,61 @@ const handleZoneClick = (zone: string) => {
   mapStore.toggleAndApplyFilter(zone)
 }
 </script>
+
+<template>
+  <div class="climate-legend" data-cy="climate-zones-legend">
+    <div class="legend-header">
+      <span class="legend-title">Zone climatique locale</span>
+    </div>
+    <div class="legend-scale">
+      <div v-for="(zone, index) in zones" :key="index" class="flex items-center">
+        <ClimateZoneScoreLabel
+          :zone="zone"
+          size="compact"
+          :is-first="index === 0"
+          :is-last="index === zones.length - 1"
+          @click="handleZoneClick(zone)"
+        />
+      </div>
+    </div>
+    <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
+    <div v-if="isExpanded" class="legend-details">
+      <div v-for="(zone, index) in zones" :key="'vertical-' + index" class="legend-detail-item">
+        <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
+        <span class="detail-text">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.climate-legend {
+  @apply flex flex-col items-center gap-2 font-sans;
+}
+
+.legend-header {
+  @apply flex items-center justify-center;
+}
+
+.legend-title {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+}
+
+.legend-scale {
+  @apply flex items-center justify-center p-2 rounded overflow-hidden;
+}
+
+.legend-details {
+  @apply flex flex-col items-start gap-2 mt-2 pt-2 border-t border-gray-200 w-full;
+}
+
+.legend-detail-item {
+  @apply flex items-center gap-2;
+}
+
+.detail-text {
+  @apply text-sm text-gray-800;
+}
+</style>

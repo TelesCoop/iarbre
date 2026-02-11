@@ -4,7 +4,6 @@ import { defineConfig } from "vite"
 import vue from "@vitejs/plugin-vue"
 import tailwindcss from "@tailwindcss/vite"
 import Components from "unplugin-vue-components/vite"
-import { PrimeVueResolver } from "@primevue/auto-import-resolver"
 import istanbul from "vite-plugin-istanbul"
 
 export default defineConfig({
@@ -16,7 +15,8 @@ export default defineConfig({
     // import vueDevTools from "vite-plugin-vue-devtools"
     // vueDevTools(),
     Components({
-      resolvers: [PrimeVueResolver()]
+      dirs: ["src/components"],
+      dts: true
     }),
     istanbul({
       include: "src/**/*.{ts,vue}",
@@ -45,8 +45,5 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url))
     }
-  },
-  optimizeDeps: {
-    include: ["primevue/chart"]
   }
 })
