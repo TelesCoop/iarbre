@@ -1,12 +1,14 @@
 """
 MVT Generator as django-media.
 """
+import logging
 
 import json
 from typing import Dict, Type
 import itertools
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
+from django.db import connection
 import gc
 import geopandas as gpd
 import numpy as np
@@ -20,11 +22,12 @@ import mercantile
 import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
-from iarbre_data.models import MVTTile, Vulnerability
+from iarbre_data.models import City, MVTTile, Vulnerability
 from iarbre_data.settings import TARGET_MAP_PROJ
 from plantability.constants import PLANTABILITY_NORMALIZED
 import random
 
+logger = logging.getLogger(__name__)
 
 MVT_EXTENT = 4096
 ZOOM_AGGREGATE_BREAKPOINT = max(ZOOM_TO_GRID_SIZE.keys())
@@ -191,6 +194,9 @@ class MVTGeneratorWorker:
         base_queryset = self.queryset.filter(map_geometry__intersects=tile_polygon)
 
         if not base_queryset.exists():
+            logger.error(
+                f"SKIPPED: No plantability data for tile ({tile.x}, {tile.y}, {zoom})"
+            )
             return
 
         west, south, east, north = tile_polygon.extent
@@ -497,6 +503,7 @@ class MVTGeneratorWorker:
         ).annotate(clipped_geometry=Intersection("map_geometry", tile_polygon))
 
         if not clipped_queryset.exists():
+            logger.error(f"SKIPPED: No data for tile ({tile.x}, {tile.y}, {zoom})")
             return
 
         transformed_geometries = {
@@ -591,13 +598,36 @@ class MVTGenerator:
                     gc.collect()
         return len(tiles)
 
+    def _get_covered_tiles(self, zoom):
+        covered = set()
+        for city in City.objects.all():
+            geom = city.geometry
+            geom_4326 = GEOSGeometry(geom.wkt, srid=2154)
+            geom_4326.transform(4326)
+            west, south, east, north = geom_4326.extent
+            for t in mercantile.tiles(west, south, east, north, zoom, truncate=True):
+                covered.add(t)
+        return covered
+
+    def _get_covered_tiles_from_bbox(self, zoom):
+        bbox = self.mdl.objects.all().aggregate(bbox=Extent("map_geometry"))["bbox"]
+        bbox_polygon = Polygon.from_bbox(bbox)
+        bbox_polygon.srid = TARGET_MAP_PROJ
+        bbox_polygon.transform(4326)
+        west, south, east, north = bbox_polygon.extent
+        return set(mercantile.tiles(west, south, east, north, zoom, truncate=True))
+
     def generate_tiles(self, ignore_existing=False):
         """Generate MVT tiles for the entire geometry queryset."""
-        # Get total bounds of the queryset
-        bounds = self._get_queryset_bounds()
+        use_city_filter = self.mdl.datatype == "plantability"
 
         tiles_to_generate = []
         for zoom in range(self.min_zoom, self.max_zoom + 1):
+            if use_city_filter:
+                all_tiles = self._get_covered_tiles(zoom)
+            else:
+                all_tiles = self._get_covered_tiles_from_bbox(zoom)
+
             existing_mvt_tiles = MVTTile.objects.filter(
                 geolevel=self.mdl.geolevel,
                 datatype=self.mdl.datatype,
@@ -606,23 +636,11 @@ class MVTGenerator:
             has_mvt_tiles = len(existing_mvt_tiles) > 0
 
             existing_tiles = set(existing_mvt_tiles)
-            # Get all tiles that cover the entire geometry bounds
-            # bbox needs to be in 4326
-            tiles = list(
-                mercantile.tiles(
-                    bounds["west"],
-                    bounds["south"],
-                    bounds["east"],
-                    bounds["north"],
-                    zoom,
-                    truncate=True,
-                )
-            )
 
-            for tile in tiles:
+            for tile in all_tiles:
                 if ignore_existing or not has_mvt_tiles:
                     tiles_to_generate.append((tile, zoom))
-                elif not (tile.x, tile.y) in existing_tiles:
+                elif (tile.x, tile.y) not in existing_tiles:
                     tiles_to_generate.append((tile, zoom))
 
         print(f"Start to generate {len(tiles_to_generate)} tiles")
@@ -641,7 +659,9 @@ class MVTGenerator:
                 self.process_tiles(self.mdl, tiles)
         else:
             with ProcessPoolExecutor(
-                max_workers=self.number_of_workers
+                max_workers=self.number_of_workers,
+                # avoid using same connexion as previous worker to avoid timeouts
+                initializer=connection.close,
             ) as process_executor:
                 for tiles in tiles_to_generate_by_process:
                     futures.append(
@@ -660,25 +680,6 @@ class MVTGenerator:
                     # Free RAM
                     futures.pop(futures.index(future))
                     gc.collect()
-
-    def _get_queryset_bounds(self) -> Dict[str, float]:
-        """
-        Compute bounds of the entire queryset.
-
-        Returns:
-            Dictionary containing the bounds of the queryset.
-        """
-        # Assumes the queryset has a geographic field
-        bbox = self.mdl.objects.all().aggregate(bbox=Extent("map_geometry"))["bbox"]
-        bbox_polygon = Polygon.from_bbox(bbox)
-        bbox_polygon.srid = TARGET_MAP_PROJ
-        bbox_polygon.transform(4326)
-        return {
-            "west": bbox_polygon.extent[0],
-            "south": bbox_polygon.extent[1],
-            "east": bbox_polygon.extent[2],
-            "north": bbox_polygon.extent[3],
-        }
 
     @staticmethod
     def compute_mixed_indice(

@@ -157,6 +157,7 @@ DATABASES = {
         "PASSWORD": config.getstr("database.password"),
         "HOST": "localhost",
         "PORT": config.getstr("database.port") or "5432",
+        "CONN_MAX_AGE": 600,
     }
 }
 
