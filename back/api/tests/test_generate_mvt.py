@@ -4,6 +4,7 @@ from api.management.commands.generate_mvt import Command as GenerateMVTCommand
 from api.constants import GeoLevel, DataType
 from iarbre_data.models import MVTTile, City
 from iarbre_data.management.commands.populate import Command as PopulateCommand
+from api.utils.mvt_generator import MVTGenerator
 
 
 class GenerateMVTCommandTest(TestCase):
@@ -96,3 +97,62 @@ class GenerateMVTCommandTest(TestCase):
 
         # Original tile should still exist
         self.assertTrue(MVTTile.objects.filter(id=existing_tile.id).exists())
+
+    def test_mixed_indice_calculation(self):
+        """Test that compute_mixed_indice function works correctly"""
+        # Test various combinations of plantability and vulnerability indices
+        test_cases = [
+            # (plantability_indice, vulnerability_indice, expected_mixed_indice)
+            (0, 1, 1),
+            (0, 9, 5),
+            (2.5, 1, 11),
+            (2.5, 5, 13),
+            (5, 5, 23),
+            (7.5, 7, 34),
+            (10, 1, 41),
+            (10, 9, 45),
+        ]
+
+        for plantability, vulnerability, expected in test_cases:
+            result = MVTGenerator.compute_mixed_indice(plantability, vulnerability)
+            self.assertEqual(
+                result,
+                expected,
+                f"compute_mixed_indice({plantability}, {vulnerability}) = {result}, expected {expected}",
+            )
+            self.assertGreaterEqual(result, 1, f"Result {result} below minimum")
+            self.assertLessEqual(result, 45, f"Result {result} above maximum")
+
+    def test_mixed_indice_with_none_values(self):
+        """Test that compute_mixed_indice handles None values correctly"""
+
+        # Should return None when either input is None
+        self.assertIsNone(MVTGenerator.compute_mixed_indice(None, 5))
+        self.assertIsNone(MVTGenerator.compute_mixed_indice(5, None))
+        self.assertIsNone(MVTGenerator.compute_mixed_indice(None, None))
+
+    def test_mixed_indice_boundary_values(self):
+        """Test compute_mixed_indice with boundary values"""
+        # Test plantability boundaries (0-10 scale maps to 0-4 grid)
+        # 0 -> 0, 2.5 -> 1, 5 -> 2, 7.5 -> 3, 10 -> 4
+        # Note: vulnerability 5 maps to component 3 (see vulnerability boundaries test below)
+        self.assertEqual(MVTGenerator.compute_mixed_indice(0, 5), 3)  # 0*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(2, 5), 3)  # 0*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(2.5, 5), 13)  # 1*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(4, 5), 13)  # 1*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 5), 23)  # 2*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(7.49, 5), 23)  # 2*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(7.5, 5), 33)  # 3*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(9, 5), 33)  # 3*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(10, 5), 43)  # 4*10 + 3
+
+        # Test vulnerability boundaries (1-9 scale maps to 1-5 grid)
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 1), 21)  # 2*10 + 1
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 2), 21)  # 2*10 + 1
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 3), 22)  # 2*10 + 2
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 4), 22)  # 2*10 + 2
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 5), 23)  # 2*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 6), 23)  # 2*10 + 3
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 7), 24)  # 2*10 + 4
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 8), 24)  # 2*10 + 4
+        self.assertEqual(MVTGenerator.compute_mixed_indice(5, 9), 25)  # 2*10 + 5
