@@ -680,6 +680,7 @@ class MVTGenerator:
                     # Free RAM
                     futures.pop(futures.index(future))
                     gc.collect()
+            connection.close()
 
     @staticmethod
     def compute_mixed_indice(
