@@ -56,9 +56,15 @@
         </div>
         {{ end }}
         <div class="blog-card-content">
-          <span class="blog-card-date"
-            >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
-          >
+          <div class="blog-card-meta">
+            <span class="blog-card-date"
+              >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
+            >
+            <span class="blog-card-dot">·</span>
+            <span class="blog-card-reading"
+              >{{ math.Round (div (countwords .Content) 200.0) }} min</span
+            >
+          </div>
           <h3 class="blog-card-title">{{ .Title }}</h3>
           <p class="blog-card-summary">{{ .Summary }}</p>
           <div class="blog-card-footer">
