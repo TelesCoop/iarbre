@@ -112,6 +112,21 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
             </p>
           </div>
         </a>
+
+        <a
+          href="/mentions-legales"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+        >
+          <span class="text-2xl">⚖️</span>
+          <div>
+            <h4 class="font-medium">Mentions légales</h4>
+            <p class="text-sm">
+              Consultez nos mentions légales et notre politique de confidentialité.
+            </p>
+          </div>
+        </a>
       </div>
     </div>
 
