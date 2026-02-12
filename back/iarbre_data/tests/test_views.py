@@ -1,6 +1,5 @@
 import os
 
-import mercantile
 import mapbox_vector_tile
 from iarbre_data.factories import TileFactory
 from iarbre_data.models import Tile, MVTTile
@@ -32,13 +31,7 @@ class MVTGeneratorTestCase(TestCase):
         MVTTile.objects.all().delete()
         return super().tearDown()
 
-    def test_queryset_bounds(self):
-        expected_bounds = {
-            "west": 4.862904542088828,
-            "south": 45.814411026142736,
-            "east": 4.908787723340132,
-            "north": 45.85159245978295,
-        }
+    def test_covered_tiles_from_bbox(self):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
@@ -51,24 +44,11 @@ class MVTGeneratorTestCase(TestCase):
         TileFactory.create(geometry=poly2)
 
         mvt_generator = MVTGenerator(Tile, zoom_levels=(8, 10))
-        actual_bounds = mvt_generator._get_queryset_bounds()
+        tiles_z8 = mvt_generator._get_covered_tiles_from_bbox(8)
+        self.assertGreater(len(tiles_z8), 0)
 
-        # Define a delta for floating-point comparison
-        delta = 1e-10
-
-        # Check each value with tolerance
-        self.assertAlmostEqual(
-            actual_bounds["west"], expected_bounds["west"], delta=delta
-        )
-        self.assertAlmostEqual(
-            actual_bounds["south"], expected_bounds["south"], delta=delta
-        )
-        self.assertAlmostEqual(
-            actual_bounds["east"], expected_bounds["east"], delta=delta
-        )
-        self.assertAlmostEqual(
-            actual_bounds["north"], expected_bounds["north"], delta=delta
-        )
+        tiles_z10 = mvt_generator._get_covered_tiles_from_bbox(10)
+        self.assertGreaterEqual(len(tiles_z10), len(tiles_z8))
 
     def test_generate_tile_for_zoom(self):
         tile1 = Polygon.from_bbox(
@@ -92,20 +72,8 @@ class MVTGeneratorTestCase(TestCase):
             datatype="fake_datatype",
         )
 
-        bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
-            # Get all tiles that cover the entire geometry bounds
-            # bbox needs to be in 4326
-            tiles = list(
-                mercantile.tiles(
-                    bounds["west"],
-                    bounds["south"],
-                    bounds["east"],
-                    bounds["north"],
-                    zoom,
-                    truncate=True,
-                )
-            )
+            tiles = mvt._get_covered_tiles_from_bbox(zoom)
             for tile in tiles:
                 mvt_worker._generate_tile_for_zoom(tile, zoom)
 
@@ -148,20 +116,8 @@ class MVTGeneratorTestCase(TestCase):
             datatype="fake_datatype",
         )
 
-        bounds = mvt._get_queryset_bounds()
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
-            # Get all tiles that cover the entire geometry bounds
-            # bbox needs to be in 4326
-            tiles = list(
-                mercantile.tiles(
-                    bounds["west"],
-                    bounds["south"],
-                    bounds["east"],
-                    bounds["north"],
-                    zoom,
-                    truncate=True,
-                )
-            )
+            tiles = mvt._get_covered_tiles_from_bbox(zoom)
             for tile in tiles:
                 mvt_worker._generate_tile_for_zoom(tile, zoom)
 
