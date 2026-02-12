@@ -1,33 +1,76 @@
-{{ define "main" }}
+{{ define "main" }} {{ $posts := sort (where site.RegularPages.ByTitle "Section"
+"actualites") ".PublishDate" }} {{ $allPosts := $posts.Reverse }} {{ $featured
+:= index $allPosts 0 }} {{ $rest := after 1 $allPosts }}
 
-<div class="news-page">
-  <div class="news-header">
-    <h1 class="news-title">Actualités</h1>
-    <p class="news-subtitle">Dernières nouvelles et mises à jour du projet</p>
-  </div>
-
-  <div class="news-grid">
-    {{ $posts := sort (where site.RegularPages.ByTitle "Section" "actualites")
-    ".PublishDate" }} {{ range $posts.Reverse }}
-    <article class="news-card">
-      <div class="news-content">
-        <div class="news-meta">
-          <span class="meta-author">{{ .Params.author }}</span>
-          <span class="meta-separator">•</span>
-          <span class="meta-date"
-            >{{ .PublishDate | time.Format "02 January 2006" }}</span
-          >
-        </div>
-
-        <h2 class="news-title">
-          <a href="{{.RelPermalink}}">{{ .Title }}</a>
-        </h2>
-
-        <p class="news-summary">{{ .Summary }}</p>
+<div class="blog-page">
+  <div class="blog-hero">
+    <a href="{{ $featured.RelPermalink }}" class="blog-hero-link">
+      {{ if $featured.Params.image }}
+      <div class="blog-hero-image">
+        {{ $img := $featured.Resources.GetMatch $featured.Params.image }} {{ if
+        $img }}
+        <img src="{{ $img.RelPermalink }}" alt="{{ $featured.Title }}" />
+        {{ else }}
+        <img src="{{ $featured.Params.image }}" alt="{{ $featured.Title }}" />
+        {{ end }}
       </div>
-    </article>
-    {{ end }}
+      {{ end }}
+      <div class="blog-hero-overlay">
+        <div class="blog-hero-content">
+          <span class="blog-hero-badge">Dernier article</span>
+          <h1 class="blog-hero-title">{{ $featured.Title }}</h1>
+          <p class="blog-hero-summary">{{ $featured.Summary }}</p>
+          <div class="blog-hero-meta">
+            <span class="blog-meta-author">{{ $featured.Params.author }}</span>
+            <span class="blog-meta-separator">·</span>
+            <span class="blog-meta-date"
+              >{{ $featured.PublishDate | time.Format "02 January 2006" }}</span
+            >
+            <span class="blog-meta-separator">·</span>
+            <span class="blog-meta-reading"
+              >{{ math.Round (div (countwords $featured.Content) 200.0) }}
+              min</span
+            >
+          </div>
+        </div>
+      </div>
+    </a>
   </div>
+
+  {{ if gt (len $rest) 0 }}
+  <div class="blog-section">
+    <div class="blog-section-header">
+      <h2 class="blog-section-title">Toutes les actualités</h2>
+      <p class="blog-section-count">{{ len $allPosts }} articles</p>
+    </div>
+    <div class="blog-grid">
+      {{ range $rest }}
+      <a href="{{ .RelPermalink }}" class="blog-card">
+        {{ if .Params.image }}
+        <div class="blog-card-image">
+          {{ $img := .Resources.GetMatch .Params.image }} {{ if $img }}
+          <img src="{{ $img.RelPermalink }}" alt="{{ .Title }}" />
+          {{ else }}
+          <img src="{{ .Params.image }}" alt="{{ .Title }}" />
+          {{ end }}
+        </div>
+        {{ end }}
+        <div class="blog-card-content">
+          <span class="blog-card-date"
+            >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
+          >
+          <h3 class="blog-card-title">{{ .Title }}</h3>
+          <p class="blog-card-summary">{{ .Summary }}</p>
+          <div class="blog-card-footer">
+            <span class="blog-card-author">{{ .Params.author }}</span>
+            <span class="blog-card-read">Lire →</span>
+          </div>
+        </div>
+      </a>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
 </div>
 
 {{ end }}
