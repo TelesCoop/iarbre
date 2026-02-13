@@ -4,17 +4,17 @@ import AppButton from "@/components/shared/AppButton.vue"
 
 <template>
   <div class="flex items-center justify-center min-h-screen bg-off-white px-4">
-    <div class="flex flex-col items-center text-center max-w-md">
+    <div class="flex flex-col items-center text-center">
       <svg
         class="w-16 h-16 mb-6 text-light-green"
-        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
         stroke-width="2"
+        viewBox="0 0 24 24"
       >
         <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <line x1="12" y1="16" x2="12.01" y2="16" />
+        <line x1="12" x2="12" y1="8" y2="12" />
+        <line x1="12" x2="12.01" y1="16" y2="16" />
       </svg>
 
       <h1 class="text-6xl font-bold mb-4 text-brown font-accent">404</h1>
@@ -24,7 +24,7 @@ import AppButton from "@/components/shared/AppButton.vue"
       </p>
 
       <router-link to="/">
-        <AppButton variant="primary" size="lg">Retour à l'accueil</AppButton>
+        <AppButton size="lg" variant="primary">Retour à l'accueil</AppButton>
       </router-link>
     </div>
   </div>

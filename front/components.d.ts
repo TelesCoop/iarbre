@@ -45,6 +45,7 @@ declare module 'vue' {
     IconCopy: typeof import('./src/components/shared/icons/IconCopy.vue')['default']
     IconIarbreLogo: typeof import('./src/components/icons/IconIarbreLogo.vue')['default']
     IconInfo: typeof import('./src/components/icons/IconInfo.vue')['default']
+    IconLegal: typeof import('./src/components/icons/IconLegal.vue')['default']
     IconMap: typeof import('./src/components/icons/IconMap.vue')['default']
     IconMoon: typeof import('./src/components/icons/IconMoon.vue')['default']
     IconSettings: typeof import('./src/components/icons/IconSettings.vue')['default']

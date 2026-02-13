@@ -23,6 +23,7 @@ describe("Navbar", () => {
 
     cy.get('input[type="email"]').type(testEmail)
     cy.get("textarea").type(testFeedback)
+    cy.get(".consent-checkbox").check()
     cy.getBySel("submit-feedback-button").click()
 
     cy.wait("@submitFeedback").its("response.statusCode").should("eq", 200)
