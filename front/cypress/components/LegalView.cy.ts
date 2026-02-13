@@ -3,7 +3,15 @@ import LegalView from "@/views/LegalView.vue"
 
 describe("LegalView", () => {
   beforeEach(() => {
-    cy.mount(LegalView)
+    cy.mount(LegalView, {
+      global: {
+        stubs: {
+          "router-link": {
+            template: "<a><slot /></a>"
+          }
+        }
+      }
+    })
   })
 
   it("renders correctly", () => {
