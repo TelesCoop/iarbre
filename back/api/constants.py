@@ -19,6 +19,7 @@ class DataType(TextChoices):
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
     LIDAR = "vegetation", "Vegetation"
+    VEGESTRATE = "vegestrate", "Vegestrate"
 
 
 class FrontendDataType(TextChoices):

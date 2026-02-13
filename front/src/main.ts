@@ -1,26 +1,15 @@
 import "./styles/main.css"
-import PrimeVue from "primevue/config"
 import { createApp } from "vue"
 import { createPinia } from "pinia"
-import ToastService from "primevue/toastservice"
-import Tooltip from "primevue/tooltip"
 
 import App from "./App.vue"
 import router from "./router"
-import { IArbrePreset } from "./theme/iArbre"
+import { vTooltip } from "./directives/tooltip"
 
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-app.use(PrimeVue, {
-  theme: {
-    preset: IArbrePreset,
-    options: {
-      darkModeSelector: false
-    }
-  }
-})
-app.use(ToastService)
-app.directive("tooltip", Tooltip)
+app.directive("tooltip", vTooltip)
+
 app.mount("#app")

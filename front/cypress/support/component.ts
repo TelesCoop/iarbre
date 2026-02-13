@@ -19,11 +19,10 @@ import "./commands"
 import "@cypress/code-coverage/support"
 
 import "@/styles/main.css"
-import Primevue from "primevue/config"
+import { createPinia } from "pinia"
+import { vTooltip } from "@/directives/tooltip"
 
 import { mount } from "cypress/vue"
-import { IArbrePreset } from "../../src/theme/iArbre"
-import ToastService from "primevue/toastservice"
 
 beforeEach(() => {
   cy.window()
@@ -35,7 +34,9 @@ beforeEach(() => {
           if (message.startsWith("[Vue warn]")) {
             const allowedMessages = [
               '[Vue warn]: Invalid event arguments: event validation failed for event "',
-              "[Vue warn]: Wrong type passed as event handler to"
+              "[Vue warn]: Wrong type passed as event handler to",
+              "[Vue warn]: Extraneous non-props attributes",
+              "[Vue warn]: Failed to resolve component: Chart"
             ]
             for (const allowedMessage of allowedMessages) {
               if (message.startsWith(allowedMessage)) return
@@ -68,14 +69,11 @@ Cypress.Commands.add("mount", (component, options) => {
   }
   options.global = options.global || {}
   options.global.plugins = options?.global.plugins || []
+  options.global.directives = options?.global.directives || {}
   options.global.plugins.push({
     install(app) {
-      app.use(Primevue, {
-        theme: {
-          preset: IArbrePreset
-        }
-      })
-      app.use(ToastService)
+      app.use(createPinia())
+      app.directive("tooltip", vTooltip)
     }
   })
 

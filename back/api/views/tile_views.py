@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -8,8 +10,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
-from iarbre_data.models import MVTTile
-from iarbre_data.models import Tile, Lcz, Vulnerability
+from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
 from rest_framework.response import Response
 
 from api.serializers.serializers import (
@@ -25,6 +26,8 @@ from api.constants import (
     DataType,
     FrontendDataType,
 )
+
+logger = logging.getLogger(__name__)
 
 # Mapping of datatypes to their models
 DATATYPE_MODEL_MAP = {
@@ -58,6 +61,7 @@ class TileView(generics.RetrieveAPIView):
                 self.get_object().mvt_file, content_type="application/x-protobuf"
             )
         except MVTTile.DoesNotExist:
+            logger.warning("MVTTile not found: %s", self.kwargs)
             raise Http404
 
 
@@ -149,6 +153,7 @@ class ScoresInPolygonView(APIView):
             return polygon, None
 
         except Exception:
+            logger.exception("Invalid polygon geometry: %s", polygon_geojson)
             return None, Response(
                 {"error": "Invalid polygon shape"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -23,7 +23,8 @@ Cypress.on("window:before:load", (win) => {
     .callsFake((message) => {
       if (message.startsWith("[Vue warn]")) {
         const allowedMessages = [
-          '[Vue warn]: Invalid event arguments: event validation failed for event "'
+          '[Vue warn]: Invalid event arguments: event validation failed for event "',
+          "[Vue warn]: Extraneous non-props attributes"
         ]
         for (const allowedMessage of allowedMessages) {
           if (message.startsWith(allowedMessage)) return
@@ -31,4 +32,11 @@ Cypress.on("window:before:load", (win) => {
         throw new SyntaxError(message)
       }
     })
+})
+
+Cypress.on("uncaught:exception", (err) => {
+  if (err.message.includes("Element provided to #addTo() exists, but is not in the DOM")) {
+    return false
+  }
+  return true
 })

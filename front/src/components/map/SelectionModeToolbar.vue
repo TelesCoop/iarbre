@@ -2,18 +2,17 @@
 import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { SelectionMode } from "@/utils/enum"
-import Button from "primevue/button"
 
-const mapStore = useMapStore()
-
-interface DrawingMode {
+interface SelectionModeOption {
   mode: SelectionMode
   icon: string
   label: string
   dataCy: string
 }
 
-const drawingModes: DrawingMode[] = [
+const mapStore = useMapStore()
+
+const selectionModes: SelectionModeOption[] = [
   {
     mode: SelectionMode.POINT,
     icon: "point",
@@ -52,30 +51,26 @@ const drawingModes: DrawingMode[] = [
   }
 ]
 
-const isActive = (mode: SelectionMode) => computed(() => mapStore.selectionMode === mode)
+const currentMode = computed(() => mapStore.selectionMode)
 
-const switchMode = (mode: SelectionMode) => {
+const isActive = (mode: SelectionMode): boolean => currentMode.value === mode
+
+const handleModeChange = (mode: SelectionMode) => {
   mapStore.changeSelectionMode(mode)
 }
 </script>
 
 <template>
-  <div class="flex flex-col gap-0 bg-white rounded-lg shadow-md overflow-hidden">
-    <Button
-      v-for="drawingMode in drawingModes"
-      :key="drawingMode.mode"
-      v-tooltip.left="drawingMode.label"
-      :data-cy="drawingMode.dataCy"
-      size="small"
-      :severity="isActive(drawingMode.mode).value ? 'primary' : 'secondary'"
-      class="w-10 h-10 p-0 flex items-center justify-center rounded-none! border-0!"
-      @click="switchMode(drawingMode.mode)"
-    >
-      <img
-        :src="`/icons/${drawingMode.icon}${isActive(drawingMode.mode).value ? '-white' : ''}.svg`"
-        :alt="drawingMode.label"
-        class="w-6 h-6"
-      />
-    </Button>
+  <div class="map-control-group" role="toolbar" aria-label="Modes de sélection">
+    <SelectionModeButton
+      v-for="option in selectionModes"
+      :key="option.mode"
+      :active="isActive(option.mode)"
+      :data-cy="option.dataCy"
+      :icon="option.icon"
+      :label="option.label"
+      :mode="option.mode"
+      @select="handleModeChange"
+    />
   </div>
 </template>

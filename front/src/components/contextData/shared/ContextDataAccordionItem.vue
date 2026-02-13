@@ -1,8 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed } from "vue"
-import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
+import { computed, ref } from "vue"
 import VulnerabilityContextDataScoreBadge from "@/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue"
-import type { ContextDataFactorGroup, ContextDataColorScheme } from "@/types/contextData"
+import VulnerabilityContextDataScore from "@/components/contextData/vulnerability/VulnerabilityContextDataScore.vue"
+import type {
+  ContextDataFactorGroup,
+  ContextDataColorScheme,
+  ContextDataVulnerabilityFactor
+} from "@/types/contextData"
 import type { VulnerabilityCategory } from "@/utils/enum"
 import { VulnerabilityMode } from "@/utils/vulnerability"
 
@@ -15,67 +19,10 @@ interface ContextDataAccordionItemProps {
 }
 
 const props = withDefaults(defineProps<ContextDataAccordionItemProps>(), {
-  colorScheme: "plantability"
-})
-
-const isExpanded = ref(false)
-
-const toggleExpanded = () => {
-  isExpanded.value = !isExpanded.value
-}
-
-const categoryClasses = computed(() => {
-  const base =
-    "flex items-center justify-between w-full p-3 text-left bg-gray-50 hover:bg-gray-100 focus:bg-gray-100 transition-colors cursor-pointer rounded-r-lg border-l-4"
-
-  if (props.colorScheme === "plantability") {
-    if (props.group?.hasPositiveImpact && props.group?.hasNegativeImpact) {
-      return `${base} border-l-yellow-500`
-    } else if (props.group?.hasPositiveImpact) {
-      return `${base} border-l-green-500`
-    } else if (props.group?.hasNegativeImpact) {
-      return `${base} border-l-orange-500`
-    }
-  } else {
-    return `${base} border-l-primary-500`
-  }
-
-  return `${base} border-l-gray-400`
-})
-
-const impactIndicatorClasses = computed(() => {
-  if (props.colorScheme === "plantability") {
-    if (props.group.hasPositiveImpact && props.group.hasNegativeImpact) {
-      return "w-2 h-2 rounded-full bg-yellow-500"
-    } else if (props.group.hasPositiveImpact) {
-      return "w-2 h-2 rounded-full bg-green-500"
-    } else if (props.group.hasNegativeImpact) {
-      return "w-2 h-2 rounded-full bg-orange-500"
-    }
-  }
-
-  return "w-2 h-2 rounded-full bg-gray-400"
-})
-
-const shouldShowImpactIndicator = computed(() => {
-  return (
-    props.colorScheme === "plantability" &&
-    (props.group.hasPositiveImpact || props.group.hasNegativeImpact)
-  )
-})
-
-const impactTitle = computed(() => {
-  if (props.colorScheme !== "plantability") return ""
-
-  if (props.group.hasPositiveImpact && props.group.hasNegativeImpact) {
-    return "Impact mixte"
-  } else if (props.group.hasPositiveImpact) {
-    return "Impact positif"
-  } else if (props.group.hasNegativeImpact) {
-    return "Impact négatif"
-  }
-
-  return "Impact neutre"
+  colorScheme: "plantability",
+  getCategoryScore: undefined,
+  getScoreColor: undefined,
+  getScoreLabel: undefined
 })
 
 const isVulnerabilityGroup = computed(() => {
@@ -86,81 +33,174 @@ const vulnerabilityCategory = computed(() => {
   if (!isVulnerabilityGroup.value) return null
   return props.group?.category as VulnerabilityCategory
 })
+
+const isExpanded = ref(false)
+
+const toggle = () => {
+  isExpanded.value = !isExpanded.value
+}
+
+const isVulnerabilityFactor = (factor: any) => {
+  return (
+    props.colorScheme === "vulnerability" &&
+    (factor.dayScore !== undefined || factor.nightScore !== undefined)
+  )
+}
 </script>
 
 <template>
-  <div class="mb-2">
-    <button
-      :aria-controls="`category-${group?.category}`"
-      :aria-expanded="isExpanded"
-      :class="categoryClasses"
-      :data-cy="`category-${group?.category}`"
-      @click="toggleExpanded"
-    >
-      <div class="flex items-center gap-3">
-        <span class="text-lg">{{ group.icon }}</span>
-        <div class="flex-1">
-          <h4 class="text-sm font-medium text-gray-900">
-            {{ group.label }}
-          </h4>
-          <p class="text-xs text-gray-600">
-            {{
-              group.description ||
-              `${group.factors.length} paramètre${group.factors.length > 1 ? "s" : ""}`
-            }}
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <vulnerability-context-data-score-badge
-          v-if="isVulnerabilityGroup && vulnerabilityCategory && getCategoryScore"
-          :category="vulnerabilityCategory"
-          :get-category-score="getCategoryScore"
-        />
-        <div
-          v-else-if="shouldShowImpactIndicator"
-          :class="impactIndicatorClasses"
-          :title="impactTitle"
-        ></div>
-        <i
-          :class="isExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
-          aria-hidden="true"
-          class="pi transition-transform duration-200"
-        ></i>
-      </div>
-    </button>
-
-    <div
-      v-if="isExpanded"
-      :id="`category-${group?.category}`"
-      class="mt-2 ml-4 space-y-2 animate-fade-in"
-    >
-      <context-data-item
-        v-for="factor in group.factors"
-        :key="factor.key"
-        :color-scheme="colorScheme"
-        :get-score-color="getScoreColor"
-        :get-score-label="getScoreLabel"
-        :item="factor"
+  <div :data-cy="`category-${group?.category}`" class="accordion-item">
+    <button :aria-expanded="isExpanded" class="accordion-header" type="button" @click="toggle">
+      <span class="header-icon">{{ group.icon }}</span>
+      <span class="header-label">{{ group.label }}</span>
+      <VulnerabilityContextDataScoreBadge
+        v-if="isVulnerabilityGroup && vulnerabilityCategory && getCategoryScore"
+        :category="vulnerabilityCategory"
+        :get-category-score="getCategoryScore"
       />
-    </div>
+      <svg
+        :class="{ rotated: isExpanded }"
+        class="chevron-icon"
+        fill="none"
+        height="12"
+        viewBox="0 0 12 12"
+        width="12"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M2 4L6 8L10 4"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        />
+      </svg>
+    </button>
+    <table v-show="isExpanded" class="accordion-table">
+      <tbody>
+        <tr
+          v-for="(factor, index) in group.factors"
+          :key="factor.key"
+          :class="{ 'row-border': index < group.factors.length - 1 }"
+          :data-cy="`factor-${factor.key}`"
+        >
+          <td class="cell-icon">
+            <span v-if="factor.icon">{{ factor.icon }}</span>
+          </td>
+          <td class="cell-label">{{ factor.label }}</td>
+          <td v-if="isVulnerabilityFactor(factor)" class="cell-vulnerability">
+            <div class="vulnerability-scores">
+              <span class="score-icon">☀️</span>
+              <VulnerabilityContextDataScore
+                :factor-id="(factor as ContextDataVulnerabilityFactor).factorId || factor.key"
+                :get-score-color="getScoreColor!"
+                :get-score-label="getScoreLabel!"
+                :score="(factor as ContextDataVulnerabilityFactor).dayScore ?? null"
+              />
+              <span class="score-icon">🌙</span>
+              <VulnerabilityContextDataScore
+                :factor-id="(factor as ContextDataVulnerabilityFactor).factorId || factor.key"
+                :get-score-color="getScoreColor!"
+                :get-score-label="getScoreLabel!"
+                :score="(factor as ContextDataVulnerabilityFactor).nightScore ?? null"
+              />
+            </div>
+          </td>
+          <td
+            v-else
+            :class="[
+              'cell-value',
+              factor.impact === 'positive' ? 'impact-positive' : '',
+              factor.impact === 'negative' ? 'impact-negative' : ''
+            ]"
+          >
+            {{ factor.value }}
+            <span v-if="factor.unit" class="value-unit">{{ factor.unit }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <style scoped>
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out;
+@reference "@/styles/main.css";
+
+.accordion-item {
+  @apply mb-3;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.accordion-header {
+  @apply flex items-center gap-2 w-full px-2.5 py-2 bg-gray-100 border border-gray-200 border-b-0 rounded-t-md;
+  @apply cursor-pointer transition-colors duration-200 hover:bg-gray-200;
+  @apply text-left;
+}
+
+.accordion-header[aria-expanded="false"] {
+  @apply rounded-b-md border-b;
+}
+
+.chevron-icon {
+  @apply flex-shrink-0 text-gray-400 transition-transform duration-200;
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.header-icon {
+  @apply text-sm;
+}
+
+.header-label {
+  @apply flex-1 text-sm font-semibold text-gray-800;
+}
+
+.accordion-table {
+  @apply w-full bg-white border border-gray-200 rounded-b-md overflow-hidden;
+}
+
+.row-border {
+  @apply border-b border-gray-100;
+}
+
+.accordion-table td {
+  @apply py-1.5 px-2 align-middle;
+}
+
+.cell-icon {
+  @apply w-6 text-center text-xs;
+}
+
+.cell-label {
+  @apply text-sm text-gray-700;
+}
+
+.cell-vulnerability {
+  @apply text-right;
+}
+
+.vulnerability-scores {
+  @apply flex items-center justify-end gap-1;
+}
+
+.score-icon {
+  @apply text-xs;
+}
+
+.cell-value {
+  @apply text-right text-sm font-semibold whitespace-nowrap text-gray-800;
+}
+
+.cell-value.impact-positive {
+  @apply text-green-600;
+}
+
+.cell-value.impact-negative {
+  @apply text-orange-600;
+}
+
+.value-unit {
+  @apply text-xs font-normal text-gray-500 ml-0.5;
 }
 </style>

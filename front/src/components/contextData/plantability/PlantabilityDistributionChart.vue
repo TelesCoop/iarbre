@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import { computed } from "vue"
+import { Pie } from "vue-chartjs"
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+
+ChartJS.register(ArcElement, Tooltip, Legend, Title)
 
 interface DistributionEntry {
   score: number
@@ -11,13 +15,11 @@ interface PlantabilityDistributionChartProps {
   entries: DistributionEntry[]
   title?: string
   showLegend?: boolean
-  showDetails?: boolean
 }
 
 const props = withDefaults(defineProps<PlantabilityDistributionChartProps>(), {
   title: "Distribution des scores de plantabilité sur la zone.",
-  showLegend: true,
-  showDetails: true
+  showLegend: true
 })
 
 const chartData = computed(() => {
@@ -31,7 +33,7 @@ const chartData = computed(() => {
   const backgroundColor = sortedEntries.map((entry) => {
     const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(entry.score)
     return colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
-      ? PLANTABILITY_COLOR_MAP[colorIndex + 1]
+      ? String(PLANTABILITY_COLOR_MAP[colorIndex + 1])
       : "#C4C4C4"
   })
 
@@ -54,8 +56,8 @@ const chartOptions = computed(() => ({
   plugins: {
     legend: {
       display: props.showLegend,
-      position: "bottom",
-      onClick: null // don't allow filtering onClick
+      position: "bottom" as const,
+      onClick: () => {} // don't allow filtering onClick
     },
     title: {
       display: true,
@@ -71,9 +73,6 @@ const chartOptions = computed(() => ({
 
 <template>
   <div v-if="chartData" class="p-4">
-    <Chart type="pie" :data="chartData" :options="chartOptions" class="w-full h-64" />
-    <p v-if="showDetails" class="text-sm font-sans text-center m-2">
-      0/10 signifie non plantable et 10/10 plantable
-    </p>
+    <Pie :data="chartData" :options="chartOptions" class="w-full h-64" />
   </div>
 </template>

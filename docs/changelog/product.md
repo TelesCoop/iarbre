@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 🔖 0.24.0 (2026-02-12) : Refonte UI et amélioration calque de végétation stratifié
+
+### ✨ feat: Refonte de l'UI
+
+La zone de carte s'est agrandie, le panneau latéral a été simplifié et il a aussi maintenant plus d'homogénité. La navigation devrait être plus intuitive et fluide !
+
+&rarr; Commit [25c6de9](https://github.com/TelesCoop/iarbre/commit/25c6de9958ac81f42d72f79de30fddb3719517d3)
+
+### 🛠️ enhance : Amélioration du calque de végétation stratifié
+
+La précision est maintenant meilleure sur les petites zones et sur la détection des zones herbacées. Ce calque a été produit à l'aide [cette version](https://github.com/TelesCoop/vegestrate/releases/tag/v1.0-metropole-lyon-2023) de code.
+La [documentation](https://docs.iarbre.fr/methodology/vegetation/) a aussi été mise à jour.
+
+&rarr; Commit [690fb40](https://github.com/TelesCoop/iarbre/commit/690fb40e0092f904a3b998bc3a786bdca4247ab8)
+
+### ✨ feat: Fonction de filtrage pour le calque plantabilité x vulnérabilité
+
+Il est maintenant possible de filtre des zones dans le calque de plantabilité x vulnérablité en cliquand dans la légende.
+
+&rarr; PR [#476](https://github.com/TelesCoop/iarbre/pull/476)
+
 ## 🔖 0.23.0 (2026-01-28) : Vue 3D et tutoriel
 
 ### ✨ feat: Vue 3D

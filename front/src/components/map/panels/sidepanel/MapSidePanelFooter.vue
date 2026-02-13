@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { computed } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
-import { useToast } from "primevue/usetoast"
+import { useToast } from "@/composables/useToast"
 
 const mapStore = useMapStore()
 const toast = useToast()

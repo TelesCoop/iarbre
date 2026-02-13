@@ -1,32 +1,41 @@
 <script lang="ts" setup>
+import { computed } from "vue"
 import { Drawer, useAppStore } from "@/stores/app"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel } from "@/utils/enum"
-import { computed } from "vue"
+import IconSettings from "@/components/icons/IconSettings.vue"
+import AppButton from "@/components/shared/AppButton.vue"
 
 const appStore = useAppStore()
 const mapStore = useMapStore()
 
+const isOpen = computed(() => appStore.drawerVisible[Drawer.MAP_CONFIG])
+
 const layerName = computed(
   () => DataTypeToLabel[mapStore.selectedDataType] ?? "Aucune couche sélectionnée"
 )
-const toggleDrawer = () => {
+
+const ariaLabel = computed(() =>
+  isOpen.value ? "Fermer le panneau de configuration" : "Ouvrir le panneau de configuration"
+)
+
+const handleToggle = () => {
   appStore.toggleDrawer(Drawer.MAP_CONFIG)
 }
 </script>
 
 <template>
-  <Button
-    icon="pi pi-cog"
-    severity="secondary"
-    size="small"
-    :aria-label="
-      appStore.drawerVisible[Drawer.MAP_CONFIG] ? 'Close drawer config' : 'Open drawer config'
-    "
+  <AppButton
+    :aria-expanded="isOpen"
+    :aria-label="ariaLabel"
     data-cy="drawer-toggle"
-    :label="layerName"
-    @click="toggleDrawer"
-  />
+    size="sm"
+    variant="secondary"
+    @click="handleToggle"
+  >
+    <template #icon-left>
+      <IconSettings :size="16" aria-hidden="true" />
+    </template>
+    {{ layerName }}
+  </AppButton>
 </template>
-
-<style scoped></style>

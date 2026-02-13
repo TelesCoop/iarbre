@@ -1,7 +1,6 @@
 import { computed, type ComputedRef, type Ref } from "vue"
 import {
   PlantabilityImpact,
-  type PlantabilityLandUse,
   PlantabilityLandUseKeys,
   PlantabilityOccupationLevel,
   PlantabilityMetaCategory,

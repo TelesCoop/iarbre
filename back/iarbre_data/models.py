@@ -66,6 +66,11 @@ class City(TileAggregateBase, PlantabilityCount):
     tiles_generated = models.BooleanField(default=False)
     tiles_computed = models.BooleanField(default=False)
 
+    trees_surface = models.FloatField(null=True, blank=True)
+    bushes_surface = models.FloatField(null=True, blank=True)
+    grass_surface = models.FloatField(null=True, blank=True)
+    total_vegetation_surface = models.FloatField(null=True, blank=True)
+
     def __str__(self):
         return f"CITY name: {self.name}"
 
@@ -272,10 +277,40 @@ class HotSpot(models.Model):
         }
 
 
+class StrateChoices(models.TextChoices):
+    ARBUSTIF = "arbustif", "Arbustif"
+    ARBORESCENT = "arborescent", "Arborescent"
+    HERBACEE = "herbacee", "Herbacée"
+
+
+class Vegestrate(models.Model):
+    """Vegestrate data."""
+
+    geometry = PolygonField(srid=2154)
+    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+
+    strate = models.CharField(
+        max_length=20, choices=StrateChoices.choices, null=True, blank=True
+    )
+    surface = models.FloatField(null=True)
+
+    geolevel = GeoLevel.TILE.value
+    datatype = DataType.VEGESTRATE.value
+
+    def get_layer_properties(self):
+        """Return the properties of the vegetation inventory for the MVT datatype."""
+        return {
+            "id": self.id,
+            "indice": self.strate,
+            "surface": self.surface,
+        }
+
+
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)
 @receiver(pre_save, sender=Cadastre)
 @receiver(pre_save, sender=HotSpot)
+@receiver(pre_save, sender=Vegestrate)
 def before_save(sender, instance, **kwargs):
     create_mapgeometry(instance)

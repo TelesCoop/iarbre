@@ -1,18 +1,10 @@
-import { createPinia } from "pinia"
-import { mount } from "cypress/vue"
 import MapSidePanelDownload from "@/components/map/panels/sidepanel/MapSidePanelDownload.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 
 describe("MapSidePanelDownload", () => {
   beforeEach(() => {
-    const pinia = createPinia()
-
-    mount(MapSidePanelDownload, {
-      global: {
-        plugins: [pinia]
-      }
-    })
+    cy.mount(MapSidePanelDownload)
   })
 
   it("should render the component with correct content", () => {

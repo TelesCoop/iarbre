@@ -20,7 +20,7 @@ defineProps<VegetationCardProps>()
     title="vegetation"
     description="Données de végétation issues de la fusion de la classification du LIDAR 2023 et de la classification des orthophotos à l'aide de FLAIR-HUB de l'IGN."
     :data="data"
-    empty-message="Zoomez et cliquez sur un carreau."
+    hide-empty-message
     :zoom-level="zoomLevel"
   >
     <template #content>

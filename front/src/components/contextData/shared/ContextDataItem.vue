@@ -15,48 +15,23 @@ interface ContextDataItemProps {
 }
 
 const props = withDefaults(defineProps<ContextDataItemProps>(), {
-  colorScheme: "plantability"
+  colorScheme: "plantability",
+  getScoreColor: undefined,
+  getScoreLabel: undefined
 })
 
-const iconClasses = computed(() => {
-  const base =
-    "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-
+const impactClass = computed(() => {
   if (props.colorScheme === "plantability" && props.item.impact) {
     switch (props.item.impact) {
       case "negative":
-        return `${base} bg-orange-100 text-orange-700 text-lg`
+        return "impact-negative"
       case "positive":
-        return `${base} bg-green-100 text-green-700 text-lg`
+        return "impact-positive"
       default:
-        return `${base} bg-gray-200 text-gray-700 text-lg`
+        return ""
     }
-  } else if (props.colorScheme === "climate") {
-    return `${base} bg-primary-100 text-primary-700 text-sm font-bold`
   }
-
-  return `${base} bg-gray-200 text-gray-700 text-lg`
-})
-
-const valueClasses = computed(() => {
-  const base = "text-sm font-bold transition-colors"
-
-  if (props.colorScheme === "plantability" && props.item.impact) {
-    switch (props.item.impact) {
-      case "negative":
-        return `${base} text-orange-600`
-      case "positive":
-        return `${base} text-green-600`
-      default:
-        return `${base} text-gray-700`
-    }
-  } else if (props.colorScheme === "climate") {
-    return `${base} text-primary-600`
-  } else if (props.colorScheme === "vulnerability") {
-    return `${base} text-primary-600`
-  }
-
-  return `${base} text-gray-700`
+  return ""
 })
 
 const isVulnerabilityFactor = computed(() => {
@@ -79,54 +54,107 @@ const vulnerabilityScores = computed(() => {
 </script>
 
 <template>
-  <div
-    role="listitem"
-    class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 focus-within:bg-gray-100 transition-colors"
-    :data-cy="`factor-${item.key}`"
-  >
-    <div
-      v-if="item.icon"
-      :class="iconClasses"
-      :aria-label="`Icône pour ${item.label}`"
-      data-cy="factor-icon"
-    >
+  <div :data-cy="`factor-${item.key}`" class="factor-item" role="listitem">
+    <div v-if="item.icon" class="factor-icon" data-cy="factor-icon">
       {{ item.icon }}
     </div>
 
-    <div class="flex-1 min-w-0" :class="{ 'ml-0': !item.icon }">
-      <h4 class="text-sm font-medium text-gray-900 mb-1 truncate">
-        {{ item.label }}
-      </h4>
-      <p v-if="item.description" class="text-xs text-gray-500 mb-1">
+    <div class="factor-content">
+      <div class="factor-header">
+        <h4 class="factor-label">{{ item.label }}</h4>
+        <div v-if="!isVulnerabilityFactor" class="factor-value-inline">
+          <span :class="['value-text', impactClass]">{{ item.value }}</span>
+          <span v-if="item.unit" class="value-unit">{{ item.unit }}</span>
+        </div>
+      </div>
+
+      <p v-if="item.description" class="factor-description">
         {{ item.description }}
       </p>
+
       <div
         v-if="isVulnerabilityFactor && vulnerabilityScores && getScoreColor && getScoreLabel"
-        class="flex gap-6"
+        class="vulnerability-scores"
       >
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-600">☀️ Jour:</span>
-          <vulnerability-context-data-score
-            :score="vulnerabilityScores.day ?? null"
+        <div class="score-item">
+          <span class="score-label">☀️ Jour</span>
+          <VulnerabilityContextDataScore
             :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
             :get-score-color="getScoreColor"
             :get-score-label="getScoreLabel"
+            :score="vulnerabilityScores.day ?? null"
           />
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-600">🌙 Nuit:</span>
-          <vulnerability-context-data-score
-            :score="vulnerabilityScores.night ?? null"
+        <div class="score-item">
+          <span class="score-label">🌙 Nuit</span>
+          <VulnerabilityContextDataScore
             :factor-id="(item as ContextDataVulnerabilityFactor).factorId || item.key"
             :get-score-color="getScoreColor"
             :get-score-label="getScoreLabel"
+            :score="vulnerabilityScores.night ?? null"
           />
         </div>
       </div>
-      <p v-else :class="valueClasses">
-        {{ item.value }}
-        <span v-if="item.unit" class="text-xs text-gray-500 font-normal ml-1">{{ item.unit }}</span>
-      </p>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.factor-item {
+  @apply flex items-center gap-2 py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md;
+}
+
+.factor-icon {
+  @apply flex items-center justify-center w-6 h-6 shrink-0 text-sm;
+}
+
+.factor-content {
+  @apply flex-1 min-w-0;
+}
+
+.factor-header {
+  @apply flex items-center justify-between gap-2;
+}
+
+.factor-label {
+  @apply text-sm font-medium text-gray-700 leading-tight;
+}
+
+.factor-value-inline {
+  @apply flex items-baseline gap-0.5 shrink-0;
+}
+
+.value-text {
+  @apply text-sm font-semibold text-gray-800;
+}
+
+.value-text.impact-positive {
+  @apply text-green-600;
+}
+
+.value-text.impact-negative {
+  @apply text-orange-600;
+}
+
+.value-unit {
+  @apply text-xs font-normal text-gray-500;
+}
+
+.factor-description {
+  @apply text-xs text-gray-500 mt-0.5 leading-snug;
+}
+
+.vulnerability-scores {
+  @apply flex gap-4 mt-1;
+}
+
+.score-item {
+  @apply flex items-center gap-1.5;
+}
+
+.score-label {
+  @apply text-xs font-medium text-gray-500;
+}
+</style>

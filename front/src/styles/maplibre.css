@@ -1,43 +1,252 @@
-.maplibregl-ctrl-center {
-  @apply flex! justify-center items-center;
+/* ========================================
+   MapLibre Controls Styling
+   ======================================== */
+
+/* ========================================
+   Shared Map Control Button Styles
+   ======================================== */
+
+.maplibregl-ctrl-zoom-in,
+.maplibregl-ctrl-zoom-out,
+.maplibregl-ctrl-compass,
+.maplibregl-ctrl-center,
+button.maplibregl-ctrl-center,
+.maplibregl-ctrl-3d,
+button.maplibregl-ctrl-3d {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  @apply flex! items-center! justify-center!;
+  @apply bg-white! transition-colors;
+  border: 1px solid rgb(229 231 235) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
-.maplibregl-ctrl-3d {
-  @apply flex! justify-center items-center;
+.maplibregl-ctrl-zoom-in:hover,
+.maplibregl-ctrl-zoom-out:hover,
+.maplibregl-ctrl-compass:hover,
+button.maplibregl-ctrl-center:hover,
+button.maplibregl-ctrl-3d:hover {
+  @apply bg-primary-500! border-primary-500!;
 }
+
+.maplibregl-ctrl-zoom-in:hover .maplibregl-ctrl-icon,
+.maplibregl-ctrl-zoom-out:hover .maplibregl-ctrl-icon,
+.maplibregl-ctrl-compass:hover .maplibregl-ctrl-icon,
+button.maplibregl-ctrl-center:hover svg,
+button.maplibregl-ctrl-3d:hover svg {
+  filter: brightness(0) invert(1);
+}
+
+button.maplibregl-ctrl-3d {
+  @apply font-medium opacity-70;
+}
+
+button.maplibregl-ctrl-3d.is-active {
+  @apply font-bold opacity-100;
+}
+
+button.maplibregl-ctrl-3d:hover {
+  @apply text-white! opacity-100!;
+}
+
+.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
+.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon,
+.maplibregl-ctrl-compass .maplibregl-ctrl-icon,
+button.maplibregl-ctrl-center svg,
+button.maplibregl-ctrl-3d svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* ========================================
+   Control Group Containers
+   ======================================== */
+
+.maplibregl-ctrl-group:not(.maplibregl-ctrl-center-container):not(.maplibregl-ctrl-3d-container) {
+  @apply bg-white rounded-lg overflow-hidden shadow-none!;
+  border: none !important;
+}
+
+.maplibregl-ctrl-group:not(:empty) {
+  @apply shadow-none!;
+}
+
+.maplibregl-ctrl-center-container,
+.maplibregl-ctrl-3d-container {
+  @apply bg-white rounded-lg overflow-hidden;
+  border: none !important;
+}
+
+/* ========================================
+   Geocoder (Search Input)
+   ======================================== */
+
+.maplibregl-ctrl-geocoder {
+  @apply flex rounded-lg border border-gray-200 bg-white shadow-none!;
+  @apply w-full! min-w-0! max-w-full! min-h-8! max-h-8!;
+  @apply overflow-visible! relative! z-[1]!;
+  @apply transition-all duration-200;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder {
+    @apply w-60! min-w-60! max-w-60! min-h-10! max-h-10!;
+  }
+}
+
+.maplibregl-ctrl-geocoder:focus-within {
+  @apply border-primary-300 ring-2 ring-primary-100;
+}
+
+.maplibregl-ctrl-geocoder--input {
+  @apply w-full h-full bg-white! border-0 text-xs! rounded-lg shadow-none! h-auto!;
+  @apply pr-8! pl-2! font-sans font-medium text-gray-500 uppercase!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--input {
+    @apply text-sm! pr-10! pl-3!;
+  }
+}
+
+.maplibregl-ctrl-geocoder--input::placeholder {
+  @apply text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis opacity-100!;
+}
+
+.maplibregl-ctrl-geocoder--icon {
+  @apply opacity-60 pointer-events-none;
+}
+
+.maplibregl-ctrl-geocoder--icon-search {
+  @apply absolute top-2! right-2! left-auto! w-3! h-3!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--icon-search {
+    @apply top-3! right-3! w-4! h-4!;
+  }
+}
+
+.maplibregl-ctrl-geocoder--icon-loading {
+  @apply top-2! right-2! w-3! h-3!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--icon-loading {
+    @apply top-3! right-3! w-4! h-4!;
+  }
+}
+
+.maplibregl-ctrl-geocoder--button {
+  @apply rounded-full transition-colors;
+  @apply top-1! right-1! w-5! h-5!;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-geocoder--button {
+    @apply top-2! right-2! w-6! h-6!;
+  }
+}
+
+.maplibregl-ctrl-geocoder--button:hover {
+  @apply bg-gray-100;
+}
+
+/* Geocoder suggestions dropdown */
+.maplibregl-ctrl-geocoder .suggestions {
+  @apply rounded-xl bg-white border border-gray-200 shadow-xl;
+  @apply m-0 p-0 mt-2!;
+  @apply overflow-hidden! overflow-y-auto! max-h-80!;
+  @apply z-[9999]! list-none! absolute! w-full! left-0!;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li {
+  @apply border-b border-gray-100;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li:last-child {
+  @apply border-b-0;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a {
+  @apply block px-3 py-3 cursor-pointer no-underline!;
+  @apply transition-colors duration-150;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a {
+  @apply bg-primary-500;
+}
+
+.maplibregl-ctrl-geocoder--result {
+  @apply flex items-start gap-3;
+}
+
+.maplibregl-ctrl-geocoder--result-icon {
+  @apply w-5 h-5 shrink-0 mt-0.5;
+  @apply transition-colors duration-150;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-icon path,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-icon path {
+  fill: white !important;
+}
+
+.maplibregl-ctrl-geocoder--result-title {
+  @apply font-medium text-gray-900 text-sm font-sans;
+  @apply transition-colors duration-150;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-title,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-title {
+  @apply text-white;
+}
+
+.maplibregl-ctrl-geocoder--result-address {
+  @apply text-gray-500 text-xs font-sans;
+  @apply transition-colors duration-150;
+}
+
+.maplibregl-ctrl-geocoder .suggestions > li > a:hover .maplibregl-ctrl-geocoder--result-address,
+.maplibregl-ctrl-geocoder .suggestions > li.active > a .maplibregl-ctrl-geocoder--result-address {
+  @apply text-white/80;
+}
+
+/* ========================================
+   Control Positioning
+   ======================================== */
+
+.maplibregl-ctrl-bottom-right {
+  bottom: 120px !important;
+  right: 8px !important;
+}
+
+@media (min-width: 1024px) {
+  .maplibregl-ctrl-bottom-right {
+    bottom: 8px !important;
+  }
+}
+
+/* ========================================
+   Popup Styling
+   ======================================== */
 
 .maplibregl-popup {
   @apply z-50;
 }
 
 .maplibregl-popup-content {
-  border-radius: 10px;
-  padding: 10px;
-  @apply border-0.5 border-primary-500;
+  @apply border-0.5 border-primary-500 rounded-lg p-2.5;
 }
 
 .maplibregl-popup-close-button {
-  top: 10px;
-  right: 10px;
-  font-size: 18px;
-  @apply h-6 w-6;
-  @apply text-primary-500;
-  @apply rounded-full;
-  @apply transition-colors;
+  @apply text-primary-500 rounded-full transition-colors;
+  @apply top-2.5 right-2.5 text-lg w-6! h-6!;
 }
 
 .maplibregl-popup-close-button:hover {
   @apply bg-primary-100;
-}
-
-.maplibregl-ctrl-attrib-inner,
-.maplibregl-ctrl-attrib a {
-  @apply text-sm;
-  @apply text-primary-500;
-  @apply font-accent;
-}
-
-.maplibregl-ctrl-attrib-button {
-  @apply bg-white!;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%23426A45' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");
 }

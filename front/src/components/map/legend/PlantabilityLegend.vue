@@ -24,40 +24,107 @@ const SCORE_BG_CLASSES: Record<number, string> = {
 </script>
 
 <template>
-  <div
-    class="font-accent flex items-center justify-center text-xs leading-3 gap-2"
-    data-cy="plantability-legend"
-  >
-    <div class="flex items-center flex-col lg:flex-row justify-center gap-2 px-2">
-      <div class="flex justify-between lg:hidden">
-        <span class="font-bold">-</span>
-        <span>Plantable</span>
-        <span class="font-bold">+</span>
+  <div class="plantability-legend" data-cy="plantability-legend">
+    <div class="legend-header">
+      <span class="legend-title">Plantabilité</span>
+    </div>
+    <div class="legend-content">
+      <div class="legend-label legend-label-left">
+        <span class="label-indicator">−</span>
+        <span class="label-text">Non plantable</span>
       </div>
-      <span class="hidden lg:block text-xs leading-3 text-center"
-        >Non<br />
-        plantable</span
-      >
-      <div class="flex items-center">
-        <score-label
+      <div class="legend-scale">
+        <ScoreLabel
           v-for="(scoreIndex, arrayIndex) in scoreIndices"
           :key="scoreIndex"
+          :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
+          :class="[
+            'score-item',
+            arrayIndex === 0 ? 'rounded-l' : '',
+            arrayIndex === scoreIndices.length - 1 ? 'rounded-r' : '',
+            mapStore.isFiltered(scoreIndex) ? 'is-filtered' : ''
+          ]"
           :clickable="true"
           :is-selected="mapStore.isFiltered(scoreIndex)"
           :label="`${scoreIndex}`"
           :score="scoreIndex"
-          :class="[
-            'flex items-center justify-center',
-            arrayIndex === 0 ? 'rounded-l-sm' : '',
-            arrayIndex === scoreIndices.length - 1 ? 'rounded-r-sm' : '',
-            mapStore.isFiltered(scoreIndex) ? 'z-10 relative' : ''
-          ]"
-          :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
           @click="handleScoreClick"
         />
       </div>
-
-      <span class="hidden lg:block text-xs leading-3">Plantable</span>
+      <div class="legend-label legend-label-right">
+        <span class="label-text">Plantable</span>
+        <span class="label-indicator">+</span>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.plantability-legend {
+  @apply flex flex-row items-center gap-2 font-sans;
+}
+
+@media (min-width: 1024px) {
+  .plantability-legend {
+    @apply flex-col gap-2;
+  }
+}
+
+.legend-header {
+  @apply flex items-center justify-center;
+}
+
+.legend-title {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+}
+
+@media (min-width: 1024px) {
+  .legend-title {
+    @apply text-sm;
+  }
+}
+
+.legend-content {
+  @apply flex items-center justify-center gap-1;
+}
+
+@media (min-width: 1024px) {
+  .legend-content {
+    @apply gap-3;
+  }
+}
+
+.legend-label {
+  @apply hidden lg:flex items-center gap-1 text-xs text-gray-600;
+}
+
+.label-indicator {
+  @apply font-bold text-sm text-gray-400;
+}
+
+.label-text {
+  @apply font-sans text-sm leading-tight;
+}
+
+.legend-label-left .label-text {
+  @apply text-right;
+}
+
+.legend-label-right .label-text {
+  @apply text-left;
+}
+
+.legend-scale {
+  @apply flex items-center rounded overflow-hidden;
+}
+
+.score-item {
+  @apply transition-transform duration-150 ease-out hover:scale-y-110;
+}
+
+.score-item.is-filtered {
+  @apply z-10 relative;
+}
+</style>

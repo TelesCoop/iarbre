@@ -1,6 +1,4 @@
 /// <reference types="cypress" />
-import { createPinia } from "pinia"
-import { mount } from "cypress/vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
 import { ClimateDataDetailsKey } from "@/types/climate"
 import { DataType, GeoLevel } from "@/utils/enum"
@@ -28,13 +26,9 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("renders with climate data", () => {
-    const pinia = createPinia()
     const mockData = createMockData()
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }
@@ -44,16 +38,12 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("displays building characteristics", () => {
-    const pinia = createPinia()
     const mockData = createMockData({
       [ClimateDataDetailsKey.HRE]: 18.5,
       [ClimateDataDetailsKey.ARE]: 200
     })
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }
@@ -63,16 +53,12 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("displays surface types", () => {
-    const pinia = createPinia()
     const mockData = createMockData({
       [ClimateDataDetailsKey.BUR]: 40,
       [ClimateDataDetailsKey.ROR]: 30
     })
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }
@@ -82,16 +68,12 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("displays vegetation and water metrics", () => {
-    const pinia = createPinia()
     const mockData = createMockData({
       [ClimateDataDetailsKey.VER]: 35,
       [ClimateDataDetailsKey.WAR]: 8
     })
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }
@@ -101,13 +83,9 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("handles categories expansion", () => {
-    const pinia = createPinia()
     const mockData = createMockData()
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }
@@ -118,13 +96,9 @@ describe("ClimateContextDataMetrics", () => {
   })
 
   it("displays all climate metrics", () => {
-    const pinia = createPinia()
     const mockData = createMockData()
 
-    mount(ClimateContextDataMetrics, {
-      global: {
-        plugins: [pinia]
-      },
+    cy.mount(ClimateContextDataMetrics, {
       props: {
         data: mockData
       }

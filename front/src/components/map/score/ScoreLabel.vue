@@ -32,6 +32,7 @@ const handleClick = () => {
   <div
     ref="scoreLabelRef"
     :class="[
+      'score-label',
       props.backgroundColorClass,
       isClickable ? 'cursor-pointer hover:scale-110 transition-transform duration-200' : '',
       isSelected ? 'border-2 border-primary-900' : ''
@@ -43,9 +44,24 @@ const handleClick = () => {
         ? `Score ${score} - Cliquez pour ${isSelected ? 'désactiver' : 'activer'} le filtre`
         : undefined
     "
-    style="width: 0.9375rem; height: 1.6875rem"
     @click="handleClick"
   >
     <FilterIndicator :is-visible="isSelected" />
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.score-label {
+  width: 0.625rem;
+  height: 1.125rem;
+}
+
+@media (min-width: 1024px) {
+  .score-label {
+    width: 0.9375rem;
+    height: 1.6875rem;
+  }
+}
+</style>

@@ -1,7 +1,9 @@
-"""Custom geometry filters."""
+import logging
 
 from django.contrib.gis.geos import Point
 from django_filters import rest_framework as filters
+
+logger = logging.getLogger(__name__)
 
 
 class PointIntersectsFilter(filters.CharFilter):
@@ -24,6 +26,7 @@ class PointIntersectsFilter(filters.CharFilter):
             # Parse comma-separated values
             coords = value.split(",")
             if len(coords) != 2:
+                logger.warning("Expected 2 coordinates, got %d: %s", len(coords), value)
                 return qs.none()
 
             lng, lat = map(float, coords)
@@ -35,5 +38,5 @@ class PointIntersectsFilter(filters.CharFilter):
             return qs.filter(**{f"{self.field_name}__intersects": point})
 
         except ValueError:
-            # Invalid input, return empty queryset
+            logger.warning("Invalid coordinates format: %s", value)
             return qs.none()
