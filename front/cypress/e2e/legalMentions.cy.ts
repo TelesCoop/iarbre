@@ -21,7 +21,7 @@ describe("Legal Mentions Navigation", () => {
 
   it("legal mentions link opens in new tab from feedback form", () => {
     cy.visit("/")
-    cy.getBySel("open-feedback-button").click()
+    cy.get(".sidebar-icon-button").first().click()
     cy.get('a[href="/mentions-legales"]').should("have.attr", "target", "_blank")
   })
 

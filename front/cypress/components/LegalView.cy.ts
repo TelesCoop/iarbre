@@ -6,9 +6,7 @@ describe("LegalView", () => {
     cy.mount(LegalView, {
       global: {
         stubs: {
-          "router-link": {
-            template: "<a><slot /></a>"
-          }
+          "router-link": true
         }
       }
     })
