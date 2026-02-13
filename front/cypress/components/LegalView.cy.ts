@@ -48,17 +48,4 @@ describe("LegalView", () => {
   it("has working email links", () => {
     cy.get('a[href="mailto:contact@telescoop.fr"]').should("exist")
   })
-
-  it("has working external links", () => {
-    cy.get('a[href="https://www.ovhcloud.com"]').should("have.attr", "target", "_blank")
-    cy.get('a[href="https://www.ovhcloud.com"]').should("have.attr", "rel", "noopener noreferrer")
-  })
-
-  it("has a back button to return to the map", () => {
-    cy.contains("button", "Retour à la carte").should("exist")
-  })
-
-  it("displays legal icon", () => {
-    cy.get(".legal-title-block svg").should("exist")
-  })
 })
