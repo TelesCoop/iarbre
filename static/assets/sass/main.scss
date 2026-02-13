@@ -2476,52 +2476,6 @@ h6 {
 }
 
 // =============================================================================
-// LEGAL PAGE
-// =============================================================================
-
-.legal-tabs {
-  display: flex;
-  gap: $spacing-xs;
-  border-bottom: $border-thin solid $border-strong;
-  margin-bottom: $spacing-xl;
-
-  .legal-tab {
-    padding: $spacing-sm $spacing-lg;
-    font-family: $main-font, Arial, sans-serif;
-    font-size: $font-base;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: $gray;
-    border-bottom: $border-medium solid transparent;
-    transition: all $transition-fast;
-
-    @media (max-width: $mobile) {
-      padding: $spacing-sm $spacing-md;
-      font-size: $font-sm;
-    }
-
-    &:hover {
-      color: $primary;
-    }
-
-    &.active {
-      color: $primary;
-      border-bottom-color: $primary;
-    }
-  }
-}
-
-.legal-section {
-  display: none;
-
-  &.active {
-    display: block;
-  }
-}
-
-// =============================================================================
 // ANIMATIONS & EFFECTS
 // =============================================================================
 
