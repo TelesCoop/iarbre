@@ -62,6 +62,11 @@ const router = createRouter({
       }
     },
     {
+      path: "/mentions-legales",
+      name: "legal",
+      component: () => import("@/views/LegalView.vue")
+    },
+    {
       path: "/:pathMatch(.*)*",
       name: "notFound",
       component: NotFoundView
