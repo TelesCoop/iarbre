@@ -1455,8 +1455,6 @@ h6 {
 
     img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
       transition: transform 0.6s ease;
     }
   }
@@ -1846,22 +1844,22 @@ h6 {
     font-family: $main-font, Arial, sans-serif;
     line-height: 1.8;
     color: $darkGrey;
-    font-size: $font-lg;
+    font-size: $font-xl;
 
     @media (max-width: $mobile) {
-      font-size: $font-base;
+      font-size: $font-lg;
       line-height: 1.7;
     }
 
     > p:first-of-type {
-      font-size: $font-xl;
+      font-size: $font-2xl;
       line-height: 1.7;
       color: $primaryDark;
       font-weight: 400;
       margin-bottom: $spacing-xl;
 
       @media (max-width: $mobile) {
-        font-size: $font-lg;
+        font-size: $font-xl;
       }
     }
 
@@ -1880,34 +1878,34 @@ h6 {
     }
 
     h2 {
-      font-size: $font-3xl;
+      font-size: $font-4xl;
       margin: $spacing-xxl * 1.5 0 $spacing-xl 0;
       padding-bottom: $spacing-sm;
       border-bottom: $border-thin solid $gray-200;
 
       @media (max-width: $mobile) {
-        font-size: $font-2xl;
+        font-size: $font-3xl;
         margin: $spacing-xxl 0 $spacing-lg 0;
       }
     }
 
     h3 {
-      font-size: $font-2xl;
+      font-size: $font-3xl;
       margin: $spacing-xxl 0 $spacing-lg 0;
 
       @media (max-width: $mobile) {
-        font-size: $font-xl;
+        font-size: $font-2xl;
         margin: $spacing-xl 0 $spacing-md 0;
       }
     }
 
     h4 {
-      font-size: $font-xl;
+      font-size: $font-2xl;
       margin: $spacing-xl 0 $spacing-md 0;
       font-weight: 600;
 
       @media (max-width: $mobile) {
-        font-size: $font-lg;
+        font-size: $font-xl;
       }
     }
 
@@ -1979,13 +1977,13 @@ h6 {
       border-radius: $radius-md;
       font-style: italic;
       color: $primaryDark;
-      font-size: $font-lg;
+      font-size: $font-xl;
       position: relative;
 
       @media (max-width: $mobile) {
         margin: $spacing-xl 0;
         padding: $spacing-lg;
-        font-size: $font-base;
+        font-size: $font-lg;
       }
 
       &::before {

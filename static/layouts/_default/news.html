@@ -19,7 +19,9 @@
         <div class="blog-hero-content">
           <span class="blog-hero-badge">Dernier article</span>
           <h1 class="blog-hero-title">{{ $featured.Title }}</h1>
-          <p class="blog-hero-summary">{{ $featured.Summary }}</p>
+          <p class="blog-hero-summary">
+            {{ $featured.Summary | plainify | truncate 200 }}
+          </p>
           <div class="blog-hero-meta">
             <span class="blog-meta-author">{{ $featured.Params.author }}</span>
             <span class="blog-meta-separator">·</span>
@@ -66,7 +68,9 @@
             >
           </div>
           <h3 class="blog-card-title">{{ .Title }}</h3>
-          <p class="blog-card-summary">{{ .Summary }}</p>
+          <p class="blog-card-summary">
+            {{ .Summary | plainify | truncate 150 }}
+          </p>
           <div class="blog-card-footer">
             <span class="blog-card-author">{{ .Params.author }}</span>
             <span class="blog-card-read">Lire →</span>
