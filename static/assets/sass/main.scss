@@ -117,7 +117,7 @@ $content-width-md: 768px;
 $content-width-lg: 1024px;
 $content-width-xl: 1280px;
 $content-width-2xl: 1536px;
-$content-width-prose: 50rem;
+$content-width-prose: 50vw;
 
 // Transitions
 $transition-fast: 0.2s ease;
@@ -607,7 +607,7 @@ h6 {
   }
 
   .about-content {
-    background: $brown;
+    background: $primary-500;
     display: grid;
     border-radius: $radius-md;
     grid-template-columns: 1fr 1fr;
@@ -664,7 +664,7 @@ h6 {
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba($brown, 0.9));
+        background: linear-gradient(transparent, rgba($primary-500, 0.9));
         padding: $spacing-xl;
         color: $white;
 
@@ -682,12 +682,12 @@ h6 {
   }
 
   .funding-info {
-    background: $brown;
+    background: $primary-500;
     border-radius: $radius-md;
 
     .funding-text {
       font-size: $font-2xl;
-      color: white;
+      color: $primary-500;
       line-height: 1.6;
       max-width: $content-width-md;
       margin: 0 auto;
@@ -1067,9 +1067,9 @@ h6 {
     }
 
     &.telescoop {
-      background: $brown;
+      background: $primary-500;
       color: $white;
-      border-color: $brown;
+      border-color: $primary-500;
 
       .partner-info {
         h3,
@@ -1205,7 +1205,7 @@ h6 {
 // =============================================================================
 
 .main-footer {
-  background: $brown;
+  background: $primary-500;
   color: $white;
   font-family: $main-font, Arial, sans-serif;
   position: relative;
@@ -1468,10 +1468,10 @@ h6 {
     inset: 0;
     background: linear-gradient(
       to top,
-      rgba($brown, 0.92) 0%,
-      rgba($brown, 0.5) 35%,
-      rgba($brown, 0.1) 70%,
-      rgba($brown, 0) 100%
+      rgba($primary-500, 0.92) 0%,
+      rgba($primary-500, 0.5) 35%,
+      rgba($primary-500, 0.1) 70%,
+      rgba($primary-500, 0) 100%
     );
     display: flex;
     align-items: flex-end;
@@ -1753,8 +1753,8 @@ h6 {
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba($brown, 0) 40%,
-        rgba($brown, 0.25) 100%
+        rgba($primary-500, 0) 40%,
+        rgba($primary-500, 0.25) 100%
       );
     }
   }
@@ -1762,12 +1762,12 @@ h6 {
   .article-container {
     max-width: $content-width-prose;
     margin-inline: auto;
-    padding-block: $spacing-xxl;
+    padding-block: $spacing-lg;
     padding-inline: $spacing-lg;
 
     @media (min-width: $tablet) {
       padding-inline: $spacing-xl;
-      padding-block: $spacing-xxl * 1.5;
+      padding-block: $spacing-xl * 1.5;
     }
 
     @media (max-width: $mobile) {
@@ -1785,9 +1785,9 @@ h6 {
     .article-back {
       display: inline-flex;
       align-items: center;
-      font-size: $font-sm;
+      font-size: $font-lg;
+      text-decoration: underline;
       color: $gray;
-      text-decoration: none;
       font-weight: 500;
       margin-bottom: $spacing-xl;
       transition: color $transition-fast;
@@ -1879,9 +1879,8 @@ h6 {
 
     h2 {
       font-size: $font-4xl;
-      margin: $spacing-xxl * 1.5 0 $spacing-xl 0;
+      margin: $spacing-xl * 1.5 0 $spacing-md 0;
       padding-bottom: $spacing-sm;
-      border-bottom: $border-thin solid $gray-200;
 
       @media (max-width: $mobile) {
         font-size: $font-3xl;
@@ -1923,7 +1922,6 @@ h6 {
       margin-left: -$spacing-lg;
       height: auto;
       border-radius: $radius-lg;
-      margin-block: $spacing-xxl;
 
       @media (min-width: $tablet) {
         width: calc(100% + #{$spacing-xl * 2});
@@ -2037,7 +2035,7 @@ h6 {
     }
 
     pre {
-      background: $brown;
+      background: $primary-500;
       color: $white;
       padding: $spacing-xl;
       border-radius: $radius-md;

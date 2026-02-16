@@ -1,25 +1,6 @@
 {{ define "main" }}
 
 <div class="article-page">
-  {{ if .Params.image }}
-  <div class="article-hero">
-    {{ $img := .Resources.GetMatch .Params.image }} {{ if $img }}
-    <img
-      src="{{ $img.RelPermalink }}"
-      alt="{{ $.Title }}"
-      class="article-hero-img"
-    />
-    {{ else }}
-    <img
-      src="{{ .Params.image }}"
-      alt="{{ $.Title }}"
-      class="article-hero-img"
-    />
-    {{ end }}
-    <div class="article-hero-overlay"></div>
-  </div>
-  {{ end }}
-
   <div class="article-container">
     <article class="article-main">
       <header class="article-header">
