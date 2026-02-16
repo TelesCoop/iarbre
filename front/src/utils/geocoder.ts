@@ -4,25 +4,39 @@ import type {
   CarmenGeojsonFeature
 } from "@maplibre/maplibre-gl-geocoder"
 
-export const LIMIT_GEOCODE_CITY_CODE = ""
-export const LIMIT_GEOCODE_CITY_NAME = "Rhône"
-export const LIMIT_GEOCODE_COUNTRY_NAME = "France"
-
 export const GEOCODER_API_URL = "https://photon.komoot.io/api/"
 
-const formatQueryWithCityAndCountry = (query: string | number[] | undefined): string => {
-  return `${query}, ${LIMIT_GEOCODE_CITY_NAME}, ${LIMIT_GEOCODE_CITY_CODE}, ${LIMIT_GEOCODE_COUNTRY_NAME}`
+const LYON_CENTER = { lat: 45.75, lon: 4.85 }
+const LYON_BBOX = {
+  west: 4.65,
+  east: 5.15,
+  south: 45.55,
+  north: 45.95
+}
+
+const isInBbox = (lon: number, lat: number): boolean => {
+  return (
+    lon >= LYON_BBOX.west &&
+    lon <= LYON_BBOX.east &&
+    lat >= LYON_BBOX.south &&
+    lat <= LYON_BBOX.north
+  )
 }
 
 const fetchGeocode = async (query: string): Promise<CarmenGeojsonFeature[]> => {
   const features: CarmenGeojsonFeature[] = []
-  const formattedQuery = formatQueryWithCityAndCountry(query)
-  const request = `${GEOCODER_API_URL}?q=${encodeURIComponent(formattedQuery)}&limit=10`
+  const bboxParam = `${LYON_BBOX.west},${LYON_BBOX.south},${LYON_BBOX.east},${LYON_BBOX.north}`
+  const request = `${GEOCODER_API_URL}?q=${encodeURIComponent(query)}&lat=${LYON_CENTER.lat}&lon=${LYON_CENTER.lon}&bbox=${bboxParam}&limit=10`
 
   const response = await fetch(request)
   const geojson = await response.json()
 
   for (const feature of geojson.features) {
+    const [lon, lat] = feature.geometry.coordinates
+    if (!isInBbox(lon, lat)) {
+      continue
+    }
+
     const props = feature.properties
     const placeName = [props.name, props.city, props.country].filter(Boolean).join(", ")
 
@@ -30,6 +44,7 @@ const fetchGeocode = async (query: string): Promise<CarmenGeojsonFeature[]> => {
       id: props.osm_id,
       type: "Feature",
       geometry: feature.geometry,
+      center: feature.geometry.coordinates as [number, number],
       place_name: placeName,
       properties: props,
       text: props.name || placeName,

@@ -28,12 +28,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--number_of_workers",
+            "-nw",
             type=int,
             default=1,
-            help="Number of threads to use for generating tiles",
+            help="Number of workers to use for generating tiles",
+        )
+        parser.add_argument(
+            "--number_of_threads_by_worker",
+            "-ntw",
+            type=int,
+            default=1,
+            help="Number of threads by worker to use for generating tiles",
         )
         parser.add_argument(
             "--geolevel",
+            "-g",
             type=str,
             required=True,
             choices=[choice for choice, _ in GeoLevel.choices],
@@ -41,6 +50,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--datatype",
+            "-d",
             type=str,
             required=True,
             choices=[choice for choice, _ in DataType.choices],
@@ -62,21 +72,21 @@ class Command(BaseCommand):
         self,
         model: Type[Model],
         zoom_levels: Tuple[int, int] = DEFAULT_ZOOM_LEVELS,
+        number_of_threads_by_worker: int = 1,
         number_of_workers: int = 1,
     ) -> None:
         """
         Generate MVT tiles for a geographic model.
 
         This method generates MVT (Mapbox Vector Tiles) for a specified geographic model
-        based on the providedmdl. queryset and zoom levels. It utilizes multiple threads
+        based on the provided model and zoom levels. It utilizes multiple threads
         to enhance performance.
 
         Args:
             model (Type[Model]): The model class to generate MVT tiles for.
-            queryset (QuerySet): The queryset of the model instances to process.
             zoom_levels (Tuple[int, int]): A tuple specifying the range of zoom levels
                                            to generate tiles for (inclusive).
-            number_of_workersmdl. (int): The number of threads to use for generating tiles.
+            number_of_workers (int): The number of workers to use for generating tiles.
 
         Returns:
             None
@@ -85,6 +95,7 @@ class Command(BaseCommand):
             mdl=model,
             zoom_levels=zoom_levels,
             number_of_workers=number_of_workers,
+            number_of_threads_by_worker=number_of_threads_by_worker,
         )
 
         mvt_generator.generate_tiles(ignore_existing=False)
@@ -93,6 +104,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Handle the command."""
         number_of_workers = options["number_of_workers"]
+        number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
         zoom_levels = options["zoom_levels"]
@@ -142,4 +154,5 @@ class Command(BaseCommand):
             model=mdl,
             zoom_levels=zoom_levels,
             number_of_workers=number_of_workers,
+            number_of_threads_by_worker=number_of_threads_by_worker,
         )

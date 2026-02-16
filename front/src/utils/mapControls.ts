@@ -7,9 +7,8 @@ export const add3DControl = (use3D: Ref<boolean>, toggle3D: () => void) => {
   button.title = "Activer/désactiver la vue 3D"
 
   const updateButton = () => {
-    button.innerHTML = "3D"
-    button.style.fontWeight = use3D.value ? "700" : "500"
-    button.style.opacity = use3D.value ? "1" : "0.7"
+    button.innerHTML = use3D.value ? "2D" : "3D"
+    button.classList.toggle("is-active", use3D.value)
   }
 
   updateButton()

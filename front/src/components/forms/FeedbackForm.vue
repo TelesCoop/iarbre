@@ -14,6 +14,7 @@ const props = defineProps({
 
 const email = ref(props.email)
 const feedback = ref(props.feedback)
+const consent = ref(false)
 const emit = defineEmits(["submit-feedback"])
 
 const sendFeedback = (event: Event) => {
@@ -27,22 +28,33 @@ const sendFeedback = (event: Event) => {
     <span class="popin-text"
       >Partagez-nous vos impressions pour nous aider à améliorer le site :</span
     >
-    <InputText v-model="email" class="w-full" placeholder="Votre email" type="email" />
-    <Textarea
+    <input v-model="email" class="form-input" placeholder="Votre email" type="email" />
+    <textarea
       v-model="feedback"
-      class="w-full"
+      class="form-textarea"
       cols="30"
       placeholder="Votre message"
       required
       rows="5"
     />
-    <Button
-      class="w-full"
+    <label class="consent-label">
+      <input v-model="consent" type="checkbox" class="consent-checkbox" />
+      <span class="consent-text">
+        J'accepte que mes données soient traitées conformément à la
+        <a href="/mentions-legales" target="_blank" rel="noopener noreferrer" class="consent-link">
+          politique de confidentialité</a
+        >.
+      </span>
+    </label>
+    <AppButton
       data-cy="submit-feedback-button"
-      label="J'envoie mon avis"
-      severity="secondary"
+      variant="secondary"
       type="submit"
-    />
+      full-width
+      :disabled="!consent"
+    >
+      J'envoie mon avis
+    </AppButton>
   </form>
 </template>
 
@@ -50,7 +62,35 @@ const sendFeedback = (event: Event) => {
 @reference "@/styles/main.css";
 
 .popin-form {
-  @apply w-full;
-  @apply flex flex-col gap-4;
+  @apply w-full flex flex-col gap-4;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500;
+  @apply placeholder-gray-400;
+}
+
+.form-textarea {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500;
+  @apply placeholder-gray-400;
+}
+
+.consent-label {
+  @apply flex items-start gap-2 cursor-pointer;
+}
+
+.consent-checkbox {
+  @apply mt-0.5 shrink-0 accent-primary-500;
+}
+
+.consent-text {
+  @apply text-xs text-gray-600 leading-relaxed;
+}
+
+.consent-link {
+  @apply text-primary-500 underline;
+  @apply hover:text-primary-600;
 }
 </style>

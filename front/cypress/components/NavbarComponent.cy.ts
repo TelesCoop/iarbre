@@ -1,19 +1,15 @@
 /// <reference types="cypress" />
-import { createPinia } from "pinia"
 import Navbar from "@/components/navbar/NavbarComponent.vue"
 
 describe("Navbar", () => {
   beforeEach(() => {
-    const pinia = createPinia()
-    cy.mount(Navbar, {
-      global: {
-        plugins: [pinia]
-      }
-    })
+    cy.mount(Navbar)
   })
+
   it("renders correctly", () => {
     cy.getBySel("open-feedback-button").should("exist")
   })
+
   it("fill and submit the feedback form", () => {
     cy.getBySel("open-feedback-button").click()
 
@@ -27,6 +23,7 @@ describe("Navbar", () => {
 
     cy.get('input[type="email"]').type(testEmail)
     cy.get("textarea").type(testFeedback)
+    cy.get(".consent-checkbox").check()
     cy.getBySel("submit-feedback-button").click()
 
     cy.wait("@submitFeedback").its("response.statusCode").should("eq", 200)

@@ -5,7 +5,7 @@ import { getCities, getIrisList } from "@/services/divisionService"
 import type { City, Iris } from "@/types/division"
 import type { PlantabilityData } from "@/types/plantability"
 import PlantabilityDivisionData from "./PlantabilityDivisionData.vue"
-import { ProgressSpinner } from "primevue"
+import AppSpinner from "@/components/shared/AppSpinner.vue"
 import { useDebounceFn } from "@vueuse/core"
 
 interface ClickPlantabilityDivisionDataProps {
@@ -97,7 +97,7 @@ watch(
 <template>
   <div>
     <div v-if="loading" class="flex justify-center p-4">
-      <ProgressSpinner style="width: 50px; height: 50px" />
+      <AppSpinner size="md" color="#426A45" />
     </div>
     <PlantabilityDivisionData v-else :cities="cities" :iris-list="irisList" />
   </div>

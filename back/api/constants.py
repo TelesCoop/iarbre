@@ -27,6 +27,7 @@ class DataType(TextChoices):
         "Biosphere Functional Integrity",
     )
     LIDAR = "vegetation", "Vegetation"
+    VEGESTRATE = "vegestrate", "Vegestrate"
 
 
 class FrontendDataType(TextChoices):

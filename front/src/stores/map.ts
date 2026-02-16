@@ -5,7 +5,6 @@ import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
-  AttributionControl,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -16,14 +15,7 @@ import {
   DEFAULT_MAP_CENTER,
   TERRA_DRAW_POLYGON_LAYER
 } from "@/utils/constants"
-import {
-  GeoLevel,
-  DataType,
-  MapStyle,
-  SelectionMode,
-  DataTypeToGeolevel,
-  getDataTypeAttributionSource
-} from "@/utils/enum"
+import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
@@ -34,10 +26,6 @@ import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import MaplibreGeocoder from "@maplibre/maplibre-gl-geocoder"
-import { geocoderApi } from "@/utils/geocoder"
-import "@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css"
-import maplibreGl from "maplibre-gl"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -51,7 +39,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
-  const contextData = useContextData()
+  const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const isToolbarVisible = ref<boolean>(false)
@@ -61,6 +49,7 @@ export const useMapStore = defineStore("map", () => {
     lng: DEFAULT_MAP_CENTER.lng
   })
   const isCalculating = ref<boolean>(false)
+  const controlsAdded = ref<Record<string, boolean>>({})
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
@@ -110,22 +99,9 @@ export const useMapStore = defineStore("map", () => {
     }
   })
 
-  const getAttributionSource = async () => {
-    const sourceCode =
-      "<a href='https://github.com/TelesCoop/iarbre' target='_blank'>Code source</a> | <a href='https://iarbre.fr' target='_blank'>À propos</a>"
-    if (!selectedDataType.value) return sourceCode
-    const attribution = await getDataTypeAttributionSource(selectedDataType.value)
-    return `${attribution} | ${sourceCode}`
-  }
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
   }
-  const attributionControl = ref(
-    new AttributionControl({
-      compact: true,
-      customAttribution: ""
-    })
-  )
   const navControl = ref(
     new NavigationControl({
       visualizePitch: true,
@@ -144,24 +120,6 @@ export const useMapStore = defineStore("map", () => {
     clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
-  const geocoderControl = ref(
-    new MaplibreGeocoder(
-      {
-        forwardGeocode: geocoderApi.forwardGeocode
-      },
-      {
-        // @ts-ignore
-        maplibregl: maplibreGl,
-        marker: false,
-        showResultsWhileTyping: true,
-        countries: "FR",
-        placeholder: "Recherche",
-        clearOnBlur: true,
-        collapsed: true,
-        enableEventLogging: false
-      }
-    )
-  )
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
@@ -202,7 +160,7 @@ export const useMapStore = defineStore("map", () => {
         source: sourceId,
         layout: {},
         paint: {
-          "raster-opacity": 0.7
+          "raster-opacity": 0.4
         }
       }
       return [rasterLayer]
@@ -369,34 +327,32 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const getMapId = (map: Map): string => {
+    return Object.keys(mapInstancesByIds.value).find((key) => mapInstancesByIds.value[key] === map)!
+  }
+
   const removeControls = (map: Map) => {
-    if (map.hasControl(attributionControl.value)) {
-      map.removeControl(attributionControl.value)
-    }
-    if (map.hasControl(navControl.value)) {
+    const mapId = getMapId(map)
+    if (!controlsAdded.value[mapId]) return
+
+    try {
       map.removeControl(navControl.value)
-    }
-    if (map.hasControl(centerControl.value)) {
       map.removeControl(centerControl.value)
-    }
-    if (map.hasControl(control3D.value)) {
       map.removeControl(control3D.value)
-    }
-    if (map.hasControl(geocoderControl.value as unknown as maplibreGl.IControl)) {
-      map.removeControl(geocoderControl.value as unknown as maplibreGl.IControl)
+      controlsAdded.value[mapId] = false
+    } catch {
+      // Control may not be added yet
     }
   }
-  const setupControls = async (map: Map) => {
-    const attribution = await getAttributionSource()
-    attributionControl.value = new AttributionControl({
-      compact: true,
-      customAttribution: attribution
-    })
-    map.addControl(attributionControl.value, MAP_CONTROL_POSITION)
-    map.addControl(control3D.value, MAP_CONTROL_POSITION)
-    map.addControl(navControl.value, MAP_CONTROL_POSITION)
-    map.addControl(centerControl.value, MAP_CONTROL_POSITION)
-    map.addControl(geocoderControl.value as unknown as maplibreGl.IControl, MAP_CONTROL_POSITION)
+
+  const setupControls = (map: Map) => {
+    const mapId = getMapId(map)
+    if (!controlsAdded.value[mapId]) {
+      map.addControl(control3D.value, MAP_CONTROL_POSITION)
+      map.addControl(navControl.value, MAP_CONTROL_POSITION)
+      map.addControl(centerControl.value, MAP_CONTROL_POSITION)
+      controlsAdded.value[mapId] = true
+    }
   }
 
   const changeDataType = (datatype: DataType) => {
@@ -433,7 +389,7 @@ export const useMapStore = defineStore("map", () => {
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
       }
-      setupControls(mapInstance).catch(console.error)
+      setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
     })
@@ -492,7 +448,7 @@ export const useMapStore = defineStore("map", () => {
       if (newStyle!) {
         const onStyleReady = () => {
           initTiles(mapInstance)
-          setupControls(mapInstance).catch(console.error)
+          setupControls(mapInstance)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
           }
@@ -577,6 +533,7 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, initialDatatype: DataType) => {
     selectedDataType.value = initialDatatype
+    controlsAdded.value[mapId] = false
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId,
@@ -589,7 +546,7 @@ export const useMapStore = defineStore("map", () => {
     const mapInstance = mapInstancesByIds.value[mapId]
 
     const onMapReady = async () => {
-      await setupControls(mapInstance)
+      setupControls(mapInstance)
       initTiles(mapInstance)
       shapeDrawing.initDraw(mapInstance)
       // Configure automatic calculation when a shape is finished

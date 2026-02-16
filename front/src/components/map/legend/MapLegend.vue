@@ -1,34 +1,22 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { DataType, DataTypeToLabel } from "@/utils/enum"
+import { DataType } from "@/utils/enum"
 
 const mapStore = useMapStore()
 </script>
 
 <template>
-  <div
-    v-if="mapStore.selectedDataType"
-    class="bg-white flex px-4 py-2 flex-col justify-center items-center gap-2 rounded-lg"
-  >
-    <div
-      class="hidden lg:block text-sm font-semibold font-accent text-primary-900 text-center"
-      data-cy="map-legend-title"
-    >
-      {{ DataTypeToLabel[mapStore.selectedDataType! as DataType] }}
-    </div>
-    <plantability-legend
-      v-if="mapStore.selectedDataType === DataType.PLANTABILITY"
-      class="w-full"
-    />
-    <climate-zone-legend
+  <div v-if="mapStore.selectedDataType" class="legend-panel">
+    <PlantabilityLegend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" class="w-full" />
+    <ClimateZoneLegend
       v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
       class="w-full"
     />
-    <vulnerability-legend
+    <VulnerabilityLegend
       v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
       class="w-full"
     />
-    <plant-vulnerability-legend
+    <PlantVulnerabilityLegend
       v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
       class="w-full"
     />
@@ -42,3 +30,20 @@ const mapStore = useMapStore()
     />
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.legend-panel {
+  @apply flex flex-col justify-center items-center;
+  @apply gap-1 py-1.5 px-2;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply text-xs text-gray-700 font-sans;
+}
+
+@media (min-width: 1024px) {
+  .legend-panel {
+    @apply gap-2 py-2 px-3 text-sm;
+  }
+}
+</style>

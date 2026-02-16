@@ -1,5 +1,4 @@
 import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
-import VulnerabilityContextDataScore from "@/components/contextData/vulnerability/VulnerabilityContextDataScore.vue"
 import type { ContextDataFactor, ContextDataVulnerabilityFactor } from "@/types/contextData"
 
 describe("ContextDataItem.vue", () => {
@@ -43,16 +42,11 @@ describe("ContextDataItem.vue", () => {
         colorScheme: "vulnerability",
         getScoreColor,
         getScoreLabel
-      },
-      global: {
-        components: {
-          VulnerabilityContextDataScore
-        }
       }
     })
 
-    cy.contains("☀️ Jour:").should("be.visible")
-    cy.contains("🌙 Nuit:").should("be.visible")
+    cy.contains("☀️ Jour").should("be.visible")
+    cy.contains("🌙 Nuit").should("be.visible")
     cy.get('[data-cy="vulnerability-context-data-score"]').should("have.length", 2)
   })
 
@@ -73,15 +67,10 @@ describe("ContextDataItem.vue", () => {
         colorScheme: "vulnerability",
         getScoreColor,
         getScoreLabel
-      },
-      global: {
-        components: {
-          VulnerabilityContextDataScore
-        }
       }
     })
 
-    cy.contains("☀️ Jour:").should("be.visible")
-    cy.contains("🌙 Nuit:").should("be.visible")
+    cy.contains("☀️ Jour").should("be.visible")
+    cy.contains("🌙 Nuit").should("be.visible")
   })
 })

@@ -63,17 +63,18 @@
           register: db_recover_target_content
           when: db_recover_target_file.stat.exists
 
-        - name: Set recover target (from file or default to latest)
+        - name: Set recover targets (from file or default to latest)
           set_fact:
-            db_recover_target: "{{ db_recover_target_content['content'] | b64decode | trim if db_recover_target_file.stat.exists else 'latest' }}"
+            db_recover_target: "{{ (db_recover_target_content['content'] | b64decode | trim).split(',')[0] | trim if db_recover_target_file.stat.exists else 'latest' }}"
+            media_recover_target: "{{ (db_recover_target_content['content'] | b64decode | trim).split(',')[1] | trim if db_recover_target_file.stat.exists else 'latest' }}"
 
-        - name: Display recover target
+        - name: Display recover targets
           debug:
-            msg: "Using database recover_db_and_media target: {{ db_recover_target }}"
+            msg: "Using recover targets - db: {{ db_recover_target }}, media: {{ media_recover_target }}"
 
         - name: Load database and media
           shell:
-            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media {{ db_recover_target }}"
+            cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media {{ db_recover_target }} {{ media_recover_target }}"
 
         - name: Run migrations with conflict handling
           shell: |

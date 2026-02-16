@@ -1,19 +1,9 @@
-import { createPinia } from "pinia"
-import { mount } from "cypress/vue"
 import MapSidePanelFooter from "@/components/map/panels/sidepanel/MapSidePanelFooter.vue"
 import { useMapStore } from "@/stores/map"
-import PrimeVue from "primevue/config"
-import ToastService from "primevue/toastservice"
 
 describe("MapSidePanelFooter", () => {
   beforeEach(() => {
-    const pinia = createPinia()
-
-    mount(MapSidePanelFooter, {
-      global: {
-        plugins: [pinia, PrimeVue, ToastService]
-      }
-    })
+    cy.mount(MapSidePanelFooter)
   })
 
   it("should render the component with correct content", () => {

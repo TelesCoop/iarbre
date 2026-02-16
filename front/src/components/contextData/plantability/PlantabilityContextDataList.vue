@@ -84,22 +84,22 @@ const distributionEntries = computed(() => {
 <template>
   <div aria-labelledby="factors-section">
     <template v-if="hasFactors">
-      <context-data-list-container
+      <ContextDataListContainer
         :groups="genericFactorGroups"
-        color-scheme="plantability"
         aria-label="Liste des paramètres de plantabilité par catégorie"
+        color-scheme="plantability"
       />
     </template>
 
     <template v-else>
       <div v-if="distributionEntries.length > 0">
-        <plantability-distribution-chart :entries="distributionEntries" />
-        <empty-message
+        <PlantabilityDistributionChart :entries="distributionEntries" />
+        <EmptyMessage
           data-cy="empty-message"
           message="Zoomez plus pour obtenir l'occupation des sols."
         />
       </div>
-      <empty-message
+      <EmptyMessage
         v-else
         data-cy="empty-message"
         message="Pas de données d'occupation des sols ici."

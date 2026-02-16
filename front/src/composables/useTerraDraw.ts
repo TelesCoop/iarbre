@@ -118,25 +118,33 @@ export function useShapeDrawing() {
 
     terraDraw.value.start()
 
-    // Limit to a single shape: remove previous shapes when a new one is created
-    terraDraw.value.on("finish", () => {
-      if (!terraDraw.value) return
+    // Track the finished feature ID
+    let finishedFeatureId: string | number | undefined
 
-      const features = terraDraw.value.getSnapshot()
-      // If we have more than one shape, keep only the last one
-      if (features.length > 1) {
-        // Remove all shapes except the last one
-        for (let i = 0; i < features.length - 1; i++) {
-          const featureId = features[i].id
-          if (featureId !== undefined) {
-            terraDraw.value.removeFeatures([featureId])
-          }
-        }
-      }
+    // When a shape is finished, store its ID
+    terraDraw.value.on("finish", (id: string | number) => {
+      finishedFeatureId = id
 
-      // Automatically trigger calculation when a shape is finished
+      // Trigger calculation callback
       if (onShapeFinishedCallback.value) {
         onShapeFinishedCallback.value()
+      }
+    })
+
+    // When changes occur, check if a new drawing started
+    terraDraw.value.on("change", () => {
+      if (!terraDraw.value || finishedFeatureId === undefined) return
+
+      const features = terraDraw.value.getSnapshot()
+
+      // If we have more than one feature, a new drawing has started
+      // Remove the old finished feature
+      if (features.length > 1) {
+        const finishedFeatureExists = features.some((f) => f.id === finishedFeatureId)
+        if (finishedFeatureExists) {
+          terraDraw.value.removeFeatures([finishedFeatureId])
+          finishedFeatureId = undefined
+        }
       }
     })
   }

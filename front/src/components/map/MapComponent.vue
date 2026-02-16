@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, type PropType } from "vue"
+import { onMounted, type PropType, computed } from "vue"
 import { type MapParams } from "@/types/map"
+import { ZoomToGridSize } from "@/utils/plantability"
+import MapConfigDrawerToggle from "@/components/map/panels/MapConfigDrawerToggle.vue"
 
 const props = defineProps({
   mapId: {
@@ -45,90 +47,172 @@ onMounted(() => {
   mapInstance.on("moveend", updateParams)
   updateParams()
 })
+
+const gridSize = computed(() => {
+  const zoom = Math.floor(mapStore.currentZoom)
+  return ZoomToGridSize[zoom] ?? null
+})
+
+const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 </script>
 
 <template>
-  <div class="block w-full h-full lg:flex">
-    <map-side-panel v-if="appStore.isDesktop" />
-    <div
-      :id="mapId"
-      class="relative w-screen h-full lg:ml-auto lg:w-screen-without-sidepanel"
-      data-cy="map-component"
-    ></div>
-  </div>
-  <div v-if="appStore.isMobileOrTablet" class="absolute left-0 top-0 mt-2 ml-2">
-    <map-config-drawer-toggle />
+  <div class="block w-full h-full">
+    <div :id="mapId" class="relative w-full h-full" data-cy="map-component"></div>
   </div>
 
-  <!-- Drawing mode toggle - visible on all screens -->
-  <div class="absolute right-0 top-0 mt-2 mr-2 z-40">
-    <drawing-mode-toggle />
+  <!-- Top-right controls stack -->
+  <div class="top-right-controls">
+    <MapCoordinates />
+    <MapGeocoder />
   </div>
 
-  <!-- Selection mode toolbar - only visible when toolbar is toggled -->
-  <div v-if="mapStore.isToolbarVisible" class="absolute right-0 top-14 mt-2 mr-2 z-40">
-    <selection-mode-toolbar />
+  <!-- Drawing controls positioned to the left of maplibre controls -->
+  <div class="drawing-controls-container">
+    <DrawingModeToggle />
+  </div>
+  <div v-if="mapStore.isToolbarVisible" class="selection-toolbar-container">
+    <SelectionModeToolbar />
   </div>
 
   <!-- Drawing controls - only visible in shape mode -->
-  <drawing-controls />
+  <DrawingControls />
 
-  <div v-if="appStore.isDesktop" class="legend-container flex">
-    <map-legend />
-    <map-filters-status />
+  <!-- Background selector in bottom-left corner -->
+  <div :class="['bg-selector-container', { 'sidepanel-visible': isSidePanelVisible }]">
+    <MapBackgroundSelector />
   </div>
-  <div v-else class="flex items-center justify-center">
-    <map-context-data-mobile />
+
+  <!-- Legend and controls - top left -->
+  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
+    <MapConfigDrawerToggle v-if="appStore.isMobileOrTablet" />
+    <MapLegend />
+    <div
+      v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"
+      class="grid-size-info"
+    >
+      <div class="grid-size-label">Résolution</div>
+      <div class="grid-size-value">
+        <div class="tile-pixel"></div>
+        <span class="grid-size-number">{{ gridSize }}</span>
+        <span class="grid-size-unit">m</span>
+      </div>
+    </div>
+    <MapFiltersStatus v-if="appStore.isDesktop" />
   </div>
-  <welcome-message />
+  <WelcomeMessage />
 </template>
 
 <style>
 @reference "@/styles/main.css";
 
+.top-right-controls {
+  @apply absolute right-2 top-2 flex flex-col gap-2 z-50;
+  width: calc(50% - 1rem);
+}
+
+.top-right-controls > * {
+  @apply w-full;
+}
+
+@media (min-width: 1024px) {
+  .top-right-controls {
+    width: auto;
+  }
+
+  .top-right-controls > * {
+    @apply w-auto;
+  }
+}
+
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 left-105 top-0 mx-1 mt-4;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 top-0 mt-2;
+  @apply transition-all duration-300 ease-out;
+  left: 0.5rem;
+  width: calc(50% - 1rem);
 }
 
 .legend-container > * {
-  pointer-events: auto;
-  flex: 1;
-  width: 100%;
+  @apply pointer-events-auto w-full;
 }
 
 @media (min-width: 1024px) {
   .legend-container {
-    margin-right: 2rem;
+    width: auto;
+  }
+
+  .legend-container > * {
+    @apply w-auto;
+  }
+
+  .legend-container.sidepanel-visible {
+    left: calc(var(--width-sidepanel) + 0.5rem);
   }
 }
 
-.maplibregl-ctrl-geocoder {
-  width: 90%;
-  max-width: 400px;
+.bg-selector-container {
+  @apply absolute z-30;
+  @apply transition-all duration-300 ease-out;
+  left: 0.5rem;
+  bottom: 64px;
 }
 
-.maplibregl-ctrl-geocoder--suggestions {
-  width: 100%;
-}
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed,
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--input {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
-}
-.maplibregl-ctrl-geocoder.maplibregl-ctrl-geocoder--collapsed .maplibregl-ctrl-geocoder--icon {
-  width: 25px;
-  height: 25px;
-  top: 3px;
-  left: 3px;
+@media (min-width: 1024px) {
+  .bg-selector-container {
+    bottom: 0.5rem;
+  }
+
+  .bg-selector-container.sidepanel-visible {
+    left: calc(var(--width-sidepanel) + 0.5rem);
+  }
 }
 
-.maplibregl-ctrl-geocoder--input {
-  @apply text-primary-500;
-  @apply font-accent;
+.grid-size-info {
+  @apply flex flex-row items-center gap-2.5 py-2 px-3 bg-white border border-gray-200 rounded-lg pointer-events-auto font-sans;
 }
 
-.maplibregl-ctrl-geocoder--icon-search {
-  @apply fill-primary-500;
+.grid-size-label {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+}
+
+.grid-size-value {
+  @apply flex items-center gap-1;
+}
+
+.tile-pixel {
+  @apply w-3 h-3 bg-scale-8 rounded-sm shrink-0;
+}
+
+.grid-size-number {
+  @apply text-base font-bold text-gray-800 leading-none tabular-nums;
+}
+
+.grid-size-unit {
+  @apply text-xs font-medium text-gray-500;
+}
+
+/* Drawing controls - aligned with maplibre 3D button */
+.drawing-controls-container {
+  @apply absolute z-30;
+  bottom: 130px;
+  right: 68px;
+}
+
+.selection-toolbar-container {
+  @apply absolute z-30;
+  bottom: 180px;
+  right: 68px;
+}
+
+@media (min-width: 1024px) {
+  .drawing-controls-container {
+    bottom: 18px;
+    right: 68px;
+  }
+
+  .selection-toolbar-container {
+    bottom: 18px;
+    right: 116px;
+  }
 }
 </style>

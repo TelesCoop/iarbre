@@ -2,6 +2,7 @@
 import { Drawer, useAppStore } from "@/stores/app"
 import { computed } from "vue"
 import AppDrawer from "@/components/AppDrawer.vue"
+import IconMap from "@/components/icons/IconMap.vue"
 
 const appStore = useAppStore()
 
@@ -15,13 +16,15 @@ const drawerVisible = computed({
   <AppDrawer
     v-model:visible="drawerVisible"
     position="bottom"
-    header-icon="pi pi-map"
     header-title="Score"
     class="map-drawer"
-    data-cy="map-drawer"
+    data-cy="map-scores-drawer"
   >
+    <template #icon>
+      <IconMap :size="20" />
+    </template>
     <div class="mb-4">
-      <map-context-data hide-close-button full-height />
+      <MapContextData hide-close-button full-height />
     </div>
   </AppDrawer>
 </template>

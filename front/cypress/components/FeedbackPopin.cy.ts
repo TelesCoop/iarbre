@@ -16,6 +16,7 @@ describe("FeedbackPopin", () => {
     const testFeedback = "Raise the floor, not just the ceiling."
     cy.get('input[type="email"]').type(testEmail)
     cy.get("textarea").type(testFeedback)
+    cy.get(".consent-checkbox").check()
     cy.getBySel("submit-feedback-button").click()
     cy.get("@submit-feedback").should("have.been.calledWith", {
       email: testEmail,

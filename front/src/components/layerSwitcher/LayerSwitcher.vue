@@ -2,6 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { computed } from "vue"
+import AppSelect from "@/components/shared/AppSelect.vue"
 
 const mapStore = useMapStore()
 
@@ -39,13 +40,9 @@ const options = [
 </script>
 
 <template>
-  <Select
+  <AppSelect
     v-model="selectedDataType"
     :options="options"
-    :pt="{
-      root: 'text-sm',
-      optionLabel: 'text-xs'
-    }"
     class="w-full"
     data-cy="layer-switcher"
     option-label="label"

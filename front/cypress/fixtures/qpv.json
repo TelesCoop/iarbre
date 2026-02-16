@@ -1,0 +1,39 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.55,
+              45.07
+            ],
+            [
+              5.56,
+              45.07
+            ],
+            [
+              5.56,
+              45.08
+            ],
+            [
+              5.55,
+              45.08
+            ],
+            [
+              5.55,
+              45.07
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "properties": {
+        "id": "QP069001",
+        "name": "Test QPV Zone"
+      },
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}

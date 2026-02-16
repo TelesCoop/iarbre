@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <div :class="{ 'map-bg-tool-container': props.withBorder }" data-cy="map-bg-switcher">
     <span class="font-sans">Fond de carte</span>
-    <map-switcher />
-    <map-qpv-toggle-button />
+    <MapSwitcher />
+    <MapQpvToggleButton />
   </div>
 </template>
