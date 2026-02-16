@@ -119,6 +119,7 @@ $content-width-xl: 1280px;
 $content-width-2xl: 1536px;
 $content-width-prose: 50vw;
 $content-width-prose-lg: 75vw;
+$content-width-prose-xl: 50vw;
 
 // Transitions
 $transition-fast: 0.2s ease;
@@ -1761,20 +1762,27 @@ h6 {
   }
 
   .article-container {
-    max-width: $content-width-prose;
+    max-width: 100%;
     margin-inline: auto;
-    padding-block: $spacing-lg;
+    padding-block: $spacing-xl;
     padding-inline: $spacing-lg;
 
-    @media (min-width: $tablet) {
+    @media (min-width: $mobile) {
+      max-width: 90vw;
       padding-inline: $spacing-xl;
       padding-block: $spacing-xl * 1.5;
-      max-width: $content-width-prose-lg;
     }
 
-    @media (max-width: $mobile) {
-      padding-block: $spacing-xl;
-      max-width: 100%;
+    @media (min-width: $tablet) {
+      max-width: 75vw;
+    }
+
+    @media (min-width: $desktop) {
+      max-width: 60vw;
+    }
+
+    @media (min-width: $desktop-large) {
+      max-width: 50vw;
     }
   }
 
