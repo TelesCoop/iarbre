@@ -118,6 +118,7 @@ $content-width-lg: 1024px;
 $content-width-xl: 1280px;
 $content-width-2xl: 1536px;
 $content-width-prose: 50vw;
+$content-width-prose-lg: 75vw;
 
 // Transitions
 $transition-fast: 0.2s ease;
@@ -1768,10 +1769,12 @@ h6 {
     @media (min-width: $tablet) {
       padding-inline: $spacing-xl;
       padding-block: $spacing-xl * 1.5;
+      max-width: $content-width-prose-lg;
     }
 
     @media (max-width: $mobile) {
       padding-block: $spacing-xl;
+      max-width: 100%;
     }
   }
 
