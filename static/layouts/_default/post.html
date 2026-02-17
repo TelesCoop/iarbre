@@ -2,27 +2,27 @@
 
 <div class="article-page">
   <div class="article-container">
-    <nav class="breadcrumb">
-      <a href="/" class="breadcrumb-item">Accueil</a>
-      <span class="breadcrumb-separator">/</span>
-      <a href="/actualites/" class="breadcrumb-item">Actualités</a>
-      <span class="breadcrumb-separator">/</span>
-      <span class="breadcrumb-item breadcrumb-current">{{ .Title }}</span>
-    </nav>
-
     <article class="article-main">
       <header class="article-header">
-        <div class="article-meta">
-          <span class="meta-author">{{ .Params.Author }}</span>
-          <span class="meta-separator">•</span>
-          <span class="meta-date"
-            >{{ .PublishDate | time.Format "02 January 2006" }}</span
-          >
-        </div>
+        <a href="/actualites/" class="article-back">← Actualités</a>
 
-        {{ with .Params.image }}
-        <img src="{{ . }}" alt="{{ $.Title }}" class="article-image" />
-        {{ end }}
+        <h1 class="article-title">{{ .Title }}</h1>
+
+        <div class="article-meta">
+          <div class="article-meta-author">
+            <span class="meta-author-name">{{ .Params.Author }}</span>
+          </div>
+          <div class="article-meta-details">
+            <span class="meta-date"
+              >{{ .PublishDate | time.Format "02 January 2006" }}</span
+            >
+            <span class="meta-separator">·</span>
+            <span class="meta-reading"
+              >{{ math.Round (div (countwords .Content) 200.0) }} min de
+              lecture</span
+            >
+          </div>
+        </div>
       </header>
 
       <div class="article-content">{{ .Content }}</div>
@@ -35,39 +35,40 @@
     <section class="related-articles-section">
       <div class="section-header">
         <h2 class="section-title">À lire également</h2>
-        <p class="section-subtitle">D'autres actualités du projet</p>
       </div>
 
       <div class="related-articles-grid">
         {{ range $recentPosts }}
-        <article class="related-article-card">
-          <a href="{{ .RelPermalink }}" class="related-article-link">
-            <div class="related-article-meta">
-              <span class="meta-date"
-                >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
-              >
-            </div>
+        <a href="{{ .RelPermalink }}" class="related-article-card">
+          {{ if .Params.image }}
+          <div class="related-article-image">
+            {{ $img := .Resources.GetMatch .Params.image }} {{ if $img }}
+            <img src="{{ $img.RelPermalink }}" alt="{{ .Title }}" />
+            {{ else }}
+            <img src="{{ .Params.image }}" alt="{{ .Title }}" />
+            {{ end }}
+          </div>
+          {{ end }}
+          <div class="related-article-content">
+            <span class="related-article-date"
+              >{{ .PublishDate | time.Format "02 Jan 2006" }}</span
+            >
             <h3 class="related-article-title">{{ .Title }}</h3>
-            <p class="related-article-summary">{{ .Summary | truncate 80 }}</p>
-            <span class="read-more">Lire →</span>
-          </a>
-        </article>
+            <span class="related-article-cta">Lire →</span>
+          </div>
+        </a>
         {{ end }}
       </div>
 
       <div class="back-to-news">
-        <a href="/actualites/" class="back-link">
-          <span class="arrow">←</span>
-          <span>Toutes les actualités</span>
-        </a>
+        <a href="/actualites/" class="back-link"
+          >Voir toutes les actualités →</a
+        >
       </div>
     </section>
     {{ else }}
     <div class="back-to-news standalone">
-      <a href="/actualites/" class="back-link">
-        <span class="arrow">←</span>
-        <span>Retour aux actualités</span>
-      </a>
+      <a href="/actualites/" class="back-link">← Retour aux actualités</a>
     </div>
     {{ end }}
   </div>
