@@ -19,6 +19,7 @@ declare module 'vue' {
     AppToast: typeof import('./src/components/shared/AppToast.vue')['default']
     AppToggleSwitch: typeof import('./src/components/shared/AppToggleSwitch.vue')['default']
     BivariateCellLabel: typeof import('./src/components/map/score/BivariateCellLabel.vue')['default']
+    BuildingWidget: typeof import('./src/components/dashboard/widgets/BuildingWidget.vue')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']
     CircularScore: typeof import('./src/components/shared/CircularScore.vue')['default']
     ClickPlantabilityDivisionData: typeof import('./src/components/division/ClickPlantabilityDivisionData.vue')['default']

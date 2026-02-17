@@ -496,7 +496,7 @@ class DashboardViewMultiCityTest(TestCase):
         self.url = reverse("dashboard")
 
     def test_metropole_aggregates_counts_across_cities(self):
-        """Total counts: 0→15, 5→35, 10→55. Avg = (0*15+5*35+10*55)/105 = 725/105 ≈ 6.9."""
+        """Total counts: 0->15, 5->35, 10->55. Avg = (0*15+5*35+10*55)/105 = 725/105 ≈ 6.9."""
         data = self.client.get(self.url).json()
         self.assertAlmostEqual(
             data["plantability"]["averageNormalizedIndice"], 6.9, places=1
