@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView, ScoresInPolygonView
+from .views.dashboard_views import DashboardView
 from .views import (
     CityView,
     IrisView,
@@ -47,6 +48,7 @@ urlpatterns = [
         RasterDownloadView.as_view(),
         name="download-plantability-raster",
     ),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),

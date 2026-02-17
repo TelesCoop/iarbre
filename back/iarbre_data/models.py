@@ -294,6 +294,13 @@ class Vegestrate(models.Model):
     )
     surface = models.FloatField(null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["strate", "surface"], name="vegestrate_strate_surface_idx"
+            ),
+        ]
+
     geolevel = GeoLevel.TILE.value
     datatype = DataType.VEGESTRATE.value
 

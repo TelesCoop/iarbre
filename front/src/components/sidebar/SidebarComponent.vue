@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
+import { useRouter, useRoute } from "vue-router"
 import { useApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
@@ -8,10 +9,14 @@ import type { Feedback } from "@/types/map"
 import { useToast } from "@/composables/useToast"
 import { useAppStore } from "@/stores/app"
 
+const router = useRouter()
+const route = useRoute()
 const appStore = useAppStore()
 const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
 const toast = useToast()
+
+const isDashboard = computed(() => route.name === "dashboard")
 
 const handleContactClick = () => {
   feedbackIsVisible.value = true
@@ -23,6 +28,14 @@ const handleFeaturesClick = () => {
 
 const handleGithubClick = () => {
   window.open("https://github.com/TelesCoop/iarbre", "_blank")
+}
+
+const handleDashboardClick = () => {
+  if (isDashboard.value) {
+    router.push({ name: "map" })
+  } else {
+    router.push({ name: "dashboard" })
+  }
 }
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -184,6 +197,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
 
     <button
+      v-if="!isDashboard"
       :aria-expanded="isSidePanelVisible"
       :aria-label="isSidePanelVisible ? 'Masquer le panneau' : 'Afficher le panneau'"
       class="sidebar-toggle-panel"
@@ -194,6 +208,41 @@ const sendFeedbackToAPI = async (data: Feedback) => {
         :size="20"
         class="toggle-chevron"
       />
+    </button>
+
+    <button
+      :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
+      :class="['sidebar-dashboard-button', { active: isDashboard }]"
+      @click="handleDashboardClick"
+    >
+      <svg
+        v-if="!isDashboard"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+      </svg>
+      <svg
+        v-else
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+      </svg>
     </button>
 
     <div class="sidebar-icons">
@@ -427,6 +476,49 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
 
     <div class="mobile-bar-icons">
+      <button
+        :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
+        :class="['mobile-bar-button', { 'mobile-bar-button-active': isDashboard }]"
+        @click="handleDashboardClick"
+      >
+        <svg
+          v-if="!isDashboard"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect
+            x="14"
+            y="14"
+            width="7"
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+        </svg>
+        <svg
+          v-else
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+
       <button aria-label="Contact" class="mobile-bar-button" @click="handleContactClick">
         <svg
           fill="none"
@@ -580,6 +672,20 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   flex-shrink: 0;
 }
 
+.sidebar-dashboard-button {
+  @apply hidden lg:flex items-center justify-center cursor-pointer;
+  @apply bg-gray-50 border-none text-gray-500;
+  @apply transition-all duration-200;
+  @apply hover:bg-primary-100 hover:text-primary-700;
+  width: 100%;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.sidebar-dashboard-button.active {
+  @apply bg-primary-100 text-primary-700;
+}
+
 .toggle-chevron {
   @apply text-gray-600;
   transition: transform 0.3s ease-out;
@@ -605,5 +711,9 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply bg-transparent border-none p-2;
   @apply text-white;
   @apply transition-opacity hover:opacity-80;
+}
+
+.mobile-bar-button-active {
+  @apply opacity-100 bg-white/20 rounded-lg;
 }
 </style>
