@@ -496,7 +496,6 @@ class MVTGeneratorWorker:
         """
         # Get common tile data
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
-
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
             map_geometry__intersects=tile_polygon
@@ -506,7 +505,7 @@ class MVTGeneratorWorker:
             logger.error(f"SKIPPED: No data for tile ({tile.x}, {tile.y}, {zoom})")
             return
 
-        if zoom <= ZOOM_AGGREGATE_BREAKPOINT:
+        if False: #zoom <= ZOOM_AGGREGATE_BREAKPOINT:
             gdf = load_geodataframe_from_db(
                 clipped_queryset,
                 [
@@ -557,22 +556,6 @@ class MVTGeneratorWorker:
                     )
             except Exception as e:
                 print(e)
-        else:
-            transformed_geometries = {
-                "name": f"{self.geolevel}--{self.datatype}",
-                "features": [],
-            }
-            for obj in clipped_queryset:
-                properties = obj.get_layer_properties()
-                clipped_geom = obj.clipped_geometry
-                transformed_geometries["features"].append(
-                    {
-                        "geometry": clipped_geom.make_valid().wkt,
-                        "properties": properties,
-                    }
-                )
-
-            logger.error(f"SKIPPED: No data for tile ({tile.x}, {tile.y}, {zoom})")
             return
 
         transformed_geometries = {
