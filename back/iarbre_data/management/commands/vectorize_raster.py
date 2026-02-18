@@ -1,7 +1,7 @@
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from argparse import RawTextHelpFormatter
-
+import numpy as np
 # gdal requires specific installation
 # and version depending on your Linux Installation
 # You probably have GDAL already installed
@@ -76,13 +76,38 @@ class Command(BaseCommand):
         print(f"Format: {vector_format}, 8-connected: {use_8connected}")
         print(f"{'=' * 70}\n")
 
+        # ds = gdal.Open(str(raster_path))
+        # src_image = ds.ReadAsArray()
+
+
+        # print(src_image[:10,:10])
+        # pos_values = src_image[src_image>0]
+        # print(np.min(pos_values), np.max(pos_values), np.average(pos_values))
+        # src_image[src_image==10000] = -1
+        # src_image = src_image*100
+        # pos_values = src_image[src_image>0]
+        # print(np.min(pos_values), np.max(pos_values), np.average(pos_values))
+        # print(src_image[:10,:10])
+
+        # print("done")
+        # [rows, cols] = src_image.shape
+        # driver = gdal.GetDriverByName("GTiff")
+        # outdata = driver.Create("test.shp", cols, rows, 1, gdal.GDT_UInt16)
+        # outdata.SetGeoTransform(ds.GetGeoTransform())##sets same geotransform as input
+        # outdata.SetProjection(ds.GetProjection())##sets same projection as input
+        # outdata.GetRasterBand(1).WriteArray(src_image)
+        # outdata.GetRasterBand(1).SetNoDataValue(10000)##if you want these values transparent
+        # return 0
         src_ds = gdal.Open(str(raster_path))
+
+
+
         if src_ds is None:
             print(f"✗ Error: Could not open raster: {raster_path}")
             return False
 
         src_band = src_ds.GetRasterBand(1)
-
+        # src_band.WriteArray(src_image)
         driver_name = (
             vector_format if vector_format != "ESRI Shapefile" else "ESRI Shapefile"
         )
@@ -105,7 +130,8 @@ class Command(BaseCommand):
             srs.ImportFromWkt(src_ds.GetProjection())
 
         dst_layer = dst_ds.CreateLayer("vegetation", srs=srs)
-        field_defn = ogr.FieldDefn(field_name, ogr.OFTInteger)
+        print("108")
+        field_defn = ogr.FieldDefn(field_name, ogr.OFTReal)
         dst_layer.CreateField(field_defn)
 
         options = []

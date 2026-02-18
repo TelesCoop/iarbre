@@ -84,15 +84,16 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
         end = start + batch_size
         batch = lcz_datas.loc[start:end]
         data = next(batch.iterrows())[1]
+
         print(data["geometry"].wkt)
         BiosphereFunctionalIntegrity.objects.bulk_create(
             [
                 BiosphereFunctionalIntegrity(
                     geometry=GEOSGeometry(data["geometry"].wkt),
                     map_geometry=GEOSGeometry(data["map_geometry"].wkt),
-                    indice=data["class"],
+                    indice=float(data["class"]),
                 )
-                for _, data in batch.iterrows()
+                for _, data in batch.iterrows() if float(data["class"]) > 0
             ]
         )
 
@@ -103,7 +104,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Load LCZ from CEREMA and then save all LCZ data in the DB."""
         shp_folder = "file_data/biosphere_functional_integrity"
-        shp_filename = "MDL_Cosia_CarHab_4m.shp"
+        shp_filename = "MDL_Cosia_CarHab_IFB_4m.shp"
 
         log_progress("Split data")
         batch_folder = os.path.join(shp_folder, f"{shp_filename}_parts")
