@@ -21,6 +21,9 @@ const impermeableRate = computed(
 
 const permeableRate = computed(() => Math.round((100 - impermeableRate.value) * 10) / 10)
 
+const impermeablePercent = computed(() => Math.round(impermeableRate.value))
+const permeablePercent = computed(() => 100 - impermeablePercent.value)
+
 const accentColor = computed(() => {
   if (impermeableRate.value > 70) return "#EF4444"
   if (impermeableRate.value > 50) return "#F59E0B"
@@ -54,9 +57,9 @@ const details = computed(() => [
         :secondary-color="SURFACE_COLORS.vegetation"
       >
         <div class="arc-dual">
-          <span class="arc-rate impermeable">{{ impermeableRate.toFixed(0) }}%</span>
+          <span class="arc-rate impermeable">{{ impermeablePercent }}%</span>
           <span class="arc-rate-label">imperméable</span>
-          <span class="arc-rate permeable">{{ permeableRate.toFixed(0) }}%</span>
+          <span class="arc-rate permeable">{{ permeablePercent }}%</span>
           <span class="arc-rate-label">perméable</span>
         </div>
       </DashboardArcScore>
@@ -67,8 +70,8 @@ const details = computed(() => [
           <div :style="{ width: `${impermeableRate}%` }" class="stacked-fill stacked-impermeable" />
         </div>
         <div class="detail-header">
-          <AppBadge variant="success">{{ permeableRate.toFixed(0) }}% perméable</AppBadge>
-          <AppBadge variant="secondary">{{ impermeableRate.toFixed(0) }}% imperméable</AppBadge>
+          <AppBadge variant="success">{{ permeablePercent }}% perméable</AppBadge>
+          <AppBadge variant="secondary">{{ impermeablePercent }}% imperméable</AppBadge>
         </div>
         <DashboardDetailBars :items="details" />
       </div>
