@@ -62,10 +62,16 @@ class Command(BaseCommand):
             help="Keep already existing tiles, do not delete them.",
         )
         parser.add_argument(
-            "--zoom_levels",
+            "--min_zoom_levels",
             type=int,
-            default=DEFAULT_ZOOM_LEVELS,
-            help="Zoom levels to generate MVTs.",
+            default=DEFAULT_ZOOM_LEVELS[0],
+            help="Min zoom levels to generate MVTs.",
+        )
+        parser.add_argument(
+            "--max_zoom_levels",
+            type=int,
+            default=DEFAULT_ZOOM_LEVELS[1],
+            help="Max zoom levels to generate MVTs.",
         )
 
     def generate_tiles_for_model(
@@ -107,7 +113,7 @@ class Command(BaseCommand):
         number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
-        zoom_levels = options["zoom_levels"]
+        zoom_levels = [options["min_zoom_levels"], options["max_zoom_levels"]]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
         elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
@@ -135,8 +141,6 @@ class Command(BaseCommand):
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
             )
-
-        zoom_levels = (15, 16)
 
         if options["keep"] is False:
             print(f"Deleting existing MVTTile for model : {mdl._meta.model_name}.")
