@@ -42,3 +42,13 @@ Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
   const expectedMessage = shouldExist ? "cypress: QPV data loaded" : "cypress: QPV data removed"
   cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
 })
+
+/**
+ * Custom command to check cadastre layer status via console logs
+ */
+Cypress.Commands.add("mapCheckCadastreLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist
+    ? "cypress: cadastre data loaded"
+    : "cypress: cadastre data removed"
+  cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
+})

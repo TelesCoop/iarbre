@@ -131,6 +131,50 @@ describe("Map - Desktop", () => {
     cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
   })
+
+  it("adds cadastre layer when toggled", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
+  })
+
+  it("maintains cadastre layer when switching data layers", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+    cy.mapCheckCadastreLayer(true)
+  })
+
+  it("maintains cadastre layer when switching basemap styles", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+  })
+
+  it("hides cadastre parcel info when layer is toggled off", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+    cy.getBySel("cadastre-parcel-info").should("not.exist")
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
+    cy.getBySel("cadastre-parcel-info").should("not.exist")
+  })
 })
 
 describe("Map - Mobile", () => {
@@ -172,6 +216,16 @@ describe("Map - Mobile", () => {
 
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(false)
+  })
+
+  it("toggles cadastre layer on mobile", () => {
+    cy.getBySel("drawer-toggle").should("be.visible").click()
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
   })
 
   it("changes map style on mobile via drawer", () => {
