@@ -58,11 +58,13 @@ function render(animate = false) {
   if (width === 0 || height === 0) return
 
   const barH = Math.min(height * 0.5, 32)
+  const chartTotalH = barH + 14 + 10
+  const offsetY = Math.max((height - chartTotalH) / 2, 0)
   const barY = 0
   const labelY = barY + barH + 14
   const gap = 1.5
 
-  const g = svg.append("g")
+  const g = svg.append("g").attr("transform", `translate(0,${offsetY})`)
 
   let xOffset = 0
   const segments = bars.value.map((b) => {
@@ -161,11 +163,11 @@ watch(bars, () => render(true))
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex flex-col items-center gap-4 w-full;
+  @apply flex-1 flex flex-col items-center justify-center gap-4 w-full;
 }
 
 .chart-container {
-  @apply w-full;
-  height: 52px;
+  @apply flex-1 w-full;
+  min-height: 40px;
 }
 </style>

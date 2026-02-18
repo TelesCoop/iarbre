@@ -7,7 +7,7 @@ class DashboardCitySerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
-class PlantabilityDistributionByDivisionSerializer(serializers.Serializer):
+class DashboardPlantabilityDivisionSerializer(serializers.Serializer):
     code = serializers.CharField()
     name = serializers.CharField()
     averageNormalizedIndice = serializers.FloatField()
@@ -17,7 +17,7 @@ class PlantabilityDistributionByDivisionSerializer(serializers.Serializer):
 class DashboardPlantabilitySerializer(serializers.Serializer):
     averageNormalizedIndice = serializers.FloatField()
     distribution = serializers.DictField()
-    distributionByDivision = PlantabilityDistributionByDivisionSerializer(many=True)
+    distributionByDivision = DashboardPlantabilityDivisionSerializer(many=True)
 
 
 class DashboardVulnerabilitySerializer(serializers.Serializer):

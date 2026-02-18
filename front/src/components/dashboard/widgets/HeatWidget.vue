@@ -6,6 +6,7 @@ import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.v
 import AppToggleSwitch from "@/components/shared/AppToggleSwitch.vue"
 import type { DashboardVulnerability } from "@/types/dashboard"
 import { useDashboardStore } from "@/stores/dashboard"
+import { HEAT_COLORS } from "@/utils/dashboardColors"
 
 const VULNERABILITY_MAX_SCORE = 9
 
@@ -18,16 +19,17 @@ const store = useDashboardStore()
 
 const isDay = computed(() => store.heatMode === "day")
 const currentScore = computed(() => (isDay.value ? props.data.averageDay : props.data.averageNight))
-const accentColor = computed(() => (isDay.value ? "#F59E0B" : "#6366F1"))
+const palette = computed(() => (isDay.value ? HEAT_COLORS.day : HEAT_COLORS.night))
+const accentColor = computed(() => palette.value.accent)
 
 const axes = computed(() => {
   const expo = isDay.value ? props.data.expoDay : props.data.expoNight
   const sensibility = isDay.value ? props.data.sensibilityDay : props.data.sensibilityNight
   const capaf = isDay.value ? props.data.capafDay : props.data.capafNight
   return [
-    { label: "Exposition", value: expo, color: isDay.value ? "#FBBF24" : "#818CF8" },
-    { label: "Sensibilité", value: sensibility, color: isDay.value ? "#F59E0B" : "#6366F1" },
-    { label: "Cap. adapt.", value: capaf, color: isDay.value ? "#D97706" : "#4F46E5" }
+    { label: "Exposition", value: expo, color: palette.value.expo },
+    { label: "Sensibilité", value: sensibility, color: palette.value.sensibility },
+    { label: "Cap. adapt.", value: capaf, color: palette.value.capaf }
   ]
 })
 
@@ -130,9 +132,12 @@ function render(animate = false) {
       })
   }
 
+  const valueFontSize = Math.min(Math.max(size / 14, 9), 14)
+  const labelFontSize = Math.min(Math.max(size / 22, 7), 10)
+  const labelR = radius + Math.max(size / 12, 10)
+
   wedges.forEach((w) => {
     const midAngle = (w.startAngle + w.endAngle) / 2 - Math.PI / 2
-    const labelR = radius + 14
 
     const isTop = Math.abs(midAngle + Math.PI / 2) < 0.3
     const anchor = isTop ? "middle" : midAngle > 0 ? "start" : "end"
@@ -147,7 +152,7 @@ function render(animate = false) {
       .attr("text-anchor", anchor)
       .attr("dominant-baseline", "central")
       .attr("dy", dy)
-      .attr("font-size", "11px")
+      .attr("font-size", `${valueFontSize}px`)
       .attr("font-weight", "600")
       .attr("fill", "#374151")
       .text(`${w.value.toFixed(1)}`)
@@ -157,7 +162,7 @@ function render(animate = false) {
       .attr("text-anchor", anchor)
       .attr("dominant-baseline", "central")
       .attr("dy", isTop ? "0.7em" : "1.3em")
-      .attr("font-size", "9px")
+      .attr("font-size", `${labelFontSize}px`)
       .attr("fill", "#9CA3AF")
       .text(w.label)
   })
@@ -193,7 +198,7 @@ watch([axes, accentColor], () => render(true))
         />
 
         <div class="chart-container">
-          <svg ref="svgRef" width="100%" height="100%" />
+          <svg ref="svgRef" height="100%" width="100%" />
         </div>
       </div>
     </div>
@@ -204,7 +209,7 @@ watch([axes, accentColor], () => render(true))
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex flex-col items-center gap-3 w-full;
+  @apply flex-1 flex flex-col items-center justify-center gap-3 w-full;
 }
 
 .toggle-row {
@@ -220,11 +225,10 @@ watch([axes, accentColor], () => render(true))
 }
 
 .score-and-polar {
-  @apply flex items-center gap-4 w-full;
+  @apply flex-1 flex items-center gap-4 w-full;
 }
 
 .chart-container {
-  @apply flex-1;
-  height: 180px;
+  @apply flex-1 self-stretch;
 }
 </style>

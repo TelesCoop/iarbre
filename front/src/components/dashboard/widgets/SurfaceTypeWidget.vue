@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, ref, onMounted, onUnmounted, watch } from "vue"
+import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
-import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardLcz } from "@/types/dashboard"
+import { SURFACE_COLORS } from "@/utils/dashboardColors"
 
 interface Props {
   data: DashboardLcz
@@ -10,63 +11,134 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const impermeableRate = computed(
-  () =>
-    Math.round(((props.data.buildingRate ?? 0) + (props.data.impermeableSurfaceRate ?? 0)) * 10) /
-    10
-)
-
-const permeableRate = computed(() => Math.round((100 - impermeableRate.value) * 10) / 10)
-
-const accentColor = computed(() => {
-  if (impermeableRate.value > 70) return "#EF4444"
-  if (impermeableRate.value > 50) return "#F59E0B"
-  return "#6B7280"
+const bars = computed(() => {
+  const raw = [
+    {
+      label: "Végétation",
+      value: props.data.totalVegetationRate,
+      color: SURFACE_COLORS.vegetation
+    },
+    {
+      label: "Imperméable",
+      value: props.data.impermeableSurfaceRate,
+      color: SURFACE_COLORS.impermeable
+    },
+    { label: "Bâti", value: props.data.buildingRate, color: SURFACE_COLORS.building },
+    {
+      label: "Sol perméable",
+      value: props.data.permeableSoilRate,
+      color: SURFACE_COLORS.permeableSoil
+    },
+    { label: "Eau", value: props.data.waterRate, color: SURFACE_COLORS.water }
+  ]
+  return raw.filter((b) => b.value > 0).sort((a, b) => b.value - a.value)
 })
 
-const details = computed(() => [
-  { label: "Bâti", value: props.data.buildingRate, color: "#F59E0B" },
-  { label: "Routes / minéral", value: props.data.impermeableSurfaceRate, color: "#6B7280" },
-  { label: "Sol perméable", value: props.data.permeableSoilRate, color: "#D4A853" },
-  { label: "Végétation", value: props.data.totalVegetationRate, color: "#55B250" },
-  { label: "Eau", value: props.data.waterRate, color: "#3B82F6" }
-])
+const svgRef = ref<SVGSVGElement | null>(null)
+let resizeObserver: ResizeObserver | null = null
+
+function render(animate = false) {
+  if (!svgRef.value) return
+  const svg = d3.select(svgRef.value)
+  svg.selectAll("*").remove()
+
+  const rect = svgRef.value.getBoundingClientRect()
+  const width = rect.width
+  const height = rect.height
+  if (width === 0 || height === 0) return
+
+  const data = bars.value
+  if (data.length === 0) return
+
+  const marginTop = 20
+  const marginBottom = 40
+  const labelFontSize = Math.min(Math.max(width / data.length / 8, 8), 11)
+  const valueFontSize = Math.min(Math.max(width / data.length / 7, 9), 12)
+  const chartH = height - marginTop - marginBottom
+  const barGap = Math.min(width * 0.03, 12)
+  const barW = Math.min((width - barGap * (data.length - 1)) / data.length, 48)
+  const totalW = data.length * barW + (data.length - 1) * barGap
+  const offsetX = (width - totalW) / 2
+
+  const maxValue = d3.max(data, (d) => d.value) || 1
+
+  const yScale = d3.scaleLinear().domain([0, maxValue]).range([0, chartH])
+
+  const g = svg.append("g").attr("transform", `translate(${offsetX},${marginTop})`)
+
+  const cols = g
+    .selectAll(".bar-col")
+    .data(data)
+    .join("g")
+    .attr("class", "bar-col")
+    .attr("transform", (_, i) => `translate(${i * (barW + barGap)},0)`)
+
+  cols
+    .append("rect")
+    .attr("x", 0)
+    .attr("width", barW)
+    .attr("rx", 4)
+    .attr("fill", (d) => d.color)
+    .attr("opacity", 0.8)
+    .attr("y", animate ? chartH : (d) => chartH - yScale(d.value))
+    .attr("height", animate ? 0 : (d) => yScale(d.value))
+
+  cols
+    .append("text")
+    .attr("x", barW / 2)
+    .attr("y", (d) => (animate ? chartH - 6 : chartH - yScale(d.value) - 6))
+    .attr("text-anchor", "middle")
+    .attr("font-size", `${valueFontSize}px`)
+    .attr("font-weight", "700")
+    .attr("fill", (d) => d.color)
+    .attr("opacity", animate ? 0 : 1)
+    .text((d) => `${d.value.toFixed(1)}%`)
+
+  cols
+    .append("text")
+    .attr("x", barW / 2)
+    .attr("y", chartH + 16)
+    .attr("text-anchor", "middle")
+    .attr("font-size", `${labelFontSize}px`)
+    .attr("fill", "#6B7280")
+    .text((d) => d.label)
+
+  if (animate) {
+    cols
+      .selectAll("rect")
+      .transition()
+      .duration(700)
+      .delay((_, i) => i * 80)
+      .ease(d3.easeCubicOut)
+      .attr("y", (d) => chartH - yScale((d as (typeof data)[0]).value))
+      .attr("height", (d) => yScale((d as (typeof data)[0]).value))
+
+    cols
+      .selectAll("text:first-of-type")
+      .transition()
+      .duration(400)
+      .delay((_, i) => 300 + i * 80)
+      .attr("opacity", 1)
+      .attr("y", (d) => chartH - yScale((d as (typeof data)[0]).value) - 6)
+  }
+}
+
+onMounted(() => {
+  render(true)
+  if (svgRef.value?.parentElement) {
+    resizeObserver = new ResizeObserver(() => render())
+    resizeObserver.observe(svgRef.value.parentElement)
+  }
+})
+
+onUnmounted(() => resizeObserver?.disconnect())
+watch(bars, () => render(true))
 </script>
 
 <template>
-  <DashboardWidgetCard subtitle="Taux d'imperméabilisation des sols" title="Perméabilité">
+  <DashboardWidgetCard subtitle="Répartition par type de surface" title="Surfaces">
     <div class="widget-body">
-      <DashboardArcScore
-        :color="accentColor"
-        :display-value="`${impermeableRate.toFixed(0)}%`"
-        :max-value="100"
-        :value="impermeableRate"
-        label="imperméable"
-      />
-
-      <div class="detail-row">
-        <div class="detail-header">
-          <span class="detail-badge permeable">{{ permeableRate.toFixed(0) }}% perméable</span>
-          <span class="detail-badge impermeable"
-            >{{ impermeableRate.toFixed(0) }}% imperméable</span
-          >
-        </div>
-        <div class="detail-bars">
-          <div v-for="item in details" :key="item.label" class="detail-item">
-            <div class="detail-label-row">
-              <span class="detail-dot" :style="{ backgroundColor: item.color }" />
-              <span class="detail-label">{{ item.label }}</span>
-              <span class="detail-value">{{ item.value.toFixed(1) }}%</span>
-            </div>
-            <div class="bar-track">
-              <div
-                class="bar-fill"
-                :style="{ width: `${item.value}%`, backgroundColor: item.color }"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      <svg ref="svgRef" height="100%" width="100%" />
     </div>
   </DashboardWidgetCard>
 </template>
@@ -75,65 +147,6 @@ const details = computed(() => [
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex flex-col items-center gap-4 w-full;
-}
-
-.detail-row {
-  @apply flex flex-col gap-3 w-full;
-}
-
-.detail-header {
-  @apply flex items-center justify-center gap-3;
-}
-
-.detail-badge {
-  @apply text-xs font-medium px-2 py-0.5 rounded-full;
-}
-
-.detail-badge.permeable {
-  @apply bg-green-50 text-green-700;
-}
-
-.detail-badge.impermeable {
-  @apply bg-gray-100 text-gray-600;
-}
-
-.detail-bars {
-  @apply flex flex-col gap-2.5;
-}
-
-.detail-item {
-  @apply flex flex-col gap-1;
-}
-
-.detail-label-row {
-  @apply flex items-center gap-2 text-xs;
-}
-
-.detail-dot {
-  @apply w-2 h-2 rounded-full shrink-0;
-}
-
-.detail-label {
-  @apply text-gray-500;
-}
-
-.detail-value {
-  @apply font-semibold text-gray-700 ml-auto tabular-nums;
-}
-
-.bar-track {
-  @apply w-full h-1.5 bg-gray-100 rounded-full overflow-hidden;
-}
-
-.bar-fill {
-  @apply h-full rounded-full;
-  animation: barGrow 700ms ease-out both;
-}
-
-@keyframes barGrow {
-  from {
-    width: 0 !important;
-  }
+  @apply flex-1 flex items-center justify-center w-full;
 }
 </style>

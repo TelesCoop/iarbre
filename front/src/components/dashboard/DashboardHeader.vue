@@ -48,21 +48,21 @@ const currentLabel = computed(() => {
       </div>
       <RouterLink :to="{ name: 'map' }" class="back-to-map">
         <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
           fill="none"
+          height="16"
           stroke="currentColor"
-          stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
         >
           <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-          <line x1="8" y1="2" x2="8" y2="18" />
-          <line x1="16" y1="6" x2="16" y2="22" />
+          <line x1="8" x2="8" y1="2" y2="18" />
+          <line x1="16" x2="16" y1="6" y2="22" />
         </svg>
-        <span>Voir la carte</span>
+        <span>Retourner sur la carte</span>
       </RouterLink>
     </div>
 
@@ -103,7 +103,7 @@ const currentLabel = computed(() => {
 }
 
 .back-to-map {
-  @apply flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-primary-50 shrink-0;
+  @apply flex items-center gap-2 text-sm font-medium text-primary-600 bg-primary-50 hover:text-primary-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-primary-100 shrink-0;
 }
 
 .header-title {

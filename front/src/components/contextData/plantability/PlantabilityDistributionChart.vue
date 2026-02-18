@@ -22,22 +22,27 @@ const props = withDefaults(defineProps<PlantabilityDistributionChartProps>(), {
 const svgRef = ref<SVGSVGElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
-const segments = computed(() => {
+const bars = computed(() => {
   if (!props.entries || props.entries.length === 0) return []
-  return [...props.entries]
-    .sort((a, b) => a.score - b.score)
-    .map((entry) => {
-      const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(entry.score)
-      const color =
-        colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
-          ? String(PLANTABILITY_COLOR_MAP[colorIndex + 1])
-          : "#C4C4C4"
-      return { label: `${entry.score}/10`, value: entry.count, color }
-    })
+  const sorted = [...props.entries].sort((a, b) => a.score - b.score)
+  const total = sorted.reduce((acc, e) => acc + e.count, 0)
+  return sorted.map((entry) => {
+    const colorIndex = PLANTABILITY_COLOR_MAP.indexOf(entry.score)
+    const color =
+      colorIndex !== -1 && colorIndex + 1 < PLANTABILITY_COLOR_MAP.length
+        ? String(PLANTABILITY_COLOR_MAP[colorIndex + 1])
+        : "#C4C4C4"
+    return {
+      label: String(entry.score),
+      value: entry.count,
+      color,
+      pct: total > 0 ? entry.count / total : 0
+    }
+  })
 })
 
 function render(animate = false) {
-  if (!svgRef.value || segments.value.length === 0) return
+  if (!svgRef.value || bars.value.length === 0) return
   const svg = d3.select(svgRef.value)
   svg.selectAll("*").remove()
 
@@ -46,92 +51,74 @@ function render(animate = false) {
   const height = rect.height
   if (width === 0 || height === 0) return
 
-  const legendH = props.showLegend ? 32 : 0
-  const titleH = props.title ? 24 : 0
-  const chartH = height - legendH - titleH
-  const size = Math.min(width, chartH)
-  const cx = width / 2
-  const cy = titleH + chartH / 2
-  const outerR = size / 2 - 4
-  const innerR = 0
+  const barH = Math.min(height * 0.55, 32)
+  const labelY = barH + 14
+  const gap = 1.5
 
-  const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
+  const g = svg.append("g")
 
-  if (props.title) {
-    svg
-      .append("text")
-      .attr("x", cx)
-      .attr("y", 16)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
-      .attr("font-weight", "600")
-      .attr("fill", "#374151")
-      .text(props.title)
-  }
+  let xOffset = 0
+  const segments = bars.value.map((b) => {
+    const w = Math.max(b.pct * width - gap, 0)
+    const seg = { ...b, x: xOffset, w }
+    xOffset += w + gap
+    return seg
+  })
 
-  const pie = d3
-    .pie<(typeof segments.value)[0]>()
-    .value((d) => d.value)
-    .sort(null)
-    .padAngle(0.02)
-
-  const arc = d3
-    .arc<d3.PieArcDatum<(typeof segments.value)[0]>>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
-
-  const zeroArc = d3
-    .arc<d3.PieArcDatum<(typeof segments.value)[0]>>()
-    .innerRadius(innerR)
-    .outerRadius(0)
-
-  const paths = g
-    .selectAll("path")
-    .data(pie(segments.value))
-    .join("path")
-    .attr("d", animate ? (zeroArc as never) : (arc as never))
-    .attr("fill", (d) => d.data.color)
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
+  g.selectAll(".marimekko-seg")
+    .data(segments)
+    .join("rect")
+    .attr("class", "marimekko-seg")
+    .attr("x", (d) => d.x)
+    .attr("y", 0)
+    .attr("height", barH)
+    .attr("rx", 4)
+    .attr("fill", (d) => d.color)
+    .attr("opacity", 0.85)
+    .attr("width", animate ? 0 : (d) => d.w)
+    .on("mouseenter", function () {
+      d3.select(this).attr("opacity", 1)
+    })
+    .on("mouseleave", function () {
+      d3.select(this).attr("opacity", 0.85)
+    })
 
   if (animate) {
-    paths
+    g.selectAll(".marimekko-seg")
       .transition()
-      .duration(600)
+      .duration(700)
+      .delay((_, i) => i * 50)
       .ease(d3.easeCubicOut)
-      .attrTween("d", function (d) {
-        const interp = d3.interpolate({ startAngle: d.startAngle, endAngle: d.startAngle }, d)
-        return function (t) {
-          return arc(interp(t))!
-        }
-      })
+      .attr("width", (d) => (d as (typeof segments)[0]).w)
   }
 
-  if (props.showLegend) {
-    const legendY = height - legendH / 2
-    const itemW = 50
-    const totalW = segments.value.length * itemW
-    const startX = (width - totalW) / 2
+  g.selectAll(".seg-label")
+    .data(segments.filter((s) => s.pct >= 0.06))
+    .join("text")
+    .attr("class", "seg-label")
+    .attr("x", (d) => d.x + d.w / 2)
+    .attr("y", labelY)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "9px")
+    .attr("fill", "#9CA3AF")
+    .text((d) => d.label)
 
-    segments.value.forEach((seg, i) => {
-      const x = startX + i * itemW + itemW / 2
-      svg
-        .append("rect")
-        .attr("x", x - 16)
-        .attr("y", legendY - 5)
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("rx", 2)
-        .attr("fill", seg.color)
+  g.selectAll(".seg-pct")
+    .data(segments.filter((s) => s.pct >= 0.06))
+    .join("text")
+    .attr("class", "seg-pct")
+    .attr("x", (d) => d.x + d.w / 2)
+    .attr("y", barH / 2)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-size", "9px")
+    .attr("font-weight", "600")
+    .attr("fill", "#fff")
+    .attr("opacity", animate ? 0 : 1)
+    .text((d) => `${(d.pct * 100).toFixed(0)}%`)
 
-      svg
-        .append("text")
-        .attr("x", x - 2)
-        .attr("y", legendY + 4)
-        .attr("font-size", "10px")
-        .attr("fill", "#6B7280")
-        .text(seg.label)
-    })
+  if (animate) {
+    g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
   }
 }
 
@@ -144,11 +131,29 @@ onMounted(() => {
 })
 
 onUnmounted(() => resizeObserver?.disconnect())
-watch(segments, () => render(true))
+watch(bars, () => render(true))
 </script>
 
 <template>
-  <div v-if="segments.length > 0" class="p-4">
-    <svg ref="svgRef" class="w-full h-64" />
+  <div v-if="bars.length > 0" class="distribution-chart">
+    <p v-if="title" class="chart-title">{{ title }}</p>
+    <svg ref="svgRef" class="chart-svg" />
   </div>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.distribution-chart {
+  @apply px-4 py-3;
+}
+
+.chart-title {
+  @apply text-xs font-semibold text-gray-700 mb-3;
+}
+
+.chart-svg {
+  @apply w-full;
+  height: 56px;
+}
+</style>

@@ -8,12 +8,14 @@ interface Props {
   color: string
   label?: string
   displayValue?: string
+  secondaryColor?: string
   size?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   label: undefined,
   displayValue: undefined,
+  secondaryColor: undefined,
   size: 120
 })
 
@@ -53,7 +55,7 @@ function render(animate = true) {
 
   g.append("path")
     .attr("d", bgArc({ startAngle: gap, endAngle: 2 * Math.PI - gap })!)
-    .attr("fill", "#f0f0f0")
+    .attr("fill", props.secondaryColor ?? "#f0f0f0")
 
   const fgArc = d3
     .arc<{ startAngle: number; endAngle: number }>()
@@ -103,8 +105,10 @@ watch([targetAngle, () => props.color], () => render(true))
   <div class="arc-score" :style="{ width: `${size}px`, height: `${size}px` }">
     <svg ref="svgRef" :width="size" :height="size" />
     <div class="arc-center">
-      <span class="arc-value">{{ centerText }}</span>
-      <span v-if="label" class="arc-label">{{ label }}</span>
+      <slot>
+        <span class="arc-value">{{ centerText }}</span>
+        <span v-if="label" class="arc-label">{{ label }}</span>
+      </slot>
     </div>
   </div>
 </template>

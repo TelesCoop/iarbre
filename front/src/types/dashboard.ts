@@ -4,7 +4,7 @@ export interface DashboardCity {
   name: string
 }
 
-export interface PlantabilityDistributionByDivision {
+export interface DashboardPlantabilityDivision {
   code: string
   name: string
   averageNormalizedIndice: number
@@ -14,7 +14,7 @@ export interface PlantabilityDistributionByDivision {
 export interface DashboardPlantability {
   averageNormalizedIndice: number
   distribution: Record<string, number>
-  distributionByDivision: PlantabilityDistributionByDivision[]
+  distributionByDivision: DashboardPlantabilityDivision[]
 }
 
 export interface DashboardVulnerability {
@@ -53,6 +53,13 @@ export interface DashboardData {
   vulnerability: DashboardVulnerability
   vegetation: DashboardVegetation
   lcz: DashboardLcz
+}
+
+export interface BubbleItem {
+  id: string
+  label: string
+  value: number
+  color: string
 }
 
 export type DashboardScale = "metropole" | "commune" | "iris"

@@ -4,7 +4,7 @@ import AppSpinner from "@/components/shared/AppSpinner.vue"
 import PlantabilityWidget from "@/components/dashboard/widgets/PlantabilityWidget.vue"
 import HeatWidget from "@/components/dashboard/widgets/HeatWidget.vue"
 import VegetationWidget from "@/components/dashboard/widgets/VegetationWidget.vue"
-import BuildingWidget from "@/components/dashboard/widgets/BuildingWidget.vue"
+import PermeabilityWidget from "@/components/dashboard/widgets/PermeabilityWidget.vue"
 import SurfaceTypeWidget from "@/components/dashboard/widgets/SurfaceTypeWidget.vue"
 import VegetationWaterWidget from "@/components/dashboard/widgets/VegetationWaterWidget.vue"
 import { useDashboardStore } from "@/stores/dashboard"
@@ -28,7 +28,7 @@ const hasData = computed(() => store.dashboardData !== null && !store.loading)
     <PlantabilityWidget :data="store.dashboardData!.plantability" />
     <HeatWidget :data="store.dashboardData!.vulnerability" />
     <VegetationWidget :data="store.dashboardData!.vegetation" />
-    <BuildingWidget :data="store.dashboardData!.lcz" />
+    <PermeabilityWidget :data="store.dashboardData!.lcz" />
     <SurfaceTypeWidget :data="store.dashboardData!.lcz" />
     <VegetationWaterWidget :data="store.dashboardData!.lcz" />
   </div>
