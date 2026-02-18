@@ -19,6 +19,7 @@ import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from 
 import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
+import { getCityBoundaries, getIrisBoundaries } from "@/services/boundaryService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -40,6 +41,7 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
+  const showBoundaryLayer = ref<boolean>(false)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const isToolbarVisible = ref<boolean>(false)
   const shapeDrawing = useShapeDrawing()
@@ -360,9 +362,12 @@ export const useMapStore = defineStore("map", () => {
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
-      // Clear QPV if existing
+      // Clear overlay layers before removing sources
       if (mapInstance.getLayer("qpv-border")) {
         removeQPVLayer(mapInstance)
+      }
+      if (mapInstance.getLayer("city-boundary")) {
+        removeBoundaryLayers(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
@@ -382,6 +387,9 @@ export const useMapStore = defineStore("map", () => {
       initTiles(mapInstance)
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
+      }
+      if (showBoundaryLayer.value) {
+        addBoundaryLayers(mapInstance)
       }
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
@@ -420,9 +428,12 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-      // Clear QPV if existing
+      // Clear overlay layers before style change
       if (mapInstance.getLayer("qpv-border")) {
         removeQPVLayer(mapInstance)
+      }
+      if (mapInstance.getLayer("city-boundary")) {
+        removeBoundaryLayers(mapInstance)
       }
       let newStyle: maplibregl.StyleSpecification
 
@@ -445,6 +456,9 @@ export const useMapStore = defineStore("map", () => {
           setupControls(mapInstance)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
+          }
+          if (showBoundaryLayer.value) {
+            addBoundaryLayers(mapInstance)
           }
           mapInstance.fire("moveend")
         }
@@ -487,7 +501,7 @@ export const useMapStore = defineStore("map", () => {
           type: "line",
           source: "qpv-source",
           paint: {
-            "line-color": "#ffffff",
+            "line-color": "#D97706",
             "line-width": 3
           }
         },
@@ -521,6 +535,94 @@ export const useMapStore = defineStore("map", () => {
         await addQPVLayer(mapInstance)
       } else {
         removeQPVLayer(mapInstance)
+      }
+    }
+  }
+
+  const addBoundaryLayers = async (mapInstance: Map) => {
+    if (!mapInstance.getSource("city-boundary-source")) {
+      const cityData = await getCityBoundaries()
+      if (!cityData) return
+
+      mapInstance.addSource("city-boundary-source", {
+        type: "geojson",
+        data: cityData
+      })
+    }
+
+    if (!mapInstance.getSource("iris-boundary-source")) {
+      const irisData = await getIrisBoundaries()
+      if (!irisData) return
+
+      mapInstance.addSource("iris-boundary-source", {
+        type: "geojson",
+        data: irisData
+      })
+    }
+
+    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
+      ? TERRA_DRAW_POLYGON_LAYER
+      : undefined
+
+    if (!mapInstance.getLayer("iris-boundary")) {
+      mapInstance.addLayer(
+        {
+          id: "iris-boundary",
+          type: "line",
+          source: "iris-boundary-source",
+          paint: {
+            "line-color": "#426A45",
+            "line-width": 1,
+            "line-opacity": 0.4,
+            "line-dasharray": [4, 3]
+          }
+        },
+        beforeId
+      )
+    }
+
+    if (!mapInstance.getLayer("city-boundary")) {
+      mapInstance.addLayer(
+        {
+          id: "city-boundary",
+          type: "line",
+          source: "city-boundary-source",
+          paint: {
+            "line-color": "#426A45",
+            "line-width": 2.5,
+            "line-opacity": 0.7
+          }
+        },
+        beforeId
+      )
+    }
+  }
+
+  const removeBoundaryLayers = (mapInstance: Map) => {
+    if (mapInstance.getLayer("city-boundary")) {
+      mapInstance.removeLayer("city-boundary")
+    }
+    if (mapInstance.getLayer("iris-boundary")) {
+      mapInstance.removeLayer("iris-boundary")
+    }
+    if (mapInstance.getSource("city-boundary-source")) {
+      mapInstance.removeSource("city-boundary-source")
+    }
+    if (mapInstance.getSource("iris-boundary-source")) {
+      mapInstance.removeSource("iris-boundary-source")
+    }
+  }
+
+  const toggleBoundaryLayer = async () => {
+    showBoundaryLayer.value = !showBoundaryLayer.value
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      if (showBoundaryLayer.value) {
+        await addBoundaryLayers(mapInstance)
+      } else {
+        removeBoundaryLayers(mapInstance)
       }
     }
   }
@@ -688,6 +790,8 @@ export const useMapStore = defineStore("map", () => {
     resetFilters,
     showQPVLayer,
     toggleQPVLayer,
+    showBoundaryLayer,
+    toggleBoundaryLayer,
     use3D,
     toggle3D
   }
