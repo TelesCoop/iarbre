@@ -5,7 +5,7 @@ import { VegetationLegend } from "@/utils/vegetation"
 <template>
   <div
     class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1"
-    data-cy="vegetation-legend"
+    data-cy="biosphere-integrity-legend"
   >
     <div
       v-for="(color, name, index) in VegetationLegend"

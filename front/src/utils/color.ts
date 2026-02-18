@@ -63,6 +63,12 @@ export function getVulnerabilityTextColor(score: number | null): string {
   return colorMap[colorCode] || "text-gray-500"
 }
 
+export function getBiosphereIntegrityTextColor(score: number | null): string {
+  if (!score) return "text-gray-300"
+  if (score < 25) return "text-red-600"
+  else return "text-green-600"
+}
+
 export function getAdaptativeColorClass(
   element: HTMLElement | string | null,
   classPrefix: string = "text-"

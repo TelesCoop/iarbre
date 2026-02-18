@@ -1,7 +1,11 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
-import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
+import {
+  getBiosphereIntegrityTextColor,
+  getPlantabilityTextColor,
+  getVulnerabilityTextColor
+} from "@/utils/color"
 
 interface CircularScoreProps {
   score: number
@@ -28,6 +32,8 @@ const textColor = computed(() => {
       return getVulnerabilityTextColor(props.score)
     case "climate":
       return "text-primary-600"
+    case "biosphereIntegrity":
+      return getBiosphereIntegrityTextColor(props.score)
     default:
       return "text-gray-700"
   }
@@ -69,6 +75,7 @@ const scoreSizeClass = computed(() => {
 </script>
 
 <template>
+  {{ indice }}
   <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
