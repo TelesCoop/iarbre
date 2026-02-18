@@ -1,7 +1,8 @@
 from django.contrib.gis.geos import Polygon
-from django.test import TestCase, Client, override_settings
+from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
+from api.views.dashboard_views import _avg_from_counts, _m2_to_ha, _safe_round
 from iarbre_data.factories import (
     CityFactory,
     IrisFactory,
@@ -417,3 +418,330 @@ class DashboardViewLczPartitionTest(TestCase):
             + lcz["waterRate"]
         )
         self.assertAlmostEqual(total, 100.0, places=1)
+
+
+class HelperFunctionsTest(SimpleTestCase):
+    """Unit tests for dashboard helper functions."""
+
+    def test_safe_round_none_returns_zero(self):
+        self.assertEqual(_safe_round(None), 0)
+
+    def test_safe_round_value(self):
+        self.assertEqual(_safe_round(6.666), 6.7)
+
+    def test_safe_round_integer_value(self):
+        self.assertEqual(_safe_round(5.0), 5.0)
+
+    def test_m2_to_ha_normal(self):
+        self.assertEqual(_m2_to_ha(50_000), 5.0)
+
+    def test_m2_to_ha_zero(self):
+        self.assertEqual(_m2_to_ha(0), 0)
+
+    def test_m2_to_ha_rounds_to_one_decimal(self):
+        self.assertEqual(_m2_to_ha(15_555), 1.6)
+
+    def test_avg_from_counts_empty_dict(self):
+        self.assertEqual(_avg_from_counts({}), 0.0)
+
+    def test_avg_from_counts_all_zero_values(self):
+        self.assertEqual(_avg_from_counts({"0": 0, "5": 0, "10": 0}), 0.0)
+
+    def test_avg_from_counts_single_entry(self):
+        self.assertEqual(_avg_from_counts({"10": 5}), 10.0)
+
+    def test_avg_from_counts_weighted(self):
+        result = _avg_from_counts({"0": 1, "10": 1})
+        self.assertEqual(result, 5.0)
+
+    def test_avg_from_counts_realistic(self):
+        """(0*10 + 2*20 + 4*30 + 6*40 + 8*50 + 10*60) / 210 = 1400/210 ≈ 6.667."""
+        counts = {"0": 10, "2": 20, "4": 30, "6": 40, "8": 50, "10": 60}
+        self.assertAlmostEqual(_avg_from_counts(counts), 6.667, places=2)
+
+
+GEOM_B = Polygon(
+    (
+        (845200, 6525200),
+        (845300, 6525200),
+        (845300, 6525300),
+        (845200, 6525300),
+        (845200, 6525200),
+    ),
+    srid=2154,
+)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewMultiCityTest(TestCase):
+    """Tests for metropole-level aggregation with multiple cities."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city_a = CityFactory(
+            code="69123",
+            name="Lyon",
+            geometry=GEOM,
+            plantability_counts={"0": 10, "5": 20, "10": 30},
+        )
+        cls.city_b = CityFactory(
+            code="69266",
+            name="Villeurbanne",
+            geometry=GEOM_B,
+            plantability_counts={"0": 5, "5": 15, "10": 25},
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_metropole_aggregates_counts_across_cities(self):
+        """Total counts: 0→15, 5→35, 10→55. Avg = (0*15+5*35+10*55)/105 = 725/105 ≈ 6.9."""
+        data = self.client.get(self.url).json()
+        self.assertAlmostEqual(
+            data["plantability"]["averageNormalizedIndice"], 6.9, places=1
+        )
+
+    def test_metropole_lists_both_city_divisions(self):
+        data = self.client.get(self.url).json()
+        divisions = data["plantability"]["distributionByDivision"]
+        codes = {d["code"] for d in divisions}
+        self.assertEqual(codes, {"69123", "69266"})
+
+    def test_metropole_area_sums_both_cities(self):
+        data = self.client.get(self.url).json()
+        self.assertGreater(data["areaHa"], 0)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewIrisCodePriorityTest(TestCase):
+    """Tests that iris_code takes priority when both params are provided."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(
+            code="69123",
+            name="Lyon",
+            geometry=GEOM,
+            plantability_counts={"0": 100, "10": 100},
+        )
+        cls.iris = IrisFactory(
+            code="691230101",
+            name="Presqu'ile",
+            city=cls.city,
+            geometry=GEOM,
+            plantability_counts={"0": 10, "10": 10},
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_iris_code_takes_priority_over_city_code(self):
+        """When both params are provided, iris_code should be used."""
+        data = self.client.get(
+            self.url, {"city_code": "69123", "iris_code": "691230101"}
+        ).json()
+        divisions = data["plantability"]["distributionByDivision"]
+        self.assertEqual(divisions, [])
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewNaturalLczOnlyTest(TestCase):
+    """Tests that building metrics are zero when only natural LCZ exist."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(code="69123", name="Lyon", geometry=GEOM)
+
+        LczFactory(
+            geometry=GEOM,
+            lcz_index="A",
+            details={
+                "hre": 0.0,
+                "bur": 0.0,
+                "ror": 5.0,
+                "bsr": 10.0,
+                "ver": 80.0,
+                "war": 5.0,
+                "vhr": 60.0,
+            },
+        )
+        LczFactory(
+            geometry=GEOM,
+            lcz_index="D",
+            details={
+                "hre": 0.0,
+                "bur": 0.0,
+                "ror": 10.0,
+                "bsr": 20.0,
+                "ver": 60.0,
+                "war": 10.0,
+                "vhr": 30.0,
+            },
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_built_only_metrics_are_zero_with_natural_lcz(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        lcz = data["lcz"]
+
+        self.assertEqual(lcz["averageBuildingSurfaceRate"], 0)
+        self.assertEqual(lcz["averageBuildingHeight"], 0)
+
+    def test_surface_metrics_still_computed_with_natural_lcz(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        lcz = data["lcz"]
+
+        self.assertEqual(lcz["totalVegetationRate"], 70.0)
+        self.assertGreater(lcz["treeCoverRate"], 0)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewDivisionNameFallbackTest(TestCase):
+    """Tests that division name falls back to code when name is empty."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(
+            code="69123",
+            name="Lyon",
+            geometry=GEOM,
+        )
+        cls.iris_no_name = IrisFactory(
+            code="691230102",
+            name="",
+            city=cls.city,
+            geometry=GEOM,
+            plantability_counts={"5": 10},
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_division_name_falls_back_to_code(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        divisions = data["plantability"]["distributionByDivision"]
+
+        names = {d["code"]: d["name"] for d in divisions}
+        self.assertEqual(names["691230102"], "691230102")
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewCityLczValuesTest(TestCase):
+    """Tests that city-level LCZ and vulnerability values are correct."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(code="69123", name="Lyon", geometry=GEOM)
+
+        LczFactory(
+            geometry=GEOM,
+            lcz_index="5",
+            details={
+                "hre": 20.0,
+                "bur": 40.0,
+                "ror": 20.0,
+                "bsr": 5.0,
+                "ver": 30.0,
+                "war": 5.0,
+                "vhr": 15.0,
+            },
+        )
+
+        VulnerabilityFactory(
+            geometry=GEOM,
+            vulnerability_index_day=7.0,
+            vulnerability_index_night=5.0,
+            expo_index_day=3.0,
+            expo_index_night=2.0,
+            sensibilty_index_day=2.0,
+            sensibilty_index_night=1.5,
+            capaf_index_day=2.0,
+            capaf_index_night=1.5,
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_city_lcz_values(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        lcz = data["lcz"]
+
+        self.assertEqual(lcz["averageBuildingHeight"], 20.0)
+        self.assertEqual(lcz["averageBuildingSurfaceRate"], 40.0)
+        self.assertEqual(lcz["impermeableSurfaceRate"], 20.0)
+        self.assertEqual(lcz["totalVegetationRate"], 30.0)
+
+    def test_city_vulnerability_values(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        vuln = data["vulnerability"]
+
+        self.assertEqual(vuln["averageDay"], 7.0)
+        self.assertEqual(vuln["averageNight"], 5.0)
+        self.assertEqual(vuln["expoDay"], 3.0)
+        self.assertEqual(vuln["expoNight"], 2.0)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewIrisPlantabilityTest(TestCase):
+    """Tests that iris-level plantability uses iris.plantability_counts."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(code="69123", name="Lyon", geometry=GEOM)
+        cls.iris = IrisFactory(
+            code="691230101",
+            name="Presqu'ile",
+            city=cls.city,
+            geometry=GEOM,
+            plantability_counts={"2": 10, "8": 10},
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_iris_plantability_average(self):
+        """(2*10 + 8*10) / 20 = 100/20 = 5.0."""
+        data = self.client.get(self.url, {"iris_code": "691230101"}).json()
+        self.assertEqual(data["plantability"]["averageNormalizedIndice"], 5.0)
+
+    def test_iris_plantability_distribution(self):
+        data = self.client.get(self.url, {"iris_code": "691230101"}).json()
+        dist = data["plantability"]["distribution"]
+        self.assertEqual(dist["2"], 10)
+        self.assertEqual(dist["8"], 10)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardViewAreaHaTest(TestCase):
+    """Tests that areaHa is correctly computed at each scale."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.city = CityFactory(code="69123", name="Lyon", geometry=GEOM)
+        cls.iris = IrisFactory(
+            code="691230101", name="Presqu'ile", city=cls.city, geometry=GEOM
+        )
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+
+    def test_city_area_ha(self):
+        data = self.client.get(self.url, {"city_code": "69123"}).json()
+        self.assertGreater(data["areaHa"], 0)
+
+    def test_iris_area_ha(self):
+        data = self.client.get(self.url, {"iris_code": "691230101"}).json()
+        self.assertGreater(data["areaHa"], 0)
+
+    def test_metropole_area_ha(self):
+        data = self.client.get(self.url).json()
+        self.assertGreater(data["areaHa"], 0)
