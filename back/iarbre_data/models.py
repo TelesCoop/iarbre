@@ -284,7 +284,7 @@ class BiosphereFunctionalIntegrity(models.Model):
 
     geometry = PolygonField(srid=2154)
     map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    indice = models.IntegerField()
+    indice = models.IntegerField() # between 0 and 100
 
     geolevel = GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
     datatype = DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value

@@ -10,7 +10,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
-from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
+from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability,BiosphereFunctionalIntegrity
 from rest_framework.response import Response
 
 from api.serializers.serializers import (
@@ -20,6 +20,7 @@ from api.serializers.serializers import (
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
     PlantabilityVulnerabilityScoresSerializer,
+    BiosphereFunctionalIntegritySerializer,
 )
 from api.constants import (
     INDICE_ROUNDING_DECIMALS,
@@ -34,6 +35,7 @@ DATATYPE_MODEL_MAP = {
     DataType.LCZ.value: Lcz,
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
+    DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegrity
 }
 
 # Mapping of frontend datatypes to their models
@@ -70,6 +72,7 @@ class TileDetailsView(generics.RetrieveAPIView):
         serializer_per_datatype = {
             DataType.LCZ.value: LczSerializer,
             DataType.VULNERABILITY.value: VulnerabilitySerializer,
+            DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegritySerializer,
             DataType.TILE.value: TileSerializer,
         }
         if datatype not in serializer_per_datatype:
@@ -86,6 +89,7 @@ class TileDetailsView(generics.RetrieveAPIView):
         try:
             instance = get_object_or_404(DATATYPE_MODEL_MAP[datatype], id=id)
             serializer = self._get_serializer_by_datatype(datatype)
+            logger.warning(str(serializer))
             return Response(serializer(instance).data)
         except MVTTile.DoesNotExist:
             raise Http404
