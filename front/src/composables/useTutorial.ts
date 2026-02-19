@@ -1,4 +1,5 @@
 import { nextTick } from "vue"
+import { useRouter, useRoute } from "vue-router"
 import { useTutorialStore } from "@/stores/tutorial"
 import { useAppStore } from "@/stores/app"
 import { DriverButton, TutorialSelector } from "@/types/tutorial"
@@ -12,8 +13,17 @@ const NAV_BUTTONS: AllowedButtons[] = [DriverButton.CLOSE, DriverButton.PREVIOUS
 export function useTutorial() {
   const tutorialStore = useTutorialStore()
   const appStore = useAppStore()
+  const router = useRouter()
+  const route = useRoute()
 
   let overlayClickHandler: (() => void) | null = null
+
+  const ensureMapPage = async () => {
+    if (route.name !== "map") {
+      await router.push({ name: "map" })
+      await nextTick()
+    }
+  }
 
   const cleanupOverlayClick = () => {
     if (overlayClickHandler) {
@@ -258,19 +268,23 @@ export function useTutorial() {
     return steps
   }
 
-  const startMapTutorial = () => {
+  const startMapTutorial = async () => {
+    await ensureMapPage()
     runTutorial(getMapSteps())
   }
 
-  const startLegendTutorial = () => {
+  const startLegendTutorial = async () => {
+    await ensureMapPage()
     runTutorial([...getLegendSteps(), ...getLegendCloseSteps()])
   }
 
-  const startLayerSwitcherTutorial = () => {
+  const startLayerSwitcherTutorial = async () => {
+    await ensureMapPage()
     runTutorial(getLayerSwitcherSteps())
   }
 
-  const startFullTutorial = () => {
+  const startFullTutorial = async () => {
+    await ensureMapPage()
     const isMobile = appStore.isMobileOrTablet
     const steps: DriveStep[] = [
       ...getMapSteps(),
@@ -318,7 +332,8 @@ export function useTutorial() {
     runTutorial(steps)
   }
 
-  const startFeedbackTutorial = () => {
+  const startFeedbackTutorial = async () => {
+    await ensureMapPage()
     const steps: DriveStep[] = []
 
     if (appStore.isMobileOrTablet) {
