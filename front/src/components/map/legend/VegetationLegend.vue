@@ -13,8 +13,8 @@ import { VegetationLegend } from "@/utils/vegetation"
       class="flex items-center gap-2"
     >
       <div
-        class="w-4 h-4 border border-gray-300 rounded-sm"
         :style="{ backgroundColor: color }"
+        class="w-4 h-4 border border-gray-300 rounded-sm"
       ></div>
       <span class="text-sm text-primary-900">{{ name }}</span>
     </div>
