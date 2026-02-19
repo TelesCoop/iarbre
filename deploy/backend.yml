@@ -46,7 +46,7 @@
         # If you use custom template, do not name it settings.j2
         template_django_settings_name: "settings-custom.ini.j2"
 
-    - name: Use s3 backup on non-feature branch (iarbre specific)
+    - name: Use s3 backup if dedicated_database (by default on prod, preprod)
       block:
         - name: Clear cache
           shell:
