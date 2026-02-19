@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import * as d3 from "d3"
 import type { BubbleItem } from "@/types/dashboard"
+import { getContrastTextHex } from "@/utils/color"
 
 interface Props {
   bubbles: BubbleItem[]
@@ -82,7 +83,7 @@ function render(animate = false) {
     .attr("dy", "-0.4em")
     .attr("font-size", (d) => `${Math.min(d.r / 3, 14)}px`)
     .attr("font-weight", "700")
-    .attr("fill", "#fff")
+    .attr("fill", (d) => getContrastTextHex(d.data.color))
     .attr("opacity", animate ? 0 : 1)
     .text((d) => props.formatter(d.data.value))
 
@@ -93,7 +94,7 @@ function render(animate = false) {
     .attr("dominant-baseline", "central")
     .attr("dy", "0.9em")
     .attr("font-size", (d) => `${Math.min(d.r / 4, 11)}px`)
-    .attr("fill", "rgba(255,255,255,0.85)")
+    .attr("fill", (d) => getContrastTextHex(d.data.color))
     .attr("opacity", animate ? 0 : 1)
     .text((d) => d.data.label)
 
@@ -104,25 +105,29 @@ function render(animate = false) {
   const legendY = chartH + legendH / 2
   const itemW = width / data.length
   const legendFontSize = Math.min(Math.max(itemW / 10, 9), 13)
-  const showValue = itemW > 100
 
   data.forEach((item, i) => {
-    const x = itemW * i + itemW / 2
-    svg
-      .append("circle")
-      .attr("cx", x - 28)
-      .attr("cy", legendY)
-      .attr("r", 4)
-      .attr("fill", item.color)
-    svg
+    const x = itemW * i + 8
+    svg.append("circle").attr("cx", x).attr("cy", legendY).attr("r", 4).attr("fill", item.color)
+    const labelNode = svg
       .append("text")
-      .attr("x", x - 18)
+      .attr("x", x + 10)
       .attr("y", legendY)
       .attr("dominant-baseline", "central")
       .attr("font-size", `${legendFontSize}px`)
       .attr("font-weight", "500")
       .attr("fill", "#374151")
-      .text(showValue ? `${item.label} · ${props.formatter(item.value)}` : item.label)
+      .text(item.label)
+
+    const maxTextW = itemW - 20
+    let textNode = labelNode.node()
+    if (textNode && textNode.getComputedTextLength() > maxTextW) {
+      let label = item.label
+      while (label.length > 0 && textNode!.getComputedTextLength() > maxTextW) {
+        label = label.slice(0, -1)
+        labelNode.text(label + "…")
+      }
+    }
   })
 }
 

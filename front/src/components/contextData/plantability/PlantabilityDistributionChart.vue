@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import * as d3 from "d3"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { PLANTABILITY_COLOR_MAP, getPlantabilityScore } from "@/utils/plantability"
 
 interface DistributionEntry {
   score: number
@@ -20,7 +20,24 @@ const props = withDefaults(defineProps<PlantabilityDistributionChartProps>(), {
 })
 
 const svgRef = ref<SVGSVGElement | null>(null)
+const chartRef = ref<HTMLDivElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
+
+const tooltip = ref<{
+  visible: boolean
+  x: number
+  y: number
+  label: string
+  count: number
+  pct: number
+}>({
+  visible: false,
+  x: 0,
+  y: 0,
+  label: "",
+  count: 0,
+  pct: 0
+})
 
 const bars = computed(() => {
   if (!props.entries || props.entries.length === 0) return []
@@ -76,11 +93,29 @@ function render(animate = false) {
     .attr("fill", (d) => d.color)
     .attr("opacity", 0.85)
     .attr("width", animate ? 0 : (d) => d.w)
-    .on("mouseenter", function () {
+    .on("mouseenter", function (event, d) {
       d3.select(this).attr("opacity", 1)
+      if (!chartRef.value) return
+      const chartRect = chartRef.value.getBoundingClientRect()
+      const mouseRect = event as MouseEvent
+      tooltip.value = {
+        visible: true,
+        x: mouseRect.clientX - chartRect.left,
+        y: mouseRect.clientY - chartRect.top - 8,
+        label: getPlantabilityScore(Number(d.label)),
+        count: d.value,
+        pct: d.pct
+      }
+    })
+    .on("mousemove", function (event) {
+      if (!chartRef.value) return
+      const chartRect = chartRef.value.getBoundingClientRect()
+      tooltip.value.x = (event as MouseEvent).clientX - chartRect.left
+      tooltip.value.y = (event as MouseEvent).clientY - chartRect.top - 8
     })
     .on("mouseleave", function () {
       d3.select(this).attr("opacity", 0.85)
+      tooltip.value.visible = false
     })
 
   if (animate) {
@@ -135,9 +170,19 @@ watch(bars, () => render(true))
 </script>
 
 <template>
-  <div v-if="bars.length > 0" class="distribution-chart">
+  <div v-if="bars.length > 0" ref="chartRef" class="distribution-chart">
     <p v-if="title" class="chart-title">{{ title }}</p>
     <svg ref="svgRef" class="chart-svg" />
+    <div
+      v-if="tooltip.visible"
+      class="chart-tooltip"
+      :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+    >
+      <span class="tooltip-label">{{ tooltip.label }}</span>
+      <span class="tooltip-detail"
+        >{{ tooltip.count }} tuiles · {{ (tooltip.pct * 100).toFixed(1) }}%</span
+      >
+    </div>
   </div>
 </template>
 
@@ -145,7 +190,7 @@ watch(bars, () => render(true))
 @reference "@/styles/main.css";
 
 .distribution-chart {
-  @apply px-4 py-3;
+  @apply px-4 py-3 relative;
 }
 
 .chart-title {
@@ -155,5 +200,20 @@ watch(bars, () => render(true))
 .chart-svg {
   @apply w-full;
   height: 56px;
+}
+
+.chart-tooltip {
+  @apply absolute z-10 pointer-events-none;
+  @apply bg-gray-800 text-white rounded-md px-3 py-2 shadow-md;
+  @apply flex flex-col gap-0.5;
+  transform: translate(-50%, -100%);
+}
+
+.tooltip-label {
+  @apply text-xs font-medium;
+}
+
+.tooltip-detail {
+  @apply text-xs text-gray-300;
 }
 </style>

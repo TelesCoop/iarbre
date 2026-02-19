@@ -9,6 +9,7 @@ import { useDashboardStore } from "@/stores/dashboard"
 import { HEAT_COLORS } from "@/utils/dashboardColors"
 
 const VULNERABILITY_MAX_SCORE = 9
+const POLAR_MAX_SCORE = 3
 
 interface Props {
   data: DashboardVulnerability
@@ -50,16 +51,16 @@ function render(animate = false) {
   const radius = size / 2 - 36
   const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
   const angleSlice = (2 * Math.PI) / axes.value.length
-  const rScale = d3.scaleLinear().domain([0, VULNERABILITY_MAX_SCORE]).range([0, radius])
+  const rScale = d3.scaleLinear().domain([0, POLAR_MAX_SCORE]).range([0, radius])
 
-  const levels = [3, 6, 9]
+  const levels = [1, 2, 3]
   levels.forEach((level) => {
     g.append("circle")
       .attr("r", rScale(level))
       .attr("fill", "none")
       .attr("stroke", "#e5e7eb")
       .attr("stroke-width", 0.5)
-      .attr("stroke-dasharray", level < 9 ? "2,3" : "none")
+      .attr("stroke-dasharray", level < POLAR_MAX_SCORE ? "2,3" : "none")
 
     g.append("text")
       .attr("x", 3)
@@ -198,7 +199,7 @@ watch([axes, accentColor], () => render(true))
         />
 
         <div class="chart-container">
-          <svg ref="svgRef" height="100%" width="100%" />
+          <svg ref="svgRef" height="100%" width="100%" style="overflow: visible" />
         </div>
       </div>
     </div>
