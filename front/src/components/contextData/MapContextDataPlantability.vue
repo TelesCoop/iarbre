@@ -5,6 +5,7 @@ import ContextDataMainContainer from "@/components/contextData/shared/ContextDat
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
 import ClickPlantabilityDivisionData from "../division/ClickPlantabilityDivisionData.vue"
+import FloraRecommendationsPanel from "@/components/contextData/flora/FloraRecommendationsPanel.vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -37,7 +38,7 @@ const tileCount = computed(() => {
   return count ? parseInt(count) : 0
 })
 
-const activeTab = ref<"details" | "divisions">("details")
+const activeTab = ref<"details" | "divisions" | "flora">("details")
 </script>
 
 <template>
@@ -75,6 +76,12 @@ const activeTab = ref<"details" | "divisions">("details")
         >
           Échelons supérieurs
         </button>
+        <button
+          :class="['tab-button', { active: activeTab === 'flora' }]"
+          @click="activeTab = 'flora'"
+        >
+          Recommandations
+        </button>
       </div>
 
       <!-- Tab content -->
@@ -84,6 +91,7 @@ const activeTab = ref<"details" | "divisions">("details")
           v-else-if="activeTab === 'divisions'"
           :plantability-data="plantabilityData"
         />
+        <FloraRecommendationsPanel v-else-if="activeTab === 'flora'" />
       </div>
     </template>
   </ContextDataMainContainer>
