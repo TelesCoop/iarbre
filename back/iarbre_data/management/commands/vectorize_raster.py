@@ -1,7 +1,7 @@
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from argparse import RawTextHelpFormatter
-import numpy as np
+
 # gdal requires specific installation
 # and version depending on your Linux Installation
 # You probably have GDAL already installed
@@ -9,6 +9,8 @@ import numpy as np
 # and install it in your localenv
 # You can get the version with ogrinfo --version
 from osgeo import gdal, ogr, osr
+import tempfile
+import os
 
 
 class Command(BaseCommand):
@@ -63,6 +65,33 @@ class Command(BaseCommand):
             help="Use 8-connectedness for polygonization (treats diagonal pixels as connected)",
         )
 
+        parser.add_argument("--multiply-factor", type=int, required=False, default=1)
+
+    # Currently only support tif −> shape conversion
+    # Used by biosphere integrity
+    @staticmethod
+    def multiply_raster(raster_path: str, multiply_factor: int):
+        ds = gdal.Open(str(raster_path))
+        src_image = ds.ReadAsArray()
+
+        # required for biosphere integrity
+        src_image[src_image == 10000] = -1
+        src_image = src_image * multiply_factor
+
+        [rows, cols] = src_image.shape
+        driver = gdal.GetDriverByName("GTiff")
+
+        temporary_filename = tempfile.NamedTemporaryFile(suffix=".shp").name
+        outdata = driver.Create(temporary_filename, cols, rows, 1, gdal.GDT_UInt16)
+        # sets same geotransform as input
+        outdata.SetGeoTransform(ds.GetGeoTransform())
+        # sets same projection as input
+        outdata.SetProjection(ds.GetProjection())
+        # if you want these values transparent
+        outdata.GetRasterBand(1).SetNoDataValue(-multiply_factor)
+        outdata.GetRasterBand(1).WriteArray(src_image)
+        return temporary_filename
+
     @staticmethod
     def vectorize_raster(
         raster_path,
@@ -76,31 +105,7 @@ class Command(BaseCommand):
         print(f"Format: {vector_format}, 8-connected: {use_8connected}")
         print(f"{'=' * 70}\n")
 
-        # ds = gdal.Open(str(raster_path))
-        # src_image = ds.ReadAsArray()
-
-
-        # print(src_image[:10,:10])
-        # pos_values = src_image[src_image>0]
-        # print(np.min(pos_values), np.max(pos_values), np.average(pos_values))
-        # src_image[src_image==10000] = -1
-        # src_image = src_image*100
-        # pos_values = src_image[src_image>0]
-        # print(np.min(pos_values), np.max(pos_values), np.average(pos_values))
-        # print(src_image[:10,:10])
-
-        # print("done")
-        # [rows, cols] = src_image.shape
-        # driver = gdal.GetDriverByName("GTiff")
-        # outdata = driver.Create("test.shp", cols, rows, 1, gdal.GDT_UInt16)
-        # outdata.SetGeoTransform(ds.GetGeoTransform())##sets same geotransform as input
-        # outdata.SetProjection(ds.GetProjection())##sets same projection as input
-        # outdata.GetRasterBand(1).WriteArray(src_image)
-        # outdata.GetRasterBand(1).SetNoDataValue(10000)##if you want these values transparent
-        # return 0
         src_ds = gdal.Open(str(raster_path))
-
-
 
         if src_ds is None:
             print(f"✗ Error: Could not open raster: {raster_path}")
@@ -130,7 +135,7 @@ class Command(BaseCommand):
             srs.ImportFromWkt(src_ds.GetProjection())
 
         dst_layer = dst_ds.CreateLayer("vegetation", srs=srs)
-        print("108")
+
         field_defn = ogr.FieldDefn(field_name, ogr.OFTReal)
         dst_layer.CreateField(field_defn)
 
@@ -165,12 +170,19 @@ class Command(BaseCommand):
             vector_format = ext_to_format.get(ext, "GPKG")
             print(f"Auto-detected format: {vector_format}")
 
-        success = self.vectorize_raster(
-            options["input"],
+        input_raster = options["input"]
+        multiply_factor = options["multiply_factor"]
+        if multiply_factor != 1:
+            input_raster = self.multiply_raster(input_path, multiply_factor)
+
+        self.vectorize_raster(
+            input_raster,
             options["output"],
             vector_format=vector_format,
             use_8connected=options["use_8connected"],
             field_name=options["field_name"],
         )
 
-        return 0 if success else 1
+        if multiply_factor:
+            # which is temporary file
+            os.remove(input_raster)
