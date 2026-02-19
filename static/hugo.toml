@@ -3,6 +3,7 @@ languageCode = 'fr-FR'
 title = 'IA·rbre'
 defaultContentLanguage = "fr"
 defaultContentLanguageInSubdir = false
+timeZone = "Europe/Paris"
 [languages]
 [languages.fr]
 languageCode = "fr-fr"
