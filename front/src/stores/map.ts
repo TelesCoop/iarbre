@@ -279,7 +279,6 @@ export const useMapStore = defineStore("map", () => {
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
       } else {
-        console.log("set context data with", featureId)
         contextData.setData(featureId)
       }
     }
