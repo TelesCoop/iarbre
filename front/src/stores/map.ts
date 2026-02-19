@@ -96,7 +96,7 @@ export const useMapStore = defineStore("map", () => {
       ],
       [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
       [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER]
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
     }
   })
 

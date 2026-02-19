@@ -30,9 +30,12 @@ defineProps<BiosphereIntegrityCardProps>()
         :data="biosphereIntegrityData"
       />
     </template>
-    <template #content>
+    <template #content="{ data: biosphereIntegrityData }">
       <div class="text-sm text-center font-sans">
-        <p>L'intégrité fonctionnelle de la biosphère pour cette zone.</p>
+        <p>
+          {{ biosphereIntegrityData.indice }}% du cercle de rayon 500m autour de cette zone est un
+          espace semi-naturel.
+        </p>
       </div>
     </template>
     <template #legend> </template>

@@ -65,7 +65,7 @@ export function getVulnerabilityTextColor(score: number | null): string {
 
 export function getBiosphereIntegrityTextColor(score: number | null): string {
   if (!score) return "text-gray-300"
-  if (score < 25) return "text-red-600"
+  if (score < 0.25) return "text-red-600"
   else return "text-green-600"
 }
 
