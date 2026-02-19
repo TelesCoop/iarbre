@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
-    "@cypress/code-coverage": "^4.0.0",
+    "@cypress/code-coverage": "^3.13.8",
     "@lavamoat/allow-scripts": "^3.4.1",
     "@pinia/testing": "^1.0.0",
     "@rushstack/eslint-patch": "^1.8.0",
