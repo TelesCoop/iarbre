@@ -32,6 +32,7 @@ showcase_branch: "{{ branch }}"
 
 environment_name: "feature-{{ branch_slug }}"
 
-database_user: "{{ base_project_slug }}_preprod"
-database_name: "{{ base_project_slug }}_preprod"
 dedicated_database: false
+database_env: "{{ branch_slug[:10] if use_specific_db else 'preprod'}}"
+database_user: "{{ base_project_slug }}_{{ database_env }}"
+database_name: "{{ base_project_slug }}_{{ database_env }}"

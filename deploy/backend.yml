@@ -23,24 +23,24 @@
         - import_tasks: telescoop-deploy/tasks/install-database.yml
           vars:
             database_password: "{{ vault_database_password }}"
-      when: branch is not defined
-    - name: Remove existing media directory on feature branches
-      file:
-        path: "{{ backend_media_path }}"
-        state: absent
-      when: branch is defined
-    - name: Create symbolic link from feature media to preprod media
-      file:
-        src: "{{ project_base_dir }}_preprod/backend/back/media"
-        dest: "{{ backend_media_path }}"
-        state: link
-      when: branch is defined
-
+      when: dedicated_database
+    - name: Use preprod media on feature branch by default
+      block:
+        - name: Remove existing media directory on feature branches
+          file:
+            path: "{{ backend_media_path }}"
+            state: absent
+        - name: Create symbolic link from feature media to preprod media
+          file:
+            src: "{{ project_base_dir }}_preprod/backend/back/media"
+            dest: "{{ backend_media_path }}"
+            state: link
+      when: not dedicated_database
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
         django_workers: 1
-        dedicated_database: "{{ branch is not defined }}"
+        dedicated_database: "{{ dedicated_database }}"
         allow_backup: false
         database_password: "{{ vault_database_password }}"
         # If you use custom template, do not name it settings.j2
@@ -85,4 +85,4 @@
             }
           become: true
 
-      when: branch is not defined and (clonecode.changed or force_update is defined)
+      when: dedicated_database and (clonecode.changed or force_update is defined)
