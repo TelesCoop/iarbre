@@ -2,7 +2,8 @@ import { getMetadata } from "../services/metadataService"
 
 export enum GeoLevel {
   TILE = "tile",
-  LCZ = "lcz"
+  LCZ = "lcz",
+  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
 }
 
 export enum DataType {
@@ -10,6 +11,7 @@ export enum DataType {
   VULNERABILITY = "vulnerability",
   CLIMATE_ZONE = "lcz",
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
+  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity",
   VEGETATION = "vegetation"
 }
 
@@ -40,6 +42,7 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]: "🌆 Zones climatiques locales",
   [DataType.VULNERABILITY]: "🌡️ Vulnérabilité chaleur",
   [DataType.PLANTABILITY_VULNERABILITY]: "🌳🌡️ Plantabilité et chaleur",
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "🐦 Intégrité fonctionnelle de la biosphère",
   [DataType.VEGETATION]: "🌿 Végétation"
 }
 
@@ -48,6 +51,7 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.CLIMATE_ZONE]: GeoLevel.LCZ,
   [DataType.VULNERABILITY]: GeoLevel.LCZ,
   [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
   [DataType.VEGETATION]: GeoLevel.TILE
 }
 
@@ -60,6 +64,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2024-09)</a>',
   [DataType.PLANTABILITY_VULNERABILITY]:
     '<a class="text-primary-500" href="https://datagora.erasme.org/projets/calque-de-plantabilite/" target="_blank">ERASME</a>',
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "2025 Emile Balembois — Licence CC BY-NC-SA 4.0",
   [DataType.VEGETATION]:
     '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate" target="_blank">Vegestrate</a>'
 }
@@ -106,5 +111,6 @@ export const DataTypeToDownloadLink: Record<DataType, string> = {
     "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info",
   [DataType.PLANTABILITY_VULNERABILITY]:
     "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info",
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "https://geoservices.ign.fr/habitats-carhab",
   [DataType.VEGETATION]: "https://github.com/IGNF/FLAIR-HUB"
 }

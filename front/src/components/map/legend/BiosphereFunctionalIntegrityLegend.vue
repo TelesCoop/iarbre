@@ -1,14 +1,11 @@
 <script lang="ts" setup>
-import { VegetationLegend } from "@/utils/vegetation"
+import { BiosphereIntegrityLegend } from "@/utils/biosphere_functional_integrity"
 </script>
 
 <template>
-  <div
-    class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1"
-    data-cy="biosphere-integrity-legend"
-  >
+  <div class="font-accent text-xs leading-3 overflow-visible" data-cy="biosphere-integrity-legend">
     <div
-      v-for="(color, name, index) in VegetationLegend"
+      v-for="(color, name, index) in BiosphereIntegrityLegend"
       :key="index"
       class="flex items-center gap-2"
     >

@@ -23,6 +23,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
@@ -75,6 +76,11 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
+        "step",
+        ["get", "indice"],
+        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
     }
   })
@@ -89,7 +95,8 @@ export const useMapStore = defineStore("map", () => {
         HEIGHT_MULTIPLIER
       ],
       [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER]
+      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
     }
   })
 

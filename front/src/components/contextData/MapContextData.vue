@@ -7,6 +7,7 @@ import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import type { VegetationData } from "@/types/vegetation"
 import AppSpinner from "@/components/shared/AppSpinner.vue"
+import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 
 const mapStore = useMapStore()
 
@@ -30,19 +31,23 @@ defineProps({
         :data="mapStore.contextData.data as PlantabilityData"
       />
       <MapContextDataVulnerability
-        v-if="mapStore.selectedDataType === DataType.VULNERABILITY"
+        v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
         :data="mapStore.contextData.data as VulnerabilityData"
       />
       <MapContextDataClimateZone
-        v-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
+        v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
         :data="mapStore.contextData.data as ClimateData"
       />
+      <map-context-data-biosphere-integrity
+        v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
+        :data="mapStore.contextData.data as BiosphereIntegrityData"
+      />
       <MapContextDataPlantabilityVulnerability
-        v-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
+        v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
       />
       <map-context-data-vegetation
-        v-if="mapStore.selectedDataType === DataType.VEGETATION"
+        v-else-if="mapStore.selectedDataType === DataType.VEGETATION"
         :data="mapStore.contextData.data as VegetationData"
       />
     </template>

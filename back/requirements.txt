@@ -13,7 +13,7 @@ geopandas==1.0.1
 getconf==1.11.0
 gunicorn==23.0.0
 ipython==8.26.0
-mapbox_vector_tile==2.1.0
+mapbox_vector_tile==2.2.0
 mercantile==1.2.1
 numpy==2.0.1
 openpyxl==3.1.5

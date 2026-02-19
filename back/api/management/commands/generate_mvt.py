@@ -12,7 +12,14 @@ from django.db.models import Model
 
 from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
 from api.utils.mvt_generator import MVTGenerator
-from iarbre_data.models import Tile, Lcz, Vulnerability, Cadastre, MVTTile
+from iarbre_data.models import (
+    Tile,
+    Lcz,
+    Vulnerability,
+    Cadastre,
+    MVTTile,
+    BiosphereFunctionalIntegrity,
+)
 
 
 class Command(BaseCommand):
@@ -55,10 +62,16 @@ class Command(BaseCommand):
             help="Keep already existing tiles, do not delete them.",
         )
         parser.add_argument(
-            "--zoom_levels",
-            type=tuple,
-            default=DEFAULT_ZOOM_LEVELS,
-            help="Zoom levels to generate MVTs.",
+            "--min_zoom_levels",
+            type=int,
+            default=DEFAULT_ZOOM_LEVELS[0],
+            help="Min zoom levels to generate MVTs.",
+        )
+        parser.add_argument(
+            "--max_zoom_levels",
+            type=int,
+            default=DEFAULT_ZOOM_LEVELS[1],
+            help="Max zoom levels to generate MVTs.",
         )
 
     def generate_tiles_for_model(
@@ -91,7 +104,7 @@ class Command(BaseCommand):
             number_of_threads_by_worker=number_of_threads_by_worker,
         )
 
-        mvt_generator.generate_tiles()
+        mvt_generator.generate_tiles(ignore_existing=False)
         self.stdout.write(self.style.SUCCESS("MVT tiles generated successfully!"))
 
     def handle(self, *args, **options):
@@ -100,7 +113,7 @@ class Command(BaseCommand):
         number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
-        zoom_levels = options["zoom_levels"]
+        zoom_levels = [options["min_zoom_levels"], options["max_zoom_levels"]]
         if geolevel == GeoLevel.TILE.value:
             mdl = Tile
         elif geolevel == GeoLevel.LCZ.value and datatype == DataType.LCZ.value:
@@ -113,11 +126,17 @@ class Command(BaseCommand):
             geolevel == GeoLevel.CADASTRE.value and datatype == DataType.CADASTRE.value
         ):
             mdl = Cadastre
+        elif (
+            geolevel == GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+            and datatype == DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+        ):
+            mdl = BiosphereFunctionalIntegrity
         else:
             supported_levels = [
                 GeoLevel.TILE.value,
                 GeoLevel.LCZ.value,
                 GeoLevel.CADASTRE.value,
+                GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value,
             ]
             raise ValueError(
                 f"Unsupported geolevel: {geolevel}. Currently supported: {', '.join(supported_levels)}"
@@ -133,6 +152,7 @@ class Command(BaseCommand):
                     zoom_level__lte=zoom_levels[1],
                 ).delete()
             )
+
         # Generate new tiles
         self.generate_tiles_for_model(
             model=mdl,

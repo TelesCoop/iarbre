@@ -2,7 +2,7 @@ import json
 
 from rest_framework import serializers
 
-from iarbre_data.models import City, Iris, Lcz, Tile, Vulnerability
+from iarbre_data.models import City, Iris, Lcz, Tile, Vulnerability, BiosphereFunctionalIntegrity
 
 
 class LczSerializer(serializers.ModelSerializer):
@@ -64,7 +64,6 @@ class VulnerabilitySerializer(serializers.ModelSerializer):
             "datatype",
         )
 
-
 class CitySerializer(serializers.ModelSerializer):
     plantabilityCounts = serializers.JSONField(source="plantability_counts")
     averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
@@ -124,3 +123,13 @@ class PlantabilityVulnerabilityScoresSerializer(
     PlantabilityScoresSerializer, VulnerabilityScoresSerializer
 ):
     pass
+
+
+class BiosphereFunctionalIntegritySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BiosphereFunctionalIntegrity
+        fields = (
+            "id",
+            "indice"
+        )
+
