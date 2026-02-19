@@ -213,6 +213,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     <button
       :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
       :class="['sidebar-dashboard-button', { active: isDashboard }]"
+      data-cy="dashboard-button"
       @click="handleDashboardClick"
     >
       <svg
@@ -479,6 +480,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       <button
         :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
         :class="['mobile-bar-button', { 'mobile-bar-button-active': isDashboard }]"
+        data-cy="dashboard-button-mobile"
         @click="handleDashboardClick"
       >
         <svg

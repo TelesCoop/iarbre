@@ -291,15 +291,29 @@ export function useTutorial() {
       })
     }
 
-    steps.push({
-      element: TutorialSelector.MAP_COMPONENT,
-      popover: {
-        title: "Tutoriel terminé",
-        description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !",
-        showButtons: NAV_BUTTONS
+    steps.push(
+      {
+        element: isMobile
+          ? TutorialSelector.DASHBOARD_BUTTON_MOBILE
+          : TutorialSelector.DASHBOARD_BUTTON,
+        popover: {
+          title: "Tableau de bord",
+          description:
+            "Accédez au tableau de bord pour une vue synthétique de la métropole : plantabilité, îlots de chaleur, végétation et perméabilité.",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
       },
-      onHighlighted: setupOverlayClickAdvance
-    })
+      {
+        element: TutorialSelector.MAP_COMPONENT,
+        popover: {
+          title: "Tutoriel terminé",
+          description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
+      }
+    )
 
     runTutorial(steps)
   }

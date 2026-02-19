@@ -136,6 +136,7 @@ function render(animate = false) {
     .attr("text-anchor", "middle")
     .attr("font-size", "9px")
     .attr("fill", "#9CA3AF")
+    .attr("pointer-events", "none")
     .text((d) => d.label)
 
   g.selectAll(".seg-pct")
@@ -149,6 +150,7 @@ function render(animate = false) {
     .attr("font-size", "9px")
     .attr("font-weight", "600")
     .attr("fill", "#fff")
+    .attr("pointer-events", "none")
     .attr("opacity", animate ? 0 : 1)
     .text((d) => `${(d.pct * 100).toFixed(0)}%`)
 
