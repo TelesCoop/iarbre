@@ -75,7 +75,6 @@ const scoreSizeClass = computed(() => {
 </script>
 
 <template>
-  {{ indice }}
   <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
