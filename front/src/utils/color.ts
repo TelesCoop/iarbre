@@ -63,6 +63,16 @@ export function getVulnerabilityTextColor(score: number | null): string {
   return colorMap[colorCode] || "text-gray-500"
 }
 
+export function getContrastTextHex(backgroundColor: string): string {
+  try {
+    const blackContrast = getContrast(backgroundColor, "#000000")
+    const whiteContrast = getContrast(backgroundColor, "#ffffff")
+    return blackContrast >= whiteContrast ? "#000000" : "#ffffff"
+  } catch {
+    return "#000000"
+  }
+}
+
 export function getAdaptativeColorClass(
   element: HTMLElement | string | null,
   classPrefix: string = "text-"

@@ -16,7 +16,7 @@ export const useTutorialStore = defineStore("tutorial", () => {
 
     driverInstance.value = driver({
       animate: true,
-      overlayOpacity: 0.75,
+      overlayOpacity: 0.5,
       stagePadding: 10,
       allowClose: true,
       stageRadius: 5,

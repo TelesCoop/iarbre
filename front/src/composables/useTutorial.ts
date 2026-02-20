@@ -1,4 +1,5 @@
 import { nextTick } from "vue"
+import { useRouter, useRoute } from "vue-router"
 import { useTutorialStore } from "@/stores/tutorial"
 import { useAppStore } from "@/stores/app"
 import { DriverButton, TutorialSelector } from "@/types/tutorial"
@@ -14,6 +15,15 @@ export function useTutorial() {
   const appStore = useAppStore()
 
   let overlayClickHandler: (() => void) | null = null
+
+  const ensureMapPage = async () => {
+    const route = useRoute()
+    const router = useRouter()
+    if (route.name !== "map") {
+      await router.push({ name: "map" })
+      await nextTick()
+    }
+  }
 
   const cleanupOverlayClick = () => {
     if (overlayClickHandler) {
@@ -258,19 +268,23 @@ export function useTutorial() {
     return steps
   }
 
-  const startMapTutorial = () => {
+  const startMapTutorial = async () => {
+    await ensureMapPage()
     runTutorial(getMapSteps())
   }
 
-  const startLegendTutorial = () => {
+  const startLegendTutorial = async () => {
+    await ensureMapPage()
     runTutorial([...getLegendSteps(), ...getLegendCloseSteps()])
   }
 
-  const startLayerSwitcherTutorial = () => {
+  const startLayerSwitcherTutorial = async () => {
+    await ensureMapPage()
     runTutorial(getLayerSwitcherSteps())
   }
 
-  const startFullTutorial = () => {
+  const startFullTutorial = async () => {
+    await ensureMapPage()
     const isMobile = appStore.isMobileOrTablet
     const steps: DriveStep[] = [
       ...getMapSteps(),
@@ -291,20 +305,35 @@ export function useTutorial() {
       })
     }
 
-    steps.push({
-      element: TutorialSelector.MAP_COMPONENT,
-      popover: {
-        title: "Tutoriel terminé",
-        description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !",
-        showButtons: NAV_BUTTONS
+    steps.push(
+      {
+        element: isMobile
+          ? TutorialSelector.DASHBOARD_BUTTON_MOBILE
+          : TutorialSelector.DASHBOARD_BUTTON,
+        popover: {
+          title: "Tableau de bord",
+          description:
+            "Accédez au tableau de bord pour une vue synthétique de la métropole : plantabilité, îlots de chaleur, végétation et perméabilité.",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
       },
-      onHighlighted: setupOverlayClickAdvance
-    })
+      {
+        element: TutorialSelector.MAP_COMPONENT,
+        popover: {
+          title: "Tutoriel terminé",
+          description: "Vous êtes prêt·e à explorer IA·rbre. Bonne découverte !",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
+      }
+    )
 
     runTutorial(steps)
   }
 
-  const startFeedbackTutorial = () => {
+  const startFeedbackTutorial = async () => {
+    await ensureMapPage()
     const steps: DriveStep[] = []
 
     if (appStore.isMobileOrTablet) {

@@ -29,7 +29,7 @@ const closePopover = () => {
         <IconIarbreLogo :width="85" class="text-white" />
       </a>
       <div class="flex items-center gap-2">
-        <h2 class="text-xl text-white font-bold font-serif">Métropole de Lyon</h2>
+        <h2 class="text-xl text-white font-semibold">Métropole de Lyon</h2>
         <div class="relative">
           <button aria-label="Informations" class="info-button" @click="toggleAttribution">
             <span class="text-xs font-bold">i</span>
