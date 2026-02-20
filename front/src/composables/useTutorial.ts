@@ -13,12 +13,12 @@ const NAV_BUTTONS: AllowedButtons[] = [DriverButton.CLOSE, DriverButton.PREVIOUS
 export function useTutorial() {
   const tutorialStore = useTutorialStore()
   const appStore = useAppStore()
-  const router = useRouter()
-  const route = useRoute()
 
   let overlayClickHandler: (() => void) | null = null
 
   const ensureMapPage = async () => {
+    const route = useRoute()
+    const router = useRouter()
     if (route.name !== "map") {
       await router.push({ name: "map" })
       await nextTick()
