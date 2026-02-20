@@ -32,6 +32,7 @@ class FrontendDataType(TextChoices):
         "plantability_vulnerability",
         "Plantability & Vulnerability",
     )
+    VEGESTRATE = ("vegestrate", "Vegestrate")
 
 
 # Score ranges for different data types
