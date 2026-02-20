@@ -25,7 +25,7 @@ urlpatterns = [
         TileView.as_view(),
         name="retrieve-tile",
     ),
-    # L'URL spécifique doit venir AVANT l'URL générale avec <id>
+    # Specific URL should be BEFORE general URL with <id>
     path(
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
@@ -44,9 +44,9 @@ urlpatterns = [
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
     path(
-        "rasters/plantability/",
+        "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
-        name="download-plantability-raster",
+        name="download-raster",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),
