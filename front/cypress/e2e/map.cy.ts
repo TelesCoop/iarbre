@@ -166,6 +166,15 @@ describe("Map - Desktop", () => {
     cy.mapCheckCadastreLayer(true)
   })
 
+  it("displays cadastre layer at max zoom level", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    // Zoom from 13 to 18 (max zoom)
+    cy.mapZoomTo(5)
+    cy.mapCheckCadastreLayer(true)
+  })
+
   it("hides cadastre parcel info when layer is toggled off", () => {
     cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckCadastreLayer(true)
