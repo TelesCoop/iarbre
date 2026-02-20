@@ -1,6 +1,6 @@
 import MapSidePanelDownload from "@/components/map/panels/sidepanel/MapSidePanelDownload.vue"
 import { useMapStore } from "@/stores/map"
-import { DataType } from "@/utils/enum"
+import { DataType, DataTypeToDownloadLink } from "@/utils/enum"
 
 describe("MapSidePanelDownload", () => {
   beforeEach(() => {
@@ -28,7 +28,7 @@ describe("MapSidePanelDownload", () => {
 
     cy.get("@windowOpen").should(
       "have.been.calledWith",
-      "https://data.grandlyon.com/portail/en/jeux-de-donnees/calque-plantabilite-metropole-lyon/info",
+      DataTypeToDownloadLink[DataType.PLANTABILITY],
       "_blank"
     )
   })
@@ -47,7 +47,7 @@ describe("MapSidePanelDownload", () => {
 
     cy.get("@windowOpen").should(
       "have.been.calledWith",
-      "https://www.data.gouv.fr/datasets/cartographie-des-zones-climatiques-locales-lcz-des-88-aires-urbaines-de-plus-de-50-000-habitants-de-france-metropolitaine/#/resources/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
+      DataTypeToDownloadLink[DataType.CLIMATE_ZONE],
       "_blank"
     )
   })
@@ -66,7 +66,45 @@ describe("MapSidePanelDownload", () => {
 
     cy.get("@windowOpen").should(
       "have.been.calledWith",
-      "https://data.grandlyon.com/portail/en/jeux-de-donnees/exposition-et-vulnerabilite-aux-fortes-chaleurs-dans-la-metropole-de-lyon/info",
+      DataTypeToDownloadLink[DataType.VULNERABILITY],
+      "_blank"
+    )
+  })
+
+  it("should open correct download link for PLANTABILITY_VULNERABILITY data type", () => {
+    cy.window().then(() => {
+      const store = useMapStore()
+      store.selectedDataType = DataType.PLANTABILITY_VULNERABILITY
+    })
+
+    cy.window().then((win) => {
+      cy.stub(win, "open").as("windowOpen")
+    })
+
+    cy.get('[data-cy="download-data"]').click()
+
+    cy.get("@windowOpen").should(
+      "have.been.calledWith",
+      DataTypeToDownloadLink[DataType.PLANTABILITY_VULNERABILITY],
+      "_blank"
+    )
+  })
+
+  it("should open correct download link for VEGETATION data type", () => {
+    cy.window().then(() => {
+      const store = useMapStore()
+      store.selectedDataType = DataType.VEGETATION
+    })
+
+    cy.window().then((win) => {
+      cy.stub(win, "open").as("windowOpen")
+    })
+
+    cy.get('[data-cy="download-data"]').click()
+
+    cy.get("@windowOpen").should(
+      "have.been.calledWith",
+      DataTypeToDownloadLink[DataType.VEGETATION],
       "_blank"
     )
   })
