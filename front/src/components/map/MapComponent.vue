@@ -78,6 +78,11 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <!-- Drawing controls - only visible in shape mode -->
   <DrawingControls />
 
+  <!-- Cadastre parcel info - bottom center -->
+  <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
+    <MapCadastreParcelInfo />
+  </div>
+
   <!-- Background selector in bottom-left corner -->
   <div :class="['bg-selector-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapBackgroundSelector />
@@ -147,6 +152,28 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   .legend-container.sidepanel-visible {
     left: calc(var(--width-sidepanel) + 0.5rem);
+  }
+}
+
+.cadastre-info-container {
+  @apply absolute z-30 pointer-events-none;
+  @apply transition-all duration-300 ease-out;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 72px;
+}
+
+.cadastre-info-container > * {
+  @apply pointer-events-auto;
+}
+
+@media (min-width: 1024px) {
+  .cadastre-info-container {
+    bottom: 16px;
+  }
+
+  .cadastre-info-container.sidepanel-visible {
+    left: calc(50% + var(--width-sidepanel) / 2);
   }
 }
 

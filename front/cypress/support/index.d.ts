@@ -6,5 +6,6 @@ declare namespace Cypress {
     basemapSwitchLayer(maptype: string): void
     mapZoomTo(zoom: number): void
     mapCheckQPVLayer(shouldExist: boolean): void
+    mapCheckCadastreLayer(shouldExist: boolean): void
   }
 }

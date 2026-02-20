@@ -40,6 +40,13 @@ export const useMapStore = defineStore("map", () => {
   const currentZoom = ref<number>(14)
   const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
+  const showCadastreLayer = ref<boolean>(false)
+  const selectedCadastreParcel = ref<{
+    parcelId: string
+    section: string
+    numero: string
+    surface: number | null
+  } | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const isToolbarVisible = ref<boolean>(false)
   const shapeDrawing = useShapeDrawing()
@@ -360,9 +367,12 @@ export const useMapStore = defineStore("map", () => {
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
-      // Clear QPV if existing
+      // Clear overlay layers
       if (mapInstance.getLayer("qpv-border")) {
         removeQPVLayer(mapInstance)
+      }
+      if (mapInstance.getLayer("cadastre-fill")) {
+        removeCadastreLayer(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
@@ -382,6 +392,9 @@ export const useMapStore = defineStore("map", () => {
       initTiles(mapInstance)
       if (showQPVLayer.value) {
         addQPVLayer(mapInstance)
+      }
+      if (showCadastreLayer.value) {
+        addCadastreLayer(mapInstance)
       }
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
@@ -420,9 +433,12 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
-      // Clear QPV if existing
+      // Clear overlay layers
       if (mapInstance.getLayer("qpv-border")) {
         removeQPVLayer(mapInstance)
+      }
+      if (mapInstance.getLayer("cadastre-fill")) {
+        removeCadastreLayer(mapInstance)
       }
       let newStyle: maplibregl.StyleSpecification
 
@@ -445,6 +461,9 @@ export const useMapStore = defineStore("map", () => {
           setupControls(mapInstance)
           if (showQPVLayer.value) {
             addQPVLayer(mapInstance)
+          }
+          if (showCadastreLayer.value) {
+            addCadastreLayer(mapInstance)
           }
           mapInstance.fire("moveend")
         }
@@ -521,6 +540,177 @@ export const useMapStore = defineStore("map", () => {
         await addQPVLayer(mapInstance)
       } else {
         removeQPVLayer(mapInstance)
+      }
+    }
+  }
+
+  const cadastreClickHandlers = ref<Record<string, (e: any) => void>>({})
+  const cadastreMouseEnterHandlers = ref<Record<string, () => void>>({})
+  const cadastreMouseLeaveHandlers = ref<Record<string, () => void>>({})
+
+  const addCadastreLayer = (mapInstance: Map) => {
+    const fullBaseApiUrl = getFullBaseApiUrl()
+    const mapId = getMapId(mapInstance)
+
+    if (!mapInstance.getSource("cadastre-source")) {
+      mapInstance.addSource("cadastre-source", {
+        type: "vector",
+        tiles: [`${fullBaseApiUrl}/tiles/cadastre/cadastre/{z}/{x}/{y}.mvt`],
+        minzoom: MIN_ZOOM,
+        maxzoom: MAX_ZOOM - 1
+      })
+    }
+
+    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
+      ? TERRA_DRAW_POLYGON_LAYER
+      : undefined
+
+    if (!mapInstance.getLayer("cadastre-fill")) {
+      mapInstance.addLayer(
+        {
+          id: "cadastre-fill",
+          type: "fill",
+          source: "cadastre-source",
+          "source-layer": "cadastre--cadastre",
+          paint: {
+            "fill-color": "#8B6914",
+            "fill-opacity": 0.0
+          }
+        },
+        beforeId
+      )
+    }
+
+    if (!mapInstance.getLayer("cadastre-border")) {
+      mapInstance.addLayer(
+        {
+          id: "cadastre-border",
+          type: "line",
+          source: "cadastre-source",
+          "source-layer": "cadastre--cadastre",
+          paint: {
+            "line-color": "#8B6914",
+            "line-width": 1,
+            "line-opacity": 0.5
+          }
+        },
+        beforeId
+      )
+    }
+
+    const clickHandler = (e: any) => {
+      if (!e.features || e.features.length === 0) return
+
+      const featureProps = e.features[0].properties
+      const parcelId = featureProps.parcel_id
+
+      selectedCadastreParcel.value = {
+        parcelId: parcelId ?? "",
+        section: featureProps.section ?? "",
+        numero: featureProps.numero ?? "",
+        surface: featureProps.surface ?? null
+      }
+
+      // Highlight selected parcel
+      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", [
+        "match",
+        ["get", "parcel_id"],
+        parcelId,
+        0.3,
+        0.05
+      ])
+      mapInstance.setPaintProperty("cadastre-border", "line-width", [
+        "match",
+        ["get", "parcel_id"],
+        parcelId,
+        3,
+        1
+      ])
+      mapInstance.setPaintProperty("cadastre-border", "line-opacity", [
+        "match",
+        ["get", "parcel_id"],
+        parcelId,
+        1,
+        0.5
+      ])
+    }
+
+    const mouseEnterHandler = () => {
+      mapInstance.getCanvas().style.cursor = "pointer"
+    }
+    const mouseLeaveHandler = () => {
+      mapInstance.getCanvas().style.cursor = ""
+    }
+
+    mapInstance.on("click", "cadastre-fill", clickHandler)
+    mapInstance.on("mouseenter", "cadastre-fill", mouseEnterHandler)
+    mapInstance.on("mouseleave", "cadastre-fill", mouseLeaveHandler)
+
+    cadastreClickHandlers.value[mapId] = clickHandler
+    cadastreMouseEnterHandlers.value[mapId] = mouseEnterHandler
+    cadastreMouseLeaveHandlers.value[mapId] = mouseLeaveHandler
+
+    mapInstance.once("render", () => {
+      console.info("cypress: cadastre data loaded")
+    })
+  }
+
+  const clearCadastreSelection = () => {
+    if (!selectedCadastreParcel.value) return
+    selectedCadastreParcel.value = null
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+      if (!mapInstance.getLayer("cadastre-fill")) continue
+      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", 0.05)
+      mapInstance.setPaintProperty("cadastre-border", "line-width", 1)
+      mapInstance.setPaintProperty("cadastre-border", "line-opacity", 0.5)
+    }
+  }
+
+  const removeCadastreLayer = (mapInstance: Map) => {
+    const mapId = getMapId(mapInstance)
+
+    selectedCadastreParcel.value = null
+
+    if (cadastreClickHandlers.value[mapId]) {
+      mapInstance.off("click", "cadastre-fill", cadastreClickHandlers.value[mapId])
+      delete cadastreClickHandlers.value[mapId]
+    }
+    if (cadastreMouseEnterHandlers.value[mapId]) {
+      mapInstance.off("mouseenter", "cadastre-fill", cadastreMouseEnterHandlers.value[mapId])
+      delete cadastreMouseEnterHandlers.value[mapId]
+    }
+    if (cadastreMouseLeaveHandlers.value[mapId]) {
+      mapInstance.off("mouseleave", "cadastre-fill", cadastreMouseLeaveHandlers.value[mapId])
+      delete cadastreMouseLeaveHandlers.value[mapId]
+    }
+
+    if (mapInstance.getLayer("cadastre-fill")) {
+      mapInstance.removeLayer("cadastre-fill")
+    }
+    if (mapInstance.getLayer("cadastre-border")) {
+      mapInstance.removeLayer("cadastre-border")
+    }
+    if (mapInstance.getSource("cadastre-source")) {
+      mapInstance.removeSource("cadastre-source")
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: cadastre data removed")
+    })
+  }
+
+  const toggleCadastreLayer = () => {
+    showCadastreLayer.value = !showCadastreLayer.value
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      if (showCadastreLayer.value) {
+        addCadastreLayer(mapInstance)
+      } else {
+        removeCadastreLayer(mapInstance)
       }
     }
   }
@@ -688,6 +878,10 @@ export const useMapStore = defineStore("map", () => {
     resetFilters,
     showQPVLayer,
     toggleQPVLayer,
+    showCadastreLayer,
+    toggleCadastreLayer,
+    selectedCadastreParcel,
+    clearCadastreSelection,
     use3D,
     toggle3D
   }
