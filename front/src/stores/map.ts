@@ -556,7 +556,8 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.addSource("cadastre-source", {
         type: "vector",
         tiles: [`${fullBaseApiUrl}/tiles/cadastre/cadastre/{z}/{x}/{y}.mvt`],
-        minzoom: MIN_ZOOM
+        minzoom: MIN_ZOOM,
+        maxzoom: MAX_ZOOM - 1
       })
     }
 
