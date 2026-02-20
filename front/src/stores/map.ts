@@ -572,7 +572,8 @@ export const useMapStore = defineStore("map", () => {
           source: "cadastre-source",
           "source-layer": "cadastre--cadastre",
           paint: {
-            "fill-color": "#8B6914"
+            "fill-color": "#8B6914",
+            "fill-opacity": 0.0
           }
         },
         beforeId
