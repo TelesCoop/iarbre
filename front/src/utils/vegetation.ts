@@ -10,6 +10,16 @@ export enum VegetationColor {
   HIGH = "#14452F"
 }
 
+export const VEGESTRATE_COLOR_MAP = [
+  1,
+  VegetationColor.LOW,
+  2,
+  VegetationColor.MID,
+  3,
+  VegetationColor.HIGH,
+  "#00000000"
+]
+
 export const VegetationLegend: Record<VegetationLegendName, VegetationColor> = {
   [VegetationLegendName.LOW]: VegetationColor.LOW,
   [VegetationLegendName.MID]: VegetationColor.MID,

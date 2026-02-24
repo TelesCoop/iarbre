@@ -68,6 +68,8 @@ export function useMapFilters() {
           ["get", `mixed_indice_${vulnerabilityMode!.value}`],
           ["literal", mixedIndices]
         ]
+      } else if (dataType === DataType.VEGESTRATE) {
+        filter = ["in", ["get", "strate"], ["literal", filteredValues.value]]
       }
 
       mapInstance.setFilter(layerId, filter as FilterSpecification)

@@ -25,6 +25,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
+import { VEGESTRATE_COLOR_MAP } from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -75,7 +76,8 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
+      [DataType.VEGESTRATE]: ["match", ["get", "strate"], ...VEGESTRATE_COLOR_MAP]
     }
   })
 
@@ -89,7 +91,8 @@ export const useMapStore = defineStore("map", () => {
         HEIGHT_MULTIPLIER
       ],
       [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER]
+      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
+      [DataType.VEGESTRATE]: ["*", ["get", "strate"], HEIGHT_MULTIPLIER]
     }
   })
 
@@ -146,20 +149,6 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    if (datatype === DataType.VEGETATION) {
-      // Raster layer for vegetation
-      const rasterLayer: AddLayerObject = {
-        id: layerId,
-        type: "raster",
-        source: sourceId,
-        layout: {},
-        paint: {
-          "raster-opacity": 0.4
-        }
-      }
-      return [rasterLayer]
-    }
-
     const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
 
     if (use3D.value) {
@@ -214,11 +203,6 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    // Skip click events for raster layers (vegetation)
-    if (datatype === DataType.VEGETATION) {
-      return
-    }
-
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -298,27 +282,15 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
-
-    if (datatype === DataType.VEGETATION) {
-      // Raster source for vegetation
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png`
-      map.addSource(sourceId, {
-        type: "raster",
-        tiles: [tileUrl],
-        tileSize: 256,
-        minzoom: MIN_ZOOM
-      })
-    } else {
-      // Vector source for other data types
-      const tileDataType =
-        datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
-      const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
-      map.addSource(sourceId, {
-        type: "vector",
-        tiles: [tileUrl],
-        minzoom: MIN_ZOOM
-      })
-    }
+    // Vector source for other data types
+    const tileDataType =
+      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
+    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
+    map.addSource(sourceId, {
+      type: "vector",
+      tiles: [tileUrl],
+      minzoom: MIN_ZOOM
+    })
   }
 
   const getMapId = (map: Map): string => {
@@ -370,7 +342,7 @@ export const useMapStore = defineStore("map", () => {
         if (mapInstance.getLayer(layerId)) {
           mapInstance.removeLayer(layerId)
         }
-        if (previousDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+        if (mapInstance.getLayer(`${layerId}-border`)) {
           mapInstance.removeLayer(`${layerId}-border`)
         }
         const sourceId = getSourceId(previousDataType, previousGeoLevel)
@@ -408,7 +380,7 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer(layerId)) {
         mapInstance.removeLayer(layerId)
       }
-      if (currentDataType !== DataType.VEGETATION && mapInstance.getLayer(`${layerId}-border`)) {
+      if (mapInstance.getLayer(`${layerId}-border`)) {
         mapInstance.removeLayer(`${layerId}-border`)
       }
       setupTile(mapInstance, currentDataType, currentGeoLevel)
