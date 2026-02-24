@@ -609,25 +609,12 @@ class MVTGenerator:
                 covered.add(t)
         return covered
 
-    def _get_covered_tiles_from_bbox(self, zoom):
-        bbox = self.mdl.objects.all().aggregate(bbox=Extent("map_geometry"))["bbox"]
-        bbox_polygon = Polygon.from_bbox(bbox)
-        bbox_polygon.srid = TARGET_MAP_PROJ
-        bbox_polygon.transform(4326)
-        west, south, east, north = bbox_polygon.extent
-        return set(mercantile.tiles(west, south, east, north, zoom, truncate=True))
-
     def generate_tiles(self, ignore_existing=False):
         """Generate MVT tiles for the entire geometry queryset."""
-        use_city_filter = self.mdl.datatype == "plantability"
 
         tiles_to_generate = []
         for zoom in range(self.min_zoom, self.max_zoom + 1):
-            if use_city_filter:
-                all_tiles = self._get_covered_tiles(zoom)
-            else:
-                all_tiles = self._get_covered_tiles_from_bbox(zoom)
-
+            all_tiles = self._get_covered_tiles(zoom)
             existing_mvt_tiles = MVTTile.objects.filter(
                 geolevel=self.mdl.geolevel,
                 datatype=self.mdl.datatype,
