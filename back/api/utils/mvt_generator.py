@@ -13,7 +13,6 @@ import gc
 import geopandas as gpd
 import numpy as np
 from django.contrib.gis.db.models.functions import Intersection
-from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet, Model
 from shapely.geometry import shape, Polygon as ShapelyPolygon, box
