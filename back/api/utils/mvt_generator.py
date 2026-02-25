@@ -509,7 +509,7 @@ class MVTGeneratorWorker:
             "name": f"{self.geolevel}--{self.datatype}",
             "features": [],
         }
-        for obj in clipped_queryset:
+        for obj in clipped_queryset.iterator():
             properties = obj.get_layer_properties()
             clipped_geom = obj.clipped_geometry
             transformed_geometries["features"].append(
