@@ -40,6 +40,7 @@ def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
     gdf["geometry"] = gdf["geometry"].apply(make_valid)
     gdf = gdf.explode(ignore_index=True)
     gdf["geometry"] = gdf["geometry"].apply(make_valid)
+    gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
     gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
     # After re-projecting, some invalid geometry appears
     gdf["map_geometry"] = gdf["map_geometry"].apply(make_valid)
