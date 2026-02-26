@@ -11,11 +11,11 @@ export enum VegetationColor {
 }
 
 export const VEGESTRATE_COLOR_MAP = [
-  1,
+  "herbacee",
   VegetationColor.LOW,
-  2,
+  "arbustif",
   VegetationColor.MID,
-  3,
+  "arborescent",
   VegetationColor.HIGH,
   "#00000000"
 ]
