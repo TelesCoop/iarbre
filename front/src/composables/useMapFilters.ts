@@ -69,7 +69,7 @@ export function useMapFilters() {
           ["literal", mixedIndices]
         ]
       } else if (dataType === DataType.VEGESTRATE) {
-        filter = ["in", ["get", "strate"], ["literal", filteredValues.value]]
+        filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
       }
 
       mapInstance.setFilter(layerId, filter as FilterSpecification)
