@@ -1,27 +1,26 @@
-export enum VegetationLegendName {
-  LOW = "Végétation basse",
-  MID = "Végétation moyenne",
-  HIGH = "Végétation haute"
-}
+import type { VegetationIndice } from "@/types/vegetation"
 
-export enum VegetationColor {
-  LOW = "#C8D96F",
-  MID = "#3A9144",
-  HIGH = "#14452F"
+type StrateInfo = { label: string; color: string }
+
+const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
+  herbacee: { label: "Strate herbacée", color: "#C8D96F" },
+  arbustif: { label: "Strate arbustive < 1.5m", color: "#3A9144" },
+  arborescent: { label: "Strate arborée > 1.5m", color: "#14452F" }
 }
 
 export const VEGESTRATE_COLOR_MAP = [
-  "herbacee",
-  VegetationColor.LOW,
-  "arbustif",
-  VegetationColor.MID,
-  "arborescent",
-  VegetationColor.HIGH,
+  ...Object.entries(STRATE_MAP).flatMap(([k, v]) => [k, v.color]),
   "#00000000"
 ]
 
-export const VegetationLegend: Record<VegetationLegendName, VegetationColor> = {
-  [VegetationLegendName.LOW]: VegetationColor.LOW,
-  [VegetationLegendName.MID]: VegetationColor.MID,
-  [VegetationLegendName.HIGH]: VegetationColor.HIGH
+export const VegetationLegend: Record<string, string> = Object.fromEntries(
+  Object.values(STRATE_MAP).map(({ label, color }) => [label, color])
+)
+
+export function getZoneDesc(zone: string): string {
+  return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
+}
+
+export function getZoneColor(zone: string): string {
+  return STRATE_MAP[zone as VegetationIndice]?.color ?? "#CCCCCC"
 }

@@ -108,6 +108,7 @@ declare module 'vue' {
     SidebarComponent: typeof import('./src/components/sidebar/SidebarComponent.vue')['default']
     SurfaceTypeWidget: typeof import('./src/components/dashboard/widgets/SurfaceTypeWidget.vue')['default']
     UnsupportedShapeModeMessage: typeof import('./src/components/contextData/shared/UnsupportedShapeModeMessage.vue')['default']
+    VegestrateContextDataInfo: typeof import('./src/components/contextData/vegestrate/VegestrateContextDataInfo.vue')['default']
     VegetationLegend: typeof import('./src/components/map/legend/VegetationLegend.vue')['default']
     VegetationWaterWidget: typeof import('./src/components/dashboard/widgets/VegetationWaterWidget.vue')['default']
     VegetationWidget: typeof import('./src/components/dashboard/widgets/VegetationWidget.vue')['default']
