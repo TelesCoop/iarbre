@@ -25,7 +25,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import { VEGESTRATE_COLOR_MAP } from "@/utils/vegetation"
+import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -92,7 +92,11 @@ export const useMapStore = defineStore("map", () => {
       ],
       [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
       [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.VEGESTRATE]: ["*", ["to-number", ["get", "surface"], 1], HEIGHT_MULTIPLIER]
+      [DataType.VEGESTRATE]: [
+        "*",
+        ["match", ["get", "indice"], ...VEGESTRATE_HEIGHT_MAP],
+        HEIGHT_MULTIPLIER
+      ]
     }
   })
 
