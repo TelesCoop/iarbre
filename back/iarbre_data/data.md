@@ -65,3 +65,27 @@ Voir [ici](https://docs.iarbre.fr/back/backend/) pour la génération du calque 
 
 Les données que l'on récupère sont des géométries de type `POLYGON`, `LINESTRING` ou `POINT`. Un certain nombre de transformation
 sont appliquées pour transformer en un `POLYGON` qui représente l'occupation au sol du facteur.
+
+## Pipeline
+
+Il y a un script utilisé pour lancer l'intégralité du pipeline de création du calque avec un fichier de config [`back/pipeline/plantability_pipeline.yaml`](back/pipeline/plantability_pipeline.yaml).
+Ce pipeline va créer un fichier d'état JSON dans `output/pipeline_calque_de_plantabilite_state.json`. En cas d'échec, il suffit de relancer exactement la même commande : les étapes déjà terminées (`"status": "completed"`) sont automatiquement ignorées et le pipeline reprend à partir de l'étape échouée.
+
+```bash python manage.py run_pipeline
+
+```
+
+### Étapes du pipeline
+
+| Ordre | Étape                                     | Commande Django               |
+| ----- | ----------------------------------------- | ----------------------------- |
+| 1     | Insertion des villes et IRIS              | `c01_insert_cities_and_iris`  |
+| 2     | Import des données d'occupation des sols  | `c03_import_data`             |
+| 3     | Mise à jour des données OCS               | `update_data`                 |
+| 4     | Conversion en rasters (5 m)               | `data_to_raster`              |
+| 5     | Extraction top-5 d'usage du sol par tuile | `raster_to_land_use`          |
+| 6     | Calcul du raster de plantabilité          | `compute_plantability_raster` |
+| 7     | Vectorisation du raster en tuiles PostGIS | `raster_plantability_to_geom` |
+| 8     | Calcul des comptages par ville et IRIS    | `compute_plantability_counts` |
+
+Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`back/pipeline/plantability_pipeline.yaml`](back/pipeline/plantability_pipeline.yaml).
