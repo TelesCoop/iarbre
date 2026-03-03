@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 RASTER_MAP = {
     "plantability": ("rasters/plantability.tif", "plantability_2025.tif"),
     "vegestrate": (
-        "rasters/vegestrate_lyonmetro_02m_postprocessed.tif",
+        "rasters/vegestrate_lyon_metropole_ir_02.tif",
         "vegestrate_2023_02m.tif",
     ),
 }

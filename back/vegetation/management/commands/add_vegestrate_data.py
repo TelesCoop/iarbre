@@ -21,7 +21,7 @@ STRATE_MAPPING = {
 }
 
 PATHS = [
-    "file_data/vegestrate/vegestrate_lyonmetro_02m.gpkg",
+    "file_data/vegestrate/vegestrate_lyonmetro__ir_02.gpkg",
 ]
 
 
