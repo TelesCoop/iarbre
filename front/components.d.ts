@@ -63,6 +63,8 @@ declare module 'vue' {
     LegendIcon: typeof import('./src/components/icons/LegendIcon.vue')['default']
     MapBackgroundSelector: typeof import('./src/components/map/MapBackgroundSelector.vue')['default']
     MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
+    MapCadastreParcelInfo: typeof import('./src/components/contextData/MapCadastreParcelInfo.vue')['default']
+    MapCadastreToggleButton: typeof import('./src/components/map/panels/MapCadastreToggleButton.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
     MapConfigDrawer: typeof import('./src/components/map/panels/MapConfigDrawer.vue')['default']
     MapConfigDrawerToggle: typeof import('./src/components/map/panels/MapConfigDrawerToggle.vue')['default']

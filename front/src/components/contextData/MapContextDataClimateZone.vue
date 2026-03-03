@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { withDefaults, computed } from "vue"
+import { computed } from "vue"
 import type { ClimateData } from "@/types/climate"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import ClimateContextDataMetrics from "@/components/contextData/climate/ClimateContextDataMetrics.vue"
