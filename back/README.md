@@ -16,6 +16,7 @@ Il existe trois applications Django :
 - [Données requises](#donnees-requises)
 - [Déploiement avec Ansible](#deploiement-avec-ansible)
 - [Installation manuelle](#installation-manuelle)
+- [Pipeline de plantabilité](#pipeline-de-plantabilite)
 - [Génération de la base de données](#generation-de-la-base-de-donnees)
 - [Gestion des sauvegardes de base de données](#gestion-des-sauvegardes-de-base-de-donnees)
 - [Démarrage du backend](#demarrage-du-service-backend)
@@ -116,22 +117,55 @@ Pour travailler sur le projet à l'avenir, activez l'environnement :
 pew workon <nom_projet>
 ```
 
-## Génération de la base de données
+## Pipeline de plantabilité
 
-> **Rappel**
-> Avant de lancer les commandes suivantes, assurez-vous que les données nécessaires sont bien présentes dans le dossier `file_data`. Si vous n'avez pas ces données, veuillez envoyer un e-mail à
-> [contact@telescoop.fr](mailto:contact@telescoop.fr).
+Le pipeline orchestre l'ensemble des étapes de calcul du calque de plantabilité, de l'ingestion des données brutes jusqu'aux statistiques par ville et IRIS. Il est défini dans [`pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml) et piloté par une commande Django dédiée.
 
-Pour calculer l'indice de plantabilité, il faut au préalables lancer ces deux commandes :
+### Lancer le pipeline
+
+> **Rappel** — assurez-vous que les données nécessaires sont bien présentes dans `file_data` avant de lancer le pipeline. Si vous n'avez pas ces données, veuillez envoyer un e-mail à [contact@telescoop.fr](mailto:contact@telescoop.fr).
 
 ```bash
 python manage.py migrate
-python manage.py c01_insert_cities_and_iris
-python manage.py c03_import_data
-python manage.py update_data
+python manage.py run_pipeline
 ```
 
-Elles vont permettre de récupérer les données d'occupation des sols et le découpage des villes.
+### Options
+
+```bash
+python manage.py run_pipeline --dry-run   # aperçu des étapes sans exécution
+python manage.py run_pipeline --reset     # repart de zéro en ignorant l'état existant
+python manage.py run_pipeline --config pipeline/plantability_pipeline.yaml  # config explicite
+python manage.py run_pipeline --state /chemin/vers/state.json               # fichier d'état explicite
+```
+
+### Reprise après échec
+
+À chaque étape, le runner sauvegarde un fichier d'état JSON dans `output/pipeline_calque_de_plantabilite_state.json`. En cas d'échec, il suffit de relancer exactement la même commande : les étapes déjà terminées (`"status": "completed"`) sont automatiquement ignorées et le pipeline reprend à partir de l'étape échouée.
+
+```bash
+python manage.py run_pipeline   # reprend depuis la dernière étape échouée
+```
+
+### Étapes du pipeline
+
+| Ordre | Étape                                     | Commande Django               |
+| ----- | ----------------------------------------- | ----------------------------- |
+| 1     | Insertion des villes et IRIS              | `c01_insert_cities_and_iris`  |
+| 2     | Import des données d'occupation des sols  | `c03_import_data`             |
+| 3     | Mise à jour des données OCS               | `update_data`                 |
+| 4     | Conversion en rasters (5 m)               | `data_to_raster`              |
+| 5     | Extraction top-5 d'usage du sol par tuile | `raster_to_land_use`          |
+| 6     | Calcul du raster de plantabilité          | `compute_plantability_raster` |
+| 7     | Vectorisation du raster en tuiles PostGIS | `raster_plantability_to_geom` |
+| 8     | Calcul des comptages par ville et IRIS    | `compute_plantability_counts` |
+
+Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml).
+
+## Génération de la base de données
+
+> Les commandes ci-dessous correspondent aux étapes individuelles du pipeline. Pour une exécution complète, préférez utiliser `python manage.py run_pipeline` décrit dans la section précédente.
+
 Pour plus de détails sur les données d'occupation des sols et leur traitement, consultez [data_config.py](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/data_config.py).
 
 ### Ajout des données de cadastre

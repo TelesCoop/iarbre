@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, withDefaults } from "vue"
+import { computed } from "vue"
 import type { ContextDataMainContainerProps } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 

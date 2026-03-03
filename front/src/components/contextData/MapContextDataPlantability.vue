@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, ref, withDefaults } from "vue"
+import { computed, ref } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
