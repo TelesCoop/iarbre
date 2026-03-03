@@ -1,7 +1,7 @@
 import os
 
 import mapbox_vector_tile
-from iarbre_data.factories import TileFactory
+from iarbre_data.factories import TileFactory, CityFactory
 from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
@@ -31,36 +31,42 @@ class MVTGeneratorTestCase(TestCase):
         MVTTile.objects.all().delete()
         return super().tearDown()
 
-    def test_covered_tiles_from_bbox(self):
+    def test_covered_tiles(self):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
         poly1.srid = 2154
-        TileFactory.create(geometry=poly1)
+        CityFactory.create(geometry=poly1)
         poly2 = Polygon.from_bbox(
             [844613.06777516, 6527071.52195335, 848112.69915193, 6529699.83431857]
         )
         poly2.srid = 2154
-        TileFactory.create(geometry=poly2)
+        CityFactory.create(geometry=poly2)
 
         mvt_generator = MVTGenerator(Tile, zoom_levels=(8, 10))
-        tiles_z8 = mvt_generator._get_covered_tiles_from_bbox(8)
+        tiles_z8 = mvt_generator._get_covered_tiles(8)
         self.assertGreater(len(tiles_z8), 0)
 
-        tiles_z10 = mvt_generator._get_covered_tiles_from_bbox(10)
+        tiles_z10 = mvt_generator._get_covered_tiles(10)
         self.assertGreaterEqual(len(tiles_z10), len(tiles_z8))
 
     def test_generate_tile_for_zoom(self):
+        city_poly = Polygon.from_bbox(
+            [844737.86651438, 6525626.23803353, 846997.45060761, 6528053.95246801]
+        )
+        city_poly.srid = 2154
+        city = CityFactory.create(geometry=city_poly)
+
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
         )
         tile1.srid = 2154
-        TileFactory.create(geometry=tile1)
+        TileFactory.create(geometry=tile1, city=city)
         tile2 = Polygon.from_bbox(
             [846992.45060761, 6528048.95246801, 846997.45060761, 6528053.95246801]
         )
         tile2.srid = 2154
-        TileFactory.create(geometry=tile2)
+        TileFactory.create(geometry=tile2, city=city)
 
         mvt = MVTGenerator(
             Tile,
@@ -73,7 +79,7 @@ class MVTGeneratorTestCase(TestCase):
         )
 
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
-            tiles = mvt._get_covered_tiles_from_bbox(zoom)
+            tiles = mvt._get_covered_tiles(zoom)
             for tile in tiles:
                 mvt_worker._generate_tile_for_zoom(tile, zoom)
 
@@ -96,16 +102,22 @@ class MVTGeneratorTestCase(TestCase):
             raise AssertionError("Can't decode. It's not a mapbox vector tile.")
 
     def test_view(self):
+        city_poly = Polygon.from_bbox(
+            [844737.86651438, 6525626.23803353, 846997.45060761, 6528053.95246801]
+        )
+        city_poly.srid = 2154
+        city = CityFactory.create(geometry=city_poly)
+
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
         )
         tile1.srid = 2154
-        TileFactory.create(geometry=tile1)
+        TileFactory.create(geometry=tile1, city=city)
         tile2 = Polygon.from_bbox(
             [846992.45060761, 6528048.95246801, 846997.45060761, 6528053.95246801]
         )
         tile2.srid = 2154
-        TileFactory.create(geometry=tile2)
+        TileFactory.create(geometry=tile2, city=city)
         mvt = MVTGenerator(
             Tile,
             zoom_levels=(8, 8),
@@ -117,7 +129,7 @@ class MVTGeneratorTestCase(TestCase):
         )
 
         for zoom in range(mvt.min_zoom, mvt.max_zoom + 1):
-            tiles = mvt._get_covered_tiles_from_bbox(zoom)
+            tiles = mvt._get_covered_tiles(zoom)
             for tile in tiles:
                 mvt_worker._generate_tile_for_zoom(tile, zoom)
 

@@ -1,4 +1,4 @@
-from django.contrib.gis.db.models import GeometryField, PolygonField, PointField
+from django.contrib.gis.db.models import GeometryField, PolygonField
 from django.db import models
 from django.core.files.base import ContentFile
 from django.db.models.signals import pre_save, pre_delete
@@ -255,28 +255,6 @@ class Cadastre(models.Model):
         return f"Parcel {self.parcel_id} in {self.commune_name}"
 
 
-class HotSpot(models.Model):
-    "Points were initiaves are going on."
-
-    geometry = PointField(srid=2154)
-    map_geometry = PointField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    description = models.JSONField(null=True, blank=True)
-    city_name = models.CharField(max_length=200)
-    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="hotspot")
-
-    geolevel = GeoLevel.CADASTRE.value
-    datatype = DataType.CADASTRE.value
-
-    def get_layer_properties(self):
-        """Return the properties of the hotspot point for the MVT datatype."""
-        return {
-            "id": self.id,
-            "description": self.description,
-            "city_name": self.city_name,
-            "city": self.city,
-        }
-
-
 class StrateChoices(models.TextChoices):
     ARBUSTIF = "arbustif", "Arbustif"
     ARBORESCENT = "arborescent", "Arborescent"
@@ -317,7 +295,6 @@ class Vegestrate(models.Model):
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)
 @receiver(pre_save, sender=Cadastre)
-@receiver(pre_save, sender=HotSpot)
 @receiver(pre_save, sender=Vegestrate)
 def before_save(sender, instance, **kwargs):
     create_mapgeometry(instance)

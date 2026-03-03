@@ -2,7 +2,7 @@ import json
 
 from rest_framework import serializers
 
-from iarbre_data.models import City, Iris, Lcz, Tile, Vulnerability
+from iarbre_data.models import City, Iris, Lcz, Tile, Vegestrate, Vulnerability
 
 
 class LczSerializer(serializers.ModelSerializer):
@@ -106,6 +106,14 @@ class IrisSerializer(serializers.ModelSerializer):
             "averageNormalizedIndice",
             "averageIndice",
         )
+
+
+class VegestrateSerializer(serializers.ModelSerializer):
+    indice = serializers.CharField(source="strate")
+
+    class Meta:
+        model = Vegestrate
+        fields = ("id", "indice", "surface", "geolevel", "datatype")
 
 
 class BaseScoresSerializer(serializers.Serializer):

@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2026-03-03T12:06_postgres_backup.dump
+
+**Changements :**
+
+- **Tuiles vegestrate** : Ajouts des tuiles vegestrates à la place du raster pour permettre l'interaction.
+
 ### 2026-02-11T19:03_postgres_backup.dump
 
 **Changements :**

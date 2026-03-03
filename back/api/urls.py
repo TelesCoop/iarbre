@@ -12,7 +12,6 @@ from .views import (
     QPVListView,
     MetadataView,
     RasterDownloadView,
-    VegetationTileView,
 )
 
 router = routers.DefaultRouter()
@@ -30,11 +29,6 @@ urlpatterns = [
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
         name="scores-in-polygon",
-    ),
-    path(
-        "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
-        VegetationTileView.as_view(),
-        name="retrieve-vegetation-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",

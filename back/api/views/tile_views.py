@@ -10,13 +10,14 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
-from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
+from iarbre_data.models import MVTTile, Tile, Lcz, Vegestrate, Vulnerability
 from rest_framework.response import Response
 
 from api.serializers.serializers import (
     LczSerializer,
     VulnerabilitySerializer,
     TileSerializer,
+    VegestrateSerializer,
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
     PlantabilityVulnerabilityScoresSerializer,
@@ -34,6 +35,7 @@ DATATYPE_MODEL_MAP = {
     DataType.LCZ.value: Lcz,
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
+    DataType.VEGESTRATE.value: Vegestrate,
 }
 
 # Mapping of frontend datatypes to their models
@@ -71,6 +73,7 @@ class TileDetailsView(generics.RetrieveAPIView):
             DataType.LCZ.value: LczSerializer,
             DataType.VULNERABILITY.value: VulnerabilitySerializer,
             DataType.TILE.value: TileSerializer,
+            DataType.VEGESTRATE.value: VegestrateSerializer,
         }
         if datatype not in serializer_per_datatype:
             raise Http404
