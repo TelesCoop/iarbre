@@ -119,7 +119,7 @@ pew workon <nom_projet>
 
 ## Pipeline de plantabilité
 
-Le pipeline orchestre l'ensemble des étapes de calcul du calque de plantabilité, de l'ingestion des données brutes jusqu'aux statistiques par ville et IRIS. Il est défini dans [`pipeline/plantability_pipeline.yaml`](pipeline/plantability_pipeline.yaml) et piloté par une commande Django dédiée.
+Le pipeline orchestre l'ensemble des étapes de calcul du calque de plantabilité, de l'ingestion des données brutes jusqu'aux statistiques par ville et IRIS. Il est défini dans [`pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml) et piloté par une commande Django dédiée.
 
 ### Lancer le pipeline
 
@@ -160,7 +160,7 @@ python manage.py run_pipeline   # reprend depuis la dernière étape échouée
 | 7     | Vectorisation du raster en tuiles PostGIS | `raster_plantability_to_geom` |
 | 8     | Calcul des comptages par ville et IRIS    | `compute_plantability_counts` |
 
-Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`pipeline/plantability_pipeline.yaml`](pipeline/plantability_pipeline.yaml).
+Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml).
 
 ## Génération de la base de données
 

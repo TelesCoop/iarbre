@@ -68,7 +68,7 @@ sont appliquées pour transformer en un `POLYGON` qui représente l'occupation a
 
 ## Pipeline
 
-Il y a un script utilisé pour lancer l'intégralité du pipeline de création du calque avec un fichier de config [`back/pipeline/plantability_pipeline.yaml`](back/pipeline/plantability_pipeline.yaml).
+Il y a un script utilisé pour lancer l'intégralité du pipeline de création du calque avec un fichier de config [`back/pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml).
 Ce pipeline va créer un fichier d'état JSON dans `output/pipeline_calque_de_plantabilite_state.json`. En cas d'échec, il suffit de relancer exactement la même commande : les étapes déjà terminées (`"status": "completed"`) sont automatiquement ignorées et le pipeline reprend à partir de l'étape échouée.
 
 ```bash python manage.py run_pipeline
@@ -88,4 +88,4 @@ Ce pipeline va créer un fichier d'état JSON dans `output/pipeline_calque_de_pl
 | 7     | Vectorisation du raster en tuiles PostGIS | `raster_plantability_to_geom` |
 | 8     | Calcul des comptages par ville et IRIS    | `compute_plantability_counts` |
 
-Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`back/pipeline/plantability_pipeline.yaml`](back/pipeline/plantability_pipeline.yaml).
+Le graphe de dépendances complet et les descriptions détaillées de chaque étape sont dans [`back/pipeline/plantability_pipeline.yaml`](https://github.com/TelesCoop/iarbre/blob/dev/back/pipeline/plantability_pipeline.yaml).
