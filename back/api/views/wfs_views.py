@@ -24,7 +24,7 @@ class PlantabilityWFSView(WFSView):
         abstract="WFS stream to download plantability data",
         keywords=["django-gisserver"],
         provider_name="IArbre",
-        provider_site="https://www.carte.iarbre.fr/",
+        provider_site="https://iarbre.fr/",
         contact_person="contact@telescoop.fr",
     )
 
