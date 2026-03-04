@@ -98,6 +98,7 @@ declare module 'vue' {
     PlantabilityContextDataScore: typeof import('./src/components/contextData/plantability/PlantabilityContextDataScore.vue')['default']
     PlantabilityDistributionChart: typeof import('./src/components/contextData/plantability/PlantabilityDistributionChart.vue')['default']
     PlantabilityDivisionData: typeof import('./src/components/division/PlantabilityDivisionData.vue')['default']
+    PlantabilityFactorsWidget: typeof import('./src/components/dashboard/widgets/PlantabilityFactorsWidget.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
     PlantabilityWidget: typeof import('./src/components/dashboard/widgets/PlantabilityWidget.vue')['default']
     PlantVulnerabilityLegend: typeof import('./src/components/map/legend/PlantVulnerabilityLegend.vue')['default']

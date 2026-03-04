@@ -47,7 +47,7 @@ function formatHa(ha: number): string {
 </script>
 
 <template>
-  <DashboardWidgetCard subtitle="Surfaces de végétation par strate" title="Végétation existante">
+  <DashboardWidgetCard subtitle="Surfaces de végétation par strate" title="Végétation en voirie ">
     <div v-if="hasData" class="widget-body">
       <div class="total-display">
         <span class="total-value">{{ totalDisplay }}</span>

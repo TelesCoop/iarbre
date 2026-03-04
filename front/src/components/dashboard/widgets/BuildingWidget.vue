@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { computed, ref, onMounted, onUnmounted, watch } from "vue"
+import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import type { DashboardLcz } from "@/types/dashboard"
+import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 interface Props {
   data: DashboardLcz
@@ -21,19 +22,7 @@ const bars = computed(() => {
   return raw.filter((b) => b.value > 0).sort((a, b) => b.value - a.value)
 })
 
-const svgRef = ref<SVGSVGElement | null>(null)
-let resizeObserver: ResizeObserver | null = null
-
-function render(animate = false) {
-  if (!svgRef.value) return
-  const svg = d3.select(svgRef.value)
-  svg.selectAll("*").remove()
-
-  const rect = svgRef.value.getBoundingClientRect()
-  const width = rect.width
-  const height = rect.height
-  if (width === 0 || height === 0) return
-
+const { svgRef } = useD3Chart(({ svg, width, height }: D3ChartContext, animate: boolean) => {
   const data = bars.value
   if (data.length === 0) return
 
@@ -107,18 +96,7 @@ function render(animate = false) {
       .attr("opacity", 1)
       .attr("x", (d) => xScale((d as (typeof data)[0]).value) + 6)
   }
-}
-
-onMounted(() => {
-  render(true)
-  if (svgRef.value?.parentElement) {
-    resizeObserver = new ResizeObserver(() => render())
-    resizeObserver.observe(svgRef.value.parentElement)
-  }
-})
-
-onUnmounted(() => resizeObserver?.disconnect())
-watch(bars, () => render(true))
+}, [bars])
 </script>
 
 <template>

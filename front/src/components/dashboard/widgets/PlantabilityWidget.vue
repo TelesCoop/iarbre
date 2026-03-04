@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { computed, ref, onMounted, onUnmounted, watch } from "vue"
+import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardPlantability } from "@/types/dashboard"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 const PLANTABILITY_MAX_SCORE = 10
 
@@ -31,9 +32,6 @@ const getColorForScore = (scoreValue: number): string => {
   return "#C4C4C4"
 }
 
-const svgRef = ref<SVGSVGElement | null>(null)
-let resizeObserver: ResizeObserver | null = null
-
 const bars = computed(() => {
   const distribution = props.data.distribution
   const entries = Object.keys(distribution)
@@ -47,16 +45,7 @@ const bars = computed(() => {
   return entries.map((e) => ({ ...e, pct: total > 0 ? e.value / total : 0 }))
 })
 
-function render(animate = false) {
-  if (!svgRef.value) return
-  const svg = d3.select(svgRef.value)
-  svg.selectAll("*").remove()
-
-  const rect = svgRef.value.getBoundingClientRect()
-  const width = rect.width
-  const height = rect.height
-  if (width === 0 || height === 0) return
-
+const { svgRef } = useD3Chart(({ svg, width, height }: D3ChartContext, animate: boolean) => {
   const barH = Math.min(height * 0.5, 32)
   const chartTotalH = barH + 14 + 10
   const offsetY = Math.max((height - chartTotalH) / 2, 0)
@@ -129,18 +118,7 @@ function render(animate = false) {
   if (animate) {
     g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
   }
-}
-
-onMounted(() => {
-  render(true)
-  if (svgRef.value?.parentElement) {
-    resizeObserver = new ResizeObserver(() => render())
-    resizeObserver.observe(svgRef.value.parentElement)
-  }
-})
-
-onUnmounted(() => resizeObserver?.disconnect())
-watch(bars, () => render(true))
+}, [bars])
 </script>
 
 <template>

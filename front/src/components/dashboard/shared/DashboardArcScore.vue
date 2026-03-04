@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue"
+import { ref, computed } from "vue"
 import * as d3 from "d3"
+import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 interface Props {
   value: number
@@ -19,7 +20,6 @@ const props = withDefaults(defineProps<Props>(), {
   size: 120
 })
 
-const svgRef = ref<SVGSVGElement | null>(null)
 const currentEndAngle = ref(0)
 
 const targetAngle = computed(() => {
@@ -32,13 +32,7 @@ const centerText = computed(() => {
   return `${props.value.toFixed(1)}/${props.maxValue}`
 })
 
-let resizeObs: ResizeObserver | null = null
-
-function render(animate = true) {
-  if (!svgRef.value) return
-  const svg = d3.select(svgRef.value)
-  svg.selectAll("*").remove()
-
+const { svgRef } = useD3Chart(({ svg }: D3ChartContext, animate: boolean) => {
   const s = props.size
   const cx = s / 2
   const cy = s / 2
@@ -87,18 +81,7 @@ function render(animate = true) {
   }
 
   currentEndAngle.value = endAngle
-}
-
-onMounted(() => {
-  currentEndAngle.value = 0
-  render(true)
-  if (svgRef.value?.parentElement) {
-    resizeObs = new ResizeObserver(() => render(false))
-    resizeObs.observe(svgRef.value.parentElement)
-  }
-})
-onUnmounted(() => resizeObs?.disconnect())
-watch([targetAngle, () => props.color], () => render(true))
+}, [targetAngle, () => props.color])
 </script>
 
 <template>
