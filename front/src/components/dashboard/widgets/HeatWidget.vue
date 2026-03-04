@@ -71,157 +71,163 @@ function updateTooltipPos(event: MouseEvent, svgEl: SVGSVGElement) {
   }
 }
 
-const { svgRef } = useD3Chart(({ svg, width, height }: D3ChartContext, animate: boolean) => {
-  const size = Math.min(width, height)
-  if (size <= 0) return
+const { svgRef } = useD3Chart(
+  ({ svg, width, height }: D3ChartContext, animate: boolean) => {
+    const size = Math.min(width, height)
+    if (size <= 0) return
 
-  const cx = width / 2
-  const cy = height / 2
-  const outerR = size / 2 - 28
-  const innerR = outerR * 0.66
-  const sectorGap = 0.08
-  const sectorAngle = (2 * Math.PI) / 3
+    const cx = width / 2
+    const cy = height / 2
+    const outerR = size / 2 - 28
+    const innerR = outerR * 0.66
+    const sectorGap = 0.08
+    const sectorAngle = (2 * Math.PI) / 3
 
-  const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
 
-  const bgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
+    const bgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
 
-  const fgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
-    .cornerRadius(3)
+    const fgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
+      .cornerRadius(3)
 
-  const hitArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR - 6)
-    .outerRadius(outerR + 6)
+    const hitArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR - 6)
+      .outerRadius(outerR + 6)
 
-  axes.value.forEach((axis, i) => {
-    const start = i * sectorAngle + sectorGap / 2
-    const end = (i + 1) * sectorAngle - sectorGap / 2
-    const sectorSpan = end - start
+    axes.value.forEach((axis, i) => {
+      const start = i * sectorAngle + sectorGap / 2
+      const end = (i + 1) * sectorAngle - sectorGap / 2
+      const sectorSpan = end - start
 
-    g.append("path")
-      .attr("d", bgArc({ startAngle: start, endAngle: end })!)
-      .attr("fill", "#f3f4f6")
+      g.append("path")
+        .attr("d", bgArc({ startAngle: start, endAngle: end })!)
+        .attr("fill", "#f3f4f6")
 
-    for (let t = 1; t < POLAR_MAX_SCORE; t++) {
-      const tickAngle = start + (t / POLAR_MAX_SCORE) * sectorSpan
-      const dotR = innerR - 3
-      g.append("circle")
-        .attr("cx", dotR * Math.sin(tickAngle))
-        .attr("cy", -dotR * Math.cos(tickAngle))
-        .attr("r", 1.2)
-        .attr("fill", "#d1d5db")
-    }
+      for (let t = 1; t < POLAR_MAX_SCORE; t++) {
+        const tickAngle = start + (t / POLAR_MAX_SCORE) * sectorSpan
+        const dotR = innerR - 3
+        g.append("circle")
+          .attr("cx", dotR * Math.sin(tickAngle))
+          .attr("cy", -dotR * Math.cos(tickAngle))
+          .attr("r", 1.2)
+          .attr("fill", "#d1d5db")
+      }
 
-    const ratio = Math.min(Math.max(axis.value / POLAR_MAX_SCORE, 0), 1)
-    const targetEnd = start + ratio * sectorSpan
-    const startFrom = animate ? start + currentRatios.value[i] * sectorSpan : targetEnd
+      const ratio = Math.min(Math.max(axis.value / POLAR_MAX_SCORE, 0), 1)
+      const targetEnd = start + ratio * sectorSpan
+      const startFrom = animate ? start + currentRatios.value[i] * sectorSpan : targetEnd
 
-    const sectorG = g.append("g").attr("class", "sector-group")
+      const sectorG = g.append("g").attr("class", "sector-group")
 
-    const path = sectorG
-      .append("path")
-      .datum({ startAngle: start, endAngle: Math.max(startFrom, start + 0.01) })
-      .attr("d", (d) => fgArc(d)!)
-      .attr("fill", axis.color)
-      .attr("opacity", 0.4)
-      .attr("stroke", axis.color)
-      .attr("stroke-width", 1.5)
-      .attr("stroke-opacity", 0.7)
+      const path = sectorG
+        .append("path")
+        .datum({ startAngle: start, endAngle: Math.max(startFrom, start + 0.01) })
+        .attr("d", (d) => fgArc(d)!)
+        .attr("fill", axis.color)
+        .attr("opacity", 0.4)
+        .attr("stroke", axis.color)
+        .attr("stroke-width", 1.5)
+        .attr("stroke-opacity", 0.7)
 
-    if (animate && Math.abs(targetEnd - startFrom) > 0.01) {
-      path
-        .transition()
-        .duration(700)
-        .ease(d3.easeCubicOut)
-        .attrTween("d", function (d) {
-          const interp = d3.interpolate(d.endAngle, targetEnd)
-          return function (t) {
-            d.endAngle = interp(t)
-            return fgArc(d)!
-          }
-        })
-    }
-
-    const svgEl = svgRef.value!
-    sectorG
-      .append("path")
-      .attr("d", hitArc({ startAngle: start, endAngle: end })!)
-      .attr("fill", "transparent")
-      .style("cursor", "pointer")
-      .on("mouseenter", function (event: MouseEvent) {
-        g.selectAll<SVGGElement, unknown>(".sector-group").each(function () {
-          d3.select(this).select("path").transition().duration(150).attr("opacity", 0.15)
-        })
-        d3.select(this.parentNode as Element)
-          .select("path")
+      if (animate && Math.abs(targetEnd - startFrom) > 0.01) {
+        path
           .transition()
-          .duration(150)
-          .attr("opacity", 0.7)
-        hoveredAxis.value = { ...axis, level: getLevel(axis.value) }
-        updateTooltipPos(event, svgEl)
-      })
-      .on("mousemove", (event: MouseEvent) => updateTooltipPos(event, svgEl))
-      .on("mouseleave", function () {
-        g.selectAll<SVGGElement, unknown>(".sector-group").each(function () {
-          d3.select(this).select("path").transition().duration(200).attr("opacity", 0.4)
+          .duration(700)
+          .ease(d3.easeCubicOut)
+          .attrTween("d", function (d) {
+            const interp = d3.interpolate(d.endAngle, targetEnd)
+            return function (t) {
+              d.endAngle = interp(t)
+              return fgArc(d)!
+            }
+          })
+      }
+
+      const svgEl = svgRef.value!
+      sectorG
+        .append("path")
+        .attr("d", hitArc({ startAngle: start, endAngle: end })!)
+        .attr("fill", "transparent")
+        .style("cursor", "pointer")
+        .on("mouseenter", function (event: MouseEvent) {
+          g.selectAll<SVGGElement, unknown>(".sector-group").each(function () {
+            d3.select(this).select("path").transition().duration(150).attr("opacity", 0.15)
+          })
+          d3.select(this.parentNode as Element)
+            .select("path")
+            .transition()
+            .duration(150)
+            .attr("opacity", 0.7)
+          hoveredAxis.value = { ...axis, level: getLevel(axis.value) }
+          updateTooltipPos(event, svgEl)
         })
-        hoveredAxis.value = null
-      })
+        .on("mousemove", (event: MouseEvent) => updateTooltipPos(event, svgEl))
+        .on("mouseleave", function () {
+          g.selectAll<SVGGElement, unknown>(".sector-group").each(function () {
+            d3.select(this).select("path").transition().duration(200).attr("opacity", 0.4)
+          })
+          hoveredAxis.value = null
+        })
 
-    currentRatios.value[i] = ratio
+      currentRatios.value[i] = ratio
 
-    const midAngle = start + sectorSpan / 2
-    const connStartR = outerR + 3
-    const connEndR = outerR + 10
-    const labelR = outerR + 14
-    const anchor = labelAnchor(midAngle)
-    const dy = labelDy(midAngle)
+      const midAngle = start + sectorSpan / 2
+      const connStartR = outerR + 3
+      const connEndR = outerR + 10
+      const labelR = outerR + 14
+      const anchor = labelAnchor(midAngle)
+      const dy = labelDy(midAngle)
 
-    g.append("line")
-      .attr("x1", connStartR * Math.sin(midAngle))
-      .attr("y1", -connStartR * Math.cos(midAngle))
-      .attr("x2", connEndR * Math.sin(midAngle))
-      .attr("y2", -connEndR * Math.cos(midAngle))
-      .attr("stroke", "#d1d5db")
-      .attr("stroke-width", 0.75)
+      g.append("line")
+        .attr("x1", connStartR * Math.sin(midAngle))
+        .attr("y1", -connStartR * Math.cos(midAngle))
+        .attr("x2", connEndR * Math.sin(midAngle))
+        .attr("y2", -connEndR * Math.cos(midAngle))
+        .attr("stroke", "#d1d5db")
+        .attr("stroke-width", 0.75)
 
-    const lx = labelR * Math.sin(midAngle)
-    const ly = -labelR * Math.cos(midAngle)
+      const lx = labelR * Math.sin(midAngle)
+      const ly = -labelR * Math.cos(midAngle)
 
-    const labelG = g.append("g").attr("transform", `translate(${lx},${ly})`)
+      const labelG = g.append("g").attr("transform", `translate(${lx},${ly})`)
 
-    labelG
-      .append("text")
-      .attr("text-anchor", anchor)
-      .attr("dominant-baseline", "central")
-      .attr("dy", dy)
-      .attr("font-size", "9px")
-      .attr("fill", "#9CA3AF")
-      .text(axis.label)
+      labelG
+        .append("text")
+        .attr("text-anchor", anchor)
+        .attr("dominant-baseline", "central")
+        .attr("dy", dy)
+        .attr("font-size", "9px")
+        .attr("fill", "#9CA3AF")
+        .text(axis.label)
 
-    const valueDy = parseFloat(dy) + 1.1 + "em"
-    labelG
-      .append("text")
-      .attr("text-anchor", anchor)
-      .attr("dominant-baseline", "central")
-      .attr("dy", valueDy)
-      .attr("font-size", "10px")
-      .attr("font-weight", "600")
-      .attr("fill", "#374151")
-      .text(`${axis.value.toFixed(1)}/${POLAR_MAX_SCORE}`)
-  })
-}, [axes])
+      const valueDy = parseFloat(dy) + 1.1 + "em"
+      labelG
+        .append("text")
+        .attr("text-anchor", anchor)
+        .attr("dominant-baseline", "central")
+        .attr("dy", valueDy)
+        .attr("font-size", "10px")
+        .attr("font-weight", "600")
+        .attr("fill", "#374151")
+        .text(`${axis.value.toFixed(1)}/${POLAR_MAX_SCORE}`)
+    })
+  },
+  [axes]
+)
 </script>
 
 <template>
-  <DashboardWidgetCard subtitle="Vulnérabilité aux températures extrêmes" title="Zones climatiques locales">
+  <DashboardWidgetCard
+    subtitle="Vulnérabilité aux températures extrêmes"
+    title="Zones climatiques locales"
+  >
     <div class="widget-body">
       <div class="toggle-row">
         <span :class="['toggle-label', { active: isDay }]">Jour</span>
@@ -242,7 +248,9 @@ const { svgRef } = useD3Chart(({ svg, width, height }: D3ChartContext, animate: 
         >
           <span class="tooltip-dot" :style="{ backgroundColor: hoveredAxis.color }" />
           <span class="tooltip-label">{{ hoveredAxis.label }}</span>
-          <span class="tooltip-value">{{ hoveredAxis.value.toFixed(1) }}/{{ POLAR_MAX_SCORE }}</span>
+          <span class="tooltip-value"
+            >{{ hoveredAxis.value.toFixed(1) }}/{{ POLAR_MAX_SCORE }}</span
+          >
           <span class="tooltip-sep">-</span>
           <span class="tooltip-level">{{ hoveredAxis.level }}</span>
         </div>

@@ -26,7 +26,7 @@ const handleCityChange = (value: string | number) => {
 const areaDisplay = computed(() => {
   if (!store.dashboardData) return null
   const ha = store.dashboardData.areaHa
-  return ha >= 1000 ? `${(ha / 1000).toFixed(1)} km²` : `${ha} ha`
+  return ha >= 100 ? `${(ha / 100).toFixed(1)} km²` : `${ha} ha`
 })
 
 const currentLabel = computed(() => {

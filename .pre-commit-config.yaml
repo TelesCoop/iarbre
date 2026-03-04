@@ -65,8 +65,7 @@ repos:
     rev: 3.8.3
   - hooks:
       - id: beautysh
-        additional_dependencies: [setuptools]
-    repo: https://github.com/lovesegfault/beautysh.git
+    repo: https://github.com/bemeurer/beautysh.git
     rev: v6.4.2
   - hooks:
       - id: script-must-have-extension
@@ -77,7 +76,7 @@ repos:
     repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
   - hooks:
-      - args: ["-c", ".yamllint"]
+      - args: [ "-c", ".yamllint" ]
         id: yamllint
     repo: https://github.com/adrienverge/yamllint.git
     rev: v1.37.1
@@ -95,8 +94,8 @@ repos:
       - id: js-lint
         name: js-lint
         entry: npm run --prefix front lint
-        types: [file]
-        types_or: [javascript, jsx, ts, tsx, vue]
+        types: [ file ]
+        types_or: [ javascript, jsx, ts, tsx, vue ]
         pass_filenames: false
         language: system
   - repo: local
@@ -104,8 +103,8 @@ repos:
       - id: js-type-check
         name: js-type-check
         entry: npm run --prefix front type-check
-        types: [file]
-        types_or: [javascript, jsx, ts, tsx, vue]
+        types: [ file ]
+        types_or: [ javascript, jsx, ts, tsx, vue ]
         pass_filenames: false
         language: system
 
@@ -122,7 +121,7 @@ repos:
         # https://github.com/pre-commit/pre-commit/issues/1417
         # Use coverage to ensure a code coverage of at least 75%
         entry: bash -c "cd back && coverage run manage.py test && coverage report --fail-under=75"
-        types: [python]
+        types: [ python ]
         pass_filenames: false
         language: system
   - repo: local
@@ -131,7 +130,7 @@ repos:
         name: Check django migrations
         entry: bash -c "cd back && python3 manage.py makemigrations --dry-run --check"
         language: system
-        types: [python] # hook only runs if a python file is staged
+        types: [ python ] # hook only runs if a python file is staged
         pass_filenames: false
 
   - hooks:

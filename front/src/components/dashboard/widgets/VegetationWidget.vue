@@ -15,7 +15,7 @@ const hasData = computed(() => props.data.totalHa >= 1)
 
 const totalDisplay = computed(() => {
   const ha = props.data.totalHa
-  if (ha >= 1000) return `${(ha / 1000).toFixed(1)} km²`
+  if (ha >= 100) return `${(ha / 100).toFixed(1)} km²`
   return `${ha.toFixed(0)} ha`
 })
 
@@ -41,7 +41,7 @@ const bubbles = computed(() => [
 ])
 
 function formatHa(ha: number): string {
-  if (ha >= 1000) return `${(ha / 1000).toFixed(1)} km²`
+  if (ha >= 100) return `${(ha / 100).toFixed(1)} km²`
   return `${ha.toFixed(0)} ha`
 }
 </script>

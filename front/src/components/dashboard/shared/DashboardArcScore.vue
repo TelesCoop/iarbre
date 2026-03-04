@@ -32,56 +32,59 @@ const centerText = computed(() => {
   return `${props.value.toFixed(1)}/${props.maxValue}`
 })
 
-const { svgRef } = useD3Chart(({ svg }: D3ChartContext, animate: boolean) => {
-  const s = props.size
-  const cx = s / 2
-  const cy = s / 2
-  const outerR = s / 2 - 2
-  const innerR = outerR * 0.72
-  const gap = 0.04
+const { svgRef } = useD3Chart(
+  ({ svg }: D3ChartContext, animate: boolean) => {
+    const s = props.size
+    const cx = s / 2
+    const cy = s / 2
+    const outerR = s / 2 - 2
+    const innerR = outerR * 0.72
+    const gap = 0.04
 
-  const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
 
-  const bgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
+    const bgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
 
-  g.append("path")
-    .attr("d", bgArc({ startAngle: gap, endAngle: 2 * Math.PI - gap })!)
-    .attr("fill", props.secondaryColor ?? "#f0f0f0")
+    g.append("path")
+      .attr("d", bgArc({ startAngle: gap, endAngle: 2 * Math.PI - gap })!)
+      .attr("fill", props.secondaryColor ?? "#f0f0f0")
 
-  const fgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
-    .cornerRadius(4)
+    const fgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
+      .cornerRadius(4)
 
-  const endAngle = targetAngle.value
-  const startFrom = animate ? currentEndAngle.value : endAngle
+    const endAngle = targetAngle.value
+    const startFrom = animate ? currentEndAngle.value : endAngle
 
-  const path = g
-    .append("path")
-    .datum({ startAngle: gap, endAngle: Math.max(startFrom, gap) })
-    .attr("d", (d) => fgArc(d)!)
-    .attr("fill", props.color)
+    const path = g
+      .append("path")
+      .datum({ startAngle: gap, endAngle: Math.max(startFrom, gap) })
+      .attr("d", (d) => fgArc(d)!)
+      .attr("fill", props.color)
 
-  if (animate && Math.abs(endAngle - startFrom) > 0.01) {
-    path
-      .transition()
-      .duration(800)
-      .ease(d3.easeCubicInOut)
-      .attrTween("d", function (d) {
-        const interpolate = d3.interpolate(d.endAngle, Math.max(endAngle, gap))
-        return function (t) {
-          d.endAngle = interpolate(t)
-          return fgArc(d)!
-        }
-      })
-  }
+    if (animate && Math.abs(endAngle - startFrom) > 0.01) {
+      path
+        .transition()
+        .duration(800)
+        .ease(d3.easeCubicInOut)
+        .attrTween("d", function (d) {
+          const interpolate = d3.interpolate(d.endAngle, Math.max(endAngle, gap))
+          return function (t) {
+            d.endAngle = interpolate(t)
+            return fgArc(d)!
+          }
+        })
+    }
 
-  currentEndAngle.value = endAngle
-}, [targetAngle, () => props.color])
+    currentEndAngle.value = endAngle
+  },
+  [targetAngle, () => props.color]
+)
 </script>
 
 <template>
