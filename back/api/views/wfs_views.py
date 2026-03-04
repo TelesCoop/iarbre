@@ -2,7 +2,7 @@ from gisserver.crs import CRS84, WEB_MERCATOR, CRS
 from gisserver.features import FeatureType, FeatureField, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
-from iarbre_data.models import Tile
+from iarbre_data.models import Tile, Vegestrate
 
 
 class TileFeatureType(FeatureType):
@@ -11,6 +11,32 @@ class TileFeatureType(FeatureType):
 
 
 LAMBERT93 = CRS.from_string("urn:ogc:def:crs:EPSG::2154")
+
+
+class VegestrateWFSView(WFSView):
+    """WFS view for vegetation strates."""
+
+    xml_namespace = "http://carte.iarbre.fr/gisserver"
+
+    # The service metadata
+    service_description = ServiceDescription(
+        title="Vegetation strates",
+        abstract="WFS stream to download vegetation strates data",
+        keywords=["django-gisserver"],
+        provider_name="IArbre",
+        provider_site="https://iarbre.fr/",
+        contact_person="contact@telescoop.fr",
+    )
+
+    def get_feature_types(self):
+        # FeatureField instances cannot be reused across requests, so they must be created fresh here.
+        return [
+            TileFeatureType(
+                Vegestrate.objects.all(),
+                fields="__all__",
+                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+            )
+        ]
 
 
 class PlantabilityWFSView(WFSView):
