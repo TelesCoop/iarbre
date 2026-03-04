@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2026-03-03T15:35_postgres_backup.dump
+
+**Changements :**
+
+- **Tuiles vegestrate** : Update des tuiles vegestrate pour utiliser la version 2 des données qui utilise le canal IR et un meilleur post-processing : https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023
+
 ### 2026-03-03T12:06_postgres_backup.dump
 
 **Changements :**

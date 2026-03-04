@@ -5,6 +5,7 @@ django-anymail[mailgun]==12.0
 django-cors-headers==4.4.0
 django-extensions==3.2.3
 django-filter==25.2
+django-gisserver==2.3.1
 django-storages[s3]==1.14.4
 djangorestframework==3.15.2
 djangorestframework_camel_case==1.4.2
@@ -21,7 +22,7 @@ openpyxl==3.1.5
 pillow==11.0.0
 protobuf==5.29.5
 psycopg2==2.9.9
-pyproj==3.7.0
+pyproj==3.7.1
 PyYAML==6.0.2
 rasterio==1.4.3
 requests_oauthlib==2.0.0
