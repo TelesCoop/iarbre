@@ -13,15 +13,13 @@ class TileFeatureType(FeatureType):
 LAMBERT93 = CRS.from_string("urn:ogc:def:crs:EPSG::2154")
 
 
-class VegestrateWFSView(WFSView):
-    """WFS view for vegetation strates."""
+class IArbreWFSView(WFSView):
+    xml_namespace = "http://carte.iarbre.fr/api/wfs"
+    xml_namespace_aliases = {"iarbre": "http://carte.iarbre.fr/api/wfs"}
 
-    xml_namespace = "http://carte.iarbre.fr/gisserver"
-
-    # The service metadata
     service_description = ServiceDescription(
-        title="Vegetation strates",
-        abstract="WFS stream to download vegetation strates data",
+        title="IArbre WFS",
+        abstract="WFS stream to download IArbre data",
         keywords=["django-gisserver"],
         provider_name="IArbre",
         provider_site="https://iarbre.fr/",
@@ -29,36 +27,10 @@ class VegestrateWFSView(WFSView):
     )
 
     def get_feature_types(self):
-        # FeatureField instances cannot be reused across requests, so they must be created fresh here.
-        return [
-            TileFeatureType(
-                Vegestrate.objects.all(),
-                fields="__all__",
-                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
-            )
-        ]
-
-
-class PlantabilityWFSView(WFSView):
-    """WFS view for plantability."""
-
-    xml_namespace = "http://carte.iarbre.fr/gisserver"
-
-    # The service metadata
-    service_description = ServiceDescription(
-        title="Plantability",
-        abstract="WFS stream to download plantability data",
-        keywords=["django-gisserver"],
-        provider_name="IArbre",
-        provider_site="https://iarbre.fr/",
-        contact_person="contact@telescoop.fr",
-    )
-
-    def get_feature_types(self):
-        # FeatureField instances cannot be reused across requests, so they must be created fresh here.
         return [
             TileFeatureType(
                 Tile.objects.select_related("iris", "city").all(),
+                name="plantability",
                 fields=[
                     "geometry",
                     "plantability_indice",
@@ -68,5 +40,10 @@ class PlantabilityWFSView(WFSView):
                     FeatureField("city_name", model_attribute="city.name"),
                 ],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
-            )
+            ),
+            TileFeatureType(
+                Vegestrate.objects.all(),
+                fields="__all__",
+                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+            ),
         ]
