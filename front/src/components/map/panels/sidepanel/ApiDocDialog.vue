@@ -51,14 +51,14 @@ const wfsParams: Param[] = [
   <AppDialog
     :visible="visible"
     width="48rem"
-    header-class="!bg-primary-900 !border-primary-700"
+    header-class="!bg-primary-500 !border-primary-700"
     close-class="!text-white/50 hover:!bg-white/10 hover:!text-white"
     @update:visible="emit('update:visible', $event)"
   >
     <template #header>
       <div class="flex-1">
         <h2 class="text-lg font-bold text-white">Export des données</h2>
-        <p class="text-2xs text-green-500">ia·rbre · Métropole de Lyon</p>
+        <p class="text-2xs text-green-200">ia·rbre · Métropole de Lyon</p>
       </div>
     </template>
 
@@ -73,9 +73,9 @@ const wfsParams: Param[] = [
           >
             <span class="text-gray-300 text-base shrink-0">›</span>
             <div
-              class="w-11 h-11 shrink-0 rounded-md border border-[#cc7a5a] bg-[#fff8f5] flex items-center justify-center"
+              class="w-11 h-11 shrink-0 rounded-md border border-scale-2 bg-primary-50 flex items-center justify-center"
             >
-              <span class="font-mono font-bold text-xs text-[#1565c0]">WFS</span>
+              <span class="font-mono font-bold text-xs text-primary-800">WFS</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-xs font-bold text-gray-800">WEB FEATURE SERVICE</p>
@@ -122,19 +122,19 @@ const wfsParams: Param[] = [
               </div>
               <div class="px-3 py-2 bg-gray-50 font-mono text-xs leading-relaxed">
                 <span class="text-primary-500">https://carte.iarbre.fr/api/wfs/</span><br />
-                <span class="text-gray-300">?</span><span class="text-[#1565c0]">SERVICE</span
-                ><span class="text-gray-300">=</span><span class="text-[#d97706]">WFS</span>
-                <span class="text-gray-300"> &amp; </span><span class="text-[#1565c0]">VERSION</span
-                ><span class="text-gray-300">=</span><span class="text-[#d97706]">2.0.0</span>
-                <span class="text-gray-300"> &amp; </span><span class="text-[#1565c0]">REQUEST</span
-                ><span class="text-gray-300">=</span><span class="text-[#d97706]">GetFeature</span
-                ><br />
+                <span class="text-gray-300">?</span><span class="text-primary-800">SERVICE</span
+                ><span class="text-gray-300">=</span><span class="text-scale-3">WFS</span>
+                <span class="text-gray-300"> &amp; </span
+                ><span class="text-primary-800">VERSION</span><span class="text-gray-300">=</span
+                ><span class="text-scale-3">2.0.0</span> <span class="text-gray-300"> &amp; </span
+                ><span class="text-primary-800">REQUEST</span><span class="text-gray-300">=</span
+                ><span class="text-scale-3">GetFeature</span><br />
                 <span class="text-gray-300">&amp; </span
-                ><span class="text-[#1565c0]">TYPENAMES</span><span class="text-gray-300">=</span
-                ><span class="text-[#d97706]">iarbre:plantability</span><br />
+                ><span class="text-primary-800">TYPENAMES</span><span class="text-gray-300">=</span
+                ><span class="text-scale-3">iarbre:plantability</span><br />
                 <span class="text-gray-300">&amp; </span
-                ><span class="text-[#1565c0]">OUTPUTFORMAT</span><span class="text-gray-300">=</span
-                ><span class="text-[#d97706]">geojson</span>
+                ><span class="text-primary-800">OUTPUTFORMAT</span
+                ><span class="text-gray-300">=</span><span class="text-scale-3">geojson</span>
               </div>
             </div>
 
@@ -154,8 +154,8 @@ const wfsParams: Param[] = [
                   class="grid grid-cols-[1fr_1fr_2fr] px-3 py-2 text-xs border-b border-gray-100 last:border-b-0"
                   :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
                 >
-                  <span class="font-mono text-[#1565c0]">{{ param.key }}</span>
-                  <span class="font-mono text-[#d97706]">{{ param.value }}</span>
+                  <span class="font-mono text-primary-800">{{ param.key }}</span>
+                  <span class="font-mono text-scale-3">{{ param.value }}</span>
                   <div class="flex items-center gap-2">
                     <span class="text-gray-600">{{ param.desc }}</span>
                     <span
@@ -168,7 +168,7 @@ const wfsParams: Param[] = [
               </div>
             </div>
 
-            <div class="bg-blue-50 border-l-2 border-gray-400 px-3 py-3 rounded-r-lg">
+            <div class="bg-primary-50 border-l-2 border-gray-400 px-3 py-3 rounded-r-lg">
               <p class="text-xs font-bold text--gray-400 mb-1">
                 Intégration QGIS — Couche → Ajouter une couche → WFS.
               </p>
