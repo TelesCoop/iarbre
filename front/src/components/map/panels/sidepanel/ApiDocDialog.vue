@@ -86,16 +86,10 @@ const wfsParams: Param[] = [
             </div>
             <div class="flex gap-1.5 shrink-0">
               <span
+                v-for="fmt in ['GeoJSON', 'GML', 'CSV']"
+                :key="fmt"
                 class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >GeoJSON</span
-              >
-              <span
-                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >GML</span
-              >
-              <span
-                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >CSV</span
+                >{{ fmt }}</span
               >
             </div>
           </button>
