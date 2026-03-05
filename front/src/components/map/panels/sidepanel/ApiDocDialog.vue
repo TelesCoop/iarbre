@@ -5,9 +5,9 @@ import { ref } from "vue"
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wms" | "wfs" | null>(null)
+const expanded = ref<"wfs" | "raster" | null>(null)
 
-const toggle = (service: "wms" | "wfs") => {
+const toggle = (service: "wfs" | "raster") => {
   expanded.value = expanded.value === service ? null : service
 }
 
@@ -15,7 +15,7 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text)
 }
 
-const wfsBase = "https://carte.iarbre.fr/api/wfs/plantability/"
+const wfsBase = "https://carte.iarbre.fr/api/wfs/"
 
 interface Param {
   key: string
@@ -28,7 +28,11 @@ const wfsParams: Param[] = [
   { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
   { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
   { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
-  { key: "TYPENAMES", value: "app:tile", desc: "Jeu de données à récupérer", fixed: true },
+  {
+    key: "TYPENAMES",
+    value: "iarbre:plantability",
+    desc: "Jeu de données — iarbre:plantability ou iarbre:vegestrate"
+  },
   { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
   {
     key: "CRS",
@@ -59,7 +63,7 @@ const wfsParams: Param[] = [
     </template>
 
     <div class="flex flex-col bg-off-white -m-6 p-6">
-      <p class="text-sm font-bold text-primary-500 mb-1">API &amp; flux WFS</p>
+      <p class="text-sm font-bold text-primary-500 mb-1">Flux WFS</p>
 
       <div class="flex flex-col gap-2">
         <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -104,7 +108,7 @@ const wfsParams: Param[] = [
                   class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
                   @click="
                     copyToClipboard(
-                      `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=app:tile&OUTPUTFORMAT=geojson`
+                      `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&OUTPUTFORMAT=geojson`
                     )
                   "
                 >
@@ -123,8 +127,7 @@ const wfsParams: Param[] = [
                 </button>
               </div>
               <div class="px-3 py-2 bg-gray-50 font-mono text-xs leading-relaxed">
-                <span class="text-gray-500">https://carte.iarbre.fr/api/wfs/</span
-                ><span class="text-primary-500">plantability/</span><br />
+                <span class="text-primary-500">https://carte.iarbre.fr/api/wfs/</span><br />
                 <span class="text-gray-300">?</span><span class="text-[#1565c0]">SERVICE</span
                 ><span class="text-gray-300">=</span><span class="text-[#d97706]">WFS</span>
                 <span class="text-gray-300"> &amp; </span><span class="text-[#1565c0]">VERSION</span
@@ -134,7 +137,7 @@ const wfsParams: Param[] = [
                 ><br />
                 <span class="text-gray-300">&amp; </span
                 ><span class="text-[#1565c0]">TYPENAMES</span><span class="text-gray-300">=</span
-                ><span class="text-[#d97706]">app:tile</span><br />
+                ><span class="text-[#d97706]">iarbre:plantability</span><br />
                 <span class="text-gray-300">&amp; </span
                 ><span class="text-[#1565c0]">OUTPUTFORMAT</span><span class="text-gray-300">=</span
                 ><span class="text-[#d97706]">geojson</span>
@@ -176,6 +179,64 @@ const wfsParams: Param[] = [
                 Intégration QGIS — Couche → Ajouter une couche → WFS.
               </p>
               <p class="text-xs">Collez l'URL de base : {{ wfsBase }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-sm font-bold text-primary-500 mt-4 mb-1">Téléchargement raster</p>
+
+      <div class="flex flex-col gap-2">
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <button
+            class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+            @click="toggle('raster')"
+          >
+            <span class="text-gray-300 text-base shrink-0">›</span>
+            <div
+              class="w-11 h-11 shrink-0 rounded-md border border-gray-300 bg-gray-50 flex items-center justify-center"
+            >
+              <span class="font-mono font-bold text-xs text-gray-600">TIF</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold text-gray-800">REST — GeoTIFF</p>
+              <p class="text-xs text-gray-500">
+                Téléchargement du raster complet au format GeoTIFF (EPSG:2154).
+              </p>
+            </div>
+          </button>
+          <div v-if="expanded === 'raster'" class="border-t border-gray-100 px-4 pb-3 space-y-2">
+            <div
+              v-for="dataset in [
+                { label: 'Plantabilité', url: 'https://carte.iarbre.fr/api/rasters/plantability' },
+                { label: 'Végéstrate', url: 'https://carte.iarbre.fr/api/rasters/vegestrate' }
+              ]"
+              :key="dataset.url"
+              class="border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <div class="flex items-center justify-between px-3 py-2">
+                <span class="text-xs text-gray-500">{{ dataset.label }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-primary-500 truncate">{{ dataset.url }}</span>
+                  <button
+                    class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors shrink-0"
+                    @click="copyToClipboard(dataset.url)"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
