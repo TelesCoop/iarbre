@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "gisserver",  # allow to expose WFS
     "iarbre_data",
     "api",
     "plantability",

@@ -29,8 +29,8 @@ const options = [
     value: DataType.PLANTABILITY_VULNERABILITY
   },
   {
-    label: DataTypeToLabel[DataType.VEGETATION],
-    value: DataType.VEGETATION
+    label: DataTypeToLabel[DataType.VEGESTRATE],
+    value: DataType.VEGESTRATE
   }
 ]
 </script>

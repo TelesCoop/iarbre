@@ -42,8 +42,8 @@ defineProps({
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
       />
       <map-context-data-vegetation
-        v-if="mapStore.selectedDataType === DataType.VEGETATION"
-        :data="mapStore.contextData.data as VegetationData"
+        v-if="mapStore.selectedDataType === DataType.VEGESTRATE"
+        :data="mapStore.contextData.data as unknown as VegetationData"
       />
     </template>
   </div>

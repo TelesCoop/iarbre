@@ -26,5 +26,7 @@ export const TutorialSelector = {
   PLANT_VULNERABILITY_LEGEND: '[data-cy="plant-vulnerability-legend"]',
   OPEN_FEEDBACK_BUTTON: '[data-cy="open-feedback-button"]',
   MOBILE_MENU_BUTTON: '[data-cy="mobile-menu-button"]',
-  MAP_FILTERS_STATUS: '[data-cy="map-filters-status"]'
+  MAP_FILTERS_STATUS: '[data-cy="map-filters-status"]',
+  DASHBOARD_BUTTON: '[data-cy="dashboard-button"]',
+  DASHBOARD_BUTTON_MOBILE: '[data-cy="dashboard-button-mobile"]'
 } as const

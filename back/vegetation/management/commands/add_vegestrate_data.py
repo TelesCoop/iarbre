@@ -1,4 +1,5 @@
 import geopandas
+from multiprocessing import Pool, cpu_count
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
@@ -8,7 +9,6 @@ from tqdm import tqdm
 from iarbre_data.utils.database import log_progress
 from iarbre_data.models import Vegestrate, City
 from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
-from iarbre_data.utils.data_processing import make_valid
 
 STRATE_TREES = 3
 STRATE_BUSHES = 2
@@ -21,132 +21,109 @@ STRATE_MAPPING = {
 }
 
 PATHS = [
-    "file_data/vegestrate/merged_fullmetropole_08.gpkg",
+    "file_data/vegestrate/vegestrate_lyon_metropole_ir_02.gpkg",
 ]
 
 
+def _fix_invalid(series):
+    mask = ~series.is_valid
+    if mask.any():
+        series = series.copy()
+        series[mask] = series[mask].buffer(0)
+    return series
+
+
 def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
-    """Simplify geometry.
-
-    Args:
-        gdf (str): Path to the file to load.
-
-    Returns:
-        geopandas.GeoDataFrame: The loaded shapefile as a GeoDataFrame.
-    """
     gdf.to_crs(TARGET_PROJ, inplace=True)
-
-    # Simple correction for invalid geometry
-    gdf["geometry"] = gdf["geometry"].apply(make_valid)
+    gdf["geometry"] = _fix_invalid(gdf["geometry"])
     gdf = gdf.explode(ignore_index=True)
-    gdf["geometry"] = gdf["geometry"].apply(make_valid)
+    gdf["geometry"] = _fix_invalid(gdf["geometry"])
+    gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
     gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
-    # After re-projecting, some invalid geometry appears
-    gdf["map_geometry"] = gdf["map_geometry"].apply(make_valid)
+    gdf["map_geometry"] = _fix_invalid(gdf["map_geometry"])
     return gdf
 
 
 def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -> None:
-    """Process and save large shapefile in chunks.
-
-    Args:
-        gpkg_path (str): Path to the geopackage to load.
-        chunk_size (int): Number of rows to process at a time.
-
-    Returns:
-        None
-    """
-
     gdf_full = geopandas.read_file(gpkg_path)
     total_features = len(gdf_full)
     log_progress(f"Total features to process: {total_features}")
 
-    for start_idx in tqdm(range(0, total_features, chunk_size)):
-        end_idx = min(start_idx + chunk_size, total_features)
+    chunks = [
+        gdf_full.iloc[i : i + chunk_size].copy()
+        for i in range(0, total_features, chunk_size)
+    ]
 
-        gdf_chunk = gdf_full.iloc[start_idx:end_idx].copy()
-        gdf_chunk = simplify_geom(gdf_chunk)
+    n_workers = min(cpu_count(), len(chunks))
+    with Pool(processes=n_workers) as pool:
+        processed_chunks = pool.map(simplify_geom, chunks)
+
+    for gdf_chunk in tqdm(processed_chunks):
         save_vegestrate(gdf_chunk)
-
-        del gdf_chunk
 
 
 def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
-    """Save Vegestrate data to the database.
+    valid = vegestrate_datas[vegestrate_datas["class"].isin(STRATE_MAPPING)]
 
-    Args:
-        vegestrate_datas (GeoDataFrame): GeoDataFrame to save to the database.
-
-    Returns:
-        None
-    """
-    batch_size = 10000
-    for start in range(0, len(vegestrate_datas), batch_size):
-        end = start + batch_size
-        batch = vegestrate_datas.loc[start:end]
-
-        veget_objects = []
-        for _, data in batch.iterrows():
-            strate = STRATE_MAPPING.get(data["class"])
-
-            if strate is None:
-                continue
-
-            geom = GEOSGeometry(data["geometry"].wkt)
-            map_geom = GEOSGeometry(data["map_geometry"].wkt)
-            if geom.geom_type == "MultiPolygon":
-                geom = geom[0]
-            if map_geom.geom_type == "MultiPolygon":
-                map_geom = map_geom[0]
-
-            veget_objects.append(
-                Vegestrate(
-                    geometry=geom,
-                    map_geometry=map_geom,
-                    strate=strate,
-                    surface=round(geom.area, 4),
-                )
+    veget_objects = []
+    for geom_val, map_geom_val, class_val in zip(
+        valid["geometry"], valid["map_geometry"], valid["class"]
+    ):
+        geom = GEOSGeometry(geom_val.wkb_hex)
+        map_geom = GEOSGeometry(map_geom_val.wkb_hex)
+        if geom.geom_type == "MultiPolygon":
+            geom = geom[0]
+        if map_geom.geom_type == "MultiPolygon":
+            map_geom = map_geom[0]
+        veget_objects.append(
+            Vegestrate(
+                geometry=geom,
+                map_geometry=map_geom,
+                strate=STRATE_MAPPING[class_val],
+                surface=round(geom.area, 4),
             )
+        )
 
-        Vegestrate.objects.bulk_create(veget_objects)
+    Vegestrate.objects.bulk_create(veget_objects)
 
 
 def compute_city_vegetation_surfaces():
     log_progress("Computing vegetation surfaces for cities")
+    cities_to_update = []
     for city in tqdm(City.objects.all(), desc="Computing city vegetation surfaces"):
-        vegestrate_qs = Vegestrate.objects.filter(geometry__intersects=city.geometry)
-
-        def get_surface_for_strate(strate_value: str) -> float:
-            result = (
-                vegestrate_qs.filter(strate=strate_value)
+        surfaces = {
+            row["strate"]: float(row["total"].sq_m or 0.0)
+            for row in (
+                Vegestrate.objects.filter(geometry__intersects=city.geometry)
                 .annotate(clipped_area=Area(Intersection("geometry", city.geometry)))
-                .aggregate(total=Sum("clipped_area"))["total"]
+                .values("strate")
+                .annotate(total=Sum("clipped_area"))
             )
-            return result.sq_m if result else 0.0
-
-        trees = get_surface_for_strate(STRATE_MAPPING[STRATE_TREES])
-        bushes = get_surface_for_strate(STRATE_MAPPING[STRATE_BUSHES])
-        grass = get_surface_for_strate(STRATE_MAPPING[STRATE_GRASS])
-
-        city.trees_surface = trees
-        city.bushes_surface = bushes
-        city.grass_surface = grass
-        city.total_vegetation_surface = trees + bushes + grass
-        city.save(
-            update_fields=[
-                "trees_surface",
-                "bushes_surface",
-                "grass_surface",
-                "total_vegetation_surface",
-            ]
+        }
+        city.trees_surface = surfaces.get(STRATE_MAPPING[STRATE_TREES], 0.0)
+        city.bushes_surface = surfaces.get(STRATE_MAPPING[STRATE_BUSHES], 0.0)
+        city.grass_surface = surfaces.get(STRATE_MAPPING[STRATE_GRASS], 0.0)
+        city.total_vegetation_surface = (
+            city.trees_surface + city.bushes_surface + city.grass_surface
         )
+        cities_to_update.append(city)
+
+    City.objects.bulk_update(
+        cities_to_update,
+        [
+            "trees_surface",
+            "bushes_surface",
+            "grass_surface",
+            "total_vegetation_surface",
+        ],
+    )
 
 
 class Command(BaseCommand):
     help = "Import Vegestrate data in the DB."
 
     def handle(self, *args, **options):
-        """Load Vegestrate data, and stats for cities and save them all in the DB."""
+        """Load Vegestrate data, compute stats for cities and save everything in DB."""
         log_progress("Cleaning Vegestrate model")
         print(Vegestrate.objects.all().delete())
         log_progress("Process and save large Vegestrate data in chunks")

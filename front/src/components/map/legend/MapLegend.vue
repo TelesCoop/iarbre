@@ -21,7 +21,7 @@ const mapStore = useMapStore()
       class="w-full"
     />
     <vegetation-legend
-      v-else-if="mapStore.selectedDataType === DataType.VEGETATION"
+      v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
     />
   </div>

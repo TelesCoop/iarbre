@@ -6,4 +6,4 @@ from .qpv_views import QPVListView  # noqa: F401
 from .boundary_views import CityBoundaryView, IrisBoundaryView  # noqa: F401
 from .database_version_views import MetadataView  # noqa: F401
 from .raster_views import RasterDownloadView  # noqa: F401
-from .vegetation_views import VegetationTileView  # noqa: F401
+from .wfs_views import PlantabilityWFSView, VegestrateWFSView  # noqa: F401
