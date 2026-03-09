@@ -33,7 +33,7 @@ describe("MapSidePanelDownload", () => {
     cy.contains("PARAMÈTRES").should("be.visible")
     cy.contains("TYPENAMES").should("be.visible")
     cy.contains("OUTPUTFORMAT").should("be.visible")
-    cy.contains("https://carte.iarbre.fr/api/wfs/").should("be.visible")
+    cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")
   })
 
   it("should expand raster section and show dataset URLs", () => {
@@ -41,8 +41,8 @@ describe("MapSidePanelDownload", () => {
     cy.contains("REST — GeoTIFF").click()
     cy.contains("Plantabilité").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
-    cy.contains("https://carte.iarbre.fr/api/rasters/plantability").should("be.visible")
-    cy.contains("https://carte.iarbre.fr/api/rasters/vegestrate").should("be.visible")
+    cy.contains(`${window.location.origin}/api/rasters/plantability`).should("be.visible")
+    cy.contains(`${window.location.origin}/api/rasters/vegestrate`).should("be.visible")
   })
 
   it("should close the dialog when close button is clicked", () => {
