@@ -15,7 +15,8 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text)
 }
 
-const wfsBase = `${window.location.origin}/api/wfs/`
+const origin = window.location.origin
+const wfsBase = `${origin}/api/wfs/`
 
 interface Param {
   key: string
@@ -204,7 +205,7 @@ const wfsParams: Param[] = [
           >
             <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">TIF</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">REST — GeoTIFF</p>
+              <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
               <p class="text-xs text-gray-500">
                 Téléchargement du raster complet au format GeoTIFF (EPSG:2154).
               </p>
@@ -231,9 +232,9 @@ const wfsParams: Param[] = [
                 v-for="dataset in [
                   {
                     label: 'Plantabilité',
-                    url: 'https://carte.iarbre.fr/api/rasters/plantability'
+                    url: `${origin}/plantability`
                   },
-                  { label: 'Végéstrate', url: 'https://carte.iarbre.fr/api/rasters/vegestrate' }
+                  { label: 'Végéstrate', url: `${origin}/vegestrate` }
                 ]"
                 :key="dataset.url"
                 class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
