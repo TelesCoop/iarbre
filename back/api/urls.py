@@ -10,6 +10,7 @@ from .views import (
     TileView,
     HealthCheckView,
     QPVListView,
+    CityBoundaryView,
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
@@ -38,6 +39,7 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
