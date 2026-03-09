@@ -73,7 +73,10 @@ Cypress.Commands.add("mount", (component, options) => {
   options.global.directives = options?.global.directives || {}
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: "/", name: "map", component: { template: "<div />" } }]
+    routes: [
+      { path: "/", name: "map", component: { template: "<div />" } },
+      { path: "/dashboard", name: "dashboard", component: { template: "<div />" } }
+    ]
   })
 
   options.global.plugins.push({
