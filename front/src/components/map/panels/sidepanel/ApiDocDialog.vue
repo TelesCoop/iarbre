@@ -15,7 +15,7 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text)
 }
 
-const wfsBase = "https://carte.iarbre.fr/api/wfs/"
+const wfsBase = `${window.location.origin}/api/wfs/`
 
 interface Param {
   key: string
@@ -132,7 +132,8 @@ const wfsParams: Param[] = [
                   </button>
                 </div>
                 <div class="px-2.5 py-2 bg-white font-mono text-xs leading-relaxed">
-                  <span class="text-primary-500">https://carte.iarbre.fr/api/wfs/</span><br />
+                  <span class="text-primary-500">{{ wfsBase }}</span
+                  ><br />
                   <span class="text-gray-300">?</span><span class="text-primary-800">SERVICE</span
                   ><span class="text-gray-300">=</span><span class="text-scale-3">WFS</span>
                   <span class="text-gray-300"> &amp; </span
