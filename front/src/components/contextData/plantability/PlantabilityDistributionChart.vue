@@ -192,7 +192,7 @@ watch(bars, () => render(true))
 @reference "@/styles/main.css";
 
 .distribution-chart {
-  @apply px-4 py-3 relative;
+  @apply px-2 py-3 lg:px-4 relative;
 }
 
 .chart-title {
@@ -201,7 +201,13 @@ watch(bars, () => render(true))
 
 .chart-svg {
   @apply w-full;
-  height: 56px;
+  height: 72px;
+}
+
+@media (min-width: 1024px) {
+  .chart-svg {
+    height: 56px;
+  }
 }
 
 .chart-tooltip {

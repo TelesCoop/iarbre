@@ -13,12 +13,12 @@ const NAV_BUTTONS: AllowedButtons[] = [DriverButton.CLOSE, DriverButton.PREVIOUS
 export function useTutorial() {
   const tutorialStore = useTutorialStore()
   const appStore = useAppStore()
+  const route = useRoute()
+  const router = useRouter()
 
   let overlayClickHandler: (() => void) | null = null
 
   const ensureMapPage = async () => {
-    const route = useRoute()
-    const router = useRouter()
     if (route.name !== "map") {
       await router.push({ name: "map" })
       await nextTick()
@@ -45,6 +45,11 @@ export function useTutorial() {
     }
   }
 
+  const clickElement = (selector: string) => {
+    const element = document.querySelector<HTMLElement>(selector)
+    element?.click()
+  }
+
   const onClickAdvance = (
     selector: string,
     action: ClickAction = "nextStep",
@@ -63,33 +68,16 @@ export function useTutorial() {
     element?.addEventListener("click", handleClick)
   }
 
-  const createLegendClickHandler = () => {
-    setupOverlayClickAdvance()
-    const legends = [
-      TutorialSelector.PLANTABILITY_LEGEND,
-      TutorialSelector.VULNERABILITY_LEGEND,
-      TutorialSelector.CLIMATE_ZONES_LEGEND
-    ].map((s) => document.querySelector(s))
-
-    const handleLegendClick = (event: Event) => {
-      const target = event.target as HTMLElement
-      const hasFilterAttr =
-        target.hasAttribute("data-score") ||
-        target.hasAttribute("data-zone") ||
-        target.hasAttribute("data-climate-zone")
-
-      if (hasFilterAttr && document.querySelector(TutorialSelector.MAP_FILTERS_STATUS)) {
-        legends.forEach((el) => el?.removeEventListener("click", handleLegendClick))
-        cleanupOverlayClick()
-        tutorialStore.nextStep()
-      }
+  const closeMobilePanel = () => {
+    const panel = document.querySelector(".mobile-panel.is-open")
+    if (panel) {
+      clickElement(TutorialSelector.MOBILE_PANEL_HANDLE)
     }
-
-    legends.forEach((el) => el?.addEventListener("click", handleLegendClick))
   }
 
   const runTutorial = (steps: DriveStep[]) => {
     cleanupOverlayClick()
+    closeMobilePanel()
     tutorialStore.startTutorial(steps)
   }
 
@@ -107,23 +95,23 @@ export function useTutorial() {
           onHighlighted: () => onClickAdvance(TutorialSelector.MAP_COMPONENT, "nextStep", 500)
         },
         {
-          element: TutorialSelector.DRAWER_TOGGLE,
+          element: TutorialSelector.MOBILE_PANEL,
           popover: {
-            title: "Ouvrir le panneau",
-            description: "Cliquez ici pour afficher les informations détaillées.",
+            title: "Panneau de détails",
+            description:
+              "Les informations détaillées sur la zone sélectionnée s'affichent ici. Glissez vers le haut ou cliquez pour ouvrir le panneau.",
             showButtons: NAV_BUTTONS
           },
-          onHighlighted: () =>
-            onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
-        },
-        {
-          element: TutorialSelector.MAP_CONFIG_DRAWER,
-          popover: {
-            title: "Panneau d'informations",
-            description: "Les informations détaillées sur la zone sélectionnée s'affichent ici.",
-            showButtons: NAV_BUTTONS
+          onHighlighted: () => {
+            clickElement(TutorialSelector.MOBILE_PANEL_HANDLE)
+            setTimeout(() => {
+              tutorialStore.driverInstance?.refresh()
+              setupOverlayClickAdvance()
+            }, 350)
           },
-          onHighlighted: setupOverlayClickAdvance
+          onDeselected: () => {
+            clickElement(TutorialSelector.MOBILE_PANEL_HANDLE)
+          }
         }
       ]
     }
@@ -150,23 +138,8 @@ export function useTutorial() {
     ]
   }
 
-  const getLegendSteps = (options?: { skipOpenDrawer?: boolean }): DriveStep[] => {
-    const steps: DriveStep[] = []
-
-    if (appStore.isMobileOrTablet && !options?.skipOpenDrawer) {
-      steps.push({
-        element: TutorialSelector.DRAWER_TOGGLE,
-        popover: {
-          title: "Ouvrir le panneau de configuration",
-          description:
-            "Cliquez ici pour ouvrir le panneau de configuration et accéder à la légende.",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: () => onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
-      })
-    }
-
-    steps.push(
+  const getLegendSteps = (): DriveStep[] => {
+    return [
       {
         element: `${TutorialSelector.PLANTABILITY_LEGEND}, ${TutorialSelector.VULNERABILITY_LEGEND}, ${TutorialSelector.CLIMATE_ZONES_LEGEND}`,
         popover: {
@@ -175,97 +148,70 @@ export function useTutorial() {
             "Cliquez sur les éléments de la légende pour filtrer et masquer certaines zones selon vos préférences.",
           showButtons: NAV_BUTTONS
         },
-        onHighlighted: createLegendClickHandler
+        onHighlighted: setupOverlayClickAdvance
+      }
+    ]
+  }
+
+  const getToolSteps = (): DriveStep[] => {
+    return [
+      {
+        element: TutorialSelector.MAP_GEOCODER,
+        popover: {
+          title: "Recherche",
+          description: "Recherchez une adresse ou un lieu pour naviguer directement sur la carte.",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
       },
       {
-        element: TutorialSelector.MAP_FILTERS_STATUS,
+        element: TutorialSelector.DRAWING_MODE_TOGGLE,
         popover: {
-          title: "Filtres actifs",
+          title: "Outils de dessin",
           description:
-            "Vous pouvez voir ici les filtres actuellement appliqués. Vous pouvez cliquer sur effacer pour supprimer tous les filtres.",
+            "Ouvrez la barre d'outils de dessin pour délimiter une zone personnalisée et obtenir des statistiques détaillées.",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
+      },
+      {
+        element: TutorialSelector.BUTTON_3D,
+        popover: {
+          title: "Vue 3D",
+          description:
+            "Activez la vue 3D pour visualiser les bâtiments et le relief en trois dimensions.",
           showButtons: NAV_BUTTONS
         },
         onHighlighted: setupOverlayClickAdvance
       }
-    )
-
-    return steps
+    ]
   }
 
-  const getLegendCloseSteps = (): DriveStep[] => {
-    const steps: DriveStep[] = []
-
-    if (appStore.isMobileOrTablet) {
-      steps.push({
-        element: TutorialSelector.DRAWER_CLOSE_BUTTON,
-        popover: {
-          title: "Fermer le panneau",
-          description: "Cliquez sur la croix pour fermer le panneau de configuration.",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: () =>
-          onClickAdvance(TutorialSelector.DRAWER_CLOSE_BUTTON, "nextStep", "nextTick")
-      })
-    }
-
-    steps.push({
-      element: TutorialSelector.MAP_COMPONENT,
-      popover: {
-        title: "Visualisation des filtres",
-        description:
-          "La carte affiche maintenant uniquement les zones correspondant à vos filtres. Vous pouvez continuer à explorer ou modifier vos filtres à tout moment.",
-        showButtons: NAV_BUTTONS
-      },
-      onHighlighted: setupOverlayClickAdvance
-    })
-
-    return steps
-  }
-
-  const getLayerSwitcherSteps = (options?: { skipOpenDrawer?: boolean }): DriveStep[] => {
-    const steps: DriveStep[] = []
+  const getLayerSwitcherSteps = (): DriveStep[] => {
     const isMobile = appStore.isMobileOrTablet
-
-    if (isMobile && !options?.skipOpenDrawer) {
-      steps.push({
-        element: TutorialSelector.DRAWER_TOGGLE,
+    return [
+      {
+        element: isMobile
+          ? TutorialSelector.MOBILE_LAYER_SWITCHER
+          : TutorialSelector.LAYER_SWITCHER,
         popover: {
-          title: "Ouvrir le panneau de configuration",
+          title: "Changement de calque",
           description:
-            "Cliquez ici pour ouvrir le panneau de configuration et accéder aux options de calques.",
+            "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
           showButtons: NAV_BUTTONS
         },
-        onHighlighted: () => onClickAdvance(TutorialSelector.DRAWER_TOGGLE, "nextStep", "nextTick")
-      })
-    }
-
-    steps.push({
-      element: TutorialSelector.LAYER_SWITCHER,
-      popover: {
-        title: "Changement de calque",
-        description:
-          "Utilisez ce menu pour changer de calque et afficher différentes données sur la carte.",
-        showButtons: NAV_BUTTONS
+        onHighlighted: setupOverlayClickAdvance
       },
-      onHighlighted: setupOverlayClickAdvance
-    })
-
-    // Use different background selector based on device type
-    const bgSelector = isMobile
-      ? TutorialSelector.MAP_BG_SWITCHER
-      : TutorialSelector.MAP_BACKGROUND_SELECTOR
-
-    steps.push({
-      element: bgSelector,
-      popover: {
-        title: "Fond de carte",
-        description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.).",
-        showButtons: NAV_BUTTONS
-      },
-      onHighlighted: setupOverlayClickAdvance
-    })
-
-    return steps
+      {
+        element: TutorialSelector.MAP_BACKGROUND_SELECTOR,
+        popover: {
+          title: "Fond de carte",
+          description: "Vous pouvez également changer le fond de carte (satellite, plan, etc.).",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: setupOverlayClickAdvance
+      }
+    ]
   }
 
   const startMapTutorial = async () => {
@@ -275,7 +221,7 @@ export function useTutorial() {
 
   const startLegendTutorial = async () => {
     await ensureMapPage()
-    runTutorial([...getLegendSteps(), ...getLegendCloseSteps()])
+    runTutorial(getLegendSteps())
   }
 
   const startLayerSwitcherTutorial = async () => {
@@ -286,26 +232,12 @@ export function useTutorial() {
   const startFullTutorial = async () => {
     await ensureMapPage()
     const isMobile = appStore.isMobileOrTablet
+
     const steps: DriveStep[] = [
       ...getMapSteps(),
-      ...getLegendSteps({ skipOpenDrawer: isMobile }),
-      ...getLayerSwitcherSteps({ skipOpenDrawer: isMobile })
-    ]
-
-    if (isMobile) {
-      steps.push({
-        element: TutorialSelector.DRAWER_CLOSE_BUTTON,
-        popover: {
-          title: "Fermer le panneau",
-          description: "Cliquez sur la croix pour fermer le panneau.",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: () =>
-          onClickAdvance(TutorialSelector.DRAWER_CLOSE_BUTTON, "nextStep", "nextTick")
-      })
-    }
-
-    steps.push(
+      ...getLegendSteps(),
+      ...getLayerSwitcherSteps(),
+      ...getToolSteps(),
       {
         element: isMobile
           ? TutorialSelector.DASHBOARD_BUTTON_MOBILE
@@ -327,7 +259,7 @@ export function useTutorial() {
         },
         onHighlighted: setupOverlayClickAdvance
       }
-    )
+    ]
 
     runTutorial(steps)
   }
