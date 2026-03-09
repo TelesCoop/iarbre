@@ -20,6 +20,7 @@ import "@cypress/code-coverage/support"
 
 import "@/styles/main.css"
 import { createPinia } from "pinia"
+import { createRouter, createMemoryHistory } from "vue-router"
 import { vTooltip } from "@/directives/tooltip"
 
 import { mount } from "cypress/vue"
@@ -70,9 +71,15 @@ Cypress.Commands.add("mount", (component, options) => {
   options.global = options.global || {}
   options.global.plugins = options?.global.plugins || []
   options.global.directives = options?.global.directives || {}
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: "/", name: "map", component: { template: "<div />" } }]
+  })
+
   options.global.plugins.push({
     install(app) {
       app.use(createPinia())
+      app.use(router)
       app.directive("tooltip", vTooltip)
     }
   })
