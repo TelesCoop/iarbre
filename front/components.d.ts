@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApiDocDialog: typeof import('./src/components/map/panels/sidepanel/ApiDocDialog.vue')['default']
     AppAccordion: typeof import('./src/components/shared/AppAccordion.vue')['default']
     AppAccordionPanel: typeof import('./src/components/shared/AppAccordionPanel.vue')['default']
     AppBadge: typeof import('./src/components/shared/AppBadge.vue')['default']
