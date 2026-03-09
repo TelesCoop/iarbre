@@ -19,7 +19,7 @@ import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from 
 import mapStyles from "@/map/map-style.json"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
-import { getCityBoundaries, getIrisBoundaries } from "@/services/boundaryService"
+import { getCityBoundaries } from "@/services/boundaryService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -526,36 +526,9 @@ export const useMapStore = defineStore("map", () => {
       })
     }
 
-    if (!mapInstance.getSource("iris-boundary-source")) {
-      const irisData = await getIrisBoundaries()
-      if (!irisData) return
-
-      mapInstance.addSource("iris-boundary-source", {
-        type: "geojson",
-        data: irisData
-      })
-    }
-
     const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
       ? TERRA_DRAW_POLYGON_LAYER
       : undefined
-
-    if (!mapInstance.getLayer("iris-boundary")) {
-      mapInstance.addLayer(
-        {
-          id: "iris-boundary",
-          type: "line",
-          source: "iris-boundary-source",
-          paint: {
-            "line-color": "#426A45",
-            "line-width": 1,
-            "line-opacity": 0.4,
-            "line-dasharray": [4, 3]
-          }
-        },
-        beforeId
-      )
-    }
 
     if (!mapInstance.getLayer("city-boundary")) {
       mapInstance.addLayer(
@@ -578,14 +551,8 @@ export const useMapStore = defineStore("map", () => {
     if (mapInstance.getLayer("city-boundary")) {
       mapInstance.removeLayer("city-boundary")
     }
-    if (mapInstance.getLayer("iris-boundary")) {
-      mapInstance.removeLayer("iris-boundary")
-    }
     if (mapInstance.getSource("city-boundary-source")) {
       mapInstance.removeSource("city-boundary-source")
-    }
-    if (mapInstance.getSource("iris-boundary-source")) {
-      mapInstance.removeSource("iris-boundary-source")
     }
   }
 

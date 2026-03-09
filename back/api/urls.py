@@ -11,7 +11,6 @@ from .views import (
     HealthCheckView,
     QPVListView,
     CityBoundaryView,
-    IrisBoundaryView,
     MetadataView,
     RasterDownloadView,
     PlantabilityWFSView,
@@ -42,7 +41,6 @@ urlpatterns = [
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
     path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
-    path("boundaries/iris/", IrisBoundaryView.as_view(), name="iris-boundaries"),
     path(
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
