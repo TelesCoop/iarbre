@@ -13,7 +13,7 @@ class CityBoundaryView(generics.ListAPIView):
     def get_queryset(self):
         return City.objects.all()
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(60 * 60 * 24 * 30))
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         geojson_string = geojson.Serializer().serialize(

@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Polygon
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from iarbre_data.models import City, Iris
+from iarbre_data.models import City
 
 
 class CityBoundaryViewTest(TestCase):
