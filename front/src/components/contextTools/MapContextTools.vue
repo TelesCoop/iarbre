@@ -15,6 +15,7 @@ const show = computed(() => {
 <template>
   <div class="flex flex-wrap justify-center items-center gap-2" data-cy="map-context-tools">
     <MapQpvToggleButton />
+    <MapCadastreToggleButton />
     <MapBoundaryToggleButton />
     <VulnerabilityContextTool v-if="show" />
   </div>
