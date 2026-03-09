@@ -1,8 +1,20 @@
 <script lang="ts" setup>
+import { ref, watch } from "vue"
 import { useMapStore } from "@/stores/map"
-import { DataType } from "@/utils/enum"
+import { DataType, getDataTypeAttributionSource } from "@/utils/enum"
 
 const mapStore = useMapStore()
+const attributionHTML = ref("")
+
+watch(
+  () => mapStore.selectedDataType,
+  async (dataType) => {
+    if (dataType) {
+      attributionHTML.value = await getDataTypeAttributionSource(dataType)
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -24,6 +36,7 @@ const mapStore = useMapStore()
       v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
     />
+    <p v-if="attributionHTML" class="attribution">Source : <span v-html="attributionHTML" /></p>
   </div>
 </template>
 
@@ -35,6 +48,10 @@ const mapStore = useMapStore()
   @apply gap-1 py-1.5 px-2;
   @apply bg-white border border-gray-200 rounded-lg;
   @apply text-xs text-gray-700 font-sans;
+}
+
+.attribution {
+  @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
 }
 
 @media (min-width: 1024px) {
