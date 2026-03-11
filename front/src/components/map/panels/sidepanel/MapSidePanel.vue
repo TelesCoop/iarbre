@@ -38,7 +38,9 @@
         </a>
       </div>
 
-      <MapSidePanelDownload class="w-full" data-cy="map-side-panel-download" />
+      <div class="w-full" data-cy="map-side-panel-download">
+        <MapSidePanelDownload />
+      </div>
     </div>
   </div>
 

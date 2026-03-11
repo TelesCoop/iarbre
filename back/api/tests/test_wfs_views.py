@@ -1,10 +1,8 @@
 from django.test import TestCase, Client
 from django.contrib.gis.geos import Polygon
-from iarbre_data.models import City, Iris, Tile, Vegestrate
+from iarbre_data.models import City, Tile, Vegestrate
 
-PLANTABILITY_WFS_URL = "/api/wfs/plantability/"
-VEGESTRATE_WFS_URL = "/api/wfs/vegestrate/"
-WFS_URL = PLANTABILITY_WFS_URL
+WFS_URL = "/api/wfs/"
 
 VILLARD_SQUARE = Polygon(
     (
@@ -24,15 +22,11 @@ class WFSViewTest(TestCase):
         self.city = City.objects.create(
             name="Villard-de-Lans", code="38250", geometry=VILLARD_SQUARE
         )
-        self.iris = Iris.objects.create(
-            name="Villard-de-Lans IRIS", code="381234", geometry=VILLARD_SQUARE
-        )
         self.tile = Tile.objects.create(
             geometry=VILLARD_SQUARE,
             plantability_indice=3.5,
             plantability_normalized_indice=7,
             city=self.city,
-            iris=self.iris,
         )
 
     def test_get_capabilities_status(self):
@@ -54,14 +48,14 @@ class WFSViewTest(TestCase):
             WFS_URL,
             {"SERVICE": "WFS", "REQUEST": "GetCapabilities"},
         )
-        self.assertIn(b"Plantability", response.content)
+        self.assertIn(b"IArbre WFS", response.content)
 
     def test_get_capabilities_contains_feature_type(self):
         response = self.client.get(
             WFS_URL,
             {"SERVICE": "WFS", "REQUEST": "GetCapabilities"},
         )
-        self.assertIn(b"tile", response.content)
+        self.assertIn(b"plantability", response.content)
 
     def test_describe_feature_type_status(self):
         response = self.client.get(
@@ -70,7 +64,7 @@ class WFSViewTest(TestCase):
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
                 "REQUEST": "DescribeFeatureType",
-                "TYPENAMES": "tile",
+                "TYPENAMES": "plantability",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -82,12 +76,11 @@ class WFSViewTest(TestCase):
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
                 "REQUEST": "DescribeFeatureType",
-                "TYPENAMES": "tile",
+                "TYPENAMES": "plantability",
             },
         )
         self.assertIn(b"plantability_indice", response.content)
-        self.assertIn(b"iris_name", response.content)
-        self.assertIn(b"city_name", response.content)
+        self.assertIn(b"plantability_normalized_indice", response.content)
 
     def test_get_feature_status(self):
         response = self.client.get(
@@ -96,7 +89,7 @@ class WFSViewTest(TestCase):
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
                 "REQUEST": "GetFeature",
-                "TYPENAMES": "tile",
+                "TYPENAMES": "plantability",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -108,11 +101,11 @@ class WFSViewTest(TestCase):
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
                 "REQUEST": "GetFeature",
-                "TYPENAMES": "tile",
+                "TYPENAMES": "plantability",
             },
         )
         body = b"".join(response.streaming_content)
-        self.assertIn(b"Villard-de-Lans", body)
+        self.assertIn(b"plantability_indice", body)
 
     def test_get_feature_without_data(self):
         Tile.objects.all().delete()
@@ -122,12 +115,12 @@ class WFSViewTest(TestCase):
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
                 "REQUEST": "GetFeature",
-                "TYPENAMES": "tile",
+                "TYPENAMES": "plantability",
             },
         )
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
-        self.assertIn(b'numberMatched="0"', body)
+        self.assertIn(b'numberReturned="0"', body)
 
 
 class VegestrateWFSViewTest(TestCase):
@@ -141,21 +134,21 @@ class VegestrateWFSViewTest(TestCase):
 
     def test_get_capabilities_status(self):
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {"SERVICE": "WFS", "REQUEST": "GetCapabilities"},
         )
         self.assertEqual(response.status_code, 200)
 
     def test_get_capabilities_contains_service_title(self):
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {"SERVICE": "WFS", "REQUEST": "GetCapabilities"},
         )
-        self.assertIn(b"Vegetation strates", response.content)
+        self.assertIn(b"vegestrate", response.content)
 
     def test_describe_feature_type_exposes_fields(self):
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
@@ -169,7 +162,7 @@ class VegestrateWFSViewTest(TestCase):
 
     def test_get_feature_status(self):
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
@@ -181,7 +174,7 @@ class VegestrateWFSViewTest(TestCase):
 
     def test_get_feature_returns_vegestrate(self):
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
@@ -195,7 +188,7 @@ class VegestrateWFSViewTest(TestCase):
     def test_get_feature_without_data(self):
         Vegestrate.objects.all().delete()
         response = self.client.get(
-            VEGESTRATE_WFS_URL,
+            WFS_URL,
             {
                 "SERVICE": "WFS",
                 "VERSION": "2.0.0",
@@ -205,4 +198,4 @@ class VegestrateWFSViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
-        self.assertIn(b'numberMatched="0"', body)
+        self.assertIn(b'numberReturned="0"', body)

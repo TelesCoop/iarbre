@@ -5,8 +5,6 @@ import PlantabilityWidget from "@/components/dashboard/widgets/PlantabilityWidge
 import HeatWidget from "@/components/dashboard/widgets/HeatWidget.vue"
 import VegetationWidget from "@/components/dashboard/widgets/VegetationWidget.vue"
 import PermeabilityWidget from "@/components/dashboard/widgets/PermeabilityWidget.vue"
-import SurfaceTypeWidget from "@/components/dashboard/widgets/SurfaceTypeWidget.vue"
-import VegetationWaterWidget from "@/components/dashboard/widgets/VegetationWaterWidget.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 
 const store = useDashboardStore()
@@ -29,8 +27,6 @@ const hasData = computed(() => store.dashboardData !== null && !store.loading)
     <HeatWidget :data="store.dashboardData!.vulnerability" />
     <VegetationWidget :data="store.dashboardData!.vegetation" />
     <PermeabilityWidget :data="store.dashboardData!.lcz" />
-    <SurfaceTypeWidget :data="store.dashboardData!.lcz" />
-    <VegetationWaterWidget :data="store.dashboardData!.lcz" />
   </div>
 </template>
 

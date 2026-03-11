@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue"
+import { ref, computed } from "vue"
 import * as d3 from "d3"
+import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 interface Props {
   value: number
@@ -19,7 +20,6 @@ const props = withDefaults(defineProps<Props>(), {
   size: 120
 })
 
-const svgRef = ref<SVGSVGElement | null>(null)
 const currentEndAngle = ref(0)
 
 const targetAngle = computed(() => {
@@ -32,73 +32,59 @@ const centerText = computed(() => {
   return `${props.value.toFixed(1)}/${props.maxValue}`
 })
 
-let resizeObs: ResizeObserver | null = null
+const { svgRef } = useD3Chart(
+  ({ svg }: D3ChartContext, animate: boolean) => {
+    const s = props.size
+    const cx = s / 2
+    const cy = s / 2
+    const outerR = s / 2 - 2
+    const innerR = outerR * 0.72
+    const gap = 0.04
 
-function render(animate = true) {
-  if (!svgRef.value) return
-  const svg = d3.select(svgRef.value)
-  svg.selectAll("*").remove()
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
 
-  const s = props.size
-  const cx = s / 2
-  const cy = s / 2
-  const outerR = s / 2 - 2
-  const innerR = outerR * 0.72
-  const gap = 0.04
+    const bgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
 
-  const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
+    g.append("path")
+      .attr("d", bgArc({ startAngle: gap, endAngle: 2 * Math.PI - gap })!)
+      .attr("fill", props.secondaryColor ?? "#f0f0f0")
 
-  const bgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
+    const fgArc = d3
+      .arc<{ startAngle: number; endAngle: number }>()
+      .innerRadius(innerR)
+      .outerRadius(outerR)
+      .cornerRadius(4)
 
-  g.append("path")
-    .attr("d", bgArc({ startAngle: gap, endAngle: 2 * Math.PI - gap })!)
-    .attr("fill", props.secondaryColor ?? "#f0f0f0")
+    const endAngle = targetAngle.value
+    const startFrom = animate ? currentEndAngle.value : endAngle
 
-  const fgArc = d3
-    .arc<{ startAngle: number; endAngle: number }>()
-    .innerRadius(innerR)
-    .outerRadius(outerR)
-    .cornerRadius(4)
+    const path = g
+      .append("path")
+      .datum({ startAngle: gap, endAngle: Math.max(startFrom, gap) })
+      .attr("d", (d) => fgArc(d)!)
+      .attr("fill", props.color)
 
-  const endAngle = targetAngle.value
-  const startFrom = animate ? currentEndAngle.value : endAngle
+    if (animate && Math.abs(endAngle - startFrom) > 0.01) {
+      path
+        .transition()
+        .duration(800)
+        .ease(d3.easeCubicInOut)
+        .attrTween("d", function (d) {
+          const interpolate = d3.interpolate(d.endAngle, Math.max(endAngle, gap))
+          return function (t) {
+            d.endAngle = interpolate(t)
+            return fgArc(d)!
+          }
+        })
+    }
 
-  const path = g
-    .append("path")
-    .datum({ startAngle: gap, endAngle: Math.max(startFrom, gap) })
-    .attr("d", (d) => fgArc(d)!)
-    .attr("fill", props.color)
-
-  if (animate && Math.abs(endAngle - startFrom) > 0.01) {
-    path
-      .transition()
-      .duration(800)
-      .ease(d3.easeCubicInOut)
-      .attrTween("d", function (d) {
-        const interpolate = d3.interpolate(d.endAngle, Math.max(endAngle, gap))
-        return function (t) {
-          d.endAngle = interpolate(t)
-          return fgArc(d)!
-        }
-      })
-  }
-
-  currentEndAngle.value = endAngle
-}
-
-onMounted(() => {
-  currentEndAngle.value = 0
-  render(true)
-  if (svgRef.value?.parentElement) {
-    resizeObs = new ResizeObserver(() => render(false))
-    resizeObs.observe(svgRef.value.parentElement)
-  }
-})
-onUnmounted(() => resizeObs?.disconnect())
-watch([targetAngle, () => props.color], () => render(true))
+    currentEndAngle.value = endAngle
+  },
+  [targetAngle, () => props.color]
+)
 </script>
 
 <template>

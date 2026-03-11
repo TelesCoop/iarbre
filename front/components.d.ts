@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ApiDocDialog: typeof import('./src/components/map/panels/sidepanel/ApiDocDialog.vue')['default']
     AppAccordion: typeof import('./src/components/shared/AppAccordion.vue')['default']
     AppAccordionPanel: typeof import('./src/components/shared/AppAccordionPanel.vue')['default']
     AppBadge: typeof import('./src/components/shared/AppBadge.vue')['default']
@@ -47,6 +48,7 @@ declare module 'vue' {
     FeedbackPopin: typeof import('./src/components/FeedbackPopin.vue')['default']
     FilterIndicator: typeof import('./src/components/map/legend/FilterIndicator.vue')['default']
     HeatWidget: typeof import('./src/components/dashboard/widgets/HeatWidget.vue')['default']
+    IconBoundary: typeof import('./src/components/icons/IconBoundary.vue')['default']
     IconBuilding: typeof import('./src/components/icons/IconBuilding.vue')['default']
     IconChevron: typeof import('./src/components/icons/IconChevron.vue')['default']
     IconClose: typeof import('./src/components/icons/IconClose.vue')['default']
@@ -62,6 +64,8 @@ declare module 'vue' {
     LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
     LegendIcon: typeof import('./src/components/icons/LegendIcon.vue')['default']
     MapBackgroundSelector: typeof import('./src/components/map/MapBackgroundSelector.vue')['default']
+    MapBgSwitcher: typeof import('./src/components/mapSwitcher/MapBgSwitcher.vue')['default']
+    MapBoundaryToggleButton: typeof import('./src/components/map/panels/MapBoundaryToggleButton.vue')['default']
     MapCadastreParcelInfo: typeof import('./src/components/contextData/MapCadastreParcelInfo.vue')['default']
     MapCadastreToggleButton: typeof import('./src/components/map/panels/MapCadastreToggleButton.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
@@ -95,6 +99,7 @@ declare module 'vue' {
     PlantabilityContextDataScore: typeof import('./src/components/contextData/plantability/PlantabilityContextDataScore.vue')['default']
     PlantabilityDistributionChart: typeof import('./src/components/contextData/plantability/PlantabilityDistributionChart.vue')['default']
     PlantabilityDivisionData: typeof import('./src/components/division/PlantabilityDivisionData.vue')['default']
+    PlantabilityFactorsWidget: typeof import('./src/components/dashboard/widgets/PlantabilityFactorsWidget.vue')['default']
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
     PlantabilityWidget: typeof import('./src/components/dashboard/widgets/PlantabilityWidget.vue')['default']
     PlantVulnerabilityLegend: typeof import('./src/components/map/legend/PlantVulnerabilityLegend.vue')['default']

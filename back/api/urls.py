@@ -10,10 +10,10 @@ from .views import (
     TileView,
     HealthCheckView,
     QPVListView,
+    CityBoundaryView,
     MetadataView,
     RasterDownloadView,
-    PlantabilityWFSView,
-    VegestrateWFSView,
+    IArbreWFSView,
 )
 
 router = routers.DefaultRouter()
@@ -39,6 +39,7 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
@@ -48,6 +49,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
-    path("wfs/plantability/", PlantabilityWFSView.as_view()),
-    path("wfs/vegestrate/", VegestrateWFSView.as_view()),
+    path("wfs/", IArbreWFSView.as_view()),
 ]
