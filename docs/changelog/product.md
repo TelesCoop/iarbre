@@ -1,8 +1,49 @@
 # Journal des changements
 
+## 🔖 0.25.0 (2026-03-11) : Dashboard de données, WFS, pipeline de données et vegestrate vectoriel
+
+### ✨ feat : Dashboard de données
+
+On accède maintenant sur la barre de gauche à un dashboard qui regroupe des indicateurs sur les différents axes : plantabilité, vulnérabilité à la chaleur, ZCL et végétation stratifiée.
+Ce dashboard va évoluer dans les semaines à venir pour proposer d'autres indicateurs et perspectives d'analyse.
+
+&rarr; Issue [500](https://github.com/TelesCoop/iarbre/issues/500)
+
+### ✨ feat : Ajout d'un endpoint WFS
+
+`Obtenir les données` renvoie maintenant vers une fenêtre de description des flux WFS et des rasters disponibles (en REST).
+Dans les flux WFS sont notamment disponibles, en vectoriel donc, le calque de plantabilité et l'inventaire du végétal stratifie.
+
+&rarr; PR [561](https://github.com/TelesCoop/iarbre/pull/561)
+&rarr; Commit [d061912](https://github.com/TelesCoop/iarbre/commit/d0619123f8755732d5da6fa8bc4dbf5e511f00ac)
+&rarr; PR [538](https://github.com/TelesCoop/iarbre/pull/538)
+
+### 🛠️ enhance : Pipeline de création du calque de plantabilité
+
+Il y a mainteant un [fichier YAML](https://github.com/TelesCoop/iarbre/blob/main/back/pipeline/plantability_pipeline.yaml) qui décrit le pipeline et les paramètres qui aboutissent au calque de plantabilité. Ce pipeline est utilisé par la commande [`run_pipeline.py`](https://github.com/TelesCoop/iarbre/blob/main/back/iarbre_data/management/commands/run_pipeline.py).
+Si une étape du pipeline est en erreur et l'interromps alors l'exécution suivante repartira automatiquement de cette étape qui a fail.
+
+&rarr; Commit [a7768cf](https://github.com/TelesCoop/iarbre/commit/a7768cfc45300e34aad32037b78062dbe9b877a4)
+
+### 🛠️ enhance : Végéstrate infra-rouge et interactif
+
+Nous avons fait retourné le modèle de détection du végétal stratifié pour utiliser aussi le canal infra-rouge des orthophotos, ce qui améliore très légèrement les performances au global (de l'ordre de 1% en F1-score). Le pipeline de post-traitement a aussi été revu afin de mieux filtrer les petites zones artefacts et avoir des zones détectées au plus proche de la vérité terrain.
+
+La version du code utilisé a été repérée avec ce [tag](https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023).
+
+Nous avons aussi remplacé l'affichage du calque en raster par sa variante vectorielle afin de pouvoir filter par strate à l'aide de la légende et avoir des infos sur la surface de chaque zone.
+
+&rarr; PR [539](https://github.com/TelesCoop/iarbre/pull/539)
+&rarr; PR [551](https://github.com/TelesCoop/iarbre/pull/551)
+
+### 🛠️ enhance : Améliorations diverses
+
+Un toogle permet maintenant d'afficher les limites des villes. Nous avons aussi retravaillé l'affichage du cadastre pour qu'il soit plus lisible.
+Certains petits bugs d'affichage ont aussi été corrigés.
+
 ## 🔖 0.24.0 (2026-02-12) : Refonte UI et amélioration calque de végétation stratifié
 
-### ✨ feat: Refonte de l'UI
+### ✨ feat : Refonte de l'UI
 
 La zone de carte s'est agrandie, le panneau latéral a été simplifié et il a aussi maintenant plus d'homogénité. La navigation devrait être plus intuitive et fluide !
 

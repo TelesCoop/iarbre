@@ -37,12 +37,10 @@ Consultez la documentation de [déploiement](https://docs.iarbre.fr/deploy/) pou
 
 Le backend nécessite [GDAL](https://gdal.org/en/stable/) et [PostGIS](https://postgis.net/).
 
-Suivez le [guide d'installation Django GIS](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/postgis/) pour Linux et installez les packages nécessaires depuis la source.
-
-Vous pouvez également essayer d'installer les packages requis via `apt`, bien que cela puisse ne pas toujours suffire :
+Il s'installent via `apt` :
 
 ```bash
-sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg2
+sudo apt install postgresql-14 postgresql-14-postgis-3 postgresql-server-dev-14 python3-psycopg2
 sudo apt install binutils libproj-dev gdal-bin  # Pour les requêtes géographiques
 ```
 
