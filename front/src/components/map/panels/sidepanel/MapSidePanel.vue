@@ -10,6 +10,7 @@
       <div class="flex flex-wrap items-center justify-center gap-2 py-2">
         <MapQpvToggleButton />
         <MapCadastreToggleButton />
+        <MapBoundaryToggleButton />
       </div>
       <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
     </div>
@@ -94,6 +95,7 @@
 import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
+import MapBoundaryToggleButton from "../MapBoundaryToggleButton.vue"
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
