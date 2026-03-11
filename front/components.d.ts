@@ -69,8 +69,6 @@ declare module 'vue' {
     MapCadastreParcelInfo: typeof import('./src/components/contextData/MapCadastreParcelInfo.vue')['default']
     MapCadastreToggleButton: typeof import('./src/components/map/panels/MapCadastreToggleButton.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
-    MapConfigDrawer: typeof import('./src/components/map/panels/MapConfigDrawer.vue')['default']
-    MapConfigDrawerToggle: typeof import('./src/components/map/panels/MapConfigDrawerToggle.vue')['default']
     MapContextData: typeof import('./src/components/contextData/MapContextData.vue')['default']
     MapContextDataClimateZone: typeof import('./src/components/contextData/MapContextDataClimateZone.vue')['default']
     MapContextDataMobile: typeof import('./src/components/contextData/MapContextDataMobile.vue')['default']

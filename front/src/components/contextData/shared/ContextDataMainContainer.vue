@@ -40,10 +40,9 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 
         <div :class="['content-section', colorScheme !== 'plantability' && 'overflow-y-scroll']">
           <slot :data="data" :full-height="fullHeight" name="content" />
-        </div>
-
-        <div v-if="$slots.legend" class="legend-section">
-          <slot :data="data" name="legend" />
+          <div v-if="$slots.legend" class="legend-section">
+            <slot :data="data" name="legend" />
+          </div>
         </div>
       </div>
       <EmptyMessage v-else-if="!hideEmptyMessage" :message="emptyMessage" data-cy="empty-message" />
@@ -64,11 +63,17 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 }
 
 .data-layout {
-  @apply flex flex-col items-center gap-4 min-h-0 flex-1;
+  @apply flex flex-row flex-wrap items-center gap-4 min-h-0 flex-1;
+}
+
+@media (min-width: 1024px) {
+  .data-layout {
+    @apply flex-col;
+  }
 }
 
 .score-section {
-  @apply flex justify-center gap-8 pb-3 border-b border-gray-100;
+  @apply flex justify-center gap-8 pr-4 lg:pr-0 lg:pb-3 border-r lg:border-r-0 lg:border-b border-gray-100;
 }
 
 .content-section {

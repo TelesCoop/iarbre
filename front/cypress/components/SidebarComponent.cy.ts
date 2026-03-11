@@ -1,22 +1,9 @@
 /// <reference types="cypress" />
-import { createRouter, createMemoryHistory } from "vue-router"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
-
-const router = createRouter({
-  history: createMemoryHistory(),
-  routes: [
-    { path: "/", name: "map", component: { template: "<div />" } },
-    { path: "/dashboard", name: "dashboard", component: { template: "<div />" } }
-  ]
-})
 
 describe("Sidebar", () => {
   beforeEach(() => {
-    cy.mount(SidebarComponent, {
-      global: {
-        plugins: [router]
-      }
-    })
+    cy.mount(SidebarComponent)
   })
 
   it("renders correctly", () => {

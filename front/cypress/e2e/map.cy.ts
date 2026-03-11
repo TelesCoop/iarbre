@@ -204,22 +204,16 @@ describe("Map - Mobile", () => {
     cy.getBySel("map-component").should("exist")
   })
 
-  it("opens mobile config drawer and switches data layer", () => {
-    // Open config drawer via toggle button
-    cy.getBySel("drawer-toggle").should("be.visible").click()
-
-    // Mobile uses drawer layer switcher
+  it("switches data layer on mobile via layer switcher", () => {
+    cy.getBySel("mobile-layer-switcher").should("be.visible")
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
     cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
-
-    cy.getBySel("drawer-close").click()
   })
 
   it("toggles QPV layer on mobile", () => {
-    // Open config drawer
-    cy.getBySel("drawer-toggle").should("be.visible").click()
+    // Open mobile panel to access toggles
+    cy.getBySel("mobile-panel-handle").should("be.visible").click()
 
-    // Toggle QPV
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
@@ -228,7 +222,7 @@ describe("Map - Mobile", () => {
   })
 
   it("toggles cadastre layer on mobile", () => {
-    cy.getBySel("drawer-toggle").should("be.visible").click()
+    cy.getBySel("mobile-panel-handle").should("be.visible").click()
 
     cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckCadastreLayer(true)
@@ -237,13 +231,9 @@ describe("Map - Mobile", () => {
     cy.mapCheckCadastreLayer(false)
   })
 
-  it("changes map style on mobile via drawer", () => {
-    // Open config drawer
-    cy.getBySel("drawer-toggle").should("be.visible").click()
-
-    // Use map switcher in drawer
-    cy.getBySel("map-switcher").should("be.visible").click()
-    cy.get(".select-option-label").contains("Images satellite").click()
+  it("changes map style on mobile via background selector", () => {
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.getBySel("bg-option-satellite").should("be.visible").click()
 
     cy.get("@consoleInfo").should(
       "have.been.calledWith",

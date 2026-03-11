@@ -16,10 +16,10 @@ export const useTutorialStore = defineStore("tutorial", () => {
 
     driverInstance.value = driver({
       animate: true,
-      overlayOpacity: 0.5,
-      stagePadding: 10,
+      overlayOpacity: 0.55,
+      stagePadding: 12,
       allowClose: true,
-      stageRadius: 5,
+      stageRadius: 8,
       showProgress: true,
       nextBtnText: "Suivant",
       prevBtnText: "Précédent",

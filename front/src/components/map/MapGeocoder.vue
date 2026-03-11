@@ -63,7 +63,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="geocoderContainer" class="geocoder-wrapper"></div>
+  <div ref="geocoderContainer" class="geocoder-wrapper" data-cy="map-geocoder"></div>
 </template>
 
 <style scoped>
