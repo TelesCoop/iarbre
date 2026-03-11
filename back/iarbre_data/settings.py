@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "gisserver",  # allow to expose WFS
     "iarbre_data",
     "api",
     "plantability",
@@ -85,6 +86,7 @@ MIDDLEWARE = [
 # Mandatory for Decap CMS Auth
 # https://docs.djangoproject.com/en/5.1/ref/middleware/#cross-origin-opener-policy
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if IS_LOCAL_DEV:
     CORS_ALLOW_ALL_ORIGINS = True
@@ -231,6 +233,10 @@ else:
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+GISSERVER_COUNT_NUMBER_MATCHED = 0
+GISSERVER_CAPABILITIES_BOUNDING_BOX = False
+GISSERVER_DB_PRECISION = 6
 
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93

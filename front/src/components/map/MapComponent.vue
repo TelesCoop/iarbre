@@ -4,7 +4,6 @@ import { useAppStore } from "@/stores/app"
 import { onMounted, type PropType, computed } from "vue"
 import { type MapParams } from "@/types/map"
 import { ZoomToGridSize } from "@/utils/plantability"
-import MapConfigDrawerToggle from "@/components/map/panels/MapConfigDrawerToggle.vue"
 
 const props = defineProps({
   mapId: {
@@ -78,14 +77,27 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <!-- Drawing controls - only visible in shape mode -->
   <DrawingControls />
 
+  <!-- Cadastre parcel info - bottom center -->
+  <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
+    <MapCadastreParcelInfo />
+  </div>
+
   <!-- Background selector in bottom-left corner -->
   <div :class="['bg-selector-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapBackgroundSelector />
   </div>
 
-  <!-- Legend and controls - top left -->
+  <!-- Mobile top bar: layer switcher -->
+  <div v-if="appStore.isMobileOrTablet" class="mobile-top-bar">
+    <MapLayerSwitcher
+      :with-border="false"
+      :show-context-tools="false"
+      data-cy="mobile-layer-switcher"
+    />
+  </div>
+
+  <!-- Legend - top left -->
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
-    <MapConfigDrawerToggle v-if="appStore.isMobileOrTablet" />
     <MapLegend />
     <div
       v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"
@@ -98,7 +110,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
         <span class="grid-size-unit">m</span>
       </div>
     </div>
-    <MapFiltersStatus v-if="appStore.isDesktop" />
+    <MapFiltersStatus />
   </div>
   <WelcomeMessage />
 </template>
@@ -125,9 +137,16 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 }
 
+.mobile-top-bar {
+  @apply absolute top-2 left-2 z-40 flex flex-col gap-2;
+  @apply lg:hidden;
+  width: calc(50% - 1rem);
+}
+
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2 top-0 mt-2;
+  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2;
   @apply transition-all duration-300 ease-out;
+  top: 48px;
   left: 0.5rem;
   width: calc(50% - 1rem);
 }
@@ -138,6 +157,8 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
 @media (min-width: 1024px) {
   .legend-container {
+    top: 0;
+    @apply mt-2;
     width: auto;
   }
 
@@ -147,6 +168,28 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   .legend-container.sidepanel-visible {
     left: calc(var(--width-sidepanel) + 0.5rem);
+  }
+}
+
+.cadastre-info-container {
+  @apply absolute z-30 pointer-events-none;
+  @apply transition-all duration-300 ease-out;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 72px;
+}
+
+.cadastre-info-container > * {
+  @apply pointer-events-auto;
+}
+
+@media (min-width: 1024px) {
+  .cadastre-info-container {
+    bottom: 16px;
+  }
+
+  .cadastre-info-container.sidepanel-visible {
+    left: calc(50% + var(--width-sidepanel) / 2);
   }
 }
 

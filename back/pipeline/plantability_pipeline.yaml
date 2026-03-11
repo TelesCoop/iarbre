@@ -1,0 +1,113 @@
+name: "Calque de Plantabilité"
+description: |
+  End-to-end pipeline for computing the plantability layer (calque de plantabilité).
+  Starting from raw administrative boundaries and geographic datasets, it produces
+  per-tile plantability indices with statistics aggregated at city and IRIS level.
+
+  Run with:
+    python manage.py run_pipeline
+    python manage.py run_pipeline --dry-run     # preview without executing
+    python manage.py run_pipeline --reset       # clear state and restart from scratch
+
+  On failure, simply re-run the same command to resume from the last failed step.
+
+nodes:
+  - id: insert_cities_and_iris
+    name: "Insert Cities and IRIS"
+    description: |
+      Load city boundaries from a local GeoJSON file and download IRIS boundaries
+      from the BPCE open data API. Deduplicates entries after insertion.
+      Input:  file_data/communes_gl_2025.geojson + BPCE API
+      Output: City and Iris rows in the database
+    command: c01_insert_cities_and_iris
+
+  - id: import_data
+    name: "Import Land Occupancy Data"
+    description: |
+      Download and ingest all land occupancy datasets into the Data table.
+      Sources include local files (DATA_DIR) and remote APIs (IGN BD TOPO,
+      CEREMA Cartofriches, and WFS services). Each dataset corresponds to one
+      or more plantability factors.
+      Input:  DATA_FILES + URL_FILES from data_config.py
+      Output: Data rows in the database (one geometry per factor polygon)
+    command: c03_import_data
+    depends_on:
+      - insert_cities_and_iris
+
+  - id: update_data
+    name: "Update OCS Data"
+    description: |
+      Integrate supplementary land occupancy updates (e.g. new fibre network
+      coverage, SLT) by computing the difference with already-stored geometries
+      and appending only the new parts.
+      Input:  UPDATES from data_config.py + existing Data rows
+      Output: Additional Data rows for updated factors
+    command: update_data
+    depends_on:
+      - import_data
+
+  - id: data_to_raster
+    name: "Data to Raster"
+    description: |
+      Convert all vector land occupancy polygons into raster files — one GeoTIFF
+      per factor — at 1 m resolution, then convolved into 5 m cells. Each pixel
+      encodes the percentage of surface covered by that factor (0–100).
+      Input:  Data rows in the database (all factors)
+      Output: media/rasters/<factor_name>.tif  (one file per factor)
+    command: data_to_raster
+    args:
+      grid-size: 5
+    depends_on:
+      - import_data
+      - update_data
+
+  - id: raster_to_land_use
+    name: "Raster to Land Use"
+    description: |
+      For every spatial tile, read all factor rasters, extract the top-5 dominant
+      land uses, and persist them as JSON in the Tile.details field. Also computes
+      meta-factors (aggregated categories) stored in Tile.meta_factors.
+      Input:  media/rasters/<factor_name>.tif + Tile rows
+      Output: Tile.details and Tile.meta_factors updated in the database
+    command: raster_to_land_use
+    depends_on:
+      - data_to_raster
+
+  - id: compute_plantability_raster
+    name: "Compute Plantability Raster"
+    description: |
+      Combine all factor rasters into a single plantability score using a
+      weighted sum (weights defined in FACTORS in data_config.py). Masks
+      everything outside city boundaries. Also produces a colour-classified
+      version for visual output.
+      Input:  media/rasters/<factor_name>.tif
+      Output: media/rasters/plantability.tif
+              media/rasters/plantability_colors.tif
+    command: compute_plantability_raster
+    depends_on:
+      - data_to_raster
+
+  - id: raster_plantability_to_geom
+    name: "Raster Plantability to Geometry"
+    description: |
+      Convert each valid pixel of the plantability raster into a Tile object
+      stored in the database. Each Tile is a 5×5 m polygon with its plantability
+      indice, normalised indice (score_thresholding), and administrative
+      attachments (City, IRIS).
+      Input:  media/rasters/plantability.tif
+      Output: Tile rows in the database
+    command: raster_plantability_to_geom
+    depends_on:
+      - compute_plantability_raster
+
+  - id: compute_plantability_counts
+    name: "Compute Plantability Counts"
+    description: |
+      Aggregate tile-level normalised plantability indices into histograms stored
+      on each City and Iris instance. Used by the API to display distribution
+      charts without querying individual tiles.
+      Input:  Tile rows + City and Iris rows
+      Output: City.plantability_counts and Iris.plantability_counts updated
+    command: compute_plantability_counts
+    depends_on:
+      - raster_plantability_to_geom

@@ -12,19 +12,19 @@ export const DriverButton = {
 export const TutorialSelector = {
   MAP_COMPONENT: '[data-cy="map-component"]',
   MAP_SIDE_PANEL: '[data-cy="map-side-panel"]',
-  MAP_CONFIG_DRAWER: '[data-cy="map-config-drawer"]',
-  DRAWER_TOGGLE: '[data-cy="drawer-toggle"]',
-  DRAWER_CLOSE_BUTTON: '[data-cy="drawer-close"]',
   MOBILE_PANEL_HANDLE: '[data-cy="mobile-panel-handle"]',
+  MOBILE_PANEL: '[data-cy="mobile-panel"]',
   LAYER_SWITCHER: '[data-cy="layer-switcher"]',
-  MAP_LAYER_SWITCHER: '[data-cy="map-layer-switcher"]',
-  MAP_BG_SWITCHER: '[data-cy="map-bg-switcher"]',
+  MOBILE_LAYER_SWITCHER: '[data-cy="mobile-layer-switcher"]',
   MAP_BACKGROUND_SELECTOR: '[data-cy="bg-selector-toggle"]',
   PLANTABILITY_LEGEND: '[data-cy="plantability-legend"]',
   VULNERABILITY_LEGEND: '[data-cy="vulnerability-zones-legend"]',
   CLIMATE_ZONES_LEGEND: '[data-cy="climate-zones-legend"]',
-  PLANT_VULNERABILITY_LEGEND: '[data-cy="plant-vulnerability-legend"]',
   OPEN_FEEDBACK_BUTTON: '[data-cy="open-feedback-button"]',
   MOBILE_MENU_BUTTON: '[data-cy="mobile-menu-button"]',
-  MAP_FILTERS_STATUS: '[data-cy="map-filters-status"]'
+  DASHBOARD_BUTTON: '[data-cy="dashboard-button"]',
+  DASHBOARD_BUTTON_MOBILE: '[data-cy="dashboard-button-mobile"]',
+  DRAWING_MODE_TOGGLE: '[data-cy="drawing-mode-toggle"]',
+  BUTTON_3D: ".maplibregl-ctrl-3d-container",
+  MAP_GEOCODER: '[data-cy="map-geocoder"]'
 } as const

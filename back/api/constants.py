@@ -18,7 +18,6 @@ class DataType(TextChoices):
     TILE = "plantability", "Plantability"
     VULNERABILITY = "vulnerability", "Vulnerability"
     CADASTRE = "cadastre", "Cadastre"
-    LIDAR = "vegetation", "Vegetation"
     VEGESTRATE = "vegestrate", "Vegestrate"
 
 
@@ -32,6 +31,7 @@ class FrontendDataType(TextChoices):
         "plantability_vulnerability",
         "Plantability & Vulnerability",
     )
+    VEGESTRATE = ("vegestrate", "Vegestrate")
 
 
 # Score ranges for different data types

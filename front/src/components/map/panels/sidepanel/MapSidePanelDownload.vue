@@ -1,26 +1,18 @@
 <script lang="ts" setup>
-import { useMapStore } from "@/stores/map"
-import { computed } from "vue"
-import { DataTypeToDownloadLink } from "@/utils/enum"
+import { ref } from "vue"
+import ApiDocDialog from "@/components/map/panels/sidepanel/ApiDocDialog.vue"
 
-const mapStore = useMapStore()
-const selectedDataType = computed(() => mapStore.selectedDataType)
-const downloadLink = computed(() => DataTypeToDownloadLink[selectedDataType.value])
-
-const handleDownload = () => {
-  window.open(downloadLink.value, "_blank")
-}
+const apiDocVisible = ref(false)
 </script>
 
 <template>
   <div class="flex w-full font-sans text-white text-base text-center px-3 pt-2">
-    <div class="w-full flex flex-col items-center justify-center gap-2">
+    <div class="w-full flex flex-col items-center justify-center gap-4">
       <span class="text-base font-serif font-bold">🌱 Collectivités, aménageurs, urbanistes</span>
-      <span class="text-sm">Demandez les données pour ce calque</span>
       <button
         class="cursor-pointer bg-white font-sans flex items-center px-4 py-2 rounded-3xl text-sm text-primary-500"
-        data-cy="download-data"
-        @click="handleDownload"
+        data-cy="api-doc"
+        @click="apiDocVisible = true"
       >
         Obtenir les données
         <svg
@@ -41,4 +33,5 @@ const handleDownload = () => {
       </button>
     </div>
   </div>
+  <ApiDocDialog v-model:visible="apiDocVisible" />
 </template>

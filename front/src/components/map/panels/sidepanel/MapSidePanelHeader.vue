@@ -4,13 +4,12 @@ import IconIarbreLogo from "@/components/icons/IconIarbreLogo.vue"
 
 const isPopoverVisible = ref(false)
 const attributionHTML = ref("1.44M habitants. 534 km² superficie")
+const infoButtonRef = ref<HTMLButtonElement | null>(null)
 
-const toggleAttribution = () => {
-  isPopoverVisible.value = !isPopoverVisible.value
-}
-
-const closePopover = () => {
-  isPopoverVisible.value = false
+const popoverStyle = () => {
+  if (!infoButtonRef.value) return {}
+  const rect = infoButtonRef.value.getBoundingClientRect()
+  return { top: `${rect.top - 8}px`, left: `${rect.right + 8}px` }
 }
 </script>
 
@@ -29,23 +28,31 @@ const closePopover = () => {
         <IconIarbreLogo :width="85" class="text-white" />
       </a>
       <div class="flex items-center gap-2">
-        <h2 class="text-xl text-white font-bold font-serif">Métropole de Lyon</h2>
-        <div class="relative">
-          <button aria-label="Informations" class="info-button" @click="toggleAttribution">
-            <span class="text-xs font-bold">i</span>
-          </button>
-
-          <!-- Popover positioned relative to button -->
-          <div v-if="isPopoverVisible" class="attribution-popover" data-cy="attribution-popover">
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <div v-if="attributionHTML" v-html="attributionHTML"></div>
-          </div>
-        </div>
+        <h2 class="text-xl text-white font-semibold">Métropole de Lyon</h2>
+        <button
+          ref="infoButtonRef"
+          aria-label="Informations"
+          class="info-button"
+          @click="isPopoverVisible = !isPopoverVisible"
+        >
+          <span class="text-xs font-bold">i</span>
+        </button>
       </div>
     </div>
 
-    <!-- Backdrop to close popover -->
-    <div v-if="isPopoverVisible" class="fixed inset-0 z-40" @click="closePopover"></div>
+    <Teleport to="body">
+      <div v-if="isPopoverVisible" class="fixed inset-0 z-[100]" @click="isPopoverVisible = false">
+        <div
+          class="attribution-popover"
+          :style="popoverStyle()"
+          data-cy="attribution-popover"
+          @click.stop
+        >
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div v-if="attributionHTML" v-html="attributionHTML"></div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -60,10 +67,8 @@ const closePopover = () => {
 }
 
 .attribution-popover {
-  @apply absolute bg-white rounded-lg  border border-gray-200 p-3 text-sm;
-  @apply z-50 whitespace-nowrap;
-  top: -8px;
-  left: calc(100% + 8px);
+  @apply fixed bg-white rounded-lg border border-gray-200 p-3 text-sm;
+  @apply whitespace-nowrap;
 }
 
 .attribution-popover::before {

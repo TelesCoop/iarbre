@@ -61,8 +61,6 @@ const handleMapUpdate = (params: MapParams) => {
         @update:model-value="handleMapUpdate"
       />
 
-      <!-- Drawer -->
-      <MapConfigDrawer />
       <MapScoresDrawer />
     </div>
   </div>

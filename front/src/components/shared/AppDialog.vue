@@ -9,6 +9,8 @@ interface DialogProps {
   closable?: boolean
   width?: string
   dataCy?: string
+  headerClass?: string
+  closeClass?: string
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
@@ -88,7 +90,7 @@ onUnmounted(() => {
           :aria-labelledby="header ? 'dialog-header' : undefined"
           :data-cy="dataCy"
         >
-          <div class="dialog-header">
+          <div class="dialog-header" :class="headerClass">
             <h2 v-if="header" id="dialog-header" class="dialog-title">
               {{ header }}
             </h2>
@@ -97,6 +99,7 @@ onUnmounted(() => {
               v-if="closable"
               type="button"
               class="dialog-close"
+              :class="closeClass"
               aria-label="Fermer"
               @click="close"
             >
