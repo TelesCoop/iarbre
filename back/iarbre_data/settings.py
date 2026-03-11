@@ -233,6 +233,9 @@ else:
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+GISSERVER_COUNT_NUMBER_MATCHED = 0
+GISSERVER_CAPABILITIES_BOUNDING_BOX = False
+
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93
 TARGET_MAP_PROJ = 3857  # Pseudo-Mercator

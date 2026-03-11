@@ -1,5 +1,5 @@
 from gisserver.crs import CRS84, WEB_MERCATOR, CRS
-from gisserver.features import FeatureType, FeatureField, ServiceDescription
+from gisserver.features import FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
 from iarbre_data.models import Tile, Vegestrate
@@ -11,6 +11,12 @@ class TileFeatureType(FeatureType):
 
 
 LAMBERT93 = CRS.from_string("urn:ogc:def:crs:EPSG::2154")
+
+_tile_qs = Tile.objects.only(
+    "geometry",
+    "plantability_indice",
+    "plantability_normalized_indice",
+)
 
 
 class IArbreWFSView(WFSView):
@@ -29,15 +35,12 @@ class IArbreWFSView(WFSView):
     def get_feature_types(self):
         return [
             TileFeatureType(
-                Tile.objects.select_related("iris", "city").all(),
+                _tile_qs,
                 name="plantability",
                 fields=[
                     "geometry",
                     "plantability_indice",
                     "plantability_normalized_indice",
-                    "meta_factors",
-                    FeatureField("iris_name", model_attribute="iris.name"),
-                    FeatureField("city_name", model_attribute="city.name"),
                 ],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),

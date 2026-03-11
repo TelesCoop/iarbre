@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.gis.geos import Polygon
-from iarbre_data.models import City, Iris, Tile, Vegestrate
+from iarbre_data.models import City, Tile, Vegestrate
 
 WFS_URL = "/api/wfs/"
 
@@ -22,15 +22,11 @@ class WFSViewTest(TestCase):
         self.city = City.objects.create(
             name="Villard-de-Lans", code="38250", geometry=VILLARD_SQUARE
         )
-        self.iris = Iris.objects.create(
-            name="Villard-de-Lans IRIS", code="381234", geometry=VILLARD_SQUARE
-        )
         self.tile = Tile.objects.create(
             geometry=VILLARD_SQUARE,
             plantability_indice=3.5,
             plantability_normalized_indice=7,
             city=self.city,
-            iris=self.iris,
         )
 
     def test_get_capabilities_status(self):
@@ -84,8 +80,7 @@ class WFSViewTest(TestCase):
             },
         )
         self.assertIn(b"plantability_indice", response.content)
-        self.assertIn(b"iris_name", response.content)
-        self.assertIn(b"city_name", response.content)
+        self.assertIn(b"plantability_normalized_indice", response.content)
 
     def test_get_feature_status(self):
         response = self.client.get(
@@ -110,7 +105,7 @@ class WFSViewTest(TestCase):
             },
         )
         body = b"".join(response.streaming_content)
-        self.assertIn(b"Villard-de-Lans", body)
+        self.assertIn(b"plantability_indice", body)
 
     def test_get_feature_without_data(self):
         Tile.objects.all().delete()
@@ -125,7 +120,7 @@ class WFSViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
-        self.assertIn(b'numberMatched="0"', body)
+        self.assertIn(b'numberReturned="0"', body)
 
 
 class VegestrateWFSViewTest(TestCase):
@@ -203,4 +198,4 @@ class VegestrateWFSViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
-        self.assertIn(b'numberMatched="0"', body)
+        self.assertIn(b'numberReturned="0"', body)
