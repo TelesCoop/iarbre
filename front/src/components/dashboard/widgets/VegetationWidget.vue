@@ -15,7 +15,7 @@ const hasData = computed(() => props.data.totalHa >= 1)
 
 const totalDisplay = computed(() => {
   const ha = props.data.totalHa
-  if (ha >= 1000) return `${(ha / 1000).toFixed(1)} km²`
+  if (ha >= 100) return `${(ha / 100).toFixed(1)} km²`
   return `${ha.toFixed(0)} ha`
 })
 
@@ -41,13 +41,13 @@ const bubbles = computed(() => [
 ])
 
 function formatHa(ha: number): string {
-  if (ha >= 1000) return `${(ha / 1000).toFixed(1)} km²`
+  if (ha >= 100) return `${(ha / 100).toFixed(1)} km²`
   return `${ha.toFixed(0)} ha`
 }
 </script>
 
 <template>
-  <DashboardWidgetCard subtitle="Surfaces de végétation par strate" title="Végétation existante">
+  <DashboardWidgetCard subtitle="Surfaces de végétation par strate" title="Végétation en voirie ">
     <div v-if="hasData" class="widget-body">
       <div class="total-display">
         <span class="total-value">{{ totalDisplay }}</span>

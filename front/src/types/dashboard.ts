@@ -62,4 +62,4 @@ export interface BubbleItem {
   color: string
 }
 
-export type DashboardScale = "metropole" | "commune" | "iris"
+export type DashboardScale = "metropole" | "commune"

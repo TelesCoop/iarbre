@@ -11,7 +11,6 @@ interface CityOption {
 export const useDashboardStore = defineStore("dashboard", () => {
   const selectedScale = ref<DashboardScale>("metropole")
   const selectedCityCode = ref<string | null>(null)
-  const selectedIrisCode = ref<string | null>(null)
   const dashboardData = ref<DashboardData | null>(null)
   const cities = ref<CityOption[]>([])
   const loading = ref(false)
@@ -28,11 +27,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
     error.value = null
 
     try {
-      const params: { cityCode?: string; irisCode?: string } = {}
+      const params: { cityCode?: string } = {}
       if (selectedScale.value === "commune" && selectedCityCode.value) {
         params.cityCode = selectedCityCode.value
-      } else if (selectedScale.value === "iris" && selectedIrisCode.value) {
-        params.irisCode = selectedIrisCode.value
       }
 
       const result = await fetchDashboard(params)
@@ -59,14 +56,12 @@ export const useDashboardStore = defineStore("dashboard", () => {
     selectedScale.value = scale
     if (scale === "metropole") {
       selectedCityCode.value = null
-      selectedIrisCode.value = null
     }
     fetchDashboardData()
   }
 
   function setCity(cityCode: string | null) {
     selectedCityCode.value = cityCode
-    selectedIrisCode.value = null
     if (cityCode) {
       selectedScale.value = "commune"
     } else {
@@ -82,7 +77,6 @@ export const useDashboardStore = defineStore("dashboard", () => {
   return {
     selectedScale,
     selectedCityCode,
-    selectedIrisCode,
     dashboardData,
     cities,
     loading,

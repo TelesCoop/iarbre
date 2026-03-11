@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { computed, ref, onMounted, onUnmounted, watch } from "vue"
+import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardPlantability } from "@/types/dashboard"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 const PLANTABILITY_MAX_SCORE = 10
 
@@ -31,9 +32,6 @@ const getColorForScore = (scoreValue: number): string => {
   return "#C4C4C4"
 }
 
-const svgRef = ref<SVGSVGElement | null>(null)
-let resizeObserver: ResizeObserver | null = null
-
 const bars = computed(() => {
   const distribution = props.data.distribution
   const entries = Object.keys(distribution)
@@ -47,100 +45,83 @@ const bars = computed(() => {
   return entries.map((e) => ({ ...e, pct: total > 0 ? e.value / total : 0 }))
 })
 
-function render(animate = false) {
-  if (!svgRef.value) return
-  const svg = d3.select(svgRef.value)
-  svg.selectAll("*").remove()
+const { svgRef } = useD3Chart(
+  ({ svg, width, height }: D3ChartContext, animate: boolean) => {
+    const barH = Math.min(height * 0.5, 32)
+    const chartTotalH = barH + 14 + 10
+    const offsetY = Math.max((height - chartTotalH) / 2, 0)
+    const barY = 0
+    const labelY = barY + barH + 14
+    const gap = 1.5
 
-  const rect = svgRef.value.getBoundingClientRect()
-  const width = rect.width
-  const height = rect.height
-  if (width === 0 || height === 0) return
+    const g = svg.append("g").attr("transform", `translate(0,${offsetY})`)
 
-  const barH = Math.min(height * 0.5, 32)
-  const chartTotalH = barH + 14 + 10
-  const offsetY = Math.max((height - chartTotalH) / 2, 0)
-  const barY = 0
-  const labelY = barY + barH + 14
-  const gap = 1.5
-
-  const g = svg.append("g").attr("transform", `translate(0,${offsetY})`)
-
-  let xOffset = 0
-  const segments = bars.value.map((b) => {
-    const w = Math.max(b.pct * width - gap, 0)
-    const seg = { ...b, x: xOffset, w }
-    xOffset += w + gap
-    return seg
-  })
-
-  g.selectAll(".marimekko-seg")
-    .data(segments)
-    .join("rect")
-    .attr("class", "marimekko-seg")
-    .attr("x", (d) => d.x)
-    .attr("y", barY)
-    .attr("height", barH)
-    .attr("rx", 4)
-    .attr("fill", (d) => d.color)
-    .attr("opacity", 0.85)
-    .attr("width", animate ? 0 : (d) => d.w)
-    .on("mouseenter", function () {
-      d3.select(this).attr("opacity", 1)
-    })
-    .on("mouseleave", function () {
-      d3.select(this).attr("opacity", 0.85)
+    let xOffset = 0
+    const segments = bars.value.map((b) => {
+      const w = Math.max(b.pct * width - gap, 0)
+      const seg = { ...b, x: xOffset, w }
+      xOffset += w + gap
+      return seg
     })
 
-  if (animate) {
     g.selectAll(".marimekko-seg")
-      .transition()
-      .duration(700)
-      .delay((_, i) => i * 50)
-      .ease(d3.easeCubicOut)
-      .attr("width", (d) => (d as (typeof segments)[0]).w)
-  }
+      .data(segments)
+      .join("rect")
+      .attr("class", "marimekko-seg")
+      .attr("x", (d) => d.x)
+      .attr("y", barY)
+      .attr("height", barH)
+      .attr("rx", 4)
+      .attr("fill", (d) => d.color)
+      .attr("opacity", 0.85)
+      .attr("width", animate ? 0 : (d) => d.w)
+      .on("mouseenter", function () {
+        d3.select(this).attr("opacity", 1)
+      })
+      .on("mouseleave", function () {
+        d3.select(this).attr("opacity", 0.85)
+      })
 
-  g.selectAll(".seg-label")
-    .data(segments.filter((s) => s.pct >= 0.06))
-    .join("text")
-    .attr("class", "seg-label")
-    .attr("x", (d) => d.x + d.w / 2)
-    .attr("y", labelY)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "9px")
-    .attr("fill", "#9CA3AF")
-    .text((d) => d.label)
+    if (animate) {
+      g.selectAll(".marimekko-seg")
+        .transition()
+        .duration(700)
+        .delay((_, i) => i * 50)
+        .ease(d3.easeCubicOut)
+        .attr("width", (d) => (d as (typeof segments)[0]).w)
+    }
 
-  g.selectAll(".seg-pct")
-    .data(segments.filter((s) => s.pct >= 0.06))
-    .join("text")
-    .attr("class", "seg-pct")
-    .attr("x", (d) => d.x + d.w / 2)
-    .attr("y", barY + barH / 2)
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "central")
-    .attr("font-size", "9px")
-    .attr("font-weight", "600")
-    .attr("fill", "#fff")
-    .attr("opacity", animate ? 0 : 1)
-    .text((d) => `${(d.pct * 100).toFixed(0)}%`)
+    g.selectAll(".seg-label")
+      .data(segments.filter((s) => s.pct >= 0.06))
+      .join("text")
+      .attr("class", "seg-label")
+      .attr("x", (d) => d.x + d.w / 2)
+      .attr("y", labelY)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "9px")
+      .attr("fill", "#9CA3AF")
+      .text((d) => d.label)
 
-  if (animate) {
-    g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
-  }
-}
+    g.selectAll(".seg-pct")
+      .data(segments.filter((s) => s.pct >= 0.06))
+      .join("text")
+      .attr("class", "seg-pct")
+      .attr("x", (d) => d.x + d.w / 2)
+      .attr("y", barY + barH / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("font-size", "9px")
+      .attr("font-weight", "600")
+      .attr("fill", "#fff")
+      .attr("opacity", animate ? 0 : 1)
+      .text((d) => `${(d.pct * 100).toFixed(0)}%`)
 
-onMounted(() => {
-  render(true)
-  if (svgRef.value?.parentElement) {
-    resizeObserver = new ResizeObserver(() => render())
-    resizeObserver.observe(svgRef.value.parentElement)
-  }
-})
-
-onUnmounted(() => resizeObserver?.disconnect())
-watch(bars, () => render(true))
+    if (animate) {
+      g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
+    }
+  },
+  [bars]
+)
 </script>
 
 <template>
