@@ -238,18 +238,7 @@ export function useTutorial() {
       ...getLegendSteps(),
       ...getLayerSwitcherSteps(),
       ...getToolSteps(),
-      {
-        element: isMobile
-          ? TutorialSelector.DASHBOARD_BUTTON_MOBILE
-          : TutorialSelector.DASHBOARD_BUTTON,
-        popover: {
-          title: "Tableau de bord",
-          description:
-            "Accédez au tableau de bord pour une vue synthétique de la métropole : plantabilité, îlots de chaleur, végétation et perméabilité.",
-          showButtons: NAV_BUTTONS
-        },
-        onHighlighted: setupOverlayClickAdvance
-      },
+      getDashboardStep("nextStep"),
       {
         element: TutorialSelector.MAP_COMPONENT,
         popover: {
@@ -261,6 +250,44 @@ export function useTutorial() {
       }
     ]
 
+    runTutorial(steps)
+  }
+
+  const getDashboardStep = (action: ClickAction): DriveStep => {
+    const isMobile = appStore.isMobileOrTablet
+    const selector = isMobile
+      ? TutorialSelector.DASHBOARD_BUTTON_MOBILE
+      : TutorialSelector.DASHBOARD_BUTTON
+    return {
+      element: selector,
+      popover: {
+        title: "Tableau de bord",
+        description:
+          "Vous pouvez cliquer ici pour ouvrir un dashboard qui résume les différents indicateurs sur le périmètre de la métropole ou d'une ville.",
+        showButtons: NAV_BUTTONS
+      },
+      onHighlighted: () => onClickAdvance(selector, action)
+    }
+  }
+
+  const startDashboardTutorial = async () => {
+    await ensureMapPage()
+    const steps: DriveStep[] = []
+
+    if (appStore.isMobileOrTablet) {
+      steps.push({
+        element: TutorialSelector.MOBILE_MENU_BUTTON,
+        popover: {
+          title: "Ouvrir le menu",
+          description: "Cliquez sur le bouton menu pour accéder aux fonctionnalités.",
+          showButtons: NAV_BUTTONS
+        },
+        onHighlighted: () =>
+          onClickAdvance(TutorialSelector.MOBILE_MENU_BUTTON, "nextStep", "nextTick")
+      })
+    }
+
+    steps.push(getDashboardStep("stopTutorial"))
     runTutorial(steps)
   }
 
@@ -300,6 +327,7 @@ export function useTutorial() {
     startMapTutorial,
     startLegendTutorial,
     startLayerSwitcherTutorial,
+    startDashboardTutorial,
     startFeedbackTutorial
   }
 }
