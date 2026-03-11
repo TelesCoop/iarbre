@@ -50,4 +50,36 @@ Le modèle FLAIR-HUB permet à une résolution très compétitive, 20cm, des dé
 
 Le passage d'orthophotos RGB à IRGB a permis un très leger gain de précision, ce qui est conforme avec les discussions du [papier Flair-Hub](https://arxiv.org/abs/2506.07080).
 
+Il y a des petits artefacts aux limites de la métropole car il n'y a plus de données plus loin qui permettent de les réduire.
+
 Nous ne disposons pas de vérité terrain à l'échelle de la Métropole, car cette donnée n'existe pas, qui permetterait de calculer des métriques quantitatives de performance. Pour évaluer la performance nous sommes dépendants d'évaluations qualitatives avec les orthophotos en dessous de plan ou à l'aide d'experts d'un territoire précis.
+
+### Performances
+
+Nous nous sommes placés au plus proches des conditions d'entraînement de FlairHub, donc les performances attendues sont proches (la vérification n'est que qualitative nous n'avons pas de vérité terrain).
+
+| Metric           | Value  |
+| ---------------- | ------ |
+| mIoU             | 64.80% |
+| Overall Accuracy | 77.73% |
+| F-score          | 77.40% |
+| Precision        | 77.68% |
+| Recall           | 77.44% |
+
+| Class                 | IoU (%) | F-score (%) | Precision (%) | Recall (%) |
+| --------------------- | ------- | ----------- | ------------- | ---------- |
+| building              | 84.07   | 91.35       | 91.80         | 90.90      |
+| greenhouse            | 77.35   | 87.23       | 84.06         | 90.65      |
+| swimming pool         | 61.55   | 76.20       | 75.82         | 76.58      |
+| impervious surface    | 75.86   | 86.27       | 86.15         | 86.40      |
+| pervious surface      | 57.55   | 73.06       | 71.24         | 74.97      |
+| bare soil             | 64.14   | 78.16       | 75.27         | 81.28      |
+| water                 | 90.44   | 94.98       | 96.04         | 93.95      |
+| snow                  | 68.55   | 81.34       | 93.67         | 71.88      |
+| herbaceous vegetation | 54.37   | 70.44       | 72.85         | 68.18      |
+| agricultural land     | 58.20   | 73.58       | 69.77         | 77.82      |
+| plowed land           | 36.07   | 53.02       | 51.80         | 54.29      |
+| vineyard              | 78.95   | 88.24       | 85.52         | 91.14      |
+| deciduous             | 71.66   | 83.49       | 82.72         | 84.29      |
+| coniferous            | 63.00   | 77.30       | 79.44         | 75.27      |
+| brushwood             | 30.22   | 46.42       | 49.08         | 44.02      |

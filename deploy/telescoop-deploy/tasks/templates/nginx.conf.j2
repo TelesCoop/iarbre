@@ -46,7 +46,8 @@ server {
     # gzip compression
     gzip on;
     gzip_vary on;
-    gzip_types application/json application/javascript application/xml text/css text/javascript text/plain text/xml image/svg+xml;
+    gzip_proxied any;
+    gzip_types application/json application/javascript application/xml application/gml+xml application/geo+json text/css text/javascript text/plain text/xml image/svg+xml;
 
     {% if has_backend is defined and has_backend %}
     # backend static stuff

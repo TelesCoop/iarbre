@@ -37,12 +37,10 @@ Consultez la documentation de [déploiement](https://docs.iarbre.fr/deploy/) pou
 
 Le backend nécessite [GDAL](https://gdal.org/en/stable/) et [PostGIS](https://postgis.net/).
 
-Suivez le [guide d'installation Django GIS](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/postgis/) pour Linux et installez les packages nécessaires depuis la source.
-
-Vous pouvez également essayer d'installer les packages requis via `apt`, bien que cela puisse ne pas toujours suffire :
+Il s'installent via `apt` :
 
 ```bash
-sudo apt install postgresql-x postgresql-x-postgis-3 postgresql-server-dev-x python3-psycopg2
+sudo apt install postgresql-14 postgresql-14-postgis-3 postgresql-server-dev-14 python3-psycopg2
 sudo apt install binutils libproj-dev gdal-bin  # Pour les requêtes géographiques
 ```
 
@@ -53,8 +51,6 @@ Pour macOS, vous pouvez utiliser [Homebrew](https://brew.sh/) pour installer les
 ```bash
 brew install postgresql postgis gdal
 ```
-
-_(Remplacez `x` par la version de PostgreSQL souhaitée.)_
 
 ### Initialisation de la base de données
 
@@ -115,6 +111,14 @@ Pour travailler sur le projet à l'avenir, activez l'environnement :
 
 ```bash
 pew workon <nom_projet>
+```
+
+### Recover de la dernière version de DB
+
+Dans le cas où tu fais parti de TelesCoop, tu peux récupérer directement la dernière version de la DB sur S3 avec :
+
+```bash
+python manage.py backup_db recover_db_and_media
 ```
 
 ## Pipeline de plantabilité

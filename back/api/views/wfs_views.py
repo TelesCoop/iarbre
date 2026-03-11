@@ -45,8 +45,8 @@ class IArbreWFSView(WFSView):
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
             TileFeatureType(
-                Vegestrate.objects.all(),
-                fields="__all__",
+                Vegestrate.objects.only("geometry", "strate", "surface"),
+                fields=["geometry", "strate", "surface"],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
         ]
