@@ -52,8 +52,6 @@ Pour macOS, vous pouvez utiliser [Homebrew](https://brew.sh/) pour installer les
 brew install postgresql postgis gdal
 ```
 
-_(Remplacez `x` par la version de PostgreSQL souhaitée.)_
-
 ### Initialisation de la base de données
 
 Après l'installation, créez un utilisateur et une nouvelle base de données PostGIS :
@@ -113,6 +111,14 @@ Pour travailler sur le projet à l'avenir, activez l'environnement :
 
 ```bash
 pew workon <nom_projet>
+```
+
+### Recover de la dernière version de DB
+
+Dans le cas où tu fais parti de TelesCoop, tu peux récupérer directement la dernière version de la DB sur S3 avec :
+
+```bash
+python manage.py backup_db recover_db_and_media
 ```
 
 ## Pipeline de plantabilité
