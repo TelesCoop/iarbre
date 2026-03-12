@@ -18,10 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from decapcms_auth import urls as decapcmsauth_urls
-from django_prometheus.views import ExportToDjangoView
 
 urlpatterns = [
-    path("metrics/", ExportToDjangoView, name="prometheus-django-metrics"),
+    path("", include("django_prometheus.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("backup/", include("telescoop_backup.urls")),
