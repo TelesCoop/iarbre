@@ -73,6 +73,7 @@
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapQpvToggleButton />
         <MapCadastreToggleButton />
+        <MapBoundaryToggleButton />
         <MapContextTools />
       </div>
     </div>
