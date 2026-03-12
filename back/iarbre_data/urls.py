@@ -20,6 +20,7 @@ from django.urls import path, include
 from decapcms_auth import urls as decapcmsauth_urls
 
 urlpatterns = [
+    path("", include("django_prometheus.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path("backup/", include("telescoop_backup.urls")),
