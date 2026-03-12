@@ -67,6 +67,13 @@ server {
     send_timeout {{ requests_timeout }};
 
 
+    location /metrics {
+        {% for ip in prometheus_allowed_ips %}
+        allow {{ ip }};
+        {% endfor %}
+        deny all;
+    }
+
     {% for uri in server_uris_passed_to_backend -%}
     location /{{ uri }} {
         proxy_pass         http://app_servers_{{ project_slug }};
