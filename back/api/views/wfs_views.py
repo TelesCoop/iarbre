@@ -39,7 +39,11 @@ class IArbreWFSView(WFSView):
             TileFeatureType(
                 _tile_qs,
                 name="plantability",
-                fields=["geometry", "plantability_indice", "plantability_normalized_indice"],
+                fields=[
+                    "geometry",
+                    "plantability_indice",
+                    "plantability_normalized_indice",
+                ],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
             TileFeatureType(
