@@ -72,6 +72,13 @@ server {
         allow {{ ip }};
         {% endfor %}
         deny all;
+        proxy_pass         http://app_servers_{{ project_slug }};
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
     {% for uri in server_uris_passed_to_backend -%}
