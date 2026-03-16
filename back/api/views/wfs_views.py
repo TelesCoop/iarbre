@@ -18,6 +18,8 @@ _tile_qs = Tile.objects.only(
     "plantability_normalized_indice",
 )
 
+_vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
+
 
 class IArbreWFSView(WFSView):
     xml_namespace = "http://carte.iarbre.fr/api/wfs"
@@ -45,7 +47,7 @@ class IArbreWFSView(WFSView):
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
             TileFeatureType(
-                Vegestrate.objects.only("geometry", "strate", "surface"),
+                _vegestrate_qs,
                 fields=["geometry", "strate", "surface"],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),

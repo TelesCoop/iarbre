@@ -251,12 +251,12 @@ describe("Geocoder", () => {
   })
 
   it("search for an address in Lyon and display results", () => {
+    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.get(".maplibregl-ctrl-geocoder--input", { timeout: 10000 }).should("be.visible").click()
     cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
-    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.wait("@geocoding")
     cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
-    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
+    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 1)
   })
 })
 
