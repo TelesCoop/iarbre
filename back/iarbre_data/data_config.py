@@ -151,30 +151,6 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "Réseaux gaz",
-        "file": "rsx_gaz.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "scripts": ["gaz.py"],
-        "factors": ["Rsx gaz"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Réseaux souterrains Enedis",
-        "file": "rsx_souterrain_enedis.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "scripts": ["souterrain_enedis.py"],
-        "factors": ["Rsx souterrains ERDF"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Réseaux aériens Enedis",
-        "file": "rsx_aerien_enedis.geojson",
-        "actions": [{"buffer_size": 1, "union": True}],
-        "scripts": ["aerien_enedis.py"],
-        "factors": ["Rsx aériens ERDF"],
-        "output_type": "LINESTRING",
-    },
-    {
         "name": "Place PMR",
         "file": "voirie.gpkg",
         "layer_name": "pub_patrimoinevoirie.emplacementpmr",
@@ -192,6 +168,30 @@ DATA_FILES = [
     },
 ]
 URL_FILES = [
+    {
+        "name": "Réseaux gaz",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/infrastructures-reseau-gaz/lines",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["gaz.py"],
+        "factors": ["Rsx gaz"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Réseaux souterrains Enedis",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-souterrain-basse-tension-bt/lines",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["souterrain_enedis.py"],
+        "factors": ["Rsx souterrains ERDF"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Réseaux aériens Enedis",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-aerien-basse-tension-bt/lines",
+        "actions": [{"buffer_size": 1, "union": True}],
+        "scripts": ["aerien_enedis.py"],
+        "factors": ["Rsx aériens ERDF"],
+        "output_type": "LINESTRING",
+    },
     {
         "name": "Quartiers prioritaires de la ville",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.qpv_2024&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
