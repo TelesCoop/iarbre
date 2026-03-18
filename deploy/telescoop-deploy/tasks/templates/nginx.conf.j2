@@ -86,6 +86,39 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
+    location /api/wfs/ {
+        proxy_pass         http://app_servers_{{ project_slug }};
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+
+        proxy_cache        api_cache;
+        proxy_cache_valid  200 30d;
+        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_lock   on;
+        add_header         X-Cache-Status $upstream_cache_status;
+    }
+
+    location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
+        proxy_pass         http://app_servers_{{ project_slug }};
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+
+        proxy_cache        api_cache;
+        proxy_cache_valid  200 30d;
+        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_lock   on;
+        proxy_cache_methods GET HEAD;
+        add_header         X-Cache-Status $upstream_cache_status;
+    }
+
     {% for uri in server_uris_passed_to_backend -%}
     location /{{ uri }} {
         proxy_pass         http://app_servers_{{ project_slug }};
