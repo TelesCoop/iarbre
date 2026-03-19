@@ -4,7 +4,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from tqdm import tqdm
 
 from iarbre_data.models import City, Cadastre
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import TARGET_PROJ, TARGET_WGS84_4326
 
 
 class Command(BaseCommand):
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             print(f"No cadastre data found for {city.name}")
             return
 
-        source_srid = 4326
+        source_srid = TARGET_WGS84_4326
 
         features = geojson_data.get("features", [])
         print(f"Found {len(features)} parcels for {city.name}")

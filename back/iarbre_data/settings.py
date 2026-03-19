@@ -245,6 +245,9 @@ GISSERVER_DEFAULT_MAX_PAGE_SIZE = 100000
 # Script variables
 TARGET_PROJ = 2154  # Lambert 93
 TARGET_MAP_PROJ = 3857  # Pseudo-Mercator
+TARGET_WGS84_4326 = (
+    4326  # projection WGS84 représente la Terre comme un ellipsoïde tridimensionnel
+)
 BUFFER_SIZE = 2  # meters
 
 # telescoop-backup

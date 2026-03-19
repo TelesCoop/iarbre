@@ -13,7 +13,7 @@ from vegetation.management.commands.add_vegestrate_data import (
     STRATE_GRASS,
 )
 from iarbre_data.models import Vegestrate, City
-from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
+from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ, TARGET_WGS84_4326
 
 
 class AddVegestrateDataTest(TestCase):
@@ -23,8 +23,12 @@ class AddVegestrateDataTest(TestCase):
 
     def test_vegestrate_model_creation(self):
         vegestrate = Vegestrate.objects.create(
-            geometry=GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=2154),
-            map_geometry=GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=3857),
+            geometry=GEOSGeometry(
+                "POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=TARGET_PROJ
+            ),
+            map_geometry=GEOSGeometry(
+                "POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=TARGET_MAP_PROJ
+            ),
             strate="arborescent",
             surface=100.0,
         )
@@ -83,7 +87,9 @@ class AddVegestrateDataTest(TestCase):
                 [(4.82, 45.7), (4.83, 45.7), (4.83, 45.71), (4.82, 45.71), (4.82, 45.7)]
             ),
         ]
-        gdf = gpd.GeoDataFrame({"geometry": polygons, "class": [1, 2]}, crs="EPSG:4326")
+        gdf = gpd.GeoDataFrame(
+            {"geometry": polygons, "class": [1, 2]}, crs=f"EPSG:{TARGET_WGS84_4326}"
+        )
         result = simplify_geom(gdf)
         self.assertIn("map_geometry", result.columns)
         self.assertEqual(result.crs.to_epsg(), TARGET_PROJ)
@@ -94,21 +100,21 @@ class AddVegestrateDataTest(TestCase):
     def test_compute_city_vegetation_surfaces(self):
         city = City.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))", srid=2154
+                "POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))", srid=TARGET_PROJ
             ),
             code="69001",
             name="Lyon 1er",
         )
         Vegestrate.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((10 10, 50 10, 50 50, 10 50, 10 10))", srid=2154
+                "POLYGON((10 10, 50 10, 50 50, 10 50, 10 10))", srid=TARGET_PROJ
             ),
             strate=STRATE_MAPPING[STRATE_TREES],
             surface=1600.0,
         )
         Vegestrate.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((60 10, 90 10, 90 40, 60 40, 60 10))", srid=2154
+                "POLYGON((60 10, 90 10, 90 40, 60 40, 60 10))", srid=TARGET_PROJ
             ),
             strate=STRATE_MAPPING[STRATE_GRASS],
             surface=900.0,

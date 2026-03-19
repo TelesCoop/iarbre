@@ -13,7 +13,7 @@ from tqdm import tqdm
 import requests
 
 from iarbre_data.models import Data
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import TARGET_PROJ, TARGET_WGS84_4326
 from iarbre_data.utils.database import log_progress
 
 
@@ -229,8 +229,8 @@ def geocode_address(address: str) -> Point:
             lat = float(data[0]["lat"])
             lon = float(data[0]["lon"])
             # Convert to Lambert-93 (EPSG:2154) coordinates
-            point = Point(lon, lat, srid=4326)
-            point.transform(2154)
+            point = Point(lon, lat, srid=TARGET_WGS84_4326)
+            point.transform(TARGET_PROJ)
             return point
         else:
             return None

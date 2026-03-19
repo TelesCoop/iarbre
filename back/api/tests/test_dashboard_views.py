@@ -3,6 +3,7 @@ from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
 from api.views.dashboard_views import _avg_from_counts, _m2_to_ha, _safe_round
+from iarbre_data.settings import TARGET_PROJ
 from iarbre_data.factories import (
     CityFactory,
     IrisFactory,
@@ -19,7 +20,7 @@ GEOM = Polygon(
         (845000, 6525100),
         (845000, 6525000),
     ),
-    srid=2154,
+    srid=TARGET_PROJ,
 )
 
 NO_CACHE = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
@@ -468,7 +469,7 @@ GEOM_B = Polygon(
         (845200, 6525300),
         (845200, 6525200),
     ),
-    srid=2154,
+    srid=TARGET_PROJ,
 )
 
 

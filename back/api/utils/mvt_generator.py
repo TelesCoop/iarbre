@@ -22,7 +22,7 @@ import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
 from iarbre_data.models import City, MVTTile, Vulnerability
-from iarbre_data.settings import TARGET_MAP_PROJ
+from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ, TARGET_WGS84_4326
 from plantability.constants import PLANTABILITY_NORMALIZED
 import random
 
@@ -601,8 +601,8 @@ class MVTGenerator:
         covered = set()
         for city in City.objects.all():
             geom = city.geometry
-            geom_4326 = GEOSGeometry(geom.wkt, srid=2154)
-            geom_4326.transform(4326)
+            geom_4326 = GEOSGeometry(geom.wkt, srid=TARGET_PROJ)
+            geom_4326.transform(TARGET_WGS84_4326)
             west, south, east, north = geom_4326.extent
             for t in mercantile.tiles(west, south, east, north, zoom, truncate=True):
                 covered.add(t)

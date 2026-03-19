@@ -12,7 +12,7 @@ from django.core.management import BaseCommand
 from tqdm import tqdm
 from iarbre_data.data_config import DATA_FILES, URL_FILES
 from iarbre_data.models import Data
-from iarbre_data.settings import DATA_DIR, TARGET_PROJ
+from iarbre_data.settings import DATA_DIR, TARGET_PROJ, TARGET_WGS84_4326
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.utils.data_processing import (
     process_data,
@@ -99,8 +99,8 @@ def download_cerema(url: str) -> gpd.GeoDataFrame:
         coddep = "69"
         cities = select_city(None)
 
-        cities.crs = 2154
-        cities_4326 = cities.to_crs(4326)
+        cities.crs = TARGET_PROJ
+        cities_4326 = cities.to_crs(TARGET_WGS84_4326)
         combined_gdf = gpd.GeoDataFrame()
 
         max_retries = 3  # Number of retries, CEREMA API is not always reliable
@@ -137,8 +137,8 @@ def download_cerema(url: str) -> gpd.GeoDataFrame:
             combined_gdf = pd.concat([combined_gdf, tmp_gdf], ignore_index=True)
             time.sleep(1)  # Avoid hitting API rate limits
         gdf = gpd.GeoDataFrame(pd.concat(all_geometries, ignore_index=True))
-        gdf.crs = 4326
-        gdf = gdf.to_crs(2154)
+        gdf.crs = TARGET_WGS84_4326
+        gdf = gdf.to_crs(TARGET_PROJ)
         gdf.to_file(file_path, driver="GeoJSON")
     return gdf
 

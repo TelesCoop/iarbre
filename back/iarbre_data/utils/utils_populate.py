@@ -18,7 +18,7 @@ SIN_60 = np.sin(
     np.pi / 3
 )  # The height ratio of equilateral triangles forming the hexagon
 
-TRANSFORMATION = Transformer.from_crs("EPSG:2154", "EPSG:3857")
+TRANSFORMATION = Transformer.from_crs(f"EPSG:{TARGET_PROJ}", f"EPSG:{TARGET_MAP_PROJ}")
 
 
 class TileShape:

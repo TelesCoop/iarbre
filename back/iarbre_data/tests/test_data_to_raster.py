@@ -7,6 +7,7 @@ from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.test import TestCase
 from rasterio.transform import from_origin
 
+from iarbre_data.settings import TARGET_PROJ
 from iarbre_data.factories import CityFactory
 from iarbre_data.management.commands.data_to_raster import (
     rasterize_data_across_all_cities,
@@ -92,7 +93,7 @@ class DataToRasterTestCase(TestCase):
                 self.assertTrue(np.any(output_raster > 0))
                 self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
 
-                self.assertEqual(src.crs.to_string(), "EPSG:2154")
+                self.assertEqual(src.crs.to_string(), f"EPSG:{TARGET_PROJ}")
                 self.assertEqual(src.transform, self.transform_out)
         finally:
             if os.path.exists(self.test_output_dir):

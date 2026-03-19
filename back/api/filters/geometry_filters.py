@@ -3,6 +3,8 @@ import logging
 from django.contrib.gis.geos import Point
 from django_filters import rest_framework as filters
 
+from iarbre_data.settings import TARGET_WGS84_4326
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,7 +34,7 @@ class PointIntersectsFilter(filters.CharFilter):
             lng, lat = map(float, coords)
 
             # Create Point geometry (longitude, latitude)
-            point = Point(lng, lat, srid=4326)
+            point = Point(lng, lat, srid=TARGET_WGS84_4326)
 
             # Filter using intersects
             return qs.filter(**{f"{self.field_name}__intersects": point})

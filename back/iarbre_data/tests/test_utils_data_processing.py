@@ -64,7 +64,7 @@ class UtilsDataProcessingTestCase(TestCase):
         result = geocode_address(address)
 
         self.assertIsInstance(result, GEOSPoint)
-        self.assertEqual(result.srid, 2154)
+        self.assertEqual(result.srid, TARGET_PROJ)
 
         x, y = result.coords
         self.assertTrue(830000 < x < 860000)
