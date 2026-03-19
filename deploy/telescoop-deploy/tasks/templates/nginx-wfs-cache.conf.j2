@@ -1,0 +1,3 @@
+{{ ansible_managed | comment }}
+
+proxy_cache_path /var/cache/nginx/api levels=1:2 keys_zone=api_cache:20m max_size=20g inactive=30d use_temp_path=off;
