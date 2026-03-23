@@ -22,7 +22,7 @@ import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
 from iarbre_data.models import City, MVTTile, Vulnerability
-from iarbre_data.settings import TARGET_MAP_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB, SRID_DOWNLOADED_DATA
 from plantability.constants import PLANTABILITY_NORMALIZED
 import random
 
@@ -73,7 +73,7 @@ class MVTGeneratorWorker:
                 geometry = zone_polygon["features"][0]["geometry"]
                 zone_polygon = shape(geometry)
 
-            zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=TARGET_MAP_PROJ)
+            zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=SRID_MAPLIBRE)
         minx, miny, maxx, maxy = zone.total_bounds
 
         minx = np.floor(minx / grid_size) * grid_size
@@ -121,7 +121,7 @@ class MVTGeneratorWorker:
         tile_polygon = Polygon.from_bbox(
             (west - buffer, south - buffer, east + buffer, north + buffer)
         )
-        tile_polygon.srid = TARGET_MAP_PROJ
+        tile_polygon.srid = SRID_MAPLIBRE
 
         filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
 
@@ -260,7 +260,7 @@ class MVTGeneratorWorker:
                 "vulnerability_idx_id",
             ],
         )
-        mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
+        mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=SRID_MAPLIBRE)
         df_clipped = gpd.clip(gdf, mvt_gdf)
 
         if len(df_clipped) == 0:
@@ -601,8 +601,8 @@ class MVTGenerator:
         covered = set()
         for city in City.objects.all():
             geom = city.geometry
-            geom_4326 = GEOSGeometry(geom.wkt, srid=2154)
-            geom_4326.transform(4326)
+            geom_4326 = GEOSGeometry(geom.wkt, srid=SRID_DB)
+            geom_4326.transform(SRID_DOWNLOADED_DATA)
             west, south, east, north = geom_4326.extent
             for t in mercantile.tiles(west, south, east, north, zoom, truncate=True):
                 covered.add(t)

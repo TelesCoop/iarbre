@@ -10,6 +10,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
+from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
 from iarbre_data.models import MVTTile, Tile, Lcz, Vegestrate, Vulnerability
 from rest_framework.response import Response
 
@@ -129,8 +130,8 @@ class ScoresInPolygonView(APIView):
         try:
             polygon = GEOSGeometry(str(polygon_geojson))
             if polygon.srid is None or polygon.srid == 0:
-                polygon.srid = 4326
-            polygon.transform(2154)
+                polygon.srid = SRID_DOWNLOADED_DATA
+            polygon.transform(SRID_DB)
 
             if polygon.area > self.MAX_POLYGON_AREA_M2:
                 return None, Response(

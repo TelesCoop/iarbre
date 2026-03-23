@@ -10,7 +10,7 @@ import requests
 from shapely.geometry import shape
 from tqdm import tqdm
 
-from iarbre_data.settings import DATA_DIR, TARGET_PROJ
+from iarbre_data.settings import DATA_DIR, SRID_DB
 from iarbre_data.utils.database import select_city
 
 METROPOLE_LYON_EPCI = "200046977"
@@ -114,7 +114,7 @@ def download_from_url(url: str, layer_name: str) -> gpd.GeoDataFrame:
         request="GetFeature",
         typeName=layer_name,
         outputFormat="GML3",
-        crs=TARGET_PROJ,
+        crs=SRID_DB,
     )
     return gpd.read_file(BytesIO(requests.get(url, params=params, timeout=600).content))
 

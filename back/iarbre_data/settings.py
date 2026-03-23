@@ -243,8 +243,11 @@ GISSERVER_DB_PRECISION = 1
 GISSERVER_DEFAULT_MAX_PAGE_SIZE = 100000
 
 # Script variables
-TARGET_PROJ = 2154  # Lambert 93
-TARGET_MAP_PROJ = 3857  # Pseudo-Mercator
+SRID_DB = 2154  # Lambert 93
+SRID_MAPLIBRE = 3857  # Pseudo-Mercator
+SRID_DOWNLOADED_DATA = (
+    4326  # projection WGS84 représente la Terre comme un ellipsoïde tridimensionnel
+)
 BUFFER_SIZE = 2  # meters
 
 # telescoop-backup

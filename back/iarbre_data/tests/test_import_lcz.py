@@ -2,6 +2,7 @@ import geopandas as gpd
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
 from shapely.geometry import Polygon
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB, SRID_DOWNLOADED_DATA
 from iarbre_data.management.commands.import_lcz import (
     Command,
     save_geometries,
@@ -29,11 +30,11 @@ class ImportLczCommandTest(TestCase):
         lcz = Lcz.objects.create(
             geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=2154,
+                srid=SRID_DB,
             ),
             map_geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=3857,
+                srid=SRID_MAPLIBRE,
             ),
             lcz_index="1",
             lcz_description="Compact high-rise",
@@ -48,11 +49,11 @@ class ImportLczCommandTest(TestCase):
         lcz = Lcz.objects.create(
             geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=2154,
+                srid=SRID_DB,
             ),
             map_geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=3857,
+                srid=SRID_MAPLIBRE,
             ),
             lcz_index="2",
             lcz_description="Compact midrise",
@@ -99,7 +100,7 @@ class ImportLczCommandTest(TestCase):
             "vhr": [0.8, 0.9],
         }
 
-        gdf = gpd.GeoDataFrame(data, crs="EPSG:4326")
+        gdf = gpd.GeoDataFrame(data, crs=f"EPSG:{SRID_DOWNLOADED_DATA}")
 
         initial_count = Lcz.objects.count()
         save_geometries(gdf)
@@ -148,7 +149,7 @@ class ImportLczCommandTest(TestCase):
             "vhr": [0.8 + (i % 10) * 0.01 for i in range(num_records)],
         }
 
-        gdf = gpd.GeoDataFrame(data, crs="EPSG:4326")
+        gdf = gpd.GeoDataFrame(data, crs=f"EPSG:{SRID_DOWNLOADED_DATA}")
         initial_count = Lcz.objects.count()
         save_geometries(gdf)
 
@@ -202,7 +203,7 @@ class ImportLczCommandTest(TestCase):
             "vhr": [0.8],
         }
 
-        gdf = gpd.GeoDataFrame(gdf_data, crs="EPSG:4326")
+        gdf = gpd.GeoDataFrame(gdf_data, crs=f"EPSG:{SRID_DOWNLOADED_DATA}")
         gdf["lcz"] = gdf["lcz"].astype(str)  # This is what the command does
 
         save_geometries(gdf)
