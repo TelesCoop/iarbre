@@ -156,7 +156,7 @@ WSGI_APPLICATION = "iarbre_data.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django_prometheus.db.backends.postgis",
         "NAME": config.getstr("database.name"),
         "USER": config.getstr("database.user"),
         "PASSWORD": config.getstr("database.password"),
@@ -332,4 +332,11 @@ LOGGING = {
         "handlers": ["console", "file_errors"],
         "level": "WARNING",
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_prometheus.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/var/tmp/django_cache",
+    }
 }
