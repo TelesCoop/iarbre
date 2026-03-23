@@ -315,8 +315,21 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
+        "file_wfs": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "logs" / "wfs.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
+        "wfs": {
+            "handlers": ["file_wfs", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "api": {
             "handlers": ["file_all", "file_errors", "console"],
             "level": "INFO",
