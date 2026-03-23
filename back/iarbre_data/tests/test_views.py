@@ -9,7 +9,7 @@ from api.utils.mvt_generator import MVTGenerator, MVTGeneratorWorker
 from django.contrib.gis.geos import Polygon
 from django.urls import reverse
 
-from iarbre_data.settings import BASE_DIR, TARGET_PROJ
+from iarbre_data.settings import BASE_DIR, SRID_DB
 
 import math
 
@@ -35,12 +35,12 @@ class MVTGeneratorTestCase(TestCase):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
-        poly1.srid = TARGET_PROJ
+        poly1.srid = SRID_DB
         CityFactory.create(geometry=poly1)
         poly2 = Polygon.from_bbox(
             [844613.06777516, 6527071.52195335, 848112.69915193, 6529699.83431857]
         )
-        poly2.srid = TARGET_PROJ
+        poly2.srid = SRID_DB
         CityFactory.create(geometry=poly2)
 
         mvt_generator = MVTGenerator(Tile, zoom_levels=(8, 10))
@@ -54,18 +54,18 @@ class MVTGeneratorTestCase(TestCase):
         city_poly = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846997.45060761, 6528053.95246801]
         )
-        city_poly.srid = TARGET_PROJ
+        city_poly.srid = SRID_DB
         city = CityFactory.create(geometry=city_poly)
 
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
         )
-        tile1.srid = TARGET_PROJ
+        tile1.srid = SRID_DB
         TileFactory.create(geometry=tile1, city=city)
         tile2 = Polygon.from_bbox(
             [846992.45060761, 6528048.95246801, 846997.45060761, 6528053.95246801]
         )
-        tile2.srid = TARGET_PROJ
+        tile2.srid = SRID_DB
         TileFactory.create(geometry=tile2, city=city)
 
         mvt = MVTGenerator(
@@ -105,18 +105,18 @@ class MVTGeneratorTestCase(TestCase):
         city_poly = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846997.45060761, 6528053.95246801]
         )
-        city_poly.srid = TARGET_PROJ
+        city_poly.srid = SRID_DB
         city = CityFactory.create(geometry=city_poly)
 
         tile1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 844742.86651438, 6525631.23803353]
         )
-        tile1.srid = TARGET_PROJ
+        tile1.srid = SRID_DB
         TileFactory.create(geometry=tile1, city=city)
         tile2 = Polygon.from_bbox(
             [846992.45060761, 6528048.95246801, 846997.45060761, 6528053.95246801]
         )
-        tile2.srid = TARGET_PROJ
+        tile2.srid = SRID_DB
         TileFactory.create(geometry=tile2, city=city)
         mvt = MVTGenerator(
             Tile,

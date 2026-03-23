@@ -2,7 +2,7 @@ from gisserver.crs import CRS84, WEB_MERCATOR, CRS
 from gisserver.features import FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 from iarbre_data.models import Tile, Vegestrate
 
 
@@ -11,7 +11,7 @@ class TileFeatureType(FeatureType):
         return WGS84BoundingBox(4.6, 45.5, 5.2, 46.0)
 
 
-LAMBERT93 = CRS.from_string(f"urn:ogc:def:crs:EPSG::{TARGET_PROJ}")
+LAMBERT93 = CRS.from_string(f"urn:ogc:def:crs:EPSG::{SRID_DB}")
 
 _tile_qs = Tile.objects.only(
     "geometry",

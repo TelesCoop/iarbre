@@ -10,7 +10,7 @@ import itertools
 from tqdm import tqdm
 
 from iarbre_data.models import Tile, City, Iris
-from iarbre_data.settings import TARGET_MAP_PROJ, BASE_DIR
+from iarbre_data.settings import SRID_MAPLIBRE, BASE_DIR
 from typing import Optional, Tuple, Type
 from django.db.models import Model
 from shapely.geometry.base import BaseGeometry
@@ -74,7 +74,7 @@ def raster_to_db_tiles(raster_path: str, batch_size: int = BATCH_SIZE) -> None:
         transform_raster = src.transform
         crs = src.crs
         project = pyproj.Transformer.from_crs(
-            crs, TARGET_MAP_PROJ, always_xy=True
+            crs, SRID_MAPLIBRE, always_xy=True
         ).transform
 
         tiles = []

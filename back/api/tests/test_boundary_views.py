@@ -2,14 +2,14 @@ from django.contrib.gis.geos import Polygon
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 from iarbre_data.models import City
 
 
 class CityBoundaryViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=TARGET_PROJ)
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=SRID_DB)
         self.city = City.objects.create(geometry=square, code="69123", name="Lyon")
 
     def test_city_boundaries_returns_geojson(self):

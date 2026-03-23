@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
-from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from api.constants import GeoLevel, DataType
 from plantability.constants import (
     PLANTABILITY_NORMALIZED,
@@ -16,13 +16,13 @@ from plantability.constants import (
 def create_mapgeometry(instance):
     """Transform the geometry to the map geometry."""
     if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(TARGET_MAP_PROJ, clone=True)
+        instance.map_geometry = instance.geometry.transform(SRID_MAPLIBRE, clone=True)
 
 
 class TileAggregateBase(models.Model):
     """Abstract base class for aggregating Tiles at IRIS and city level."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
+    geometry = PolygonField(srid=SRID_DB)
     code = models.CharField(max_length=50, null=True, blank=True)
     name = models.CharField(max_length=200, null=True, blank=True)
 
@@ -89,8 +89,8 @@ class Iris(TileAggregateBase, PlantabilityCount):
 class Vulnerability(models.Model):
     """Elementary element on the map with the value of the vulnerability description."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     vulnerability_index_day = models.FloatField(null=True)
     vulnerability_index_night = models.FloatField(null=True)
     expo_index_day = models.FloatField(null=True)
@@ -122,8 +122,8 @@ class Vulnerability(models.Model):
 class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
     details = models.JSONField(null=True, blank=True)
@@ -158,7 +158,7 @@ class Tile(models.Model):
 class Data(models.Model):
     """Land occupancy data"""
 
-    geometry = GeometryField(srid=TARGET_PROJ)
+    geometry = GeometryField(srid=SRID_DB)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
 
@@ -203,8 +203,8 @@ def before_delete_mvt_tile(sender, instance, **kwargs):
 class Lcz(models.Model):
     """Elementary element on the map with the value of the LCZ description."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
     details = models.JSONField(null=True, blank=True)
@@ -224,8 +224,8 @@ class Lcz(models.Model):
 class Cadastre(models.Model):
     """Cadastre parcels for Lyon metropolitan area."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     parcel_id = models.CharField(max_length=50, unique=True)
     city_code = models.CharField(max_length=10)
     city_name = models.CharField(max_length=200, null=True, blank=True)
@@ -264,8 +264,8 @@ class StrateChoices(models.TextChoices):
 class Vegestrate(models.Model):
     """Vegestrate data."""
 
-    geometry = PolygonField(srid=TARGET_PROJ)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
 
     strate = models.CharField(
         max_length=20, choices=StrateChoices.choices, null=True, blank=True

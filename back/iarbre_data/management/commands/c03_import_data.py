@@ -6,7 +6,7 @@ import geopandas as gpd
 from django.core.management import BaseCommand
 from iarbre_data.data_config import DATA_FILES, URL_FILES
 from iarbre_data.models import Data
-from iarbre_data.settings import DATA_DIR, TARGET_PROJ
+from iarbre_data.settings import DATA_DIR, SRID_DB
 from iarbre_data.utils.database import log_progress
 from iarbre_data.utils.data_processing import process_data, save_geometries
 from iarbre_data.utils.download import (
@@ -24,7 +24,7 @@ def read_data(data_config: dict) -> gpd.GeoDataFrame:
         data_config (dict): Contains either URL of the data or path to the file.
 
     Returns:
-        df (GeoDataFrame): Use TARGET_PROJ and null and not valid geometry are removed.
+        df (GeoDataFrame): Use SRID_DB and null and not valid geometry are removed.
     """
     if url := data_config.get("url"):
         if "opendata.agenceore.fr" in url:
@@ -42,7 +42,7 @@ def read_data(data_config: dict) -> gpd.GeoDataFrame:
     else:
         df = gpd.read_file(DATA_DIR / data_config["file"])
     df["geometry"] = df.geometry.force_2d()
-    df = df.to_crs(TARGET_PROJ)
+    df = df.to_crs(SRID_DB)
     return df[df.geometry.notnull() & df.geometry.is_valid]
 
 

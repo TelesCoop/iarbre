@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 from iarbre_data.management.commands.import_cadastre import Command
 from iarbre_data.models import Cadastre
 from iarbre_data.factories import CityFactory
@@ -32,7 +32,7 @@ class ImportCadastreCommandTest(TestCase):
             surface=500,
             geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=TARGET_PROJ,
+                srid=SRID_DB,
             ),
         )
 
@@ -53,7 +53,7 @@ class ImportCadastreCommandTest(TestCase):
             city=self.test_city,
             geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=TARGET_PROJ,
+                srid=SRID_DB,
             ),
         )
 
@@ -77,7 +77,7 @@ class ImportCadastreCommandTest(TestCase):
             surface=1500,  # contenance from API
             geometry=GEOSGeometry(
                 "POLYGON((4.8 45.7, 4.81 45.7, 4.81 45.71, 4.8 45.71, 4.8 45.7))",
-                srid=TARGET_PROJ,
+                srid=SRID_DB,
             ),
         )
 

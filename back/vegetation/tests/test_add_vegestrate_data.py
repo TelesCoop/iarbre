@@ -13,7 +13,7 @@ from vegetation.management.commands.add_vegestrate_data import (
     STRATE_GRASS,
 )
 from iarbre_data.models import Vegestrate, City
-from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ, TARGET_WGS84_4326
+from iarbre_data.settings import SRID_DB, SRID_MAPLIBRE, SRID_DOWNLOADED_DATA
 
 
 class AddVegestrateDataTest(TestCase):
@@ -23,11 +23,9 @@ class AddVegestrateDataTest(TestCase):
 
     def test_vegestrate_model_creation(self):
         vegestrate = Vegestrate.objects.create(
-            geometry=GEOSGeometry(
-                "POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=TARGET_PROJ
-            ),
+            geometry=GEOSGeometry("POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=SRID_DB),
             map_geometry=GEOSGeometry(
-                "POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=TARGET_MAP_PROJ
+                "POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))", srid=SRID_MAPLIBRE
             ),
             strate="arborescent",
             surface=100.0,
@@ -48,7 +46,7 @@ class AddVegestrateDataTest(TestCase):
                 "map_geometry": polygons,
                 "class": [STRATE_TREES, STRATE_BUSHES, STRATE_GRASS],
             },
-            crs=f"EPSG:{TARGET_PROJ}",
+            crs=f"EPSG:{SRID_DB}",
         )
         save_vegestrate(gdf)
         self.assertEqual(Vegestrate.objects.count(), 3)
@@ -73,7 +71,7 @@ class AddVegestrateDataTest(TestCase):
                 "map_geometry": polygons,
                 "class": [STRATE_TREES, 99],
             },
-            crs=f"EPSG:{TARGET_PROJ}",
+            crs=f"EPSG:{SRID_DB}",
         )
         save_vegestrate(gdf)
         self.assertEqual(Vegestrate.objects.count(), 1)
@@ -88,33 +86,33 @@ class AddVegestrateDataTest(TestCase):
             ),
         ]
         gdf = gpd.GeoDataFrame(
-            {"geometry": polygons, "class": [1, 2]}, crs=f"EPSG:{TARGET_WGS84_4326}"
+            {"geometry": polygons, "class": [1, 2]}, crs=f"EPSG:{SRID_DOWNLOADED_DATA}"
         )
         result = simplify_geom(gdf)
         self.assertIn("map_geometry", result.columns)
-        self.assertEqual(result.crs.to_epsg(), TARGET_PROJ)
-        self.assertEqual(result["map_geometry"].values.crs.to_epsg(), TARGET_MAP_PROJ)
+        self.assertEqual(result.crs.to_epsg(), SRID_DB)
+        self.assertEqual(result["map_geometry"].values.crs.to_epsg(), SRID_MAPLIBRE)
         self.assertTrue(result["geometry"].is_valid.all())
         self.assertTrue(result["map_geometry"].is_valid.all())
 
     def test_compute_city_vegetation_surfaces(self):
         city = City.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))", srid=TARGET_PROJ
+                "POLYGON((0 0, 100 0, 100 100, 0 100, 0 0))", srid=SRID_DB
             ),
             code="69001",
             name="Lyon 1er",
         )
         Vegestrate.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((10 10, 50 10, 50 50, 10 50, 10 10))", srid=TARGET_PROJ
+                "POLYGON((10 10, 50 10, 50 50, 10 50, 10 10))", srid=SRID_DB
             ),
             strate=STRATE_MAPPING[STRATE_TREES],
             surface=1600.0,
         )
         Vegestrate.objects.create(
             geometry=GEOSGeometry(
-                "POLYGON((60 10, 90 10, 90 40, 60 40, 60 10))", srid=TARGET_PROJ
+                "POLYGON((60 10, 90 10, 90 40, 60 40, 60 10))", srid=SRID_DB
             ),
             strate=STRATE_MAPPING[STRATE_GRASS],
             surface=900.0,

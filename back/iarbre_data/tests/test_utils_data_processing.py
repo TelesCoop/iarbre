@@ -1,7 +1,7 @@
 from django.test import TestCase
 import geopandas as gpd
 from django.contrib.gis.geos import Point as GEOSPoint
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 from iarbre_data.utils.data_processing import (
     apply_actions,
     make_valid,
@@ -24,7 +24,7 @@ class UtilsDataProcessingTestCase(TestCase):
                 "type": ["Point", "Point", "Polygon", "Polygon"],
                 "value": [1, 2, 3, 4],
             },
-            crs=TARGET_PROJ,
+            crs=SRID_DB,
         )
 
     def test_apply_actions(self):
@@ -64,7 +64,7 @@ class UtilsDataProcessingTestCase(TestCase):
         result = geocode_address(address)
 
         self.assertIsInstance(result, GEOSPoint)
-        self.assertEqual(result.srid, TARGET_PROJ)
+        self.assertEqual(result.srid, SRID_DB)
 
         x, y = result.coords
         self.assertTrue(830000 < x < 860000)

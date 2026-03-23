@@ -5,7 +5,7 @@ from tqdm import tqdm
 from iarbre_data.models import Iris, Tile, City
 import numpy as np
 import itertools
-from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
+from iarbre_data.settings import SRID_DB, SRID_MAPLIBRE
 from pyproj import Transformer
 from django.contrib.gis.geos import Polygon
 from django.contrib.gis.gdal import DataSource
@@ -18,7 +18,7 @@ SIN_60 = np.sin(
     np.pi / 3
 )  # The height ratio of equilateral triangles forming the hexagon
 
-TRANSFORMATION = Transformer.from_crs(f"EPSG:{TARGET_PROJ}", f"EPSG:{TARGET_MAP_PROJ}")
+TRANSFORMATION = Transformer.from_crs(f"EPSG:{SRID_DB}", f"EPSG:{SRID_MAPLIBRE}")
 
 
 class TileShape:
@@ -68,7 +68,7 @@ class HexTileShape(TileShape):
             (x0 - (0.5 * side_length), (y + side_length) * SIN_60),
             (x0, y * SIN_60),
         ]
-        return Polygon([(round(x, 2), round(y, 2)) for (x, y) in dim], srid=TARGET_PROJ)
+        return Polygon([(round(x, 2), round(y, 2)) for (x, y) in dim], srid=SRID_DB)
 
 
 def create_tiles_for_city(
@@ -136,7 +136,7 @@ def create_tiles_for_city(
 
         tile = Tile(
             geometry=polygon,
-            map_geometry=Polygon(transformed, srid=TARGET_MAP_PROJ),
+            map_geometry=Polygon(transformed, srid=SRID_MAPLIBRE),
             plantability_indice=None,
             plantability_normalized_indice=None,
             city_id=city_id,

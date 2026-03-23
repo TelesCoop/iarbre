@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Polygon
 from django.urls import reverse
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
 
 
@@ -56,7 +56,7 @@ class TileDetailsViewTest(TestCase):
     def setUp(self):
         self.client = Client()
         # Create 1m x 1m square polygon
-        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=TARGET_PROJ)
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=SRID_DB)
         self.lcz = Lcz.objects.create(id=1, geometry=square)
         self.vulnerability = Vulnerability.objects.create(id=2, geometry=square)
         self.tile = Tile.objects.create(id=3, geometry=square)
@@ -105,7 +105,7 @@ class TileDetailsViewTest(TestCase):
 
     def test_plantability_details_with_json_string(self):
         # Create tile with JSON string details
-        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=TARGET_PROJ)
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=SRID_DB)
         tile_with_json = Tile.objects.create(
             geometry=square, details='{"plantabilityNormalizedIndice": 5, "id": 42}'
         )
@@ -123,7 +123,7 @@ class TileDetailsViewTest(TestCase):
         )
 
     def test_plantability_details_with_invalid_json_string(self):
-        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=TARGET_PROJ)
+        square = Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)), srid=SRID_DB)
         tile_with_invalid_json = Tile.objects.create(
             geometry=square, details="invalid json string"
         )
@@ -150,7 +150,7 @@ class ScoresInPolygonViewTest(TestCase):
                 (845000, 6525100),
                 (845000, 6525000),
             ),
-            srid=TARGET_PROJ,
+            srid=SRID_DB,
         )
         self.tile = Tile.objects.create(
             geometry=lyon_square, plantability_normalized_indice=7.5
