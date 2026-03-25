@@ -683,21 +683,6 @@ h6 {
     }
   }
 
-  .funding-info {
-    background: $primary-500;
-    border-radius: $radius-md;
-
-    .funding-text {
-      font-size: $font-2xl;
-      color: white;
-      line-height: 1.6;
-      max-width: $content-width-md;
-      margin: 0 auto;
-      padding: $spacing-lg;
-      text-align: center;
-    }
-  }
-
   .consortium-info {
     text-align: center;
 
@@ -759,6 +744,21 @@ h6 {
         }
       }
     }
+  }
+}
+
+.funding-info {
+  background: $primary-500;
+  border-radius: $radius-md;
+
+  .funding-text {
+    font-size: $font-2xl;
+    color: white;
+    line-height: 1.6;
+    max-width: $content-width-md;
+    margin: 0 auto;
+    padding: $spacing-lg;
+    text-align: center;
   }
 }
 
@@ -2502,4 +2502,41 @@ h6 {
 
 .slide-in {
   animation: slideInUp 0.6s ease-out;
+}
+
+// =============================================================================
+// VALUE PROPOSITION — stats (section reuses .features-grid + .funding-info)
+// =============================================================================
+
+.value-prop-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-lg;
+  text-align: center;
+  padding: $spacing-xl 0;
+  color: $gray;
+
+  @media (max-width: $mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.value-prop-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: $spacing-xs;
+  flex-wrap: wrap;
+}
+
+.value-prop-stat-number {
+  font-size: $font-4xl;
+  font-weight: 700;
+  color: $primaryDark;
+  line-height: 1;
+}
+
+.funding-cta {
+  text-align: center;
+  padding-bottom: $spacing-lg;
 }

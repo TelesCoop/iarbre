@@ -1,4 +1,5 @@
 from django.test import TestCase
+from iarbre_data.settings import SRID_DB
 from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     remove_duplicates,
@@ -29,7 +30,7 @@ class UtilsDatabaseTestCase(TestCase):
         poly1 = Polygon.from_bbox(
             [844737.86651438, 6525626.23803353, 846991.45060761, 6528047.95246801]
         )
-        poly1.srid = 2154
+        poly1.srid = SRID_DB
         CityFactory.create(geometry=poly1)
         CityFactory.create(geometry=poly1)
         remove_duplicates(City)

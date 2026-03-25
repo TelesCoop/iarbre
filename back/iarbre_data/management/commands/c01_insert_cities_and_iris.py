@@ -15,7 +15,7 @@ from iarbre_data.utils.database import (
     load_geodataframe_from_db,
     remove_duplicates,
 )
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 
 mapping_city = {"geometry": "POLYGON", "name": "nom", "code": "insee"}
 mapping_iris = {"geometry": "POLYGON", "name": "iris_name", "code": "iris_code"}
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         limit = 100
         for city in cities.itertuples():
             city_GEOS = GEOSGeometry(city.geometry.wkt)
-            city_GEOS.srid = TARGET_PROJ
+            city_GEOS.srid = SRID_DB
             print(f"Dowloading IRIS for city: {city.name}.")
             if city.name[:4].upper() == "LYON":
                 com_code = 69123
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                     iris_code = record.get("iris_code")[0]
                     if geometry and iris_name and iris_code:
                         geom = GEOSGeometry(str(geometry))
-                        geom.transform(TARGET_PROJ, clone=False)
+                        geom.transform(SRID_DB, clone=False)
                         if geom.intersects(
                             city_GEOS
                         ):  # for Lyon keep only iris for the 'arrondissement' at hand

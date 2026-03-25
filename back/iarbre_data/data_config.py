@@ -1,3 +1,107 @@
+# Plantability factor.
+# The higher, the more plantable it is
+# For example, it's easier to plant a tree on wasteland
+# than at an airport
+FACTORS = {
+    "Souches ou emplacements libres": 3,
+    "Arbres": 1,
+    "Aerodrome": -5,
+    "Parkings": -2,
+    "Entrée parking": -5,
+    "Signalisation tricolore et lumineuse matériel": -2,
+    "Station velov": -1,
+    "Arrêts transport en commun": -2,
+    "Proximité façade": -2,
+    "Bâtiments": -5,
+    "Friches": 2,
+    "Assainissement": -1,
+    "Parcs et jardins publics": 2,
+    "Giratoires": 2,
+    "Espaces jeux et pietonnier": 1,
+    "Friche naturelle": 3,
+    "Réseau Fibre": 2,
+    "Marchés forains": 1,
+    "Pistes cyclable": -1,
+    "Plan eau": -5,  # -3
+    "Ponts": -5,
+    "Réseau de chaleur urbain": -3,
+    "Voies ferrées": -5,  # -2
+    "Strate arborée": 1,
+    "Strate basse et pelouse": 3,
+    "Espaces agricoles": 1,
+    "Forêts": 1,
+    "Espaces artificialisés": -2,
+    "Tracé de métro": -2,
+    "Tracé de tramway": -2,
+    "Tracé de bus": -1,
+    "Rsx gaz": -3,
+    "Rsx souterrains ERDF": -1,
+    "Rsx aériens ERDF": -2,
+    "PMR": -4,
+    "Auto-partage": -2,
+    "QPV": 0,
+}
+
+META_FACTORS_MAPPING = {
+    "Réseaux et infrastructures": [
+        "Assainissement",
+        "Réseau Fibre",
+        "Réseau de chaleur urbain",
+        "Rsx gaz",
+        "Rsx souterrains ERDF",
+        "Rsx aériens ERDF",
+    ],
+    "Infrastructure de transport": [
+        "Aerodrome",
+        "Parkings",
+        "Entrée parking",
+        "Signalisation tricolore et lumineuse matériel",
+        "Station velov",
+        "Arrêts transport en commun",
+        "Pistes cyclable",
+        "Ponts",
+        "Voies ferrées",
+        "Tracé de métro",
+        "Tracé de tramway",
+        "Tracé de bus",
+        "PMR",
+        "Auto-partage",
+    ],
+    "Bâtiments": ["Proximité façade", "Bâtiments"],
+    "Espaces verts": [
+        "Souches ou emplacements libres",
+        "Arbres",
+        "Parcs et jardins publics",
+        "Friche naturelle",
+        "Strate arborée",
+        "Strate basse et pelouse",
+        "Espaces agricoles",
+        "Forêt",
+    ],
+    "Aménagements urbains": [
+        "Giratoires",
+        "Espaces jeux et pietonnier",
+        "Friches",
+        "Marchés forrains",
+    ],
+    "Plan d'eau": ["Plan d'eau"],
+    "Espaces artificialisés": ["Espaces artificialisés"],
+}
+
+
+UPDATES = [
+    {
+        "name": "Réseau Fibre",
+        "file": "voirie.gpkg",
+        "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
+        "actions": [
+            {"buffer_size": 2, "union": True},
+        ],
+        "factors": ["Fibre"],
+        "output_type": "POINT",
+    },
+]
+
 DATA_FILES = [
     {
         "name": "Parkings surfacique",
@@ -151,30 +255,6 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "Réseaux gaz",
-        "file": "rsx_gaz.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "scripts": ["gaz.py"],
-        "factors": ["Rsx gaz"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Réseaux souterrains Enedis",
-        "file": "rsx_souterrain_enedis.geojson",
-        "actions": [{"buffer_size": 2, "union": True}],
-        "scripts": ["souterrain_enedis.py"],
-        "factors": ["Rsx souterrains ERDF"],
-        "output_type": "LINESTRING",
-    },
-    {
-        "name": "Réseaux aériens Enedis",
-        "file": "rsx_aerien_enedis.geojson",
-        "actions": [{"buffer_size": 1, "union": True}],
-        "scripts": ["aerien_enedis.py"],
-        "factors": ["Rsx aériens ERDF"],
-        "output_type": "LINESTRING",
-    },
-    {
         "name": "Place PMR",
         "file": "voirie.gpkg",
         "layer_name": "pub_patrimoinevoirie.emplacementpmr",
@@ -192,6 +272,38 @@ DATA_FILES = [
     },
 ]
 URL_FILES = [
+    {
+        "name": "Entrée parking",
+        "url": "https://data.grandlyon.com/geoserver/lyon-parc-auto/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=lyon-parc-auto:lpa_mobilite.entree_parking&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0",
+        "actions": [{"buffer_size": 5}],
+        "scripts": [],
+        "factors": ["Entrée parking"],
+        "output_type": "POINT",
+    },
+    {
+        "name": "Réseaux gaz",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/infrastructures-reseau-gaz/lines",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["gaz.py"],
+        "factors": ["Rsx gaz"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Réseaux souterrains Enedis",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-souterrain-basse-tension-bt/lines",
+        "actions": [{"buffer_size": 2, "union": True}],
+        "scripts": ["souterrain_enedis.py"],
+        "factors": ["Rsx souterrains ERDF"],
+        "output_type": "LINESTRING",
+    },
+    {
+        "name": "Réseaux aériens Enedis",
+        "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-aerien-basse-tension-bt/lines",
+        "actions": [{"buffer_size": 1, "union": True}],
+        "scripts": ["aerien_enedis.py"],
+        "factors": ["Rsx aériens ERDF"],
+        "output_type": "LINESTRING",
+    },
     {
         "name": "Quartiers prioritaires de la ville",
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.qpv_2024&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
@@ -418,108 +530,6 @@ URL_FILES = [
         "url": "https://www.data.gouv.fr/fr/datasets/r/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
         "output_type": "POLYGON",
         "factors": "",
-    },
-]
-
-# Plantability factor.
-# The higher, the more plantable it is
-# For example, it's easier to plant a tree on wasteland
-# than at an airport
-FACTORS = {
-    "Souches ou emplacements libres": 3,
-    "Arbres": 1,
-    "Aerodrome": -5,
-    "Parkings": -2,
-    "Signalisation tricolore et lumineuse matériel": -2,
-    "Station velov": -1,
-    "Arrêts transport en commun": -2,
-    "Proximité façade": -2,
-    "Bâtiments": -5,
-    "Friches": 2,
-    "Assainissement": -1,
-    "Parcs et jardins publics": 2,
-    "Giratoires": 2,
-    "Espaces jeux et pietonnier": 1,
-    "Friche naturelle": 3,
-    "Réseau Fibre": 2,
-    "Marchés forains": 1,
-    "Pistes cyclable": -1,
-    "Plan eau": -5,  # -3
-    "Ponts": -5,
-    "Réseau de chaleur urbain": -3,
-    "Voies ferrées": -5,  # -2
-    "Strate arborée": 1,
-    "Strate basse et pelouse": 3,
-    "Espaces agricoles": 1,
-    "Forêts": 1,
-    "Espaces artificialisés": -2,
-    "Tracé de métro": -2,
-    "Tracé de tramway": -2,
-    "Tracé de bus": -1,
-    "Rsx gaz": -3,
-    "Rsx souterrains ERDF": -1,
-    "Rsx aériens ERDF": -2,
-    "PMR": -4,
-    "Auto-partage": -2,
-    "QPV": 0,
-}
-
-META_FACTORS_MAPPING = {
-    "Réseaux et infrastructures": [
-        "Assainissement",
-        "Réseau Fibre",
-        "Réseau de chaleur urbain",
-        "Rsx gaz",
-        "Rsx souterrains ERDF",
-        "Rsx aériens ERDF",
-    ],
-    "Infrastructure de transport": [
-        "Aerodrome",
-        "Parkings",
-        "Signalisation tricolore et lumineuse matériel",
-        "Station velov",
-        "Arrêts transport en commun",
-        "Pistes cyclable",
-        "Ponts",
-        "Voies ferrées",
-        "Tracé de métro",
-        "Tracé de tramway",
-        "Tracé de bus",
-        "PMR",
-        "Auto-partage",
-    ],
-    "Bâtiments": ["Proximité façade", "Bâtiments"],
-    "Espaces verts": [
-        "Souches ou emplacements libres",
-        "Arbres",
-        "Parcs et jardins publics",
-        "Friche naturelle",
-        "Strate arborée",
-        "Strate basse et pelouse",
-        "Espaces agricoles",
-        "Forêt",
-    ],
-    "Aménagements urbains": [
-        "Giratoires",
-        "Espaces jeux et pietonnier",
-        "Friches",
-        "Marchés forrains",
-    ],
-    "Plan d'eau": ["Plan d'eau"],
-    "Espaces artificialisés": ["Espaces artificialisés"],
-}
-
-
-UPDATES = [
-    {
-        "name": "Réseau Fibre",
-        "file": "voirie.gpkg",
-        "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
-        "actions": [
-            {"buffer_size": 2, "union": True},
-        ],
-        "factors": ["Fibre"],
-        "output_type": "POINT",
     },
 ]
 

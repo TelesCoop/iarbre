@@ -9,7 +9,7 @@ import json
 from iarbre_data.models import City
 import geopandas as gpd
 
-from iarbre_data.settings import TARGET_PROJ, TARGET_MAP_PROJ
+from iarbre_data.settings import SRID_DB, SRID_MAPLIBRE
 
 
 def load_geodataframe_from_db(queryset, fields):
@@ -26,11 +26,11 @@ def load_geodataframe_from_db(queryset, fields):
     if not queryset.exists():
         return gpd.GeoDataFrame(columns=fields + ["geometry"])
     geom_field = "geometry"
-    crs = TARGET_PROJ
+    crs = SRID_DB
     if "map_geometry" in fields:
         fields.remove("map_geometry")
         geom_field = "map_geometry"
-        crs = TARGET_MAP_PROJ
+        crs = SRID_MAPLIBRE
     # Get geometry data in GEOJSON to avoid conversion to WKT with shapely
     qs = queryset.annotate(geom_json=AsGeoJSON(geom_field)).values(*fields, "geom_json")
     data = list(qs)  # Run query

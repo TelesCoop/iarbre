@@ -8,7 +8,7 @@ from iarbre_data.management.commands.c03_import_data import (
     process_data,
     save_geometries,
 )
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB
 import geopandas as gpd
 
 
@@ -54,7 +54,7 @@ class C03DataTestCase(TestCase):
         self.assertTrue(isinstance(self.df, gpd.GeoDataFrame))
         self.assertTrue(hasattr(self.df, "geometry"))
         self.assertTrue(self.df.geometry.dtype == "geometry")
-        self.assertTrue(self.df.geometry.crs == TARGET_PROJ)
+        self.assertTrue(self.df.geometry.crs == SRID_DB)
         valid_geometries = self.df.geometry.notnull() & self.df.geometry.is_valid
         self.assertTrue(valid_geometries.all())
 
@@ -102,7 +102,7 @@ class C03DataTestCase(TestCase):
         if config_with_layer:
             df = read_data(config_with_layer)
             self.assertTrue(isinstance(df, gpd.GeoDataFrame))
-            self.assertEqual(df.crs, TARGET_PROJ)
+            self.assertEqual(df.crs, SRID_DB)
 
     def test_read_data_without_layer_name(self):
         """Test read_data function without layer_name parameter."""
@@ -116,7 +116,7 @@ class C03DataTestCase(TestCase):
         if config_without_layer:
             df = read_data(config_without_layer)
             self.assertTrue(isinstance(df, gpd.GeoDataFrame))
-            self.assertEqual(df.crs, TARGET_PROJ)
+            self.assertEqual(df.crs, SRID_DB)
 
     def test_read_data_geometry_validation(self):
         df = read_data(self.data_config)
@@ -130,7 +130,7 @@ class C03DataTestCase(TestCase):
 
     def test_crs_conversion(self):
         df = read_data(self.data_config)
-        self.assertEqual(df.crs, TARGET_PROJ)
+        self.assertEqual(df.crs, SRID_DB)
 
     def test_process_data_returns_list(self):
         result = process_data(self.df, self.data_config)

@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.gis.geos import Polygon
+from iarbre_data.settings import SRID_DB
 from iarbre_data.models import City, Tile, Vegestrate
 
 WFS_URL = "/api/wfs/"
@@ -12,7 +13,7 @@ VILLARD_SQUARE = Polygon(
         (898233, 6446266),
         (898233, 6441266),
     ),
-    srid=2154,
+    srid=SRID_DB,
 )
 
 
