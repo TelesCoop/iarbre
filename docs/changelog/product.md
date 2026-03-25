@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 🔖 0.26.0 (2026-03-25) : Améliorations et trackings sur le backend
+
+### 🛠️ enhance : Tracking et logger
+
+Ajout d'outils pour tracker les temps des requêtes en base de données.
+
+&rarr; Commit [24d4da4](https://github.com/TelesCoop/iarbre/commit/24d4da478fe3b9d05c83865f8dc3e1b42afb281f))
+
+Ajout d'un logger pour suivre plus finement les temps des requêtes WFS.
+&rarr; Commit [a1e15d6](https://github.com/TelesCoop/iarbre/commit/a1e15d60440e87598c9195eeb6b5796f3ceb75e9)).
+
+### 🛠️ enhance : Prépartion de la mise à jour 2026 du calque de plantabilité
+
+Les sources de données pour les réseaux enterrés ont été mises à jour en utilisant maintenant [ORE](https://portail.agenceore.fr/pages/accueil) et plus des extracts manuels par les services de la Métropole.
+
+&rarr; Commit [e24edab](https://github.com/TelesCoop/iarbre/commit/e24edab81644a19cb0a913111dce78acdd285811)
+
+Un travail a été mené également pour s'assurer de la lisibilité du passage entre les différentes projections au cours du pipeline.
+
+&rarr; PR [#577](https://github.com/TelesCoop/iarbre/pull/577)
+
 ## 🔖 0.25.0 (2026-03-11) : Dashboard de données, WFS, pipeline de données et vegestrate vectoriel
 
 ### ✨ feat : Dashboard de données

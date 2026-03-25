@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.contrib.gis.geos import Polygon
 from rasterio.transform import from_origin
 
+from iarbre_data.settings import SRID_DB
 from iarbre_data.models import Tile
 from iarbre_data.management.commands.raster_to_land_use import process_tile_batch
 
@@ -36,7 +37,7 @@ class RasterToLandUse(TestCase):
             "width": width,
             "count": 1,
             "dtype": rasterio.float32,
-            "crs": "EPSG:2154",
+            "crs": f"EPSG:{SRID_DB}",
             "transform": transform,
         }
 

@@ -13,7 +13,7 @@ from tqdm import tqdm
 import requests
 
 from iarbre_data.models import Data
-from iarbre_data.settings import TARGET_PROJ
+from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
 from iarbre_data.utils.database import log_progress
 
 
@@ -70,7 +70,7 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
         if isinstance(df, gpd.GeoDataFrame):
             df = df["geometry"]
         geometry = unary_union(df)
-        df = gpd.GeoDataFrame({"geometry": [geometry]}, crs=TARGET_PROJ)
+        df = gpd.GeoDataFrame({"geometry": [geometry]}, crs=SRID_DB)
 
     # Transform in Polygon
     df = df.explode(index_parts=False)
@@ -229,8 +229,8 @@ def geocode_address(address: str) -> Point:
             lat = float(data[0]["lat"])
             lon = float(data[0]["lon"])
             # Convert to Lambert-93 (EPSG:2154) coordinates
-            point = Point(lon, lat, srid=4326)
-            point.transform(2154)
+            point = Point(lon, lat, srid=SRID_DOWNLOADED_DATA)
+            point.transform(SRID_DB)
             return point
         else:
             return None

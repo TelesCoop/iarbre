@@ -39,7 +39,7 @@
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
-        django_workers: 1
+        django_workers: 5
         dedicated_database: "{{ branch is not defined }}"
         allow_backup: false
         database_password: "{{ vault_database_password }}"
@@ -51,6 +51,11 @@
         - name: Clear cache
           shell:
             cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
+
+        - name: Clear nginx API cache
+          shell:
+            cmd: "find /var/cache/nginx/api -mindepth 1 -delete"
+          become: true
 
         - name: Check if .db_recover_target exists
           stat:

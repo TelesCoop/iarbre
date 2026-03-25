@@ -156,7 +156,7 @@ WSGI_APPLICATION = "iarbre_data.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django_prometheus.db.backends.postgis",
         "NAME": config.getstr("database.name"),
         "USER": config.getstr("database.user"),
         "PASSWORD": config.getstr("database.password"),
@@ -243,8 +243,11 @@ GISSERVER_DB_PRECISION = 1
 GISSERVER_DEFAULT_MAX_PAGE_SIZE = 100000
 
 # Script variables
-TARGET_PROJ = 2154  # Lambert 93
-TARGET_MAP_PROJ = 3857  # Pseudo-Mercator
+SRID_DB = 2154  # Lambert 93
+SRID_MAPLIBRE = 3857  # Pseudo-Mercator
+SRID_DOWNLOADED_DATA = (
+    4326  # projection WGS84 représente la Terre comme un ellipsoïde tridimensionnel
+)
 BUFFER_SIZE = 2  # meters
 
 # telescoop-backup
@@ -315,8 +318,21 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
+        "file_wfs": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "logs" / "wfs.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
+        "wfs": {
+            "handlers": ["file_wfs", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "api": {
             "handlers": ["file_all", "file_errors", "console"],
             "level": "INFO",
@@ -332,4 +348,11 @@ LOGGING = {
         "handlers": ["console", "file_errors"],
         "level": "WARNING",
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_prometheus.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/var/tmp/django_cache",
+    }
 }
