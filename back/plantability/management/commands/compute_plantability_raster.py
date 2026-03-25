@@ -9,12 +9,38 @@ from iarbre_data.utils.database import log_progress, select_city
 from typing import Dict, Any
 from plantability.constants import colors, rgb_colors
 
+BLOCKING_SCORE = float(min(FACTORS.values()))
+
+
+def build_blocked_mask(raster_directory: str, shape: tuple) -> np.ndarray:
+    """
+    Build a boolean mask of pixels covered by any blocking factor.
+
+    Args:
+        raster_directory (str): The directory containing the raster files.
+        shape (tuple): The shape of the output raster.
+
+    Returns:
+        np.ndarray: Boolean mask where True means the pixel is blocked.
+    """
+    blocked = np.zeros(shape, dtype=bool)
+    for factor_name, weight in FACTORS.items():
+        if weight != BLOCKING_SCORE:
+            continue
+        factor_file = raster_directory + factor_name + ".tif"
+        log_progress(f"Building blocked mask from: {factor_name}")
+        with rasterio.open(factor_file) as src:
+            factor_data = src.read(1)
+            blocked |= factor_data > 0
+    return blocked
+
 
 def compute_weighted_sum(
     raster_directory: str,
     output_file: str,
     meta: Dict[str, Any],
     result: np.ndarray,
+    blocked: np.ndarray,
     factor_name: str,
     weight: float,
 ) -> None:
@@ -26,6 +52,7 @@ def compute_weighted_sum(
         output_file (str): The path to the output file where the result will be saved.
         meta (Dict[str, Any]): Metadata for the output raster file.
         result (np.ndarray): The array to store the computed weighted sum.
+        blocked (np.ndarray): Boolean mask of pixels with a blocking factor, excluded from accumulation.
         factor_name (str): The name of the factor to process.
         weight (float): The weight to apply to the factor data.
 
@@ -38,7 +65,7 @@ def compute_weighted_sum(
     )
     with rasterio.open(factor_file) as src:
         factor_data = src.read(1).astype(np.float32)
-        result += weight * factor_data / 100
+        result[~blocked] += weight * factor_data[~blocked] / 100
     del factor_data
 
     meta.update(dtype=np.float32, count=1, compress="lzw", nodata=-9999)
@@ -90,9 +117,8 @@ def threshold_and_convert_to_colors(
         np.ndarray: The array with RGB color values.
     """
     thresholds = sorted(colors.keys())
-    result_colors = np.zeros(result.shape + (3,), dtype=np.uint8)  # RGB output
+    result_colors = np.zeros(result.shape + (3,), dtype=np.uint8)
 
-    # Apply thresholds and convert to colors
     mask = result <= thresholds[0]
     result_colors[mask] = rgb_colors[thresholds[0]]
 
@@ -119,35 +145,40 @@ class Command(BaseCommand):
         output_file = str(BASE_DIR) + "/media/rasters/plantability.tif"
         output_color_file = str(BASE_DIR) + "/media/rasters/plantability_colors.tif"
 
-        # Init raster
         file_path = raster_directory + list(FACTORS.keys())[0] + ".tif"
         with rasterio.open(file_path) as ref_src:
             meta = ref_src.meta.copy()
             shape = ref_src.shape
 
+        blocked = build_blocked_mask(raster_directory, shape)
         result = np.zeros(shape, dtype=np.float32)
 
         for factor_name, weight in FACTORS.items():
-            if factor_name == "QPV":
+            if factor_name == "QPV" or weight == BLOCKING_SCORE:
                 continue
-            else:
-                compute_weighted_sum(
-                    raster_directory, output_file, meta, result, factor_name, weight
-                )
+            compute_weighted_sum(
+                raster_directory,
+                output_file,
+                meta,
+                result,
+                blocked,
+                factor_name,
+                weight,
+            )
 
-        # Cut everything outside cities
+        result[blocked] = BLOCKING_SCORE
+
         all_cities = select_city(None).union_all()
         result = cut_outside_cities(meta, result, all_cities)
 
         with rasterio.open(output_file, "w", **meta) as dst:
             dst.write(result, 1)
 
-        # Convert to RGB and colors
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
         color_meta = meta.copy()
         color_meta.update(dtype=rasterio.uint8, count=3, nodata=None)
 
         with rasterio.open(output_color_file, "w", **color_meta) as dst:
-            for i in range(3):  # Write each RGB channel
+            for i in range(3):
                 dst.write(result_colors[:, :, i], i + 1)

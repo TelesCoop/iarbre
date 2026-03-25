@@ -12,7 +12,7 @@ from tqdm import tqdm
 from iarbre_data.data_config import URL_FILES, LCZ
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
-from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
 
 
@@ -72,7 +72,7 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf = gdf[
         ["lcz", "geometry", "hre", "are", "bur", "ror", "bsr", "war", "ver", "vhr"]
     ]
-    gdf.to_crs(TARGET_PROJ, inplace=True)
+    gdf.to_crs(SRID_DB, inplace=True)
     # We have LCZ for the whole 69-Rhone and want to keep only for Lyon Metropole
     all_cities_boundary = select_city(None).union_all()
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
@@ -85,7 +85,7 @@ def load_data() -> geopandas.GeoDataFrame:
         for geom in split_geoms:
             split_geometries.append({**row.to_dict(), "geometry": geom})
     gdf_filtered = geopandas.GeoDataFrame(
-        split_geometries, geometry="geometry", crs=TARGET_PROJ
+        split_geometries, geometry="geometry", crs=SRID_DB
     )
 
     # Simple correction for invalid geometry
@@ -93,7 +93,7 @@ def load_data() -> geopandas.GeoDataFrame:
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
-    gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
+    gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(SRID_MAPLIBRE)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
     gdf_filtered["lcz"] = gdf_filtered["lcz"].astype(str)

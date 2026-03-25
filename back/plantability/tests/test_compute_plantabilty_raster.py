@@ -7,6 +7,7 @@ from django.test import TestCase
 from plantability.management.commands.compute_plantability_raster import (
     compute_weighted_sum,
     threshold_and_convert_to_colors,
+    BLOCKING_SCORE,
 )
 from plantability.constants import colors, rgb_colors
 
@@ -55,31 +56,53 @@ class ComputePlantabilityRasterTestCase(TestCase):
         self.buildings_data = buildings_data
 
         result = np.zeros((self.height, self.width), dtype=np.float32)
-
         output_file = os.path.join(self.temp_dir, "weighted_sum_output.tif")
 
-        # Arbitrary weigth for tests
+        # Arbitrary weight for tests; Bâtiments is the blocking factor
         self.FACTORS = {"Parking": +3, "Bâtiments": -5}
+
+        blocked = np.zeros((self.height, self.width), dtype=bool)
+        blocked |= buildings_data > 0
+
         for factor, weight in self.FACTORS.items():
+            if weight == BLOCKING_SCORE:
+                continue
             compute_weighted_sum(
                 self.raster_directory,
                 output_file,
                 self.meta.copy(),
                 result,
+                blocked,
                 factor,
                 weight,
             )
+        result[blocked] = BLOCKING_SCORE
+
+        meta_out = self.meta.copy()
+        meta_out.update(dtype=np.float32, count=1, compress="lzw", nodata=-9999)
+        with rasterio.open(output_file, "w", **meta_out) as dst:
+            dst.write(result, 1)
+
         with rasterio.open(output_file) as src:
             self.final_result = src.read(1)
 
     def test_compute_weighted_sum(self):
         """Test compute_weighted_sum function accurately calculates weighted sum of rasters"""
         try:
+            # Overlap of parking and buildings: blocked pixels must be BLOCKING_SCORE
             overlap_region = self.final_result[10:25, 10:25]
-            expected_overlap = (self.FACTORS["Parking"] / 100) + (
-                self.FACTORS["Bâtiments"] / 100
+            self.assertTrue(np.all(overlap_region == BLOCKING_SCORE))
+
+            # Pure parking region (row 26:30, col 26:40 — outside buildings bounds)
+            pure_parking_region = self.final_result[26:30, 26:40]
+            expected_parking = self.FACTORS["Parking"] / 100
+            self.assertAlmostEqual(
+                float(np.mean(pure_parking_region)), expected_parking
             )
-            self.assertEqual(np.mean(overlap_region), expected_overlap)
+
+            # Pure buildings region (not overlapping parking): blocked
+            pure_buildings_region = self.final_result[70:90, 70:90]
+            self.assertTrue(np.all(pure_buildings_region == BLOCKING_SCORE))
         finally:
             if os.path.exists(self.temp_dir):
                 import shutil

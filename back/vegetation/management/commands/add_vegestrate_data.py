@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from iarbre_data.utils.database import log_progress
 from iarbre_data.models import Vegestrate, City
-from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 
 STRATE_TREES = 3
 STRATE_BUSHES = 2
@@ -34,12 +34,12 @@ def _fix_invalid(series):
 
 
 def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
-    gdf.to_crs(TARGET_PROJ, inplace=True)
+    gdf.to_crs(SRID_DB, inplace=True)
     gdf["geometry"] = _fix_invalid(gdf["geometry"])
     gdf = gdf.explode(ignore_index=True)
     gdf["geometry"] = _fix_invalid(gdf["geometry"])
     gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
-    gdf["map_geometry"] = gdf.geometry.to_crs(TARGET_MAP_PROJ)
+    gdf["map_geometry"] = gdf.geometry.to_crs(SRID_MAPLIBRE)
     gdf["map_geometry"] = _fix_invalid(gdf["map_geometry"])
     return gdf
 
