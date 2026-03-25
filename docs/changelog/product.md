@@ -21,6 +21,16 @@ Un travail a été mené également pour s'assurer de la lisibilité du passage 
 
 &rarr; PR [#577](https://github.com/TelesCoop/iarbre/pull/577)
 
+Une légère mise à jour a également été faite pour rendre le calcul plus rapide sur les tuiles 5mx5m qui contiennent un facteur bloquant.
+
+&rarr; Commit[4509eea](https://github.com/TelesCoop/iarbre/commit/4509eea8a91c05284a19c417573362f8a6fbc382)
+
+### 🛠️ enhance : Clarification de la proposition de valeur sur le site web
+
+Ajout d'un bloc pour préciser la fonctionnalité de valeur et retravail des textes de description des fonctionnalités en dessous.
+
+&rarr; PR [#568](https://github.com/TelesCoop/iarbre/issues/568)
+
 ## 🔖 0.25.0 (2026-03-11) : Dashboard de données, WFS, pipeline de données et vegestrate vectoriel
 
 ### ✨ feat : Dashboard de données
