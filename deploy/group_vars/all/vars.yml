@@ -26,6 +26,7 @@ database_provider: postgresql # sqlite or postgresql
 
 # can be SSR or static
 frontend_mode: static
+dedicated_database: true
 
 # can not be in backend role, as it's also need by cleanup role
 venv:
