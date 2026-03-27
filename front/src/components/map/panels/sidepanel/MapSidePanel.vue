@@ -7,38 +7,58 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <div class="flex flex-wrap items-center justify-center gap-2 py-2">
+      <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
         <MapQpvToggleButton />
         <MapCadastreToggleButton />
         <MapBoundaryToggleButton />
       </div>
+      <a
+        :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
+        class="methodology-banner"
+      >
+        <svg
+          fill="none"
+          height="16"
+          viewBox="0 0 16 16"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            height="13"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            width="11"
+            x="2.5"
+            y="1.5"
+          />
+          <path
+            d="M5 5.5h6M5 8h6M5 10.5h4"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-width="1.5"
+          />
+        </svg>
+        <span class="flex-1">Voir la méthodologie</span>
+        <svg
+          fill="none"
+          height="16"
+          viewBox="0 0 16 16"
+          width="16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 12L10 8L6 4"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          />
+        </svg>
+      </a>
       <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
-      <div class="methodology-banner">
-        <a
-          :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
-          class="methodology-link"
-        >
-          <span class="underline">Voir la méthodologie</span>
-          <svg
-            fill="none"
-            height="16"
-            viewBox="0 0 16 16"
-            width="16"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M6 12L10 8L6 4"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            />
-          </svg>
-        </a>
-      </div>
-
       <div class="w-full" data-cy="map-side-panel-download">
         <MapSidePanelDownload />
       </div>
@@ -76,17 +96,18 @@
         <MapBoundaryToggleButton />
         <MapContextTools />
       </div>
+      <a
+        v-if="isPanelOpen"
+        :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
+        class="methodology-link-mobile"
+      >
+        Voir la méthodologie
+      </a>
     </div>
 
     <div class="mobile-panel-content">
       <div class="mobile-panel-scroll">
         <MapContextData class="w-full" />
-        <a
-          :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
-          class="methodology-link-mobile"
-        >
-          Voir la méthodologie
-        </a>
       </div>
     </div>
   </div>
@@ -135,24 +156,18 @@ watch(
 }
 
 .methodology-banner {
-  @apply px-4 py-3 flex items-center justify-center w-full;
-  @apply border-b border-b-primary-300;
-  flex-shrink: 0;
-}
-
-.methodology-link {
-  @apply flex items-center gap-2 text-off-white text-sm font-sans font-medium;
-  @apply hover:underline cursor-pointer;
+  @apply flex items-center gap-2 px-3 py-3 mt-4 rounded-lg w-full flex-shrink-0;
+  @apply bg-primary-500 text-off-white text-sm font-sans font-medium;
   text-decoration: none;
   transition: opacity 0.2s;
 }
 
-.methodology-link:hover {
+.methodology-banner:hover {
   opacity: 0.9;
 }
 
 .sidebar-footer {
-  @apply relative;
+  @apply relative flex items-center;
   @apply bg-primary-500 flex-shrink-0;
   @apply w-full;
   height: 152px;
@@ -209,8 +224,13 @@ watch(
 }
 
 .methodology-link-mobile {
-  @apply text-primary-500 text-xs font-medium text-center block pt-3 mt-2;
-  @apply border-t border-gray-100;
-  text-decoration: underline;
+  @apply mx-3 mb-2 px-3 py-2 rounded-lg;
+  @apply bg-primary-500 text-off-white text-xs font-medium text-center block;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.methodology-link-mobile:hover {
+  opacity: 0.9;
 }
 </style>
