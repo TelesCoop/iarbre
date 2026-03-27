@@ -9,7 +9,12 @@
       <div class="blog-hero-image">
         {{ $img := $featured.Resources.GetMatch $featured.Params.image }} {{ if
         $img }}
-        <img src="{{ $img.RelPermalink }}" alt="{{ $featured.Title }}" />
+        <img
+          src="{{ $img.RelPermalink }}"
+          alt="{{ $featured.Title }}"
+          width="{{ $img.Width }}"
+          height="{{ $img.Height }}"
+        />
         {{ else }}
         <img src="{{ $featured.Params.image }}" alt="{{ $featured.Title }}" />
         {{ end }}
@@ -51,7 +56,12 @@
         {{ if .Params.image }}
         <div class="blog-card-image">
           {{ $img := .Resources.GetMatch .Params.image }} {{ if $img }}
-          <img src="{{ $img.RelPermalink }}" alt="{{ .Title }}" />
+          <img
+            src="{{ $img.RelPermalink }}"
+            alt="{{ .Title }}"
+            width="{{ $img.Width }}"
+            height="{{ $img.Height }}"
+          />
           {{ else }}
           <img src="{{ .Params.image }}" alt="{{ .Title }}" />
           {{ end }}
