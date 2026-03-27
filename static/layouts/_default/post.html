@@ -1,4 +1,36 @@
-{{ define "main" }}
+{{ define "meta-extended" }}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": "{{ .Permalink }}#article",
+    "headline": {{ .Title | jsonify }},
+    "description": {{ .Summary | plainify | jsonify }},
+    "url": "{{ .Permalink }}",
+    "datePublished": "{{ .PublishDate.Format "2006-01-02T15:04:05Z07:00" }}",
+    "dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}",
+    "author": {
+      "@type": "Organization",
+      "name": {{ .Params.Author | default "L'équipe IA·rbre" | jsonify }},
+      "@id": "https://iarbre.fr/#organization"
+    },
+    "publisher": { "@id": "https://iarbre.fr/#organization" },
+    "isPartOf": { "@id": "https://iarbre.fr/#website" },
+    "inLanguage": "fr-FR"
+  }
+</script>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://iarbre.fr/" },
+      { "@type": "ListItem", "position": 2, "name": "Actualités", "item": "https://iarbre.fr/actualites/" },
+      { "@type": "ListItem", "position": 3, "name": {{ .Title | jsonify }}, "item": "{{ .Permalink }}" }
+    ]
+  }
+</script>
+{{ end }} {{ define "main" }}
 
 <div class="article-page">
   <div class="article-container">
@@ -43,7 +75,12 @@
           {{ if .Params.image }}
           <div class="related-article-image">
             {{ $img := .Resources.GetMatch .Params.image }} {{ if $img }}
-            <img src="{{ $img.RelPermalink }}" alt="{{ .Title }}" />
+            <img
+              src="{{ $img.RelPermalink }}"
+              alt="{{ .Title }}"
+              width="{{ $img.Width }}"
+              height="{{ $img.Height }}"
+            />
             {{ else }}
             <img src="{{ .Params.image }}" alt="{{ .Title }}" />
             {{ end }}

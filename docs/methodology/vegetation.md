@@ -38,7 +38,7 @@ Nous partons des résultats LIDAR pour la végétation moyenne et haute, auquell
 
 ### Postprocessing
 
-Pour nettoyer les artefacts de classifications, on procède d'abord à une fermeture morphologique (dilation, erosion puis dilation) puis dans un second temps on applique l'algorithme de [Sieve](https://gdal.org/en/stable/programs/gdal_sieve.html).
+Pour nettoyer les artefacts de classifications, on procède d'abord à une fermeture morphologique (dilation, erosion puis dilation) puis dans un second temps on applique l'algorithme de [Sieve](https://gdal.org/en/stable/programs/gdal_sieve.html). Pour la fermeture, les paramètres ont été fixées empiriquement à 3-6-3, afin de créer une séparation clair entre les zones et tenter d'isoler des pieds d'arbre. Pour le nettoyage Sieve, les régions plus petites que 13 pixels, c'est à dire environ < 1m^2 avec une résolution de 0.2m sont aggrégées à la zone plus grande qui les contient.
 
 ## Limites
 

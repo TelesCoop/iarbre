@@ -10,6 +10,10 @@ La pondération de chaque `FACTORS` représente à quelle point il permet une pl
 organisés par [Exo-Dev](https://exo-dev.fr/) avec les services de terrains en 2022, voir la [notice](https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf) du projet.
 Ensuite [Exo-Dev](https://exo-dev.fr/) a cherché à traduire ces **facteurs** en données correspondantes. Par exemple, dire que les transports en commun sont un facteur se traduit en donnée par le jeux de données sur les tracés de bus, tramway ainsi que les arrêts correspondants.
 
+## Normalisation du score
+
+Après pondération le score obtenu est entre -8 (batiment avec des canalisations en dessous) et +8. Il est ramené entre 0 et 10, avec un pas de de 2, grâce à un découpage par percentile (6 bins). Ce qui donne comme valeurs de seuil [-5, -2, -0.75, 0.15, 2.5, 5]
+
 ## Données correspondantes
 
 ### Données open-data
