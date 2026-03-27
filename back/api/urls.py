@@ -14,6 +14,7 @@ from .views import (
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
+    VegetationTileView,
 )
 
 router = routers.DefaultRouter()
@@ -36,6 +37,11 @@ urlpatterns = [
         "tiles/<datatype>/<id>/",
         TileDetailsView.as_view(),
         name="retrieve-tile-details",
+    ),
+    path(
+        "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
+        VegetationTileView.as_view(),
+        name="retrieve-vegetation-tile",
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
