@@ -149,8 +149,6 @@ server {
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header X-Content-Type-Options "nosniff" always;
         add_header Referrer-Policy "no-referrer-when-downgrade" always;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; worker-src blob:;" always;
     }
     {% elif frontend_mode == "SSR" -%}
     location / {
