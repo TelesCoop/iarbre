@@ -504,7 +504,7 @@ class MVTGeneratorWorker:
             logger.error(f"SKIPPED: No data for tile ({tile.x}, {tile.y}, {zoom})")
             return
 
-        if False: #zoom <= ZOOM_AGGREGATE_BREAKPOINT:
+        if False:  # zoom <= ZOOM_AGGREGATE_BREAKPOINT:
             gdf = load_geodataframe_from_db(
                 clipped_queryset,
                 [
