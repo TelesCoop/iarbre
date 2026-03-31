@@ -3,14 +3,12 @@ import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 
 export enum Drawer {
-  MAP_SCORES = "map-scores",
-  MAP_CONFIG = "map-config"
+  MAP_SCORES = "map-scores"
 }
 export const useAppStore = defineStore("app", () => {
   const windowWidth = ref(window.innerWidth)
   const drawerVisible = ref({
-    [Drawer.MAP_SCORES]: false,
-    [Drawer.MAP_CONFIG]: false
+    [Drawer.MAP_SCORES]: false
   })
   const sidePanelVisible = ref(true)
 

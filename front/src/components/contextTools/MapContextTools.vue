@@ -13,8 +13,7 @@ const show = computed(() => {
 </script>
 
 <template>
-  <div class="flex items-center gap-2" data-cy="map-context-tools">
-    <MapQpvToggleButton />
-    <VulnerabilityContextTool v-if="show" />
+  <div v-if="show" class="flex flex-wrap items-center gap-2" data-cy="map-context-tools">
+    <VulnerabilityContextTool />
   </div>
 </template>

@@ -63,6 +63,16 @@ export function getVulnerabilityTextColor(score: number | null): string {
   return colorMap[colorCode] || "text-gray-500"
 }
 
+export function getContrastTextHex(backgroundColor: string): string {
+  try {
+    const blackContrast = getContrast(backgroundColor, "#000000")
+    const whiteContrast = getContrast(backgroundColor, "#ffffff")
+    return blackContrast >= whiteContrast ? "#000000" : "#ffffff"
+  } catch {
+    return "#000000"
+  }
+}
+
 export function getBiosphereIntegrityTextColor(score: number | null): string {
   if (!score) return "text-gray-300"
   if (score < 0.25) return "text-red-600"

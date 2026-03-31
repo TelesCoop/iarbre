@@ -68,6 +68,10 @@ class CitySerializer(serializers.ModelSerializer):
     plantabilityCounts = serializers.JSONField(source="plantability_counts")
     averageNormalizedIndice = serializers.FloatField(source="average_normalized_indice")
     averageIndice = serializers.FloatField(source="average_indice")
+    treesSurface = serializers.FloatField(source="trees_surface")
+    bushesSurface = serializers.FloatField(source="bushes_surface")
+    grassSurface = serializers.FloatField(source="grass_surface")
+    totalVegetationSurface = serializers.FloatField(source="total_vegetation_surface")
 
     class Meta:
         model = City
@@ -78,6 +82,10 @@ class CitySerializer(serializers.ModelSerializer):
             "plantabilityCounts",
             "averageNormalizedIndice",
             "averageIndice",
+            "treesSurface",
+            "bushesSurface",
+            "grassSurface",
+            "totalVegetationSurface",
         )
 
 
@@ -97,6 +105,14 @@ class IrisSerializer(serializers.ModelSerializer):
             "averageNormalizedIndice",
             "averageIndice",
         )
+
+
+class VegestrateSerializer(serializers.ModelSerializer):
+    indice = serializers.CharField(source="strate")
+
+    class Meta:
+        model = Vegestrate
+        fields = ("id", "indice", "surface", "geolevel", "datatype")
 
 
 class BaseScoresSerializer(serializers.Serializer):

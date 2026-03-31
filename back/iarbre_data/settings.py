@@ -53,6 +53,7 @@ DEBUG = IS_LOCAL_DEV
 # Application definition
 
 INSTALLED_APPS = [
+    "django_prometheus",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -60,6 +61,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "gisserver",  # allow to expose WFS
     "iarbre_data",
     "api",
     "plantability",
@@ -73,6 +75,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -80,11 +83,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 # Mandatory for Decap CMS Auth
 # https://docs.djangoproject.com/en/5.1/ref/middleware/#cross-origin-opener-policy
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if IS_LOCAL_DEV:
     CORS_ALLOW_ALL_ORIGINS = True
@@ -151,7 +156,7 @@ WSGI_APPLICATION = "iarbre_data.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "django_prometheus.db.backends.postgis",
         "NAME": config.getstr("database.name"),
         "USER": config.getstr("database.user"),
         "PASSWORD": config.getstr("database.password"),
@@ -232,9 +237,17 @@ else:
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+GISSERVER_COUNT_NUMBER_MATCHED = 0
+GISSERVER_CAPABILITIES_BOUNDING_BOX = False
+GISSERVER_DB_PRECISION = 1
+GISSERVER_DEFAULT_MAX_PAGE_SIZE = 100000
+
 # Script variables
-TARGET_PROJ = 2154  # Lambert 93
-TARGET_MAP_PROJ = 3857  # Pseudo-Mercator
+SRID_DB = 2154  # Lambert 93
+SRID_MAPLIBRE = 3857  # Pseudo-Mercator
+SRID_DOWNLOADED_DATA = (
+    4326  # projection WGS84 représente la Terre comme un ellipsoïde tridimensionnel
+)
 BUFFER_SIZE = 2  # meters
 
 # telescoop-backup
@@ -305,8 +318,21 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
+        "file_wfs": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(BASE_DIR / "logs" / "wfs.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
     },
     "loggers": {
+        "wfs": {
+            "handlers": ["file_wfs", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
         "api": {
             "handlers": ["file_all", "file_errors", "console"],
             "level": "INFO",
@@ -322,4 +348,11 @@ LOGGING = {
         "handlers": ["console", "file_errors"],
         "level": "WARNING",
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_prometheus.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/var/tmp/django_cache",
+    }
 }

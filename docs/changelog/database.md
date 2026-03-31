@@ -6,6 +6,34 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+### 2026-03-31T11:55_postgres_backup.dump
+
+**Changements :**
+
+- **Raster vegestrate** : Ajout dans `media/rasters/vegestrate` d'une collection de rasters de l'inventaire du végétal correspondant à différentes post-process.
+
+````python
+VEGESTRATE_FILES = {
+    (2018, "02", False, None): "raw_fullmetropole_ir_02_2018.tif", # Résolution 0.2m
+    (2018, "02", True, 3): "postprocessv3_fullmetropole_ir_02_2018.tif",
+    (2023, "02", False, None): "raw_lyon_metropole_ir_02_2023.tif",
+    (2023, "02", True, 1): "postprocessv1_fullmetropole_RGB_02_2023.tif",
+    (2023, "02", True, 2): "postprocessv2_fullmetropole_ir_02_2023.tif",
+    (2023, "02", True, 3): "postprocessv3_fullmetropole_ir_02_2023.tif",
+}```
+
+### 2026-03-03T15:35_postgres_backup.dump
+
+**Changements :**
+
+- **Tuiles vegestrate** : Update des tuiles vegestrate pour utiliser la version 2 des données qui utilise le canal IR et un meilleur post-processing : https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023
+
+### 2026-03-03T12:06_postgres_backup.dump
+
+**Changements :**
+
+- **Tuiles vegestrate** : Ajouts des tuiles vegestrates à la place du raster pour permettre l'interaction.
+
 ### 2026-02-11T19:03_postgres_backup.dump
 
 **Changements :**
@@ -83,15 +111,16 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 Copiez ce modèle lors de l'ajout d'une nouvelle sauvegarde :
 
-```
+````
+
 ### YYYY-MM-DDTHH:MM_postgres_backup.dump
 
-**Changements :**
--
--
--
+## **Changements :**
 
----
+-
+- ***
+
 ```
 
 **Remarque :** Les sauvegardes sont listées par ordre chronologique inversé (la plus récente en premier)
+```

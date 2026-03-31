@@ -11,12 +11,14 @@ from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
 from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability,BiosphereFunctionalIntegrity
+from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
 from rest_framework.response import Response
 
 from api.serializers.serializers import (
     LczSerializer,
     VulnerabilitySerializer,
     TileSerializer,
+    VegestrateSerializer,
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
     PlantabilityVulnerabilityScoresSerializer,
@@ -36,6 +38,7 @@ DATATYPE_MODEL_MAP = {
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
     DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegrity
+    DataType.VEGESTRATE.value: Vegestrate,
 }
 
 # Mapping of frontend datatypes to their models
@@ -74,6 +77,7 @@ class TileDetailsView(generics.RetrieveAPIView):
             DataType.VULNERABILITY.value: VulnerabilitySerializer,
             DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegritySerializer,
             DataType.TILE.value: TileSerializer,
+            DataType.VEGESTRATE.value: VegestrateSerializer,
         }
         if datatype not in serializer_per_datatype:
             raise Http404
@@ -130,8 +134,8 @@ class ScoresInPolygonView(APIView):
         try:
             polygon = GEOSGeometry(str(polygon_geojson))
             if polygon.srid is None or polygon.srid == 0:
-                polygon.srid = 4326
-            polygon.transform(2154)
+                polygon.srid = SRID_DOWNLOADED_DATA
+            polygon.transform(SRID_DB)
 
             if polygon.area > self.MAX_POLYGON_AREA_M2:
                 return None, Response(

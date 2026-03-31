@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView, ScoresInPolygonView
+from .views.dashboard_views import DashboardView
 from .views import (
     CityView,
     IrisView,
@@ -9,9 +10,10 @@ from .views import (
     TileView,
     HealthCheckView,
     QPVListView,
+    CityBoundaryView,
     MetadataView,
     RasterDownloadView,
-    VegetationTileView,
+    IArbreWFSView,
 )
 
 router = routers.DefaultRouter()
@@ -24,16 +26,11 @@ urlpatterns = [
         TileView.as_view(),
         name="retrieve-tile",
     ),
-    # L'URL spécifique doit venir AVANT l'URL générale avec <id>
+    # Specific URL should be BEFORE general URL with <id>
     path(
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
         name="scores-in-polygon",
-    ),
-    path(
-        "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
-        VegetationTileView.as_view(),
-        name="retrieve-vegetation-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",
@@ -42,12 +39,15 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
-        "rasters/plantability/",
+        "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
-        name="download-plantability-raster",
+        name="download-raster",
     ),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
+    path("wfs/", IArbreWFSView.as_view()),
 ]

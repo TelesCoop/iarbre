@@ -13,7 +13,6 @@ import gc
 import geopandas as gpd
 import numpy as np
 from django.contrib.gis.db.models.functions import Intersection
-from django.contrib.gis.db.models import Extent
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.db.models import QuerySet, Model
 from shapely.geometry import shape, Polygon as ShapelyPolygon, box
@@ -23,7 +22,7 @@ import mapbox_vector_tile
 from api.constants import DEFAULT_ZOOM_LEVELS, ZOOM_TO_GRID_SIZE
 from iarbre_data.utils.database import load_geodataframe_from_db
 from iarbre_data.models import City, MVTTile, Vulnerability
-from iarbre_data.settings import TARGET_MAP_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB, SRID_DOWNLOADED_DATA
 from plantability.constants import PLANTABILITY_NORMALIZED
 import random
 
@@ -74,7 +73,7 @@ class MVTGeneratorWorker:
                 geometry = zone_polygon["features"][0]["geometry"]
                 zone_polygon = shape(geometry)
 
-            zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=TARGET_MAP_PROJ)
+            zone = gpd.GeoDataFrame(geometry=[zone_polygon], crs=SRID_MAPLIBRE)
         minx, miny, maxx, maxy = zone.total_bounds
 
         minx = np.floor(minx / grid_size) * grid_size
@@ -122,7 +121,7 @@ class MVTGeneratorWorker:
         tile_polygon = Polygon.from_bbox(
             (west - buffer, south - buffer, east + buffer, north + buffer)
         )
-        tile_polygon.srid = TARGET_MAP_PROJ
+        tile_polygon.srid = SRID_MAPLIBRE
 
         filename = f"{self.geolevel}/{self.datatype}/{zoom}/{tile.x}/{tile.y}.mvt"
 
@@ -261,7 +260,7 @@ class MVTGeneratorWorker:
                 "vulnerability_idx_id",
             ],
         )
-        mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
+        mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=SRID_MAPLIBRE)
         df_clipped = gpd.clip(gdf, mvt_gdf)
 
         if len(df_clipped) == 0:
@@ -562,7 +561,7 @@ class MVTGeneratorWorker:
             "name": f"{self.geolevel}--{self.datatype}",
             "features": [],
         }
-        for obj in clipped_queryset:
+        for obj in clipped_queryset.iterator():
             properties = obj.get_layer_properties()
             clipped_geom = obj.clipped_geometry
             transformed_geometries["features"].append(
@@ -654,32 +653,19 @@ class MVTGenerator:
         covered = set()
         for city in City.objects.all():
             geom = city.geometry
-            geom_4326 = GEOSGeometry(geom.wkt, srid=2154)
-            geom_4326.transform(4326)
+            geom_4326 = GEOSGeometry(geom.wkt, srid=SRID_DB)
+            geom_4326.transform(SRID_DOWNLOADED_DATA)
             west, south, east, north = geom_4326.extent
             for t in mercantile.tiles(west, south, east, north, zoom, truncate=True):
                 covered.add(t)
         return covered
 
-    def _get_covered_tiles_from_bbox(self, zoom):
-        bbox = self.mdl.objects.all().aggregate(bbox=Extent("map_geometry"))["bbox"]
-        bbox_polygon = Polygon.from_bbox(bbox)
-        bbox_polygon.srid = TARGET_MAP_PROJ
-        bbox_polygon.transform(4326)
-        west, south, east, north = bbox_polygon.extent
-        return set(mercantile.tiles(west, south, east, north, zoom, truncate=True))
-
     def generate_tiles(self, ignore_existing=False):
         """Generate MVT tiles for the entire geometry queryset."""
-        use_city_filter = self.mdl.datatype == "plantability"
 
         tiles_to_generate = []
         for zoom in range(self.min_zoom, self.max_zoom + 1):
-            if use_city_filter:
-                all_tiles = self._get_covered_tiles(zoom)
-            else:
-                all_tiles = self._get_covered_tiles_from_bbox(zoom)
-
+            all_tiles = self._get_covered_tiles(zoom)
             existing_mvt_tiles = MVTTile.objects.filter(
                 geolevel=self.mdl.geolevel,
                 datatype=self.mdl.datatype,

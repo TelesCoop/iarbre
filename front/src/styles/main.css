@@ -392,8 +392,3 @@
 .driver-popover-arrow-side-bottom {
   @apply border-b-white;
 }
-
-/* Driver.js overlay */
-.driver-overlay {
-  @apply bg-black/50;
-}

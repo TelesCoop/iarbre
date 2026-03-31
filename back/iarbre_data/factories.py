@@ -1,6 +1,14 @@
 import factory
 from django.contrib.gis.geos import Polygon
-from iarbre_data.models import Tile, Iris, City, TileFactor, Vulnerability
+from iarbre_data.models import (
+    Tile,
+    Iris,
+    City,
+    TileFactor,
+    Vegestrate,
+    Vulnerability,
+    Lcz,
+)
 import numpy as np
 
 
@@ -66,3 +74,33 @@ class VulnerabilityFactory(factory.django.DjangoModelFactory):
     capaf_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)
     sensibilty_index_day = factory.Faker("pyfloat", min_value=0, max_value=1)
     sensibilty_index_night = factory.Faker("pyfloat", min_value=0, max_value=1)
+
+
+class VegestrateFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Vegestrate
+
+    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    strate = "herbacee"
+    surface = 100.0
+
+
+class LczFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Lcz
+
+    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    lcz_index = "2"
+    lcz_description = "Compact midrise"
+    details = factory.LazyFunction(
+        lambda: {
+            "hre": 15.0,
+            "bur": 20.0,
+            "ror": 30.0,
+            "bsr": 5.0,
+            "ver": 40.0,
+            "war": 5.0,
+            "vhr": 25.0,
+            "are": 500.0,
+        }
+    )

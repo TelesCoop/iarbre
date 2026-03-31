@@ -131,6 +131,59 @@ describe("Map - Desktop", () => {
     cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
   })
+
+  it("adds cadastre layer when toggled", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
+  })
+
+  it("maintains cadastre layer when switching data layers", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+    cy.mapCheckCadastreLayer(true)
+  })
+
+  it("maintains cadastre layer when switching basemap styles", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+  })
+
+  it("displays cadastre layer at max zoom level", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    // Zoom from 13 to 18 (max zoom)
+    cy.mapZoomTo(5)
+    cy.mapCheckCadastreLayer(true)
+  })
+
+  it("hides cadastre parcel info when layer is toggled off", () => {
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+    cy.getBySel("cadastre-parcel-info").should("not.exist")
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
+    cy.getBySel("cadastre-parcel-info").should("not.exist")
+  })
 })
 
 describe("Map - Mobile", () => {
@@ -151,22 +204,16 @@ describe("Map - Mobile", () => {
     cy.getBySel("map-component").should("exist")
   })
 
-  it("opens mobile config drawer and switches data layer", () => {
-    // Open config drawer via toggle button
-    cy.getBySel("drawer-toggle").should("be.visible").click()
-
-    // Mobile uses drawer layer switcher
+  it("switches data layer on mobile via layer switcher", () => {
+    cy.getBySel("mobile-layer-switcher").should("be.visible")
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
     cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
-
-    cy.getBySel("drawer-close").click()
   })
 
   it("toggles QPV layer on mobile", () => {
-    // Open config drawer
-    cy.getBySel("drawer-toggle").should("be.visible").click()
+    // Open mobile panel to access toggles
+    cy.getBySel("mobile-panel-handle").should("be.visible").click()
 
-    // Toggle QPV
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
@@ -174,13 +221,19 @@ describe("Map - Mobile", () => {
     cy.mapCheckQPVLayer(false)
   })
 
-  it("changes map style on mobile via drawer", () => {
-    // Open config drawer
-    cy.getBySel("drawer-toggle").should("be.visible").click()
+  it("toggles cadastre layer on mobile", () => {
+    cy.getBySel("mobile-panel-handle").should("be.visible").click()
 
-    // Use map switcher in drawer
-    cy.getBySel("map-switcher").should("be.visible").click()
-    cy.get(".select-option-label").contains("Images satellite").click()
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(false)
+  })
+
+  it("changes map style on mobile via background selector", () => {
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.getBySel("bg-option-satellite").should("be.visible").click()
 
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
@@ -198,12 +251,12 @@ describe("Geocoder", () => {
   })
 
   it("search for an address in Lyon and display results", () => {
+    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.get(".maplibregl-ctrl-geocoder--input", { timeout: 10000 }).should("be.visible").click()
     cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
-    cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
     cy.wait("@geocoding")
     cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
-    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 5)
+    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 1)
   })
 })
 

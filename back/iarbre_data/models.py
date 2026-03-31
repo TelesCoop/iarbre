@@ -1,11 +1,11 @@
-from django.contrib.gis.db.models import GeometryField, PolygonField, PointField
+from django.contrib.gis.db.models import GeometryField, PolygonField
 from django.db import models
 from django.core.files.base import ContentFile
 from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 
-from iarbre_data.settings import TARGET_MAP_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from api.constants import GeoLevel, DataType
 from plantability.constants import (
     PLANTABILITY_NORMALIZED,
@@ -16,13 +16,13 @@ from plantability.constants import (
 def create_mapgeometry(instance):
     """Transform the geometry to the map geometry."""
     if instance.map_geometry is None:
-        instance.map_geometry = instance.geometry.transform(TARGET_MAP_PROJ, clone=True)
+        instance.map_geometry = instance.geometry.transform(SRID_MAPLIBRE, clone=True)
 
 
 class TileAggregateBase(models.Model):
     """Abstract base class for aggregating Tiles at IRIS and city level."""
 
-    geometry = PolygonField(srid=2154)
+    geometry = PolygonField(srid=SRID_DB)
     code = models.CharField(max_length=50, null=True, blank=True)
     name = models.CharField(max_length=200, null=True, blank=True)
 
@@ -89,8 +89,8 @@ class Iris(TileAggregateBase, PlantabilityCount):
 class Vulnerability(models.Model):
     """Elementary element on the map with the value of the vulnerability description."""
 
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     vulnerability_index_day = models.FloatField(null=True)
     vulnerability_index_night = models.FloatField(null=True)
     expo_index_day = models.FloatField(null=True)
@@ -122,8 +122,8 @@ class Vulnerability(models.Model):
 class Tile(models.Model):
     """Elementary element on the map with the value of the indice."""
 
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     plantability_indice = models.FloatField(null=True)
     plantability_normalized_indice = models.FloatField(null=True, blank=True)
     details = models.JSONField(null=True, blank=True)
@@ -158,7 +158,7 @@ class Tile(models.Model):
 class Data(models.Model):
     """Land occupancy data"""
 
-    geometry = GeometryField(srid=2154)
+    geometry = GeometryField(srid=SRID_DB)
     metadata = models.CharField(max_length=50, null=True, blank=True)
     factor = models.CharField(max_length=50, null=True, blank=True)
 
@@ -203,8 +203,8 @@ def before_delete_mvt_tile(sender, instance, **kwargs):
 class Lcz(models.Model):
     """Elementary element on the map with the value of the LCZ description."""
 
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     lcz_index = models.CharField(max_length=4, null=True)
     lcz_description = models.CharField(max_length=50, null=True)
     details = models.JSONField(null=True, blank=True)
@@ -224,8 +224,8 @@ class Lcz(models.Model):
 class Cadastre(models.Model):
     """Cadastre parcels for Lyon metropolitan area."""
 
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
     parcel_id = models.CharField(max_length=50, unique=True)
     city_code = models.CharField(max_length=10)
     city_name = models.CharField(max_length=200, null=True, blank=True)
@@ -255,48 +255,6 @@ class Cadastre(models.Model):
         return f"Parcel {self.parcel_id} in {self.commune_name}"
 
 
-class HotSpot(models.Model):
-    "Points were initiaves are going on."
-
-    geometry = PointField(srid=2154)
-    map_geometry = PointField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    description = models.JSONField(null=True, blank=True)
-    city_name = models.CharField(max_length=200)
-    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="hotspot")
-
-    geolevel = GeoLevel.CADASTRE.value
-    datatype = DataType.CADASTRE.value
-
-    def get_layer_properties(self):
-        """Return the properties of the hotspot point for the MVT datatype."""
-        return {
-            "id": self.id,
-            "description": self.description,
-            "city_name": self.city_name,
-            "city": self.city,
-        }
-
-
-class BiosphereFunctionalIntegrity(models.Model):
-    """
-    Biodiversity integrity
-    """
-
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
-    indice = models.IntegerField() # between 0 and 100
-
-    geolevel = GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
-    datatype = DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
-
-    def get_layer_properties(self):
-        """Return the properties of the hotspot point for the MVT datatype."""
-        return {
-            "id": self.id,
-            "indice": self.indice,
-        }
-
-
 class StrateChoices(models.TextChoices):
     ARBUSTIF = "arbustif", "Arbustif"
     ARBORESCENT = "arborescent", "Arborescent"
@@ -306,13 +264,20 @@ class StrateChoices(models.TextChoices):
 class Vegestrate(models.Model):
     """Vegestrate data."""
 
-    geometry = PolygonField(srid=2154)
-    map_geometry = PolygonField(srid=TARGET_MAP_PROJ, null=True, blank=True)
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
 
     strate = models.CharField(
         max_length=20, choices=StrateChoices.choices, null=True, blank=True
     )
     surface = models.FloatField(null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["strate", "surface"], name="vegestrate_strate_surface_idx"
+            ),
+        ]
 
     geolevel = GeoLevel.TILE.value
     datatype = DataType.VEGESTRATE.value
@@ -330,7 +295,6 @@ class Vegestrate(models.Model):
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)
 @receiver(pre_save, sender=Cadastre)
-@receiver(pre_save, sender=HotSpot)
 @receiver(pre_save, sender=Vegestrate)
 @receiver(pre_save, sender=BiosphereFunctionalIntegrity)
 def before_save(sender, instance, **kwargs):
