@@ -32,3 +32,23 @@
         - "{{ var_log_path }}"
         - "{{ venv.path }}"
         - "/etc/nginx/sites-enabled/{{ project_slug }}"
+
+    - name: Remove nginx showcase configs for feature branch
+      file:
+        path: "/etc/nginx/sites-enabled/{{ item }}"
+        state: absent
+      loop:
+        - "{{ main_hostname }}"
+        - "https-{{ main_hostname }}"
+        - "{{ showcase_hostname }}"
+        - "https-{{ showcase_hostname }}"
+      notify:
+        - Reload nginx
+
+    - name: Delete certbot certificates for feature branch
+      ansible.builtin.command: "certbot delete --cert-name {{ item }} -n"
+      loop:
+        - "{{ main_hostname }}"
+        - "{{ showcase_hostname }}"
+      become: true
+      ignore_errors: true
