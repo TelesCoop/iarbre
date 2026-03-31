@@ -15,6 +15,7 @@ from .views import (
     RasterDownloadView,
     IArbreWFSView,
     VegetationTileView,
+    WMSView,
 )
 
 router = routers.DefaultRouter()
@@ -56,4 +57,5 @@ urlpatterns = [
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
     path("wfs/", IArbreWFSView.as_view()),
+    path("wms/", WMSView.as_view(), name="wms"),
 ]

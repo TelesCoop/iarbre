@@ -15,6 +15,8 @@ from rasterio.warp import Resampling
 from rasterio.windows import from_bounds
 from rest_framework.views import APIView
 
+from api.constants import VEGESTRATE_COLOR_MAP, VEGESTRATE_FILES
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,10 +33,20 @@ class VegetationTileView(APIView):
         tile_x = int(x)
         tile_y = int(y)
 
+        year = int(request.query_params.get("year", 2023))
+        resolution = request.query_params.get("resolution", "02")
+        postprocess = request.query_params.get("postprocess", "true").lower() == "true"
+        version_param = request.query_params.get("version", "")
+        version = int(version_param) if version_param and postprocess else None
+
+        filename = VEGESTRATE_FILES.get((year, resolution, postprocess, version))
+        if not filename:
+            raise Http404("No raster file for the requested parameters")
+
         raster_path = os.path.join(
             settings.MEDIA_ROOT,
-            "rasters",
-            "vegestrate_lyonmetro_02m_postprocessed.tif",
+            "rasters/vegestrate",
+            filename,
         )
 
         if not os.path.exists(raster_path):
@@ -74,17 +86,10 @@ class VegetationTileView(APIView):
                         resampling=Resampling.bilinear,
                     )
 
-                    color_map = {
-                        0: (0, 0, 0, 0),
-                        1: (200, 217, 111, 255),
-                        2: (58, 145, 68, 255),
-                        3: (20, 69, 47, 255),
-                    }
-
                     h, w = data.shape
                     rgba_data = np.zeros((h, w, 4), dtype=np.uint8)
 
-                    for value, color in color_map.items():
+                    for value, color in VEGESTRATE_COLOR_MAP.items():
                         mask = data == value
                         rgba_data[mask] = color
 

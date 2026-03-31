@@ -26,7 +26,7 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
+import { VEGESTRATE_HEIGHT_MAP, VegestrateMode, VegestrateModeToParams } from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -62,6 +62,8 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+
+  const vegestrateMode = ref<VegestrateMode>(VegestrateMode.POSTPROCESS_V1_2023_02)
 
   const {
     clearAllFilters,
@@ -315,7 +317,15 @@ export const useMapStore = defineStore("map", () => {
 
     if (datatype === DataType.VEGESTRATE) {
       // Raster source for vegetation
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png`
+      const { year, resolution, postprocess, version } =
+        VegestrateModeToParams[vegestrateMode.value]
+      const params = new URLSearchParams({
+        year: String(year),
+        resolution,
+        postprocess: String(postprocess),
+        version: version !== null ? String(version) : ""
+      })
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png?${params}`
       map.addSource(sourceId, {
         type: "raster",
         tiles: [tileUrl],
@@ -401,6 +411,7 @@ export const useMapStore = defineStore("map", () => {
           mapInstance.removeSource(sourceId)
         }
       }
+      mapInstance.setMaxZoom(datatype === DataType.VEGESTRATE ? MAX_ZOOM + 2 : MAX_ZOOM)
       removeControls(mapInstance)
       initTiles(mapInstance)
       if (showQPVLayer.value) {
@@ -964,6 +975,7 @@ export const useMapStore = defineStore("map", () => {
     selectedCadastreParcel,
     clearCadastreSelection,
     use3D,
-    toggle3D
+    toggle3D,
+    vegestrateMode
   }
 })
