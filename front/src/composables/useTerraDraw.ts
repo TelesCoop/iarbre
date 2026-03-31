@@ -15,7 +15,6 @@ import {
   TerraDrawAngledRectangleMode,
   TerraDrawCircleMode,
   TerraDrawFreehandMode,
-  TerraDrawSectorMode,
   TerraDrawSelectMode
 } from "terra-draw"
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter"
@@ -81,14 +80,6 @@ export function useShapeDrawing() {
           }
         }),
         new TerraDrawFreehandMode({
-          styles: {
-            fillColor: terraDrawStyles.fillColor,
-            fillOpacity: terraDrawStyles.fillOpacity,
-            outlineColor: terraDrawStyles.outlineColor,
-            outlineWidth: terraDrawStyles.outlineWidth
-          }
-        }),
-        new TerraDrawSectorMode({
           styles: {
             fillColor: terraDrawStyles.fillColor,
             fillOpacity: terraDrawStyles.fillOpacity,
@@ -165,7 +156,6 @@ export function useShapeDrawing() {
       rectangle: "rectangle",
       circle: "circle",
       "angled-rectangle": "angled-rectangle",
-      sector: "sector",
       select: "select"
     }
 

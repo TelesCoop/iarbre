@@ -12,7 +12,6 @@ const SELECTION_MODE_LABELS: Record<SelectionMode, string> = {
   [SelectionMode.RECTANGLE]: "Sélection rectangle",
   [SelectionMode.CIRCLE]: "Sélection cercle",
   [SelectionMode.ANGLED_RECTANGLE]: "Sélection rectangle incliné",
-  [SelectionMode.SECTOR]: "Sélection secteur",
   [SelectionMode.SELECT]: "Sélection"
 }
 
@@ -26,7 +25,6 @@ const instructions: Record<SelectionMode, string> = {
   [SelectionMode.RECTANGLE]: "drag",
   [SelectionMode.CIRCLE]: "drag",
   [SelectionMode.ANGLED_RECTANGLE]: "drag",
-  [SelectionMode.SECTOR]: "drag",
   [SelectionMode.POINT]: "default",
   [SelectionMode.SELECT]: "default"
 }
