@@ -10,7 +10,14 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
-from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability,BiosphereFunctionalIntegrity
+from iarbre_data.models import (
+    MVTTile,
+    Tile,
+    Lcz,
+    Vulnerability,
+    BiosphereFunctionalIntegrity,
+    Vegestrate,
+)
 from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
 from rest_framework.response import Response
 
@@ -37,7 +44,7 @@ DATATYPE_MODEL_MAP = {
     DataType.LCZ.value: Lcz,
     DataType.VULNERABILITY.value: Vulnerability,
     DataType.TILE.value: Tile,
-    DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegrity
+    DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value: BiosphereFunctionalIntegrity,
     DataType.VEGESTRATE.value: Vegestrate,
 }
 

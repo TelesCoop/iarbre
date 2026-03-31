@@ -93,7 +93,8 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
                     map_geometry=GEOSGeometry(data["map_geometry"].wkt),
                     indice=float(data["class"]),
                 )
-                for _, data in batch.iterrows() if float(data["class"]) > 0
+                for _, data in batch.iterrows()
+                if float(data["class"]) > 0
             ]
         )
 

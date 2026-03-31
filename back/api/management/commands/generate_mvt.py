@@ -19,6 +19,7 @@ from iarbre_data.models import (
     Cadastre,
     MVTTile,
     BiosphereFunctionalIntegrity,
+    Vegestrate,
 )
 
 

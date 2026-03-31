@@ -3,13 +3,22 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
+import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
+import type { VegetationData } from "@/types/vegetation"
 import { getTileDetails } from "@/services/tileService"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
+type ContextData =
+  | PlantabilityData
+  | VulnerabilityData
+  | ClimateData
+  | PlantabilityVulnerabilityData
+  | BiosphereIntegrityData
+  | VegetationData
+  | null
+
 export function useContextData(selectedDataTypeRef: Ref<DataType>) {
-  const data = ref<
-    PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
-  >(null)
+  const data = ref<ContextData>(null)
   const selectedDataType = selectedDataTypeRef
 
   const setData = async (
@@ -22,12 +31,7 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
     if (!featureId) return null
     const stringId = String(featureId)
 
-    let newData:
-      | PlantabilityData
-      | VulnerabilityData
-      | ClimateData
-      | PlantabilityVulnerabilityData
-      | null = null
+    let newData: ContextData = null
 
     if (indexValue === undefined) {
       newData = await getTileDetails(stringId, selectedDataType.value)

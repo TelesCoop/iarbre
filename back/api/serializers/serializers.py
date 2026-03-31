@@ -9,6 +9,7 @@ from iarbre_data.models import (
     Tile,
     Vulnerability,
     BiosphereFunctionalIntegrity,
+    Vegestrate,
 )
 
 

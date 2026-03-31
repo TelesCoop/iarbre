@@ -291,6 +291,21 @@ class Vegestrate(models.Model):
         }
 
 
+class BiosphereFunctionalIntegrity(models.Model):
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
+    indice = models.IntegerField()
+
+    geolevel = GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+    datatype = DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+
+    def get_layer_properties(self):
+        return {
+            "id": self.id,
+            "indice": self.indice,
+        }
+
+
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)

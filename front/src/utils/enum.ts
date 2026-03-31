@@ -11,7 +11,7 @@ export enum DataType {
   VULNERABILITY = "vulnerability",
   CLIMATE_ZONE = "lcz",
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
-  VEGESTRATE = "vegestrate"
+  VEGESTRATE = "vegestrate",
   BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
 }
 
@@ -44,7 +44,6 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
   [DataType.VEGESTRATE]: "Strates végétales",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère"
-
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -66,8 +65,8 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.PLANTABILITY_VULNERABILITY]:
     '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME</a>',
   [DataType.VEGESTRATE]:
-    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>'
-  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "2025 Emile Balembois — Licence CC BY-NC-SA 4.0",
+    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "2025 Emile Balembois — Licence CC BY-NC-SA 4.0"
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {

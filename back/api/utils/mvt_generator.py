@@ -515,7 +515,7 @@ class MVTGeneratorWorker:
             )
             west, south, east, north = tile_polygon.extent
             mvt_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
-            mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=TARGET_MAP_PROJ)
+            mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=SRID_MAPLIBRE)
             df_clipped = gpd.clip(gdf, mvt_gdf)
 
             side_length = self._compute_tile_side_length(tile_polygon)

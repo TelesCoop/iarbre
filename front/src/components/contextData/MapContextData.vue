@@ -48,7 +48,7 @@ defineProps({
       />
       <map-context-data-vegetation
         v-if="mapStore.selectedDataType === DataType.VEGESTRATE"
-        :data="mapStore.contextData.data as unknown as VegetationData"
+        :data="mapStore.contextData.data as VegetationData"
       />
     </template>
   </div>
