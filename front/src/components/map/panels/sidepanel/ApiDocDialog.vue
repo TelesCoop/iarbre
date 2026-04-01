@@ -50,7 +50,6 @@ const wmsParams: Param[] = [
 ]
 
 const datasets = [
-  { label: "Plantabilité", url: `${origin}/api/rasters/plantability/` },
   {
     label: "Végéstrate 2018 - brut",
     url: `${origin}/api/rasters/vegestrate/?year=2018&resolution=02&postprocess=false`
