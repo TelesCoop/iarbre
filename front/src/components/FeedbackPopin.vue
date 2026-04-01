@@ -3,21 +3,22 @@ import { ref, computed } from "vue"
 import FeedbackForm from "@/components/forms/FeedbackForm.vue"
 import AppDialog from "@/components/shared/AppDialog.vue"
 
-const modelValue = defineModel({
-  type: Boolean,
-  required: true
-})
+const props = defineProps<{
+  modelValue: boolean
+}>()
+
+const emit = defineEmits<{
+  "update:modelValue": [value: boolean]
+  "submit-feedback": [data: { email: string; feedback: string }]
+}>()
 
 const visible = computed({
-  get: () => modelValue.value,
-  set: (value: boolean) => {
-    modelValue.value = value
-  }
+  get: () => props.modelValue,
+  set: (value: boolean) => emit("update:modelValue", value)
 })
 
 const email = ref("")
 const feedback = ref("")
-const emit = defineEmits(["submit-feedback", "close"])
 </script>
 
 <template>
@@ -28,7 +29,6 @@ const emit = defineEmits(["submit-feedback", "close"])
     data-cy="feedback-popin"
     header="Votre avis compte !"
     modal
-    @hide="emit('close')"
   >
     <FeedbackForm
       :email="email"

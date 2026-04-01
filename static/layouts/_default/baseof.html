@@ -10,10 +10,9 @@
     .Title .Site.Title }} {{ end }}
     <title>{{ $title }}</title>
 
-    {{ $description := "Enraciner la résilience des territoires." }} {{ if
-    .Description }} {{ $description = .Description }} {{ else if
-    .Site.Params.meta.Description }} {{ $description =
-    .Site.Params.meta.Description }} {{ end }}
+    {{ $description := .Site.Params.meta.Description }} {{ if .Description }} {{
+    $description = .Description }} {{ else if .Params.summary }} {{ $description
+    = .Params.summary }} {{ end }}
     <meta name="description" content="{{ $description }}" />
 
     {{ $image := "" }} {{ if .Params.image }} {{ $image = .Params.image | absURL
@@ -33,6 +32,15 @@
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ .Permalink }}" />
+
+    {{ if .IsHome }}
+    <link
+      rel="preload"
+      as="image"
+      href="/images/banner.webp"
+      type="image/webp"
+    />
+    {{ end }}
 
     <!-- Open Graph / Facebook -->
     <meta content="website" property="og:type" />
@@ -72,6 +80,84 @@
     />
 
     {{ block "meta-extended" . }} {{end}}
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://iarbre.fr/#website",
+            "url": "https://iarbre.fr/",
+            "name": "IA·rbre",
+            "description": "Plateforme collaborative de production, d'analyse et de visualisation de données territoriales pour accompagner les décisions en faveur de l'adaptation urbaine au changement climatique.",
+            "inLanguage": "fr-FR",
+            "publisher": { "@id": "https://iarbre.fr/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://iarbre.fr/#organization",
+            "name": "IA·rbre",
+            "url": "https://iarbre.fr/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://iarbre.fr/images/logo.jpg",
+              "width": 1200,
+              "height": 630
+            },
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "contact@telescoop.fr",
+              "contactType": "customer support",
+              "availableLanguage": "French"
+            },
+            "location": {
+              "@type": "Place",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Lyon",
+                "addressCountry": "FR"
+              }
+            },
+            "funder": [
+              {
+                "@type": "Organization",
+                "name": "Caisse des Dépôts",
+                "url": "https://www.caissedesdepots.fr/"
+              },
+              {
+                "@type": "Organization",
+                "name": "Programme France 2030",
+                "url": "https://www.gouvernement.fr/france-2030"
+              }
+            ],
+            "member": [
+              {
+                "@type": "Organization",
+                "name": "Telescoop",
+                "url": "https://telescoop.fr"
+              },
+              {
+                "@type": "Organization",
+                "name": "Laboratoire Érasme",
+                "url": "https://www.erasme.org"
+              },
+              {
+                "@type": "Organization",
+                "name": "Laboratoire LIRIS",
+                "url": "https://liris.cnrs.fr/"
+              },
+              {
+                "@type": "Organization",
+                "name": "Métropole de Lyon",
+                "url": "https://www.grandlyon.com/"
+              }
+            ],
+            "sameAs": ["https://carte.iarbre.fr"]
+          }
+        ]
+      }
+    </script>
 
     <!-- Google Fonts: DM Sans & Libre Baskerville -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
