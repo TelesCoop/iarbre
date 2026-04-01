@@ -1,35 +1,22 @@
 <script lang="ts" setup>
-import { computed } from "vue"
-import { type VegetationData } from "@/types/vegetation"
-import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
-import { useMapStore } from "@/stores/map"
-import VegestrateContextDataInfo from "./vegestrate/VegestrateContextDataInfo.vue"
-
-const mapStore = useMapStore()
-const zoomLevel = computed(() => mapStore.currentZoom)
-
-interface VegetationCardProps {
-  data?: VegetationData | null
-}
-
-const props = withDefaults(defineProps<VegetationCardProps>(), {
-  data: null
-})
-
-const currentData = computed<VegetationData | null>(() => props.data ?? null)
+import IconInfo from "@/components/icons/IconInfo.vue"
 </script>
 
 <template>
-  <ContextDataMainContainer
-    color-scheme="vegetation"
-    title="vegetation"
-    description="Données de végétation issues de la fusion de la classification du LIDAR 2023 et de la classification des orthophotos à l'aide de FLAIR-HUB de l'IGN."
-    :data="currentData"
-    empty-message="Cliquez sur un carreau."
-    :zoom-level="zoomLevel"
-  >
-    <template #content="{ data: vegetationData }">
-      <VegestrateContextDataInfo :data="vegetationData" />
-    </template>
-  </ContextDataMainContainer>
+  <div class="flex flex-col gap-3 px-2 py-4">
+    <div class="flex items-start gap-2.5 bg-primary-50 border border-primary-100 rounded-lg p-3">
+      <IconInfo class="shrink-0 mt-0.5 text-primary-500" :size="16" aria-hidden="true" />
+      <p class="text-sm text-primary-900">
+        Sélectionnez un raster ci-dessus pour le visualiser sur la carte.
+      </p>
+    </div>
+    <div class="flex items-start gap-2.5 bg-gray-50 border border-gray-100 rounded-lg p-3">
+      <IconInfo class="shrink-0 mt-0.5 text-gray-400" :size="16" aria-hidden="true" />
+      <p class="text-sm text-gray-700">
+        Récupérez les données en cliquant sur
+        <span class="font-medium text-gray-900">"Obtenir les données"</span> ou connectez votre QGIS
+        à un flux WMS.
+      </p>
+    </div>
+  </div>
 </template>

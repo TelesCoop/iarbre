@@ -1,5 +1,55 @@
 import type { VegetationIndice } from "@/types/vegetation"
 
+export enum VegestrateMode {
+  RAW_2018_02 = "raw_2018_02",
+  POSTPROCESS_V3_2018_02 = "postprocess_v3_2018_02",
+  RAW_2023_02 = "raw_2023_02",
+  POSTPROCESS_V1_2023_02 = "postprocess_v1_2023_02",
+  POSTPROCESS_V2_2023_02 = "postprocess_v2_2023_02",
+  POSTPROCESS_V3_2023_02 = "postprocess_v3_2023_02"
+}
+
+export const VegestrateModeToParams: Record<
+  VegestrateMode,
+  { year: number; resolution: string; postprocess: boolean; version: number | null }
+> = {
+  [VegestrateMode.RAW_2018_02]: { year: 2018, resolution: "02", postprocess: false, version: null },
+  [VegestrateMode.POSTPROCESS_V3_2018_02]: {
+    year: 2018,
+    resolution: "02",
+    postprocess: true,
+    version: 3
+  },
+  [VegestrateMode.RAW_2023_02]: { year: 2023, resolution: "02", postprocess: false, version: null },
+  [VegestrateMode.POSTPROCESS_V1_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 1
+  },
+  [VegestrateMode.POSTPROCESS_V2_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 2
+  },
+  [VegestrateMode.POSTPROCESS_V3_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 3
+  }
+}
+
+export const VegestrateModeToLabel: Record<VegestrateMode, string> = {
+  [VegestrateMode.RAW_2018_02]: "2018 - 20cms - brut",
+  [VegestrateMode.POSTPROCESS_V3_2018_02]: "2018 - 20cms - post-traitement v3",
+  [VegestrateMode.RAW_2023_02]: "2023 - 20cms - brut",
+  [VegestrateMode.POSTPROCESS_V1_2023_02]: "2023 - 20cms - post-traitement v1",
+  [VegestrateMode.POSTPROCESS_V2_2023_02]: "2023 - 20cms - post-traitement v2",
+  [VegestrateMode.POSTPROCESS_V3_2023_02]: "2023 - 20cms - post-traitement v3"
+}
+
 type StrateInfo = { label: string; color: string; height: number }
 
 const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
