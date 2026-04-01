@@ -1,5 +1,25 @@
 # Journal des changements
 
+## 🔖 0.27.0 (2026-04-01) : Petits changements sur le site statique et sur la cartographie
+
+### 🛠️ enhance: Mise à jour du site iarbre.fr
+
+On ajoute un bloc qui précise notre proposition de valeur sur notre site de présentation du projet.
+
+&rarr; PR[#574](https://github.com/TelesCoop/iarbre/pull/574)
+
+### 🛠️ enhance : Rendre la méthodologie plus accesible
+
+En attendant la refonte de la documentation méthodologique, nous avons commencé par rendre les liens plus visibles et compléter les textes existants.
+
+&rarr; Commit [04c3b5b](https://github.com/TelesCoop/iarbre/commit/04c3b5b678e5435335fdfed4d167488fe5aff79d)
+
+Au passage quelques petites corrections de bugs ont été apportées :
+
+- Commit [ba2444f](https://github.com/TelesCoop/iarbre/commit/ba2444fab04d1208a80a32514989605c65b318ef) : pour enlever la sélection par cercle dans les outils de sélection
+- Correction de la date du calque de plantabilité
+- Ajout de balises SEO
+
 ## 🔖 0.26.0 (2026-03-25) : Améliorations et trackings sur le backend
 
 ### 🛠️ enhance : Tracking et logger
