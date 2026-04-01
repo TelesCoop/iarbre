@@ -58,6 +58,22 @@ describe("Map - Desktop", () => {
     )
   })
 
+  it("changes to orthophoto map style", () => {
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.ORTHOPHOTO}"]`).should("be.visible").click()
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  })
+
   it("switches data layer via sidebar", () => {
     // Desktop uses sidebar layer switcher (filter visible to exclude mobile hidden elements)
     cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
