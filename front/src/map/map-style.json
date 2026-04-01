@@ -85,6 +85,26 @@
     },
     "version": 8
   },
+  "ORTHOPHOTO": {
+    "layers": [
+      {
+        "id": "orthophoto-layer",
+        "source": "orthophoto",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "orthophoto": {
+        "attribution": "Orthophotographie &copy; <a href='https://data.grandlyon.com' target='_blank'>M\u00e9tropole de Lyon</a> 2023",
+        "tileSize": 256,
+        "tiles": [
+          "{API_BASE_URL}/orthophoto/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  },
   "OSM": {
     "layers": [
       {

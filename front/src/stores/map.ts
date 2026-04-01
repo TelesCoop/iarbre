@@ -434,9 +434,12 @@ export const useMapStore = defineStore("map", () => {
         newStyle = JSON.parse(
           JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", fullBaseApiUrl)
         ) as maplibregl.StyleSpecification
+      } else if (mapstyle === MapStyle.ORTHOPHOTO) {
+        const fullBaseApiUrl = getFullBaseApiUrl()
+        newStyle = JSON.parse(
+          JSON.stringify(mapStyles.ORTHOPHOTO).replace("{API_BASE_URL}", fullBaseApiUrl)
+        ) as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.SATELLITE) {
-        // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
-        // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
         newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
       } else if (mapstyle === MapStyle.OSM) {
         newStyle = mapStyles.OSM as maplibregl.StyleSpecification
