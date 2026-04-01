@@ -25,7 +25,6 @@ export enum SelectionMode {
   RECTANGLE = "rectangle",
   CIRCLE = "circle",
   ANGLED_RECTANGLE = "angled-rectangle",
-  SECTOR = "sector",
   SELECT = "select"
 }
 
@@ -55,7 +54,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]:
     '<a class="text-primary-500" href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA (2022-07)</a>',
   [DataType.PLANTABILITY]:
-    '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (2025-07)</a>',
+    '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (2025-03)</a>',
   [DataType.VULNERABILITY]:
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2024-09)</a>',
   [DataType.PLANTABILITY_VULNERABILITY]:
