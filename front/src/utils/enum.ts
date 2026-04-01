@@ -25,7 +25,6 @@ export enum SelectionMode {
   RECTANGLE = "rectangle",
   CIRCLE = "circle",
   ANGLED_RECTANGLE = "angled-rectangle",
-  SECTOR = "sector",
   SELECT = "select"
 }
 

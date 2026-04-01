@@ -42,12 +42,6 @@ const selectionModes: SelectionModeOption[] = [
     icon: "angled-rectangle",
     label: "Sélection par rectangle incliné",
     dataCy: "selection-mode-angled-rectangle"
-  },
-  {
-    mode: SelectionMode.SECTOR,
-    icon: "sector",
-    label: "Sélection par secteur",
-    dataCy: "selection-mode-sector"
   }
 ]
 
