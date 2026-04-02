@@ -24,6 +24,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
@@ -85,6 +86,11 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
+        "step",
+        ["get", "indice"],
+        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
     }
@@ -105,7 +111,8 @@ export const useMapStore = defineStore("map", () => {
         "*",
         ["match", ["get", "indice"], ...VEGESTRATE_HEIGHT_MAP],
         HEIGHT_MULTIPLIER
-      ]
+      ],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
     }
   })
 
@@ -268,6 +275,8 @@ export const useMapStore = defineStore("map", () => {
         contextData.setData(featureId, score, sourceValues)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
+      } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        contextData.setData(featureId, score)
       } else {
         contextData.setData(featureId)
       }
