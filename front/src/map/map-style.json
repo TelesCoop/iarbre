@@ -88,6 +88,11 @@
   "ORTHOPHOTO": {
     "layers": [
       {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      },
+      {
         "id": "orthophoto-layer",
         "source": "orthophoto",
         "type": "raster"
@@ -99,6 +104,16 @@
         "tileSize": 256,
         "tiles": [
           "{API_BASE_URL}/orthophoto/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      },
+      "osm": {
+        "attribution": "&copy; OpenStreetMap Contributors",
+        "tileSize": 256,
+        "tiles": [
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
         ],
         "type": "raster"
       }

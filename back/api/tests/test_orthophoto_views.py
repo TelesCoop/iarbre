@@ -38,6 +38,7 @@ class OrthophotoTileViewTest(TestCase):
         self.assertEqual(params["FORMAT"], "image/png")
         self.assertEqual(params["WIDTH"], 256)
         self.assertEqual(params["HEIGHT"], 256)
+        self.assertEqual(params["TRANSPARENT"], "TRUE")
 
     @patch("api.views.orthophoto_views.requests.get")
     def test_wms_error_returns_404(self, mock_get):
