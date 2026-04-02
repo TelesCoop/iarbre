@@ -60,3 +60,9 @@ export const BiosphereIntegrityLegend: Record<
   [BiosphereIntegrityLegendName.MID]: BiosphereIntegrityColor.MID,
   [BiosphereIntegrityLegendName.HIGH]: BiosphereIntegrityColor.HIGH
 }
+
+export const BIOSPHERE_INTEGRITY_RANGES: Record<BiosphereIntegrityLegendName, [number, number]> = {
+  [BiosphereIntegrityLegendName.LOW]: [0, 25],
+  [BiosphereIntegrityLegendName.MID]: [25, 50],
+  [BiosphereIntegrityLegendName.HIGH]: [50, 100]
+}
