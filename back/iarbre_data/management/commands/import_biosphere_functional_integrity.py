@@ -2,7 +2,7 @@ from iarbre_data.utils.database import log_progress
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from iarbre_data.models import BiosphereFunctionalIntegrity
-from iarbre_data.settings import TARGET_MAP_PROJ, TARGET_PROJ
+from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
 from concurrent.futures import ThreadPoolExecutor
 
@@ -40,7 +40,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
     gdf = geopandas.read_file(shp_path)
 
     gdf = gdf[["class", "geometry"]]
-    gdf.to_crs(TARGET_PROJ, inplace=True)
+    gdf.to_crs(SRID_DB, inplace=True)
     gdf_filtered = gdf
 
     # Split large geometries using 100m x 100m grid
@@ -55,7 +55,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
         for idx, row in gdf_filtered.iterrows():
             executor.submit(worker, row, 100.0 * idx / gdf_filtered.shape[0])
     gdf_filtered = geopandas.GeoDataFrame(
-        split_geometries, geometry="geometry", crs=TARGET_PROJ
+        split_geometries, geometry="geometry", crs=SRID_DB
     )
 
     # Simple correction for invalid geometry
@@ -63,7 +63,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
     # Check and explode MultiPolygon geometries
     gdf_filtered = gdf_filtered.explode(ignore_index=True)
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
-    gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(TARGET_MAP_PROJ)
+    gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(SRID_MAPLIBRE)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
     gdf_filtered["class"] = gdf_filtered["class"].astype(str)
@@ -103,7 +103,7 @@ class Command(BaseCommand):
     help = "Import Biosphere Functionial Integrity data in the DB."
 
     def handle(self, *args, **options):
-        """Load LCZ from CEREMA and then save all LCZ data in the DB."""
+        """Load the shapefile produced by Emile to add it in the DB."""
         shp_folder = "file_data/biosphere_functional_integrity"
         shp_filename = "MDL_Cosia_CarHab_IFB_4m.shp"
 
