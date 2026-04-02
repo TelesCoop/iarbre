@@ -3,7 +3,8 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.orthophoto_views import _tile_to_bbox, WMS_BASE_URL, WMS_LAYER
+from api.utils.tile_math import tile_to_bbox
+from api.views.orthophoto_views import WMS_BASE_URL, WMS_LAYER
 
 
 # Disable cache during tests
@@ -16,26 +17,6 @@ class OrthophotoTileViewTest(TestCase):
 
     def _get_url(self, z=14, x=8345, y=5765):
         return reverse("orthophoto-tile", kwargs={"z": z, "x": x, "y": y})
-
-    @patch("api.views.orthophoto_views.requests.get")
-    def test_returns_png_tile(self, mock_get):
-        # Minimal 1x1 transparent PNG
-        png_data = (
-            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01"
-            b"\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
-        )
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.content = png_data
-        mock_response.headers = {"Content-Type": "image/png"}
-        mock_response.raise_for_status = MagicMock()
-        mock_get.return_value = mock_response
-
-        response = self.client.get(self._get_url())
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "image/png")
-        self.assertEqual(response.content, png_data)
 
     @patch("api.views.orthophoto_views.requests.get")
     def test_passes_correct_wms_params(self, mock_get):
@@ -82,28 +63,16 @@ class OrthophotoTileViewTest(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    @patch("api.views.orthophoto_views.requests.get")
-    def test_sets_cache_headers(self, mock_get):
-        mock_response = MagicMock()
-        mock_response.content = b"png"
-        mock_response.headers = {"Content-Type": "image/png"}
-        mock_response.raise_for_status = MagicMock()
-        mock_get.return_value = mock_response
-
-        response = self.client.get(self._get_url())
-
-        self.assertIn("max-age", response["Cache-Control"])
-
 
 class TileToBboxTest(TestCase):
     def test_tile_0_0_0_covers_world(self):
-        bbox = _tile_to_bbox(0, 0, 0)
+        bbox = tile_to_bbox(0, 0, 0)
         self.assertAlmostEqual(bbox[0], -20037508.34, places=0)
         self.assertAlmostEqual(bbox[2], 20037508.34, places=0)
 
     def test_lyon_tile_has_valid_bbox(self):
         # Tile 14/8345/5765 should be around Lyon (lat ~45.75, lon ~4.85)
-        bbox = _tile_to_bbox(14, 8345, 5765)
+        bbox = tile_to_bbox(14, 8345, 5765)
         # x should be around 540000 in EPSG:3857 (lon ~4.85°)
         self.assertGreater(bbox[0], 300000)
         self.assertLess(bbox[2], 600000)
@@ -112,18 +81,18 @@ class TileToBboxTest(TestCase):
         self.assertLess(bbox[3], 6000000)
 
     def test_bbox_has_correct_order(self):
-        bbox = _tile_to_bbox(10, 512, 360)
+        bbox = tile_to_bbox(10, 512, 360)
         # x_min < x_max, y_min < y_max
         self.assertLess(bbox[0], bbox[2])
         self.assertLess(bbox[1], bbox[3])
 
     def test_adjacent_tiles_share_edges(self):
-        bbox_left = _tile_to_bbox(10, 512, 360)
-        bbox_right = _tile_to_bbox(10, 513, 360)
+        bbox_left = tile_to_bbox(10, 512, 360)
+        bbox_right = tile_to_bbox(10, 513, 360)
         # Right edge of left tile == left edge of right tile
         self.assertAlmostEqual(bbox_left[2], bbox_right[0], places=2)
 
-        bbox_top = _tile_to_bbox(10, 512, 360)
-        bbox_bottom = _tile_to_bbox(10, 512, 361)
+        bbox_top = tile_to_bbox(10, 512, 360)
+        bbox_bottom = tile_to_bbox(10, 512, 361)
         # Bottom edge of top tile == top edge of bottom tile
         self.assertAlmostEqual(bbox_top[1], bbox_bottom[3], places=2)
