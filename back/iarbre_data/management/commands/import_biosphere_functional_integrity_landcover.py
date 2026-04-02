@@ -1,10 +1,11 @@
 from iarbre_data.utils.database import log_progress
 from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
-from iarbre_data.models import BiosphereFunctionalIntegrity
+from iarbre_data.models import BiosphereFunctionalIntegrityLandCover
 from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
 from concurrent.futures import ThreadPoolExecutor
+from iarbre_data.utils.biosphere_land_cover import CLASS_TO_LAND_COVER, CLASS_TO_BINARY
 
 import geopandas
 import os
@@ -29,7 +30,7 @@ def split_data(shp_folder, shp_filename, batch_folder) -> geopandas.GeoDataFrame
 
 
 def load_data(shp_path) -> geopandas.GeoDataFrame:
-    """Open the shapefile for BiosphèreFunctionalIntegrity.
+    """Open the shapefile for LandCover.
 
     Returns:
         geopandas.GeoDataFrame: The loaded shapefile as a GeoDataFrame.
@@ -71,10 +72,10 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
 
 
 def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
-    """Save LCZ to the database.
+    """Save Land cover from COSIA + CARHAB to the database.
 
     Args:
-        lcz_datas (GeoDataFrame): GeoDataFrame to saselectve to the database.
+        landcover_datas (GeoDataFrame): GeoDataFrame to save in the database.
 
     Returns:
         None
@@ -83,15 +84,13 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     for start in tqdm(range(0, len(lcz_datas), batch_size)):
         end = start + batch_size
         batch = lcz_datas.loc[start:end]
-        data = next(batch.iterrows())[1]
-
-        print(data["geometry"].wkt)
-        BiosphereFunctionalIntegrity.objects.bulk_create(
+        BiosphereFunctionalIntegrityLandCover.objects.bulk_create(
             [
-                BiosphereFunctionalIntegrity(
+                BiosphereFunctionalIntegrityLandCover(
                     geometry=GEOSGeometry(data["geometry"].wkt),
                     map_geometry=GEOSGeometry(data["map_geometry"].wkt),
-                    indice=float(data["class"]),
+                    land_cover=CLASS_TO_LAND_COVER[data["class"]],
+                    binary=CLASS_TO_BINARY[data["class"]],
                 )
                 for _, data in batch.iterrows()
                 if float(data["class"]) > 0
@@ -100,7 +99,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
 
 
 class Command(BaseCommand):
-    help = "Import Biosphere Functionial Integrity data in the DB."
+    help = "Import Land Cover data from COSIA + Carhab in the DB."
 
     def handle(self, *args, **options):
         """Load the shapefile produced by Emile to add it in the DB."""
@@ -110,7 +109,7 @@ class Command(BaseCommand):
         log_progress("Split data")
         batch_folder = os.path.join(shp_folder, f"{shp_filename}_parts")
         if not os.path.exists(batch_folder):
-            BiosphereFunctionalIntegrity.objects.all().delete()
+            BiosphereFunctionalIntegrityLandCover.objects.all().delete()
             split_data(shp_folder, shp_filename, batch_folder)
 
         shp_files = [
@@ -118,10 +117,7 @@ class Command(BaseCommand):
         ]
         for shp_file in shp_files:
             log_progress(f"Load batch { shp_file }")
-            lcz_data = load_data(os.path.join(batch_folder, shp_file))
+            landcover_data = load_data(os.path.join(batch_folder, shp_file))
 
-            save_geometries(lcz_data)
+            save_geometries(landcover_data)
             os.remove(os.path.join(batch_folder, shp_file))
-        # log_progress("Clean model")
-        # log_progress("Load data and pre-process them")
-        # log_progress("Save geometries")
