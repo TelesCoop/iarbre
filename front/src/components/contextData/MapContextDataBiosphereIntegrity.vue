@@ -33,8 +33,8 @@ defineProps<BiosphereIntegrityCardProps>()
     <template #content="{ data: biosphereIntegrityData }">
       <div class="text-sm text-center font-sans">
         <p>
-          {{ biosphereIntegrityData.indice }}% du cercle de rayon 500m autour de cette zone est un
-          espace semi-naturel.
+          Pour chaque pixel de la zone sélectionnée, il y a dans un rayon de 500m
+          {{ biosphereIntegrityData.indice }}% d'espace semi-naturel.
         </p>
       </div>
     </template>

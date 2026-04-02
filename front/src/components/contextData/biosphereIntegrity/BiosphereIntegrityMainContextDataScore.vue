@@ -12,7 +12,7 @@ defineProps<BiosphereIntegrityMainScoreProps>()
     :score="data.indice / 100"
     :max-score="1"
     :percentage="data.indice"
-    name="IFB"
+    name="Score "
     label="ifb"
     color-scheme="biosphereIntegrity"
   />

@@ -6,7 +6,7 @@ import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_planta
 import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 import type { VegetationData } from "@/types/vegetation"
 import { getTileDetails } from "@/services/tileService"
-import { DataType, DataTypeToGeolevel } from "@/utils/enum"
+import { DataType, DataTypeToGeolevel, GeoLevel } from "@/utils/enum"
 
 type ContextData =
   | PlantabilityData
@@ -39,6 +39,13 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
       if (!newData) {
         return
       }
+    } else if (selectedDataType.value === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      newData = {
+        id: stringId,
+        indice: +indexValue,
+        geolevel: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
+        datatype: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+      } as BiosphereIntegrityData
     } else if (
       indexValue !== undefined &&
       (selectedDataType.value === DataType.PLANTABILITY ||

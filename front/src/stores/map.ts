@@ -275,6 +275,8 @@ export const useMapStore = defineStore("map", () => {
         contextData.setData(featureId, score, sourceValues)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
+      } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        contextData.setData(featureId, score)
       } else {
         contextData.setData(featureId)
       }
