@@ -43,6 +43,7 @@ class OrthophotoTileView(APIView):
             "WIDTH": TILE_SIZE,
             "HEIGHT": TILE_SIZE,
             "FORMAT": "image/png",
+            "TRANSPARENT": "TRUE",
         }
 
         try:
