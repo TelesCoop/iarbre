@@ -19,6 +19,11 @@ const options: MapStyleOption[] = [
     image: "/images/plan-ville.png"
   },
   {
+    value: MapStyle.ORTHOPHOTO,
+    label: "Orthophoto",
+    image: "/images/orthophoto.png"
+  },
+  {
     value: MapStyle.SATELLITE,
     label: "Satellite",
     image: "/images/satellite.png"
@@ -155,7 +160,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 .bg-selector-options.is-expanded {
-  max-width: 300px;
+  max-width: 400px;
   opacity: 1;
   padding-left: 0.5rem;
   margin-left: 1.5rem;
