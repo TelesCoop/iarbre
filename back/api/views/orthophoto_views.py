@@ -1,11 +1,12 @@
 import logging
-import math
 
 import requests
 from django.http import HttpResponse, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.views import APIView
+
+from api.utils.tile_math import tile_to_bbox
 
 logger = logging.getLogger(__name__)
 
@@ -15,32 +16,6 @@ TILE_SIZE = 256
 # Cache tiles for 30 days (static imagery)
 CACHE_DURATION = 60 * 60 * 24 * 30
 WMS_TIMEOUT = 10
-
-
-def _tile_to_bbox(z, x, y):
-    """Convert XYZ tile coordinates to EPSG:3857 bounding box."""
-    n = 2**z
-    x_min = x / n * 360.0 - 180.0
-    x_max = (x + 1) / n * 360.0 - 180.0
-
-    y_min_lat = math.atan(math.sinh(math.pi * (1 - 2 * (y + 1) / n)))
-    y_max_lat = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
-
-    # Convert to EPSG:3857 (Web Mercator) meters
-    x_min_m = x_min * 20037508.34 / 180.0
-    x_max_m = x_max * 20037508.34 / 180.0
-    y_min_m = (
-        math.log(math.tan((90 + math.degrees(y_min_lat)) * math.pi / 360.0))
-        / math.pi
-        * 20037508.34
-    )
-    y_max_m = (
-        math.log(math.tan((90 + math.degrees(y_max_lat)) * math.pi / 360.0))
-        / math.pi
-        * 20037508.34
-    )
-
-    return x_min_m, y_min_m, x_max_m, y_max_m
 
 
 class OrthophotoTileView(APIView):
@@ -56,7 +31,7 @@ class OrthophotoTileView(APIView):
     def get(self, request, z, x, y):
         z, x, y = int(z), int(x), int(y)
 
-        bbox = _tile_to_bbox(z, x, y)
+        bbox = tile_to_bbox(z, x, y)
 
         params = {
             "SERVICE": "WMS",
