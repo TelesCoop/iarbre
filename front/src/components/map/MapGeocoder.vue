@@ -73,7 +73,7 @@ onUnmounted(() => {
 
 @media (min-width: 1024px) {
   .geocoder-wrapper {
-    width: 240px;
+    width: 100%;
   }
 }
 </style>

@@ -78,7 +78,7 @@ const handleCopyCoordinates = async () => {
 
 @media (min-width: 1024px) {
   .coordinates-button {
-    @apply w-auto gap-2 py-2 px-3 text-sm justify-start;
+    @apply w-auto gap-2 py-2 px-3 text-sm justify-start mx-auto;
   }
 }
 

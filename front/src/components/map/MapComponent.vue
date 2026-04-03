@@ -62,7 +62,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <!-- Top-right controls stack -->
   <div class="top-right-controls">
-    <MapCoordinates />
+    <MapTopRightPanel />
     <MapGeocoder />
   </div>
 
@@ -130,10 +130,6 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 @media (min-width: 1024px) {
   .top-right-controls {
     width: auto;
-  }
-
-  .top-right-controls > * {
-    @apply w-auto;
   }
 }
 
