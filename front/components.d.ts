@@ -90,6 +90,7 @@ declare module 'vue' {
     MapSidePanelHeader: typeof import('./src/components/map/panels/sidepanel/MapSidePanelHeader.vue')['default']
     MapStyleOption: typeof import('./src/components/map/controls/MapStyleOption.vue')['default']
     MapSwitcher: typeof import('./src/components/mapSwitcher/MapSwitcher.vue')['default']
+    MapTopRightPanel: typeof import('./src/components/map/MapTopRightPanel.vue')['default']
     NavbarComponent: typeof import('./src/components/navbar/NavbarComponent.vue')['default']
     PermeabilityWidget: typeof import('./src/components/dashboard/widgets/PermeabilityWidget.vue')['default']
     PlantabilityCityCard: typeof import('./src/components/division/PlantabilityCityCard.vue')['default']
