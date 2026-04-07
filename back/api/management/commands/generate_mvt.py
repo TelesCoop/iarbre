@@ -114,7 +114,9 @@ class Command(BaseCommand):
         number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
-        zoom_levels = options["zoom_levels"]
+        min_zoom_levels = options["min_zoom_levels"]
+        max_zoom_levels = options["max_zoom_levels"]
+        zoom_levels = (min_zoom_levels, max_zoom_levels)
         if geolevel == GeoLevel.TILE.value and datatype == DataType.TILE.value:
             mdl = Tile
         elif geolevel == GeoLevel.TILE.value and datatype == DataType.VEGESTRATE.value:
