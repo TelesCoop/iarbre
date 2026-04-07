@@ -63,13 +63,13 @@ class Command(BaseCommand):
             help="Keep already existing tiles, do not delete them.",
         )
         parser.add_argument(
-            "--min_zoom_levels",
+            "--min_zoom_level",
             type=int,
             default=DEFAULT_ZOOM_LEVELS[0],
             help="Min zoom levels to generate MVTs.",
         )
         parser.add_argument(
-            "--max_zoom_levels",
+            "--max_zoom_level",
             type=int,
             default=DEFAULT_ZOOM_LEVELS[1],
             help="Max zoom levels to generate MVTs.",
@@ -114,8 +114,8 @@ class Command(BaseCommand):
         number_of_threads_by_worker = options["number_of_threads_by_worker"]
         geolevel = options["geolevel"]
         datatype = options["datatype"]
-        min_zoom_levels = options["min_zoom_levels"]
-        max_zoom_levels = options["max_zoom_levels"]
+        min_zoom_levels = options["min_zoom_level"]
+        max_zoom_levels = options["max_zoom_level"]
         zoom_levels = (min_zoom_levels, max_zoom_levels)
         if geolevel == GeoLevel.TILE.value and datatype == DataType.TILE.value:
             mdl = Tile
