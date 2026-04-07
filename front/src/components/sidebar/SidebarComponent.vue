@@ -12,14 +12,13 @@ import { useAppStore } from "@/stores/app"
 const router = useRouter()
 const route = useRoute()
 const appStore = useAppStore()
-const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
 const toast = useToast()
 
 const isDashboard = computed(() => route.name === "dashboard")
 
 const handleContactClick = () => {
-  feedbackIsVisible.value = true
+  appStore.feedbackVisible = true
 }
 
 const handleFeaturesClick = () => {
@@ -61,7 +60,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     life: 5000,
     group: "br"
   })
-  feedbackIsVisible.value = false
+  appStore.feedbackVisible = false
   return true
 }
 </script>
@@ -623,11 +622,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 
   <WelcomeMessage v-model="welcomeIsVisible" />
 
-  <FeedbackPopin
-    :model-value="feedbackIsVisible"
-    @close="feedbackIsVisible = false"
-    @submit-feedback="sendFeedbackToAPI"
-  />
+  <FeedbackPopin v-model="appStore.feedbackVisible" @submit-feedback="sendFeedbackToAPI" />
 </template>
 
 <style scoped>

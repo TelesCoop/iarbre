@@ -10,7 +10,6 @@ import AppButton from "@/components/shared/AppButton.vue"
 import { useToast } from "@/composables/useToast"
 
 const appStore = useAppStore()
-const feedbackIsVisible = ref(false)
 const welcomeIsVisible = ref(false)
 const mobileMenuVisible = ref(false)
 const toast = useToast()
@@ -40,7 +39,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     life: 5000,
     group: "br"
   })
-  feedbackIsVisible.value = false
+  appStore.feedbackVisible = false
   return true
 }
 </script>
@@ -68,7 +67,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
           data-cy="open-feedback-button"
           variant="text"
           size="sm"
-          @click="feedbackIsVisible = true"
+          @click="appStore.feedbackVisible = true"
         >
           Envoyer votre avis
         </AppButton>
@@ -131,7 +130,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
             class="w-full justify-start"
             @click="
               () => {
-                feedbackIsVisible = true
+                appStore.feedbackVisible = true
                 closeMobileMenu()
               }
             "
@@ -145,11 +144,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 
   <WelcomeMessage v-model="welcomeIsVisible" />
 
-  <FeedbackPopin
-    :model-value="feedbackIsVisible"
-    @close="feedbackIsVisible = false"
-    @submit-feedback="sendFeedbackToAPI"
-  />
+  <FeedbackPopin v-model="appStore.feedbackVisible" @submit-feedback="sendFeedbackToAPI" />
 </template>
 
 <style scoped>

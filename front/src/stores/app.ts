@@ -11,6 +11,7 @@ export const useAppStore = defineStore("app", () => {
     [Drawer.MAP_SCORES]: false
   })
   const sidePanelVisible = ref(true)
+  const feedbackVisible = ref(false)
 
   const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
   const isMobileOrTablet = computed(() => windowWidth.value < convertRemToPx(Breakpoint.MD))
@@ -45,6 +46,7 @@ export const useAppStore = defineStore("app", () => {
     windowWidth,
     drawerVisible,
     sidePanelVisible,
+    feedbackVisible,
     isMobile,
     isMobileOrTablet,
     isDesktop,

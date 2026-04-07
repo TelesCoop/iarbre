@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from "vue"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { useTutorial } from "@/composables/useTutorial"
+import { useAppStore } from "@/stores/app"
 
 interface welcomeProps {
   modelValue?: boolean
@@ -14,6 +15,8 @@ const props = withDefaults(defineProps<welcomeProps>(), {
 const emit = defineEmits<{
   "update:modelValue": [value: boolean]
 }>()
+
+const appStore = useAppStore()
 
 const tutorial = useTutorial()
 
@@ -52,7 +55,10 @@ const startTutorialAndClose = (tutorialFn: () => void) => {
 }
 
 const startTutorial = () => startTutorialAndClose(tutorial.startFullTutorial)
-const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedbackTutorial)
+const openFeedback = () => {
+  closeWelcome()
+  appStore.feedbackVisible = true
+}
 </script>
 
 <template>
@@ -87,7 +93,7 @@ const startFeedbackTutorial = () => startTutorialAndClose(tutorial.startFeedback
         <button
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
           data-cy="welcome-feedback-tutorial"
-          @click="startFeedbackTutorial"
+          @click="openFeedback"
         >
           <span class="text-2xl">💬</span>
           <div>
