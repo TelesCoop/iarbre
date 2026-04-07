@@ -27,8 +27,7 @@ class GenerateMVTCommandTest(TestCase):
             "number_of_threads_by_worker": 1,
             "keep": False,
             "min_zoom_level": 13,
-            "max_zoom_level": 13
-            
+            "max_zoom_level": 13,
         }
         try:
             self.command.handle(**options)
@@ -63,7 +62,7 @@ class GenerateMVTCommandTest(TestCase):
             "number_of_threads_by_worker": 1,
             "keep": False,
             "min_zoom_level": 13,
-            "max_zoom_level": 13
+            "max_zoom_level": 13,
         }
 
         self.command.handle(**options)
@@ -94,7 +93,7 @@ class GenerateMVTCommandTest(TestCase):
             "number_of_threads_by_worker": 1,
             "keep": True,
             "min_zoom_level": 13,
-            "max_zoom_level": 13
+            "max_zoom_level": 13,
         }
 
         self.command.handle(**options)
