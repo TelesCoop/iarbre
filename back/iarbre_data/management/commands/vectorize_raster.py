@@ -1,5 +1,5 @@
 from pathlib import Path
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from argparse import RawTextHelpFormatter
 
 # gdal requires specific installation
@@ -10,7 +10,6 @@ from argparse import RawTextHelpFormatter
 # You can get the version with ogrinfo --version
 from osgeo import gdal, ogr, osr
 import tempfile
-import os
 
 
 class Command(BaseCommand):
@@ -72,24 +71,25 @@ class Command(BaseCommand):
     @staticmethod
     def multiply_raster(raster_path: str, multiply_factor: int):
         ds = gdal.Open(str(raster_path))
-        src_image = ds.ReadAsArray()
-
-        # required for biosphere integrity
-        src_image[src_image == 10000] = -1
+        band = ds.GetRasterBand(1)
+        src_nodata = band.GetNoDataValue()
+        src_image = band.ReadAsArray().astype(float)
+        nodata_mask = (src_image == src_nodata) if src_nodata is not None else None
         src_image = src_image * multiply_factor
+        if nodata_mask is not None:
+            src_image[nodata_mask] = -1
 
         [rows, cols] = src_image.shape
         driver = gdal.GetDriverByName("GTiff")
 
-        temporary_filename = tempfile.NamedTemporaryFile(suffix=".shp").name
-        outdata = driver.Create(temporary_filename, cols, rows, 1, gdal.GDT_UInt16)
-        # sets same geotransform as input
+        temporary_filename = tempfile.NamedTemporaryFile(suffix=".tif").name
+        outdata = driver.Create(temporary_filename, cols, rows, 1, gdal.GDT_Int32)
         outdata.SetGeoTransform(ds.GetGeoTransform())
-        # sets same projection as input
         outdata.SetProjection(ds.GetProjection())
-        # if you want these values transparent
-        outdata.GetRasterBand(1).SetNoDataValue(-multiply_factor)
-        outdata.GetRasterBand(1).WriteArray(src_image)
+        outdata.GetRasterBand(1).SetNoDataValue(-1)
+        outdata.GetRasterBand(1).WriteArray(src_image.astype("int32"))
+        outdata = None
+        ds = None
         return temporary_filename
 
     @staticmethod
@@ -99,6 +99,7 @@ class Command(BaseCommand):
         vector_format="GPKG",
         use_8connected=False,
         field_name="class",
+        layer_name=None,
     ):
         print(f"\n{'=' * 70}")
         print(f"Vectorizing: {raster_path} -> {vector_path}")
@@ -112,7 +113,6 @@ class Command(BaseCommand):
             return False
 
         src_band = src_ds.GetRasterBand(1)
-        # src_band.WriteArray(src_image)
         driver_name = (
             vector_format if vector_format != "ESRI Shapefile" else "ESRI Shapefile"
         )
@@ -134,7 +134,7 @@ class Command(BaseCommand):
             srs = osr.SpatialReference()
             srs.ImportFromWkt(src_ds.GetProjection())
 
-        dst_layer = dst_ds.CreateLayer("vegetation", srs=srs)
+        dst_layer = dst_ds.CreateLayer(layer_name or Path(vector_path).stem, srs=srs)
 
         field_defn = ogr.FieldDefn(field_name, ogr.OFTReal)
         dst_layer.CreateField(field_defn)
@@ -156,8 +156,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         input_path = Path(options["input"])
         if not input_path.exists():
-            print(f"✗ Error: Input raster not found: {input_path}")
-            return 1
+            raise CommandError(f"Input raster not found: {input_path}")
 
         vector_format = options["format"]
         if vector_format is None:
@@ -182,7 +181,3 @@ class Command(BaseCommand):
             use_8connected=options["use_8connected"],
             field_name=options["field_name"],
         )
-
-        if multiply_factor:
-            # which is temporary file
-            os.remove(input_raster)
