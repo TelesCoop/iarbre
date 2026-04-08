@@ -1,6 +1,7 @@
 """
 MVT Generator as django-media.
 """
+
 import logging
 
 import json
@@ -442,9 +443,9 @@ class MVTGeneratorWorker:
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
             ):
-                properties[
-                    "vulnerability_indice_night"
-                ] = obj.vulnerability_indice_night
+                properties["vulnerability_indice_night"] = (
+                    obj.vulnerability_indice_night
+                )
                 # Calculate mixed_indice_night for bivariate visualization
                 properties["mixed_indice_night"] = MVTGenerator.compute_mixed_indice(
                     obj.plantability_normalized_indice, obj.vulnerability_indice_night
@@ -458,18 +459,18 @@ class MVTGeneratorWorker:
 
                     # Calculate mixed_indice_day and mixed_indice_night for non-aggregated tiles
                     if "vulnerability_index_day" in vulnerability_properties:
-                        properties[
-                            "mixed_indice_day"
-                        ] = MVTGenerator.compute_mixed_indice(
-                            obj.plantability_normalized_indice,
-                            vulnerability_properties["vulnerability_index_day"],
+                        properties["mixed_indice_day"] = (
+                            MVTGenerator.compute_mixed_indice(
+                                obj.plantability_normalized_indice,
+                                vulnerability_properties["vulnerability_index_day"],
+                            )
                         )
                     if "vulnerability_index_night" in vulnerability_properties:
-                        properties[
-                            "mixed_indice_night"
-                        ] = MVTGenerator.compute_mixed_indice(
-                            obj.plantability_normalized_indice,
-                            vulnerability_properties["vulnerability_index_night"],
+                        properties["mixed_indice_night"] = (
+                            MVTGenerator.compute_mixed_indice(
+                                obj.plantability_normalized_indice,
+                                vulnerability_properties["vulnerability_index_night"],
+                            )
                         )
             all_features.append(
                 {
@@ -557,16 +558,19 @@ class MVTGeneratorWorker:
                 print(e)
             return
 
+        tolerance = self.pixel_length(zoom)
         transformed_geometries = {
             "name": f"{self.geolevel}--{self.datatype}",
             "features": [],
         }
         for obj in clipped_queryset.iterator():
             properties = obj.get_layer_properties()
-            clipped_geom = obj.clipped_geometry
+            clipped_geom = shape(
+                json.loads(obj.clipped_geometry.make_valid().geojson)
+            ).simplify(tolerance, preserve_topology=True)
             transformed_geometries["features"].append(
                 {
-                    "geometry": clipped_geom.make_valid().wkt,
+                    "geometry": clipped_geom.wkt,
                     "properties": properties,
                 }
             )
