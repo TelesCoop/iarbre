@@ -15,6 +15,12 @@ const strateColor = computed(() => getZoneColor(props.data.indice))
 const formattedSurface = computed(() => {
   return props.data.surface.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
 })
+
+const soilOccupancyLabel = computed(() => {
+  const occupancy = props.data.soilOccupancy
+  if (!occupancy) return null
+  return occupancy.label ?? `Classe ${occupancy.classId}`
+})
 </script>
 
 <template>
@@ -35,6 +41,15 @@ const formattedSurface = computed(() => {
     <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg">
       <span class="text-sm font-medium text-gray-700">Surface</span>
       <span class="text-lg font-semibold text-gray-900">{{ formattedSurface }} m²</span>
+    </div>
+
+    <!-- Soil occupancy (COSIA) -->
+    <div
+      v-if="soilOccupancyLabel"
+      class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg"
+    >
+      <span class="text-sm font-medium text-gray-700">Occupation du sol</span>
+      <span class="text-lg font-semibold text-gray-900">{{ soilOccupancyLabel }}</span>
     </div>
   </div>
 </template>

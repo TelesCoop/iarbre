@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.http import HttpResponse, Http404
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Point
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
@@ -22,11 +22,16 @@ from api.serializers.serializers import (
     PlantabilityScoresSerializer,
     VulnerabilityScoresSerializer,
     PlantabilityVulnerabilityScoresSerializer,
+    SoilOccupancySerializer,
 )
 from api.constants import (
     INDICE_ROUNDING_DECIMALS,
     DataType,
     FrontendDataType,
+)
+from api.utils.soil_occupancy import (
+    SoilOccupancyRasterNotFound,
+    sample_soil_occupancy_at_point,
 )
 
 logger = logging.getLogger(__name__)
@@ -93,6 +98,89 @@ class TileDetailsView(generics.RetrieveAPIView):
             return Response(serializer(instance).data)
         except MVTTile.DoesNotExist:
             raise Http404
+
+
+class TileAtPointView(APIView):
+    """Retrieve tile details for a datatype at a given WGS84 (lng, lat) point.
+
+    Enables side-panel lookups on click for layers whose details cannot be
+    addressed via an MVT feature id, notably the raster-backed soil occupancy
+    layer used as explicability for the biodiv (vegestrate) layer.
+    """
+
+    POINT_QUERYABLE_VECTOR_MODELS = {
+        DataType.VEGESTRATE.value: (Vegestrate, VegestrateSerializer),
+        DataType.LCZ.value: (Lcz, LczSerializer),
+        DataType.VULNERABILITY.value: (Vulnerability, VulnerabilitySerializer),
+        DataType.TILE.value: (Tile, TileSerializer),
+    }
+
+    def _parse_coordinates(self, request):
+        try:
+            longitude = float(request.query_params["lng"])
+            latitude = float(request.query_params["lat"])
+        except (KeyError, TypeError, ValueError):
+            return (
+                None,
+                None,
+                Response(
+                    {"error": "Query parameters 'lng' and 'lat' are required floats"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                ),
+            )
+
+        if not (-180 <= longitude <= 180) or not (-90 <= latitude <= 90):
+            return (
+                None,
+                None,
+                Response(
+                    {"error": "Coordinates out of WGS84 range"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                ),
+            )
+
+        return longitude, latitude, None
+
+    def _lookup_vector_instance(self, model, longitude, latitude):
+        point = Point(longitude, latitude, srid=SRID_DOWNLOADED_DATA)
+        point.transform(SRID_DB)
+        return model.objects.filter(geometry__intersects=point).first()
+
+    def _handle_soil_occupancy(self, longitude, latitude):
+        try:
+            sample = sample_soil_occupancy_at_point(longitude, latitude)
+        except SoilOccupancyRasterNotFound:
+            logger.exception("Soil occupancy raster is missing")
+            return Response(
+                {"error": "Soil occupancy data is not available"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        if sample is None:
+            raise Http404
+
+        serializer = SoilOccupancySerializer(sample)
+        return Response(serializer.data)
+
+    def _handle_vector_datatype(self, datatype, longitude, latitude):
+        model, serializer_class = self.POINT_QUERYABLE_VECTOR_MODELS[datatype]
+        instance = self._lookup_vector_instance(model, longitude, latitude)
+        if instance is None:
+            raise Http404
+        return Response(serializer_class(instance).data)
+
+    def get(self, request, datatype, *args, **kwargs):
+        longitude, latitude, error_response = self._parse_coordinates(request)
+        if error_response:
+            return error_response
+
+        if datatype == DataType.SOIL_OCCUPANCY.value:
+            return self._handle_soil_occupancy(longitude, latitude)
+
+        if datatype in self.POINT_QUERYABLE_VECTOR_MODELS:
+            return self._handle_vector_datatype(datatype, longitude, latitude)
+
+        raise Http404
 
 
 class ScoresInPolygonView(APIView):

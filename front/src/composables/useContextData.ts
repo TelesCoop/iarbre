@@ -3,12 +3,18 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
-import { getTileDetails } from "@/services/tileService"
+import type { VegetationData } from "@/types/vegetation"
+import { getSoilOccupancyAtPoint, getTileDetails } from "@/services/tileService"
 import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 
 export function useContextData(selectedDataTypeRef: Ref<DataType>) {
   const data = ref<
-    PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
+    | PlantabilityData
+    | VulnerabilityData
+    | ClimateData
+    | PlantabilityVulnerabilityData
+    | VegetationData
+    | null
   >(null)
   const selectedDataType = selectedDataTypeRef
 
@@ -17,7 +23,8 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
     indexValue?: string | number,
     sourceValues?: any,
     vulnScoreDay?: number,
-    vulnScoreNight?: number
+    vulnScoreNight?: number,
+    clickLngLat?: { lng: number; lat: number }
   ) => {
     if (!featureId) return null
     const stringId = String(featureId)
@@ -27,13 +34,27 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
       | VulnerabilityData
       | ClimateData
       | PlantabilityVulnerabilityData
+      | VegetationData
       | null = null
 
     if (indexValue === undefined) {
-      newData = await getTileDetails(stringId, selectedDataType.value)
-
-      if (!newData) {
-        return
+      if (selectedDataType.value === DataType.VEGESTRATE && clickLngLat) {
+        const [tileDetails, soilOccupancy] = await Promise.all([
+          getTileDetails(stringId, selectedDataType.value),
+          getSoilOccupancyAtPoint(clickLngLat.lng, clickLngLat.lat)
+        ])
+        if (!tileDetails) {
+          return
+        }
+        newData = {
+          ...(tileDetails as unknown as VegetationData),
+          soilOccupancy
+        }
+      } else {
+        newData = await getTileDetails(stringId, selectedDataType.value)
+        if (!newData) {
+          return
+        }
       }
     } else if (
       indexValue !== undefined &&

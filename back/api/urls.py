@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views.tile_views import TileDetailsView, ScoresInPolygonView
+from .views.tile_views import TileAtPointView, TileDetailsView, ScoresInPolygonView
 from .views.dashboard_views import DashboardView
 from .views import (
     CityView,
@@ -31,6 +31,11 @@ urlpatterns = [
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
         name="scores-in-polygon",
+    ),
+    path(
+        "tiles/<datatype>/at-point/",
+        TileAtPointView.as_view(),
+        name="retrieve-tile-at-point",
     ),
     path(
         "tiles/<datatype>/<id>/",

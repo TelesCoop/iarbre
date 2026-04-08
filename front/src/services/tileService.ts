@@ -4,6 +4,7 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
+import type { SoilOccupancyData } from "@/types/vegetation"
 import type {
   PlantabilityScoresResponse,
   VulnerabilityScoresResponse,
@@ -28,6 +29,23 @@ export const getTileDetails = async (
       | PlantabilityVulnerabilityData
   } catch (error) {
     console.error("Error retrieving tile details:", error)
+    return null
+  }
+}
+
+export const getSoilOccupancyAtPoint = async (
+  lng: number,
+  lat: number
+): Promise<SoilOccupancyData | null> => {
+  try {
+    const params = new URLSearchParams({ lng: String(lng), lat: String(lat) })
+    const req = await useApiGet<SoilOccupancyData>(
+      `tiles/soil_occupancy/at-point/?${params.toString()}`,
+      `Unable to retrieve soil occupancy at (${lng}, ${lat})`
+    )
+    return req.data ?? null
+  } catch (error) {
+    console.error("Error retrieving soil occupancy:", error)
     return null
   }
 }

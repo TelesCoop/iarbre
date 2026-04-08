@@ -1,10 +1,13 @@
 import json
+from unittest.mock import patch
+
 from django.test import TestCase, Client
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Polygon
 from django.urls import reverse
-from iarbre_data.settings import SRID_DB
-from iarbre_data.models import MVTTile, Tile, Lcz, Vulnerability
+from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
+from iarbre_data.models import MVTTile, Tile, Lcz, Vegestrate, Vulnerability
+from api.utils.soil_occupancy import SoilOccupancyRasterNotFound
 
 
 class TileViewTest(TestCase):
@@ -242,3 +245,119 @@ class ScoresInPolygonViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+
+class TileAtPointViewTest(TestCase):
+    """Test querying tile details by WGS84 point for the biodiv side panel."""
+
+    # Polygon covering a small area near Lyon in Lambert 93 (EPSG:2154),
+    # consistent with polygons used in ScoresInPolygonViewTest.
+    LYON_POLYGON_COORDS = (
+        (845000, 6525000),
+        (845200, 6525000),
+        (845200, 6525200),
+        (845000, 6525200),
+        (845000, 6525000),
+    )
+    # Paris (lng, lat) — well outside the Lyon polygon above.
+    OUTSIDE_LNG = 2.35
+    OUTSIDE_LAT = 48.85
+
+    def setUp(self):
+        self.client = Client()
+        square = Polygon(self.LYON_POLYGON_COORDS, srid=SRID_DB)
+        self.vegestrate = Vegestrate.objects.create(
+            geometry=square, strate="arborescent", surface=123.45
+        )
+        # Compute a WGS84 point at the centroid of the Lambert 93 polygon.
+        centroid = square.centroid.clone()
+        centroid.transform(SRID_DOWNLOADED_DATA)
+        self.inside_lng = centroid.x
+        self.inside_lat = centroid.y
+
+    def _at_point_url(self, datatype):
+        return reverse("retrieve-tile-at-point", kwargs={"datatype": datatype})
+
+    def test_vegestrate_at_point_returns_matching_feature(self):
+        response = self.client.get(
+            self._at_point_url("vegestrate"),
+            {"lng": self.inside_lng, "lat": self.inside_lat},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["id"], self.vegestrate.id)
+        self.assertEqual(data["indice"], "arborescent")
+
+    def test_vegestrate_at_point_outside_returns_404(self):
+        response = self.client.get(
+            self._at_point_url("vegestrate"),
+            {"lng": self.OUTSIDE_LNG, "lat": self.OUTSIDE_LAT},
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_missing_coordinates_returns_400(self):
+        response = self.client.get(self._at_point_url("vegestrate"))
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_coordinates_returns_400(self):
+        response = self.client.get(
+            self._at_point_url("vegestrate"),
+            {"lng": "abc", "lat": "def"},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_out_of_range_coordinates_returns_400(self):
+        response = self.client.get(
+            self._at_point_url("vegestrate"),
+            {"lng": 500, "lat": 0},
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_unknown_datatype_returns_404(self):
+        response = self.client.get(
+            self._at_point_url("unknown"),
+            {"lng": self.inside_lng, "lat": self.inside_lat},
+        )
+        self.assertEqual(response.status_code, 404)
+
+    @patch("api.views.tile_views.sample_soil_occupancy_at_point")
+    def test_soil_occupancy_at_point_returns_sample(self, mock_sample):
+        mock_sample.return_value = {
+            "class_id": 10,
+            "code": "deciduous",
+            "label": "Feuillu",
+        }
+        response = self.client.get(
+            self._at_point_url("soil_occupancy"),
+            {"lng": self.inside_lng, "lat": self.inside_lat},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["classId"], 10)
+        self.assertEqual(data["code"], "deciduous")
+        self.assertEqual(data["label"], "Feuillu")
+        self.assertEqual(data["datatype"], "soil_occupancy")
+        mock_sample.assert_called_once_with(self.inside_lng, self.inside_lat)
+
+    @patch("api.views.tile_views.sample_soil_occupancy_at_point")
+    def test_soil_occupancy_outside_raster_returns_404(self, mock_sample):
+        mock_sample.return_value = None
+        response = self.client.get(
+            self._at_point_url("soil_occupancy"),
+            {"lng": self.OUTSIDE_LNG, "lat": self.OUTSIDE_LAT},
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    @patch("api.views.tile_views.sample_soil_occupancy_at_point")
+    def test_soil_occupancy_missing_raster_returns_503(self, mock_sample):
+        mock_sample.side_effect = SoilOccupancyRasterNotFound("missing")
+        response = self.client.get(
+            self._at_point_url("soil_occupancy"),
+            {"lng": self.inside_lng, "lat": self.inside_lat},
+        )
+
+        self.assertEqual(response.status_code, 503)

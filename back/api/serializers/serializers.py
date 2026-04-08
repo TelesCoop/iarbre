@@ -2,6 +2,7 @@ import json
 
 from rest_framework import serializers
 
+from api.constants import DataType, GeoLevel
 from iarbre_data.models import City, Iris, Lcz, Tile, Vegestrate, Vulnerability
 
 
@@ -114,6 +115,25 @@ class VegestrateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vegestrate
         fields = ("id", "indice", "surface", "geolevel", "datatype")
+
+
+class SoilOccupancySerializer(serializers.Serializer):
+    """Serializer for a soil occupancy sample at a given point.
+
+    Used as explicability data for the biodiv (vegestrate) layer.
+    """
+
+    class_id = serializers.IntegerField()
+    code = serializers.CharField()
+    label = serializers.CharField(allow_null=True)
+    datatype = serializers.SerializerMethodField()
+    geolevel = serializers.SerializerMethodField()
+
+    def get_datatype(self, _obj):
+        return DataType.SOIL_OCCUPANCY.value
+
+    def get_geolevel(self, _obj):
+        return GeoLevel.TILE.value
 
 
 class BaseScoresSerializer(serializers.Serializer):
