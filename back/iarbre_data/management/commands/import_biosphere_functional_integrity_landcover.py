@@ -52,7 +52,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
             split_geometries.append({**row.to_dict(), "geometry": geom})
 
     split_geometries = []
-    with ThreadPoolExecutor(max_workers=64) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         for idx, row in gdf_filtered.iterrows():
             executor.submit(worker, row, 100.0 * idx / gdf_filtered.shape[0])
     gdf_filtered = geopandas.GeoDataFrame(
@@ -67,7 +67,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
     gdf_filtered["map_geometry"] = gdf_filtered.geometry.to_crs(SRID_MAPLIBRE)
     # After re-projecting, some invalid geometry appears
     gdf_filtered["map_geometry"] = gdf_filtered["map_geometry"].apply(make_valid)
-    gdf_filtered["class"] = gdf_filtered["class"].astype(str)
+    gdf_filtered["class"] = gdf_filtered["class"].astype(int)
     return gdf_filtered
 
 
@@ -93,7 +93,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
                     binary=CLASS_TO_BINARY[data["class"]],
                 )
                 for _, data in batch.iterrows()
-                if float(data["class"]) > 0
+                if data["class"] in CLASS_TO_LAND_COVER
             ]
         )
 
@@ -104,12 +104,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Load the shapefile produced by Emile to add it in the DB."""
         shp_folder = "file_data/biosphere_functional_integrity"
-        shp_filename = "MDL_Cosia_CarHab_IFB_4m.shp"
+        shp_filename = "MDL_Cosia_CarHab_4m.shp"
+
+        log_progress("Clean data")
+        BiosphereFunctionalIntegrityLandCover.objects.all().delete()
 
         log_progress("Split data")
         batch_folder = os.path.join(shp_folder, f"{shp_filename}_parts")
         if not os.path.exists(batch_folder):
-            BiosphereFunctionalIntegrityLandCover.objects.all().delete()
             split_data(shp_folder, shp_filename, batch_folder)
 
         shp_files = [
