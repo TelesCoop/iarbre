@@ -83,7 +83,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   </div>
 
   <!-- Bottom-left stack: background selector + layer toggles (desktop only) -->
-  <div :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]">
+  <div
+    :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]"
+    data-cy="bottom-left-controls"
+  >
     <MapBackgroundSelector />
     <MapLayerToggles v-if="appStore.isDesktop" />
   </div>
@@ -91,8 +94,8 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <!-- Mobile top bar: layer switcher -->
   <div v-if="appStore.isMobileOrTablet" class="mobile-top-bar">
     <MapLayerSwitcher
-      :with-border="false"
       :show-context-tools="false"
+      :with-border="false"
       data-cy="mobile-layer-switcher"
     />
   </div>
@@ -198,7 +201,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   @apply absolute z-30 flex flex-col items-start gap-2;
   @apply transition-all duration-300 ease-out;
   left: 0.5rem;
-  bottom: 64px;
+  bottom: 130px;
 }
 
 @media (min-width: 1024px) {
