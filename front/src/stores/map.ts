@@ -17,6 +17,7 @@ import {
 } from "@/utils/constants"
 import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
+import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
@@ -111,6 +112,17 @@ export const useMapStore = defineStore("map", () => {
 
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
+  }
+
+  /**
+   * Deep-clone the raw maplibre style JSON for a given MapStyle, inject the
+   * backend base URL where needed and apply centralized source attributions.
+   * Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+   * https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
+   */
+  const loadMapStyle = (style: MapStyle): maplibregl.StyleSpecification => {
+    const rawStyle = JSON.stringify(mapStyles[style]).replace("{API_BASE_URL}", getFullBaseApiUrl())
+    return applyMapStyleAttributions(JSON.parse(rawStyle)) as maplibregl.StyleSpecification
   }
   const navControl = ref(
     new NavigationControl({
@@ -427,25 +439,9 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
       }
-      let newStyle: maplibregl.StyleSpecification
+      const newStyle = loadMapStyle(mapstyle)
 
-      if (mapstyle === MapStyle.CADASTRE) {
-        const fullBaseApiUrl = getFullBaseApiUrl()
-        newStyle = JSON.parse(
-          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", fullBaseApiUrl)
-        ) as maplibregl.StyleSpecification
-      } else if (mapstyle === MapStyle.ORTHOPHOTO) {
-        const fullBaseApiUrl = getFullBaseApiUrl()
-        newStyle = JSON.parse(
-          JSON.stringify(mapStyles.ORTHOPHOTO).replace("{API_BASE_URL}", fullBaseApiUrl)
-        ) as maplibregl.StyleSpecification
-      } else if (mapstyle === MapStyle.SATELLITE) {
-        newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
-      } else if (mapstyle === MapStyle.OSM) {
-        newStyle = mapStyles.OSM as maplibregl.StyleSpecification
-      }
-
-      if (newStyle!) {
+      if (newStyle) {
         const onStyleReady = () => {
           initTiles(mapInstance)
           setupControls(mapInstance)
@@ -768,7 +764,7 @@ export const useMapStore = defineStore("map", () => {
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId,
-      style: mapStyles.OSM as maplibregl.StyleSpecification,
+      style: loadMapStyle(MapStyle.OSM),
       maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
       attributionControl: false

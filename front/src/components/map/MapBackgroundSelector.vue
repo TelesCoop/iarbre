@@ -1,81 +1,125 @@
 <script lang="ts" setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
 import { useMapStore } from "@/stores/map"
 import { MapStyle } from "@/utils/enum"
-
-interface MapStyleOption {
-  value: MapStyle
-  label: string
-  image: string
-}
+import { MAP_STYLE_OPTIONS, getMapStyleOption } from "@/utils/mapStyleOptions"
+import IconInfo from "@/components/icons/IconInfo.vue"
 
 const mapStore = useMapStore()
 const isExpanded = ref(false)
+const isSourceOpen = ref(false)
+const wrapperRef = ref<HTMLElement | null>(null)
 
-const options: MapStyleOption[] = [
-  {
-    value: MapStyle.OSM,
-    label: "Plan",
-    image: "/images/plan-ville.png"
-  },
-  {
-    value: MapStyle.ORTHOPHOTO,
-    label: "Orthophoto",
-    image: "/images/orthophoto.png"
-  },
-  {
-    value: MapStyle.SATELLITE,
-    label: "Satellite",
-    image: "/images/satellite.png"
-  },
-  {
-    value: MapStyle.CADASTRE,
-    label: "Cadastre",
-    image: "/images/cadastre.png"
-  }
-]
+const options = MAP_STYLE_OPTIONS
 
 const currentStyle = computed(() => mapStore.selectedMapStyle)
 
-const currentOption = computed(
-  () => options.find((opt) => opt.value === currentStyle.value) ?? options[0]
-)
+const currentOption = computed(() => getMapStyleOption(currentStyle.value))
+
+const currentSource = computed(() => currentOption.value.source)
 
 const isSelected = (style: MapStyle): boolean => currentStyle.value === style
 
 const handleSelectStyle = (style: MapStyle) => {
   mapStore.changeMapStyle(style)
   isExpanded.value = false
+  isSourceOpen.value = false
 }
 
 const handleToggleExpanded = () => {
   isExpanded.value = !isExpanded.value
+  if (isExpanded.value) {
+    isSourceOpen.value = false
+  }
+}
+
+const handleToggleSource = () => {
+  isSourceOpen.value = !isSourceOpen.value
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === "Escape" && isExpanded.value) {
+  if (event.key !== "Escape") return
+  if (isSourceOpen.value) {
+    isSourceOpen.value = false
+  } else if (isExpanded.value) {
     isExpanded.value = false
   }
 }
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (!isSourceOpen.value) return
+  const target = event.target as Node | null
+  if (target && wrapperRef.value && !wrapperRef.value.contains(target)) {
+    isSourceOpen.value = false
+  }
+}
+
+// Close the popover whenever the user picks a different background.
+watch(currentStyle, () => {
+  isSourceOpen.value = false
+})
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside)
+})
 </script>
 
 <template>
-  <div class="bg-selector-wrapper" @keydown="handleKeydown">
+  <div ref="wrapperRef" class="bg-selector-wrapper" @keydown="handleKeydown">
     <div :class="['bg-selector-container', { expanded: isExpanded }]">
-      <button
-        :aria-expanded="isExpanded"
-        aria-controls="bg-selector-options"
-        aria-label="Sélectionner le fond de carte"
-        class="bg-selector-toggle"
-        data-cy="bg-selector-toggle"
-        type="button"
-        @click="handleToggleExpanded"
-      >
-        <div class="bg-selector-toggle-preview">
-          <img :alt="currentOption.label" :src="currentOption.image" class="preview-image" />
+      <div class="bg-selector-toggle-wrapper">
+        <button
+          :aria-expanded="isExpanded"
+          aria-controls="bg-selector-options"
+          aria-label="Sélectionner le fond de carte"
+          class="bg-selector-toggle"
+          data-cy="bg-selector-toggle"
+          type="button"
+          @click="handleToggleExpanded"
+        >
+          <div class="bg-selector-toggle-preview">
+            <img :alt="currentOption.label" :src="currentOption.image" class="preview-image" />
+          </div>
+          <span class="bg-selector-toggle-label">{{ currentOption.label }}</span>
+        </button>
+
+        <button
+          :aria-expanded="isSourceOpen"
+          aria-label="Afficher la source du fond de carte"
+          class="bg-selector-info-button"
+          data-cy="bg-selector-info-button"
+          type="button"
+          @click="handleToggleSource"
+        >
+          <IconInfo :size="14" />
+        </button>
+
+        <div
+          v-if="isSourceOpen"
+          class="bg-selector-source-popover"
+          data-cy="bg-selector-source-popover"
+          role="dialog"
+        >
+          <div class="bg-selector-source-title">Source</div>
+          <div class="bg-selector-source-content">
+            <a
+              v-if="currentSource.url"
+              :href="currentSource.url"
+              class="bg-selector-source-link"
+              rel="noopener"
+              target="_blank"
+            >
+              {{ currentSource.provider }}
+            </a>
+            <span v-else>{{ currentSource.provider }}</span>
+            <template v-if="currentSource.year"> — {{ currentSource.year }}</template>
+          </div>
         </div>
-        <span class="bg-selector-toggle-label">{{ currentOption.label }}</span>
-      </button>
+      </div>
 
       <div
         id="bg-selector-options"
@@ -111,6 +155,53 @@ const handleKeydown = (event: KeyboardEvent) => {
   @apply border border-gray-200;
   padding: 10px;
   height: 90px;
+}
+
+.bg-selector-toggle-wrapper {
+  @apply relative flex items-center;
+  height: 100%;
+}
+
+.bg-selector-info-button {
+  @apply absolute flex items-center justify-center;
+  @apply rounded-full bg-white border border-gray-200 text-gray-500;
+  @apply cursor-pointer transition-all;
+  @apply hover:text-primary-500 hover:border-primary-300;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300;
+  top: -0.35rem;
+  right: -0.35rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+}
+
+.bg-selector-source-popover {
+  @apply absolute bg-white border border-gray-200 rounded-lg shadow-md;
+  @apply font-sans text-xs text-gray-700;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 40;
+  padding: 0.5rem 0.75rem;
+  min-width: 14rem;
+  max-width: 20rem;
+}
+
+.bg-selector-source-title {
+  @apply text-2xs font-semibold uppercase tracking-wide text-gray-500;
+  margin-bottom: 0.25rem;
+}
+
+.bg-selector-source-content {
+  @apply text-sm text-gray-800;
+  line-height: 1.3;
+}
+
+.bg-selector-source-link {
+  @apply text-primary-500 underline;
+}
+
+.bg-selector-source-link:hover {
+  @apply text-primary-600;
 }
 
 .bg-selector-toggle {
@@ -160,7 +251,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 .bg-selector-options.is-expanded {
-  max-width: 400px;
+  max-width: 25rem;
   opacity: 1;
   padding-left: 0.5rem;
   margin-left: 1.5rem;

@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 WMS_BASE_URL = "https://download.data.grandlyon.com/wms/grandlyon"
 WMS_LAYER = "grandlyon:ortho_latest"
 TILE_SIZE = 256
-# Cache tiles for 30 days (static imagery)
-CACHE_DURATION = 60 * 60 * 24 * 30
+# Cache tiles for 6 months
+CACHE_DURATION = 60 * 60 * 24 * 30 * 6
 WMS_TIMEOUT = 10
 
 
@@ -27,7 +27,7 @@ class OrthophotoTileView(APIView):
     Example: GET /api/orthophoto/14/8345/5765.png
     """
 
-    @method_decorator(cache_page(CACHE_DURATION))
+    @method_decorator(cache_page(CACHE_DURATION, cache="orthophoto"))
     def get(self, request, z, x, y):
         z, x, y = int(z), int(x), int(y)
 

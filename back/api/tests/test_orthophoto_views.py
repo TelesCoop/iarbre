@@ -9,7 +9,10 @@ from api.views.orthophoto_views import WMS_BASE_URL, WMS_LAYER
 
 # Disable cache during tests
 @override_settings(
-    CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+    CACHES={
+        "default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+        "orthophoto": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"},
+    }
 )
 class OrthophotoTileViewTest(TestCase):
     def setUp(self):

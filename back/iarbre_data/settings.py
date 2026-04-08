@@ -354,5 +354,18 @@ CACHES = {
     "default": {
         "BACKEND": "django_prometheus.cache.backends.filebased.FileBasedCache",
         "LOCATION": "/var/tmp/django_cache",
-    }
+    },
+    # Dedicated cache for the Grand Lyon orthophoto tile proxy.
+    # Sized to stay below ~2 GB on disk (16 000 × ~125 KB) and isolated from
+    # the default cache so tile traffic cannot evict other cached views.
+    # Imagery is static yearly, so we cache for 6 months.
+    "orthophoto": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/var/tmp/django_cache_orthophoto",
+        "OPTIONS": {
+            "MAX_ENTRIES": 16000,
+            "CULL_FREQUENCY": 4,
+        },
+        "TIMEOUT": 60 * 60 * 24 * 30 * 6,
+    },
 }
