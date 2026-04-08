@@ -81,6 +81,7 @@ declare module 'vue' {
     MapFiltersStatus: typeof import('./src/components/map/panels/MapFiltersStatus.vue')['default']
     MapGeocoder: typeof import('./src/components/map/MapGeocoder.vue')['default']
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
+    MapLayerToggles: typeof import('./src/components/map/MapLayerToggles.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapQpvToggleButton: typeof import('./src/components/map/panels/MapQpvToggleButton.vue')['default']
     MapScoresDrawer: typeof import('./src/components/map/panels/MapScoresDrawer.vue')['default']

@@ -7,11 +7,6 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
-        <MapQpvToggleButton />
-        <MapCadastreToggleButton />
-        <MapBoundaryToggleButton />
-      </div>
       <a
         :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
         class="methodology-banner"
