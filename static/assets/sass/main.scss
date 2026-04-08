@@ -1163,7 +1163,7 @@ h6 {
   border-radius: $radius-md;
   text-decoration: none;
   font-weight: 500;
-  font-size: $font-sm;
+  font-size: $font-lg;
   text-align: center;
   transition: all $transition-fast;
   border: $border-thin solid transparent;
@@ -1184,8 +1184,9 @@ h6 {
     border-color: $primary;
 
     &:hover {
-      background: $primary-600;
-      border-color: $primary-600;
+      background: $primary-100;
+      border-color: $primary-100;
+      color: $darkGrey;
     }
   }
 
@@ -1195,9 +1196,9 @@ h6 {
     border-color: $gray-200;
 
     &:hover {
-      background: $primary;
-      color: $white;
-      border-color: $primary;
+      background: $primary-100;
+      border-color: $primary-100;
+      color: $darkGrey;
     }
   }
 }
