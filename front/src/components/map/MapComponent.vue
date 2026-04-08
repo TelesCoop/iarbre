@@ -62,7 +62,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <!-- Top-right controls stack -->
   <div class="top-right-controls">
-    <MapTopRightPanel />
+    <MapCoordinates />
     <MapGeocoder />
   </div>
 
@@ -82,9 +82,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapCadastreParcelInfo />
   </div>
 
-  <!-- Background selector in bottom-left corner -->
-  <div :class="['bg-selector-container', { 'sidepanel-visible': isSidePanelVisible }]">
+  <!-- Bottom-left stack: background selector + layer toggles (desktop only) -->
+  <div :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapBackgroundSelector />
+    <MapLayerToggles v-if="appStore.isDesktop" />
   </div>
 
   <!-- Mobile top bar: layer switcher -->
@@ -130,6 +131,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 @media (min-width: 1024px) {
   .top-right-controls {
     width: auto;
+  }
+
+  .top-right-controls > * {
+    @apply w-auto;
   }
 }
 
@@ -189,19 +194,19 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 }
 
-.bg-selector-container {
-  @apply absolute z-30;
+.bottom-left-controls {
+  @apply absolute z-30 flex flex-col items-start gap-2;
   @apply transition-all duration-300 ease-out;
   left: 0.5rem;
   bottom: 64px;
 }
 
 @media (min-width: 1024px) {
-  .bg-selector-container {
+  .bottom-left-controls {
     bottom: 0.5rem;
   }
 
-  .bg-selector-container.sidepanel-visible {
+  .bottom-left-controls.sidepanel-visible {
     left: calc(var(--width-sidepanel) + 0.5rem);
   }
 }

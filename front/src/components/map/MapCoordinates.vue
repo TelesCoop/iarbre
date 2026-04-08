@@ -72,13 +72,14 @@ const handleCopyCoordinates = async () => {
   @apply flex items-center justify-between w-full;
   @apply gap-1 py-1.5 px-2;
   @apply bg-white border border-gray-200 rounded-lg;
+  @apply text-xs!;
   @apply font-sans text-xs font-medium text-gray-500 uppercase;
   @apply cursor-pointer transition-all;
 }
 
 @media (min-width: 1024px) {
   .coordinates-button {
-    @apply w-auto gap-2 py-2 px-3 text-sm justify-start mx-auto;
+    @apply w-auto gap-2 py-2 px-3 text-sm justify-start;
   }
 }
 
