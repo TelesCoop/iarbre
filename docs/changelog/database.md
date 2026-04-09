@@ -6,6 +6,13 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-04-09T13:15_postgres_backup.dump
+
+**Changements :** :
+
+- Simplification des des MVTs de l'intégrité fonctionnel de la biosphère pour les niveaux de zooms éloignés. Nettoyage des `BiosphereFunctionalIntegrityLandCover` en base pour permettre de les suivre ensuite.
+- Les QPVs avaient disparus de la DB suite à un changement sur data.grandlyon et sont rajoutés dans cette version.
+
 ### 2026-04-07T12:12_postgres_backup.dump
 
 **Changements :**

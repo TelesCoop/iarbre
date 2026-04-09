@@ -306,9 +306,9 @@ URL_FILES = [
     },
     {
         "name": "Quartiers prioritaires de la ville",
-        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.qpv_2024&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
+        "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.quartier_prioritaire_2024_2030&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
         "scripts": [""],
-        "layer_name": "ter_territoire.qpv_2024",
+        "layer_name": "ter_territoire.quartier_prioritaire_2024_2030",
         "factors": ["QPV"],
         "output_type": "LINESTRING",
     },

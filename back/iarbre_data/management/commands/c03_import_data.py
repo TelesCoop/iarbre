@@ -67,7 +67,8 @@ class Command(BaseCommand):
                     f"Loading data {data_config['name']}, factors {data_config['factors']}"
                 )
                 df = read_data(data_config)
-            except pyogrio.errors.DataSourceError:
+            except pyogrio.errors.DataSourceError as e:
+                print(e)
                 print(f"Error reading data {data_config['name']}")
                 continue
             log_progress("Processing data.")
