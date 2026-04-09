@@ -443,9 +443,9 @@ class MVTGeneratorWorker:
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
             ):
-                properties["vulnerability_indice_night"] = (
-                    obj.vulnerability_indice_night
-                )
+                properties[
+                    "vulnerability_indice_night"
+                ] = obj.vulnerability_indice_night
                 # Calculate mixed_indice_night for bivariate visualization
                 properties["mixed_indice_night"] = MVTGenerator.compute_mixed_indice(
                     obj.plantability_normalized_indice, obj.vulnerability_indice_night
@@ -459,18 +459,18 @@ class MVTGeneratorWorker:
 
                     # Calculate mixed_indice_day and mixed_indice_night for non-aggregated tiles
                     if "vulnerability_index_day" in vulnerability_properties:
-                        properties["mixed_indice_day"] = (
-                            MVTGenerator.compute_mixed_indice(
-                                obj.plantability_normalized_indice,
-                                vulnerability_properties["vulnerability_index_day"],
-                            )
+                        properties[
+                            "mixed_indice_day"
+                        ] = MVTGenerator.compute_mixed_indice(
+                            obj.plantability_normalized_indice,
+                            vulnerability_properties["vulnerability_index_day"],
                         )
                     if "vulnerability_index_night" in vulnerability_properties:
-                        properties["mixed_indice_night"] = (
-                            MVTGenerator.compute_mixed_indice(
-                                obj.plantability_normalized_indice,
-                                vulnerability_properties["vulnerability_index_night"],
-                            )
+                        properties[
+                            "mixed_indice_night"
+                        ] = MVTGenerator.compute_mixed_indice(
+                            obj.plantability_normalized_indice,
+                            vulnerability_properties["vulnerability_index_night"],
                         )
             all_features.append(
                 {
