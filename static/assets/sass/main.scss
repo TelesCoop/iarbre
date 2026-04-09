@@ -1163,7 +1163,7 @@ h6 {
   border-radius: $radius-md;
   text-decoration: none;
   font-weight: 500;
-  font-size: $font-sm;
+  font-size: $font-lg;
   text-align: center;
   transition: all $transition-fast;
   border: $border-thin solid transparent;
@@ -1184,8 +1184,9 @@ h6 {
     border-color: $primary;
 
     &:hover {
-      background: $primary-600;
-      border-color: $primary-600;
+      background: $primary-100;
+      border-color: $primary-100;
+      color: $darkGrey;
     }
   }
 
@@ -1195,9 +1196,9 @@ h6 {
     border-color: $gray-200;
 
     &:hover {
-      background: $primary;
-      color: $white;
-      border-color: $primary;
+      background: $primary-100;
+      border-color: $primary-100;
+      color: $darkGrey;
     }
   }
 }
@@ -2307,6 +2308,10 @@ h6 {
   @media (min-width: $tablet) {
     padding-inline: $spacing-xl;
   }
+
+  &--wide {
+    max-width: $content-width-xl;
+  }
 }
 
 .page-header {
@@ -2465,6 +2470,59 @@ h6 {
     height: 1px;
     background: $gray-200;
     margin: $spacing-xxl 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    .heading-anchor {
+      margin-left: $spacing-xs;
+      font-size: 0.75em;
+      color: $gray-200;
+      text-decoration: none;
+      font-weight: 400;
+      opacity: 0;
+      transition: opacity $transition-fast;
+
+      &:hover {
+        color: $accent;
+        text-decoration: none;
+      }
+    }
+
+    &:hover .heading-anchor {
+      opacity: 1;
+    }
+  }
+
+  .image-figure {
+    margin: $spacing-xl 0;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+
+    img {
+      max-width: 100%;
+      cursor: zoom-in;
+      border-radius: $radius-md;
+      transition:
+        transform 0.8s ease,
+        box-shadow 0.8s ease,
+        z-index 0s;
+      transform-origin: top center;
+    }
+
+    &:hover {
+      z-index: 100;
+
+      img {
+        transform: scale(1.5);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+      }
+    }
   }
 }
 
