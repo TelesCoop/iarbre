@@ -48,15 +48,6 @@ export const MAP_STYLE_OPTIONS: MapStyleOption[] = [
       provider: "Esri World Imagery",
       url: "https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9"
     }
-  },
-  {
-    value: MapStyle.CADASTRE,
-    label: "Cadastre",
-    image: "/images/cadastre.png",
-    source: {
-      provider: "Cadastre — Etalab",
-      url: "https://cadastre.data.gouv.fr/"
-    }
   }
 ]
 
