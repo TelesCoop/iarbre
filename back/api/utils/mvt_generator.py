@@ -1,6 +1,7 @@
 """
 MVT Generator as django-media.
 """
+
 import logging
 
 import json
@@ -442,9 +443,9 @@ class MVTGeneratorWorker:
                 hasattr(obj, "vulnerability_indice_night")
                 and obj.vulnerability_indice_night is not None
             ):
-                properties[
-                    "vulnerability_indice_night"
-                ] = obj.vulnerability_indice_night
+                properties["vulnerability_indice_night"] = (
+                    obj.vulnerability_indice_night
+                )
                 # Calculate mixed_indice_night for bivariate visualization
                 properties["mixed_indice_night"] = MVTGenerator.compute_mixed_indice(
                     obj.plantability_normalized_indice, obj.vulnerability_indice_night
@@ -458,18 +459,18 @@ class MVTGeneratorWorker:
 
                     # Calculate mixed_indice_day and mixed_indice_night for non-aggregated tiles
                     if "vulnerability_index_day" in vulnerability_properties:
-                        properties[
-                            "mixed_indice_day"
-                        ] = MVTGenerator.compute_mixed_indice(
-                            obj.plantability_normalized_indice,
-                            vulnerability_properties["vulnerability_index_day"],
+                        properties["mixed_indice_day"] = (
+                            MVTGenerator.compute_mixed_indice(
+                                obj.plantability_normalized_indice,
+                                vulnerability_properties["vulnerability_index_day"],
+                            )
                         )
                     if "vulnerability_index_night" in vulnerability_properties:
-                        properties[
-                            "mixed_indice_night"
-                        ] = MVTGenerator.compute_mixed_indice(
-                            obj.plantability_normalized_indice,
-                            vulnerability_properties["vulnerability_index_night"],
+                        properties["mixed_indice_night"] = (
+                            MVTGenerator.compute_mixed_indice(
+                                obj.plantability_normalized_indice,
+                                vulnerability_properties["vulnerability_index_night"],
+                            )
                         )
             all_features.append(
                 {
@@ -495,7 +496,6 @@ class MVTGeneratorWorker:
         """
         # Get common tile data
         tile_polygon, bounds, filename = self._generate_tile_common(tile, zoom)
-
         # Filter queryset to tile extent and then clip it
         clipped_queryset = self.queryset.filter(
             map_geometry__intersects=tile_polygon
@@ -505,16 +505,72 @@ class MVTGeneratorWorker:
             logger.error(f"SKIPPED: No data for tile ({tile.x}, {tile.y}, {zoom})")
             return
 
+        if False:  # zoom <= ZOOM_AGGREGATE_BREAKPOINT:
+            gdf = load_geodataframe_from_db(
+                clipped_queryset,
+                [
+                    "id",
+                    "map_geometry",
+                    "indice",  #  todo make it general
+                ],
+            )
+            west, south, east, north = tile_polygon.extent
+            mvt_polygon = ShapelyPolygon.from_bounds(west, south, east, north)
+            mvt_gdf = gpd.GeoDataFrame(geometry=[mvt_polygon], crs=SRID_MAPLIBRE)
+            df_clipped = gpd.clip(gdf, mvt_gdf)
+
+            side_length = self._compute_tile_side_length(tile_polygon)
+
+            grid_size = ZOOM_TO_GRID_SIZE.get(zoom, side_length)
+
+            grid = self.create_grid(df_clipped, grid_size)
+            # grid = gpd.clip(grid, df_clipped)
+
+            spatial_join = gpd.sjoin(
+                df_clipped, grid, how="left", predicate="intersects"
+            )
+            aggregated = (
+                spatial_join.groupby("grid_id").agg({"indice": "mean"}).reset_index()
+            )
+            df_clipped = grid.merge(aggregated, on="grid_id", how="left")
+            df_clipped = df_clipped.rename(columns={"indice_mean": "indice"})
+            # except Exception as e:
+            #     print(e)
+            #     return
+            try:
+                transformed_geometries = {
+                    "name": f"{self.geolevel}--{self.datatype}",
+                    "features": [],
+                }
+                for grid_cell in df_clipped.itertuples():
+                    # print(grid_cell)
+                    # print(grid_cell.geometry)
+                    # polygon = grid_cell.geometry.exterior
+                    # print(polygon)
+                    # transformed_geometries.[]
+                    transformed_geometries["features"].append(
+                        {
+                            "geometry": grid_cell.geometry.wkt,
+                            "properties": {"indice": grid_cell.indice},
+                        }
+                    )
+            except Exception as e:
+                print(e)
+            return
+
+        tolerance = self.pixel_length(zoom)
         transformed_geometries = {
             "name": f"{self.geolevel}--{self.datatype}",
             "features": [],
         }
         for obj in clipped_queryset.iterator():
             properties = obj.get_layer_properties()
-            clipped_geom = obj.clipped_geometry
+            clipped_geom = shape(
+                json.loads(obj.clipped_geometry.make_valid().geojson)
+            ).simplify(tolerance, preserve_topology=True)
             transformed_geometries["features"].append(
                 {
-                    "geometry": clipped_geom.make_valid().wkt,
+                    "geometry": clipped_geom.wkt,
                     "properties": properties,
                 }
             )
@@ -636,6 +692,7 @@ class MVTGenerator:
 
         futures = []
         progress = 0
+
         # Necessary for testing.
         # Testing database seems to be deleted on
         # process close

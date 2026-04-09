@@ -3,6 +3,10 @@ import { DataType, DataTypeToGeolevel } from "@/utils/enum"
 import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
 import { calculateMixedIndice } from "@/utils/plantability_vulnerability"
+import {
+  BIOSPHERE_INTEGRITY_RANGES,
+  BiosphereIntegrityLegendName
+} from "@/utils/biosphere_functional_integrity"
 
 export function useMapFilters() {
   const filteredValues = ref<(number | string)[]>([])
@@ -70,6 +74,15 @@ export function useMapFilters() {
         ]
       } else if (dataType === DataType.VEGESTRATE) {
         filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
+      } else if (dataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        const conditions = filteredValues.value.map((category) => {
+          const [min, max] = BIOSPHERE_INTEGRITY_RANGES[category as BiosphereIntegrityLegendName]
+          if (max === 100) {
+            return [">=", ["get", "indice"], min]
+          }
+          return ["all", [">=", ["get", "indice"], min], ["<", ["get", "indice"], max]]
+        })
+        filter = conditions.length === 1 ? conditions[0] : ["any", ...conditions]
       }
 
       mapInstance.setFilter(layerId, filter as FilterSpecification)

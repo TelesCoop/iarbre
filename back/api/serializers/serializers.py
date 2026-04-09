@@ -2,7 +2,15 @@ import json
 
 from rest_framework import serializers
 
-from iarbre_data.models import City, Iris, Lcz, Tile, Vegestrate, Vulnerability
+from iarbre_data.models import (
+    City,
+    Iris,
+    Lcz,
+    Tile,
+    Vulnerability,
+    BiosphereFunctionalIntegrity,
+    Vegestrate,
+)
 
 
 class LczSerializer(serializers.ModelSerializer):
@@ -140,3 +148,9 @@ class PlantabilityVulnerabilityScoresSerializer(
     PlantabilityScoresSerializer, VulnerabilityScoresSerializer
 ):
     pass
+
+
+class BiosphereFunctionalIntegritySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BiosphereFunctionalIntegrity
+        fields = ("id", "indice")

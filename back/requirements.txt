@@ -16,12 +16,12 @@ getconf==1.11.0
 gunicorn==23.0.0
 humanize==4.14.0
 ipython==8.26.0
-mapbox_vector_tile==2.1.0
+mapbox_vector_tile==2.2.0
 mercantile==1.2.1
 numpy==2.0.1
 openpyxl==3.1.5
 pillow==11.0.0
-protobuf==5.29.5
+protobuf==6.33.6
 psycopg2==2.9.9
 pyproj==3.7.1
 PyYAML==6.0.2
