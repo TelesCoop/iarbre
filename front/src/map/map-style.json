@@ -1,5 +1,5 @@
 {
-  "CADASTRE": {
+  "cadastre": {
     "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
     "layers": [
       {
@@ -66,14 +66,12 @@
     ],
     "sources": {
       "cadastre": {
-        "attribution": "Cadastre &copy; Etalab",
         "tiles": [
           "{API_BASE_URL}/tiles/cadastre/cadastre/{z}/{x}/{y}.mvt"
         ],
         "type": "vector"
       },
       "osm": {
-        "attribution": "&copy; OpenStreetMap Contributors",
         "tileSize": 256,
         "tiles": [
           "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
@@ -85,7 +83,40 @@
     },
     "version": 8
   },
-  "OSM": {
+  "orthophoto": {
+    "layers": [
+      {
+        "id": "osm",
+        "source": "osm",
+        "type": "raster"
+      },
+      {
+        "id": "orthophoto-layer",
+        "source": "orthophoto",
+        "type": "raster"
+      }
+    ],
+    "sources": {
+      "orthophoto": {
+        "tileSize": 256,
+        "tiles": [
+          "{API_BASE_URL}/orthophoto/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      },
+      "osm": {
+        "tileSize": 256,
+        "tiles": [
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+        ],
+        "type": "raster"
+      }
+    },
+    "version": 8
+  },
+  "osm": {
     "layers": [
       {
         "id": "osm",
@@ -95,7 +126,6 @@
     ],
     "sources": {
       "osm": {
-        "attribution": "&copy; OpenStreetMap Contributors",
         "tileSize": 256,
         "tiles": [
           "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
@@ -107,7 +137,7 @@
     },
     "version": 8
   },
-  "SATELLITE": {
+  "satellite": {
     "layers": [
       {
         "id": "satellite-layer",
@@ -117,7 +147,6 @@
     ],
     "sources": {
       "satellite": {
-        "attribution": "Imagery &copy; Esri",
         "tileSize": 256,
         "tiles": [
           "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"

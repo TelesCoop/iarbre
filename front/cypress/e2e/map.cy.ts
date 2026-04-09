@@ -12,7 +12,7 @@ describe("Map - Desktop", () => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -42,9 +42,9 @@ describe("Map - Desktop", () => {
     )
   })
 
-  it("changes to cadastre map style", () => {
+  it("changes to orthophoto map style", () => {
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.ORTHOPHOTO}"]`).should("be.visible").click()
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -144,10 +144,6 @@ describe("Map - Desktop", () => {
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
-    cy.mapCheckQPVLayer(true)
-
-    cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
   })
@@ -212,7 +208,7 @@ describe("Map - Mobile", () => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -266,7 +262,7 @@ describe("Geocoder", () => {
   beforeEach(() => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
