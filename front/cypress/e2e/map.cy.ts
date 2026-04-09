@@ -89,6 +89,26 @@ describe("Map - Desktop", () => {
     cy.getBySel("map-context-data").should("contain", "Cliquez sur un carreau")
   })
 
+  it("renders layer toggle buttons in the bottom-left controls", () => {
+    cy.getBySel("bottom-left-controls").should("be.visible")
+
+    // The three layer chips must live inside the bottom-left stack,
+    // stacked below the background selector.
+    cy.getBySel("bottom-left-controls").within(() => {
+      cy.getBySel("bg-selector-toggle").should("be.visible")
+      cy.getBySel("qpv-toggle").should("be.visible").and("contain.text", "QPV")
+      cy.getBySel("cadastre-toggle").should("be.visible").and("contain.text", "Cadastre")
+      cy.getBySel("boundary-toggle").should("be.visible").and("contain.text", "Communes")
+    })
+
+    // Positioned in the bottom-left quadrant of the viewport.
+    cy.getBySel("bottom-left-controls").then(($el) => {
+      const rect = $el[0].getBoundingClientRect()
+      expect(rect.left).to.be.lessThan(DESKTOP_VIEWPORT.width / 2)
+      expect(rect.bottom).to.be.greaterThan(DESKTOP_VIEWPORT.height / 2)
+    })
+  })
+
   it("adds QPV layer when toggled", () => {
     // Desktop QPV toggle is in the sidebar
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
