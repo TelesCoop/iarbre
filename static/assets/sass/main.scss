@@ -2308,6 +2308,10 @@ h6 {
   @media (min-width: $tablet) {
     padding-inline: $spacing-xl;
   }
+
+  &--wide {
+    max-width: $content-width-xl;
+  }
 }
 
 .page-header {

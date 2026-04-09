@@ -1,7 +1,7 @@
 {{ define "main" }}
 
 <div class="page-container">
-  <div class="page-content">
+  <div class="page-content{{ if .Params.wide }} page-content--wide{{ end }}">
     <header class="page-header">
       <h1 class="page-title">{{ .Title }}</h1>
       {{ if .Description }}
