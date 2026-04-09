@@ -163,9 +163,8 @@ watch(
 
 .sidebar-footer {
   @apply relative flex items-center;
-  @apply bg-primary-500 flex-shrink-0;
+  @apply text-primary-600;
   @apply w-full;
-  height: 152px;
 }
 
 /* Mobile bottom panel */
