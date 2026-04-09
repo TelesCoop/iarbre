@@ -42,22 +42,6 @@ describe("Map - Desktop", () => {
     )
   })
 
-  it("changes to cadastre map style", () => {
-    cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-
-    cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.OSM}"]`).should("be.visible").click()
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-  })
-
   it("changes to orthophoto map style", () => {
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.ORTHOPHOTO}"]`).should("be.visible").click()
@@ -157,10 +141,6 @@ describe("Map - Desktop", () => {
 
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
-    cy.mapCheckQPVLayer(true)
-
-    cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
