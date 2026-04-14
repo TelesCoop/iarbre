@@ -76,11 +76,15 @@ def generate_flatgeobuf(dataset_name: str) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / config["filename"]
 
+    # Reserve a unique temp path in the same directory (same filesystem for
+    # atomic os.replace). mkstemp creates the file, but ogr2ogr needs the
+    # path to not exist, so we delete it immediately.
     tmp_fd, tmp_path_str = tempfile.mkstemp(
         suffix=".fgb", dir=output_dir, prefix=f".{dataset_name}_"
     )
     os.close(tmp_fd)
     tmp_path = Path(tmp_path_str)
+    tmp_path.unlink()
 
     db = settings.DATABASES["default"]
     pg_parts = [f"dbname={db['NAME']}", f"user={db['USER']}"]
