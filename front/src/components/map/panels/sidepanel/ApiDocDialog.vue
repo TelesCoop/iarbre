@@ -276,12 +276,11 @@ const wfsParams: Param[] = [
             ]"
             @click="toggle('vector')"
           >
-            <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">FGB</span>
+            <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">VEC</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">REST - FlatGeobuf</p>
+              <p class="text-sm font-semibold text-gray-800">REST - Vecteurs</p>
               <p class="text-xs text-gray-500">
-                Téléchargement des vecteurs au format FlatGeobuf (EPSG:2154). Index spatial intégré,
-                chargement progressif dans QGIS.
+                FlatGeobuf ou GeoParquet (EPSG:2154). Chargement progressif dans QGIS.
               </p>
             </div>
             <svg
@@ -304,8 +303,22 @@ const wfsParams: Param[] = [
             <div v-if="expanded === 'vector'" class="border-t border-gray-100 px-3 py-3 space-y-2">
               <div
                 v-for="dataset in [
-                  { label: 'Plantabilité', url: `${origin}/api/vectors/plantability` },
-                  { label: 'Végéstrate', url: `${origin}/api/vectors/vegestrate` }
+                  {
+                    label: 'Plantabilité — FlatGeobuf',
+                    url: `${origin}/api/vectors/plantability.fgb`
+                  },
+                  {
+                    label: 'Plantabilité — GeoParquet',
+                    url: `${origin}/api/vectors/plantability.parquet`
+                  },
+                  {
+                    label: 'Végéstrate — FlatGeobuf',
+                    url: `${origin}/api/vectors/vegestrate.fgb`
+                  },
+                  {
+                    label: 'Végéstrate — GeoParquet',
+                    url: `${origin}/api/vectors/vegestrate.parquet`
+                  }
                 ]"
                 :key="dataset.url"
                 class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"

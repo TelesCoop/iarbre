@@ -102,6 +102,14 @@ server {
         add_header         X-Cache-Status $upstream_cache_status;
     }
 
+    # Serve pre-generated vector files directly from disk.
+    # nginx handles Range requests natively, enabling QGIS /vsicurl/ streaming.
+    location ~ ^/api/vectors/(?<vname>\w+)\.(?<vext>fgb|parquet)$ {
+        alias {{ backend_media_path }}/vectors/$vname.$vext;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=3600" always;
+    }
+
     location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
         proxy_pass         http://app_servers_{{ project_slug }};
         proxy_redirect     off;

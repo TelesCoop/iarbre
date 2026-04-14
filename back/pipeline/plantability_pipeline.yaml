@@ -112,15 +112,15 @@ nodes:
     depends_on:
       - raster_plantability_to_geom
 
-  - id: generate_flatgeobuf
-    name: "Generate FlatGeobuf Exports"
+  - id: export_vectors
+    name: "Export Vector Files"
     description: |
       Export plantability tiles to FlatGeobuf files with a packed spatial index.
       QGIS can stream these files via HTTP range requests, loading only the
       features within the visible viewport.
       Input:  Tile rows in the database
       Output: media/vectors/plantability.fgb
-    command: generate_flatgeobuf
+    command: export_vectors
     args:
       dataset: plantability
     depends_on:

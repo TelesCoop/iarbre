@@ -52,6 +52,13 @@ urlpatterns = [
         VectorDownloadView.as_view(),
         name="download-vector",
     ),
+    # Served directly by nginx in production (Range request support).
+    # Django fallback for local dev.
+    path(
+        "vectors/<str:vector_type>.<str:ext>",
+        VectorDownloadView.as_view(),
+        name="download-vector-ext",
+    ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
