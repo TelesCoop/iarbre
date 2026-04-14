@@ -13,6 +13,7 @@ from .views import (
     CityBoundaryView,
     MetadataView,
     RasterDownloadView,
+    VectorDownloadView,
     IArbreWFSView,
     OrthophotoTileView,
 )
@@ -45,6 +46,11 @@ urlpatterns = [
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
         name="download-raster",
+    ),
+    path(
+        "vectors/<str:vector_type>/",
+        VectorDownloadView.as_view(),
+        name="download-vector",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),

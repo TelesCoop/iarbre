@@ -5,9 +5,9 @@ import { ref } from "vue"
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wfs" | "raster" | null>(null)
+const expanded = ref<"wfs" | "raster" | "vector" | null>(null)
 
-const toggle = (service: "wfs" | "raster") => {
+const toggle = (service: "wfs" | "raster" | "vector") => {
   expanded.value = expanded.value === service ? null : service
 }
 
@@ -260,6 +260,87 @@ const wfsParams: Param[] = [
                     Copier
                   </button>
                 </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT VECTEUR</p>
+        <div class="border border-gray-200 rounded-md overflow-hidden">
+          <button
+            :class="[
+              'flex w-full items-center gap-2 px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
+              expanded === 'vector' ? 'rounded-t-md border-b-0' : 'rounded-md'
+            ]"
+            @click="toggle('vector')"
+          >
+            <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">FGB</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800">REST - FlatGeobuf</p>
+              <p class="text-xs text-gray-500">
+                Téléchargement des vecteurs au format FlatGeobuf (EPSG:2154). Index spatial intégré,
+                chargement progressif dans QGIS.
+              </p>
+            </div>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-gray-400 shrink-0 transition-transform duration-200"
+              :class="expanded === 'vector' ? 'rotate-180' : ''"
+            >
+              <path d="M2 4L6 8L10 4" />
+            </svg>
+          </button>
+
+          <Transition name="accordion">
+            <div v-if="expanded === 'vector'" class="border-t border-gray-100 px-3 py-3 space-y-2">
+              <div
+                v-for="dataset in [
+                  { label: 'Plantabilité', url: `${origin}/api/vectors/plantability` },
+                  { label: 'Végéstrate', url: `${origin}/api/vectors/vegestrate` }
+                ]"
+                :key="dataset.url"
+                class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
+              >
+                <span class="text-sm text-gray-700">{{ dataset.label }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs text-primary-500 truncate">{{ dataset.url }}</span>
+                  <button
+                    class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors shrink-0"
+                    @click="copyToClipboard(dataset.url)"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+              </div>
+
+              <div class="bg-primary-50 border-l-2 border-primary-500 px-3 py-3 rounded-r-md">
+                <p class="text-xs font-bold text-primary-700 mb-1">
+                  Intégration QGIS — Couche → Ajouter une couche → Vecteur.
+                </p>
+                <p class="text-xs text-primary-800">
+                  Collez l'URL comme source. QGIS chargera uniquement les entités visibles dans la
+                  vue.
+                </p>
               </div>
             </div>
           </Transition>
