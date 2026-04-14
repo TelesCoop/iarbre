@@ -30,6 +30,24 @@ import { generateBivariateColorExpression } from "@/utils/plantability_vulnerabi
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  QPV_CASING_COLOR,
+  QPV_CASING_WIDTH,
+  QPV_CASING_OPACITY,
+  QPV_BORDER_COLOR,
+  QPV_BORDER_WIDTH,
+  QPV_BORDER_OPACITY,
+  BOUNDARY_BORDER_COLOR,
+  BOUNDARY_BORDER_WIDTH,
+  BOUNDARY_BORDER_OPACITY,
+  CADASTRE_COLOR,
+  CADASTRE_BORDER_WIDTH,
+  CADASTRE_BORDER_OPACITY,
+  CADASTRE_SELECTED_BORDER_WIDTH,
+  CADASTRE_SELECTED_BORDER_OPACITY,
+  CADASTRE_SELECTED_FILL_OPACITY,
+  CADASTRE_DEFAULT_FILL_OPACITY
+} from "@/utils/mapLayers"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
@@ -498,14 +516,31 @@ export const useMapStore = defineStore("map", () => {
         ? TERRA_DRAW_POLYGON_LAYER
         : undefined
 
+      // White casing drawn first so the coloured line stays legible on any basemap
+      mapInstance.addLayer(
+        {
+          id: "qpv-border-casing",
+          type: "line",
+          source: "qpv-source",
+          paint: {
+            "line-color": QPV_CASING_COLOR,
+            "line-width": QPV_CASING_WIDTH,
+            "line-opacity": QPV_CASING_OPACITY
+          }
+        },
+        beforeId
+      )
+
+      // Main QPV border drawn on top of the casing
       mapInstance.addLayer(
         {
           id: "qpv-border",
           type: "line",
           source: "qpv-source",
           paint: {
-            "line-color": "#D97706",
-            "line-width": 3
+            "line-color": QPV_BORDER_COLOR,
+            "line-width": QPV_BORDER_WIDTH,
+            "line-opacity": QPV_BORDER_OPACITY
           }
         },
         beforeId
@@ -519,6 +554,9 @@ export const useMapStore = defineStore("map", () => {
   const removeQPVLayer = (mapInstance: Map) => {
     if (mapInstance.getLayer("qpv-border")) {
       mapInstance.removeLayer("qpv-border")
+    }
+    if (mapInstance.getLayer("qpv-border-casing")) {
+      mapInstance.removeLayer("qpv-border-casing")
       mapInstance.once("render", () => {
         console.info(`cypress: QPV data removed`)
       })
@@ -564,9 +602,9 @@ export const useMapStore = defineStore("map", () => {
           type: "line",
           source: "city-boundary-source",
           paint: {
-            "line-color": "#426A45",
-            "line-width": 2.5,
-            "line-opacity": 0.7
+            "line-color": BOUNDARY_BORDER_COLOR,
+            "line-width": BOUNDARY_BORDER_WIDTH,
+            "line-opacity": BOUNDARY_BORDER_OPACITY
           }
         },
         beforeId
@@ -626,7 +664,7 @@ export const useMapStore = defineStore("map", () => {
           source: "cadastre-source",
           "source-layer": "cadastre--cadastre",
           paint: {
-            "fill-color": "#8B6914",
+            "fill-color": CADASTRE_COLOR,
             "fill-opacity": 0.0
           }
         },
@@ -642,9 +680,9 @@ export const useMapStore = defineStore("map", () => {
           source: "cadastre-source",
           "source-layer": "cadastre--cadastre",
           paint: {
-            "line-color": "#8B6914",
-            "line-width": 1,
-            "line-opacity": 0.5
+            "line-color": CADASTRE_COLOR,
+            "line-width": CADASTRE_BORDER_WIDTH,
+            "line-opacity": CADASTRE_BORDER_OPACITY
           }
         },
         beforeId
@@ -668,22 +706,22 @@ export const useMapStore = defineStore("map", () => {
         "match",
         ["get", "parcel_id"],
         parcelId,
-        0.3,
-        0.05
+        CADASTRE_SELECTED_FILL_OPACITY,
+        CADASTRE_DEFAULT_FILL_OPACITY
       ])
       mapInstance.setPaintProperty("cadastre-border", "line-width", [
         "match",
         ["get", "parcel_id"],
         parcelId,
-        3,
-        1
+        CADASTRE_SELECTED_BORDER_WIDTH,
+        CADASTRE_BORDER_WIDTH
       ])
       mapInstance.setPaintProperty("cadastre-border", "line-opacity", [
         "match",
         ["get", "parcel_id"],
         parcelId,
-        1,
-        0.5
+        CADASTRE_SELECTED_BORDER_OPACITY,
+        CADASTRE_BORDER_OPACITY
       ])
     }
 
@@ -714,9 +752,9 @@ export const useMapStore = defineStore("map", () => {
     for (const mapId of Object.keys(mapInstancesByIds.value)) {
       const mapInstance = mapInstancesByIds.value[mapId]
       if (!mapInstance.getLayer("cadastre-fill")) continue
-      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", 0.05)
-      mapInstance.setPaintProperty("cadastre-border", "line-width", 1)
-      mapInstance.setPaintProperty("cadastre-border", "line-opacity", 0.5)
+      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", CADASTRE_DEFAULT_FILL_OPACITY)
+      mapInstance.setPaintProperty("cadastre-border", "line-width", CADASTRE_BORDER_WIDTH)
+      mapInstance.setPaintProperty("cadastre-border", "line-opacity", CADASTRE_BORDER_OPACITY)
     }
   }
 
