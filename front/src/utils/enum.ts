@@ -16,9 +16,10 @@ export enum DataType {
 }
 
 export enum MapStyle {
-  OSM = "Plan",
+  OSM = "osm",
+  ORTHOPHOTO = "orthophoto",
   SATELLITE = "satellite",
-  CADASTRE = "Cadastre"
+  CADASTRE = "cadastre"
 }
 
 export enum SelectionMode {
@@ -32,6 +33,7 @@ export enum SelectionMode {
 
 export const MapStyleToLabel: Record<MapStyle, string> = {
   [MapStyle.OSM]: "Plan de la ville",
+  [MapStyle.ORTHOPHOTO]: "Orthophoto Lyon 2023",
   [MapStyle.SATELLITE]: "Images satellite",
   [MapStyle.CADASTRE]: "Cadastre"
 }
