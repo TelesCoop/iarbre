@@ -18,6 +18,7 @@
           - libpq-dev
           - python3-pip # for psycopg2
           - postgresql-14-postgis-3
+          - gdal-bin # for ogr2ogr (FlatGeobuf export)
 
     - name: Find postgresql auth config file to configure authentication
       find: paths="/etc/postgresql/" recurse=yes patterns="pg_hba.conf"
