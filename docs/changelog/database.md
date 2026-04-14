@@ -6,13 +6,26 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-04-09T13:15_postgres_backup.dump
+
+**Changements :** :
+
+- Simplification des des MVTs de l'intégrité fonctionnel de la biosphère pour les niveaux de zooms éloignés. Nettoyage des `BiosphereFunctionalIntegrityLandCover` en base pour permettre de les suivre ensuite.
+- Les QPVs avaient disparus de la DB suite à un changement sur data.grandlyon et sont rajoutés dans cette version.
+
+### 2026-04-07T12:12_postgres_backup.dump
+
+**Changements :**
+
+- **Indice de biosphère fonctionnel** : Ajout des MVTs de l'intégrité fonctionnel de la biosphère ainsi que des données correspondantes dans la DB : `BiosphereFunctionalIntegrity`. Dans la DB se trouvent aussi les données d'occupation des sols : `BiosphereFunctionalIntegrityLandCover`.
+
 ### 2026-03-31T11:55_postgres_backup.dump
 
 **Changements :**
 
 - **Raster vegestrate** : Ajout dans `media/rasters/vegestrate` d'une collection de rasters de l'inventaire du végétal correspondant à différentes post-process.
 
-````python
+```python
 VEGESTRATE_FILES = {
     (2018, "02", False, None): "raw_fullmetropole_ir_02_2018.tif", # Résolution 0.2m
     (2018, "02", True, 3): "postprocessv3_fullmetropole_ir_02_2018.tif",
@@ -20,7 +33,8 @@ VEGESTRATE_FILES = {
     (2023, "02", True, 1): "postprocessv1_fullmetropole_RGB_02_2023.tif",
     (2023, "02", True, 2): "postprocessv2_fullmetropole_ir_02_2023.tif",
     (2023, "02", True, 3): "postprocessv3_fullmetropole_ir_02_2023.tif",
-}```
+}
+```
 
 ### 2026-03-03T15:35_postgres_backup.dump
 
@@ -124,3 +138,4 @@ Copiez ce modèle lors de l'ajout d'une nouvelle sauvegarde :
 
 **Remarque :** Les sauvegardes sont listées par ordre chronologique inversé (la plus récente en premier)
 ```
+````

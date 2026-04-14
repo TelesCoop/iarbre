@@ -32,6 +32,10 @@ watch(
       v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
       class="w-full"
     />
+    <biosphere-functional-integrity-legend
+      v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
+      class="w-full"
+    />
     <vegetation-legend
       v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
