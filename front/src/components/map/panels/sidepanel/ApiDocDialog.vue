@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
-import AppSelect from "@/components/shared/AppSelect.vue"
 import { ref, computed, onMounted } from "vue"
 import { useApiGet } from "@/api"
 
@@ -39,8 +38,9 @@ onMounted(async () => {
   }
 })
 
-const handleCityChange = (value: string | number) => {
-  selectedCityCode.value = value === "" ? null : String(value)
+const handleCityChange = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value
+  selectedCityCode.value = value || null
 }
 
 const cityFilterSuffix = computed(() => {
@@ -168,15 +168,22 @@ const rasterDatasets = [
 
               <!-- Commune selector -->
               <div>
-                <label class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
+                <label
+                  for="wfs-city-select"
+                  class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
                   >COMMUNE (OPTIONNEL)</label
                 >
-                <AppSelect
-                  :model-value="selectedCityCode"
-                  :options="cities"
-                  placeholder="Toutes les communes"
-                  @update:model-value="handleCityChange"
-                />
+                <select
+                  id="wfs-city-select"
+                  class="commune-select"
+                  :value="selectedCityCode ?? ''"
+                  @change="handleCityChange"
+                >
+                  <option value="">Toutes les communes</option>
+                  <option v-for="city in cities" :key="city.value" :value="city.value">
+                    {{ city.label }}
+                  </option>
+                </select>
               </div>
 
               <div class="bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
@@ -348,6 +355,16 @@ const rasterDatasets = [
 </template>
 
 <style scoped>
+@reference "@/styles/main.css";
+
+.commune-select {
+  @apply w-full py-2 px-3 text-sm font-sans text-gray-700;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply cursor-pointer transition-all;
+  @apply focus:border-primary-500 focus:outline-none;
+  appearance: auto;
+}
+
 .accordion-enter-active,
 .accordion-leave-active {
   transition:
