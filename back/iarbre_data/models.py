@@ -7,6 +7,7 @@ from django.db.models import Avg
 
 from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
 from api.constants import GeoLevel, DataType
+from iarbre_data.utils.biosphere_land_cover import LandCoverClass
 from plantability.constants import (
     PLANTABILITY_NORMALIZED,
     PlantabilityNormalizedThreshold,
@@ -291,10 +292,41 @@ class Vegestrate(models.Model):
         }
 
 
+class BiosphereFunctionalIntegrity(models.Model):
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
+    indice = models.IntegerField()
+
+    geolevel = GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+    datatype = DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY.value
+
+    def get_layer_properties(self):
+        return {
+            "id": self.id,
+            "indice": self.indice,
+        }
+
+
+class BiosphereFunctionalIntegrityLandCover(models.Model):
+    geometry = PolygonField(srid=SRID_DB)
+    map_geometry = PolygonField(srid=SRID_MAPLIBRE, null=True, blank=True)
+    land_cover = models.CharField(max_length=50, choices=LandCoverClass.choices)
+    binary = models.BooleanField(null=True)
+
+    def get_layer_properties(self):
+        return {
+            "id": self.id,
+            "land_cover": self.land_cover,
+            "binary": self.binary,
+        }
+
+
 @receiver(pre_save, sender=Lcz)
 @receiver(pre_save, sender=Vulnerability)
 @receiver(pre_save, sender=Tile)
 @receiver(pre_save, sender=Cadastre)
 @receiver(pre_save, sender=Vegestrate)
+@receiver(pre_save, sender=BiosphereFunctionalIntegrity)
+@receiver(pre_save, sender=BiosphereFunctionalIntegrityLandCover)
 def before_save(sender, instance, **kwargs):
     create_mapgeometry(instance)

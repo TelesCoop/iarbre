@@ -17,6 +17,7 @@ import {
 } from "@/utils/constants"
 import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
+import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
@@ -24,6 +25,7 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
@@ -85,6 +87,11 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
+        "step",
+        ["get", "indice"],
+        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
     }
@@ -105,12 +112,24 @@ export const useMapStore = defineStore("map", () => {
         "*",
         ["match", ["get", "indice"], ...VEGESTRATE_HEIGHT_MAP],
         HEIGHT_MULTIPLIER
-      ]
+      ],
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
     }
   })
 
   const getGeoLevelFromDataType = () => {
     return DataTypeToGeolevel[selectedDataType.value!]
+  }
+
+  /**
+   * Deep-clone the raw maplibre style JSON for a given MapStyle, inject the
+   * backend base URL where needed and apply centralized source attributions.
+   * Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
+   * https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
+   */
+  const loadMapStyle = (style: MapStyle): maplibregl.StyleSpecification => {
+    const rawStyle = JSON.stringify(mapStyles[style]).replace("{API_BASE_URL}", getFullBaseApiUrl())
+    return applyMapStyleAttributions(JSON.parse(rawStyle)) as maplibregl.StyleSpecification
   }
   const navControl = ref(
     new NavigationControl({
@@ -268,6 +287,8 @@ export const useMapStore = defineStore("map", () => {
         contextData.setData(featureId, score, sourceValues)
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
+      } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        contextData.setData(featureId, score)
       } else {
         contextData.setData(featureId)
       }
@@ -427,22 +448,9 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
       }
-      let newStyle: maplibregl.StyleSpecification
+      const newStyle = loadMapStyle(mapstyle)
 
-      if (mapstyle === MapStyle.CADASTRE) {
-        const fullBaseApiUrl = getFullBaseApiUrl()
-        newStyle = JSON.parse(
-          JSON.stringify(mapStyles.CADASTRE).replace("{API_BASE_URL}", fullBaseApiUrl)
-        ) as maplibregl.StyleSpecification
-      } else if (mapstyle === MapStyle.SATELLITE) {
-        // Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
-        // https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
-        newStyle = mapStyles.SATELLITE as maplibregl.StyleSpecification
-      } else if (mapstyle === MapStyle.OSM) {
-        newStyle = mapStyles.OSM as maplibregl.StyleSpecification
-      }
-
-      if (newStyle!) {
+      if (newStyle) {
         const onStyleReady = () => {
           initTiles(mapInstance)
           setupControls(mapInstance)
@@ -765,7 +773,7 @@ export const useMapStore = defineStore("map", () => {
 
     mapInstancesByIds.value[mapId] = new Map({
       container: mapId,
-      style: mapStyles.OSM as maplibregl.StyleSpecification,
+      style: loadMapStyle(MapStyle.OSM),
       maxZoom: MAX_ZOOM,
       minZoom: MIN_ZOOM,
       attributionControl: false
