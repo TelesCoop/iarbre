@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.28.0 (2026-04-15) : Petits changements sur le site statique et sur la cartographie
+## 🔖 0.28.0 (2026-04-15) : Ajout du calque de biodiversité et des orthophotos en fond de carte
 
 ### ✨ feat : Ajout des orthophotos 2023 en fond de carte
 
