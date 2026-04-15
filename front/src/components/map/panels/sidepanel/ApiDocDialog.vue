@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
-import { ref } from "vue"
+import AppSelect from "@/components/shared/AppSelect.vue"
+import { ref, computed, onMounted } from "vue"
+import { useApiGet } from "@/api"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
@@ -18,6 +20,40 @@ const copyToClipboard = (text: string) => {
 const origin = window.location.origin
 const wfsBase = `${origin}/api/wfs/`
 
+// -- Commune selector -------------------------------------------------------
+
+interface CityOption {
+  label: string
+  value: string
+}
+
+const cities = ref<CityOption[]>([])
+const selectedCityCode = ref<string | null>(null)
+
+onMounted(async () => {
+  const res = await useApiGet<{ code: string; name: string }[]>("cities/")
+  if (res.data) {
+    cities.value = res.data
+      .map((c) => ({ label: c.name, value: c.code }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }
+})
+
+const handleCityChange = (value: string | number) => {
+  selectedCityCode.value = value === "" ? null : String(value)
+}
+
+const cityFilterSuffix = computed(() => {
+  if (!selectedCityCode.value) return ""
+  return `&CQL_FILTER=city_code='${selectedCityCode.value}'`
+})
+
+const wfsFullUrl = computed(() => {
+  return `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&OUTPUTFORMAT=geojson${cityFilterSuffix.value}`
+})
+
+// -- WFS params table --------------------------------------------------------
+
 interface Param {
   key: string
   value: string
@@ -25,7 +61,7 @@ interface Param {
   fixed?: boolean
 }
 
-const wfsParams: Param[] = [
+const wfsParams = computed<Param[]>(() => [
   { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
   { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
   { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
@@ -47,9 +83,18 @@ const wfsParams: Param[] = [
   },
   {
     key: "CQL_FILTER",
-    value: "city_code='69123'",
+    value: selectedCityCode.value ? `city_code='${selectedCityCode.value}'` : "city_code='69123'",
     desc: "Filtre par commune (code INSEE) — réduit le volume de données"
   }
+])
+
+// -- Raster datasets ---------------------------------------------------------
+
+const rasterDatasets = [
+  { label: "Plantabilité", url: `${origin}/api/rasters/plantability.tif` },
+  { label: "Végéstrate", url: `${origin}/api/rasters/vegestrate.tif` },
+  { label: "Vulnérabilité chaleur", url: `${origin}/api/rasters/vulnerability.tif` },
+  { label: "Zones climatiques locales", url: `${origin}/api/rasters/lcz.tif` }
 ]
 </script>
 
@@ -115,12 +160,23 @@ const wfsParams: Param[] = [
               <div class="bg-amber-50 border-l-2 border-amber-500 px-3 py-3 rounded-r-md">
                 <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
                 <p class="text-xs text-amber-800">
-                  Le jeu complet contient 21 millions de tuiles. Utilisez un filtre par commune
-                  (<span class="font-mono">city_code</span>) ou par emprise (<span class="font-mono"
-                    >BBOX</span
-                  >) pour limiter le volume. Pour une consultation rapide, préférez le
-                  téléchargement raster ci-dessous.
+                  Le jeu complet contient 21 millions de tuiles. Sélectionnez une commune ci-dessous
+                  ou utilisez un filtre BBOX pour limiter le volume. Pour une consultation rapide,
+                  préférez le téléchargement raster ci-dessous.
                 </p>
+              </div>
+
+              <!-- Commune selector -->
+              <div>
+                <label class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
+                  >COMMUNE (OPTIONNEL)</label
+                >
+                <AppSelect
+                  :model-value="selectedCityCode"
+                  :options="cities"
+                  placeholder="Toutes les communes"
+                  @update:model-value="handleCityChange"
+                />
               </div>
 
               <div class="bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
@@ -128,11 +184,7 @@ const wfsParams: Param[] = [
                   <span class="text-xs text-gray-400">URL du service</span>
                   <button
                     class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
-                    @click="
-                      copyToClipboard(
-                        `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&OUTPUTFORMAT=geojson`
-                      )
-                    "
+                    @click="copyToClipboard(wfsFullUrl)"
                   >
                     <svg
                       width="12"
@@ -165,6 +217,13 @@ const wfsParams: Param[] = [
                   <span class="text-gray-300">&amp; </span
                   ><span class="text-primary-800">OUTPUTFORMAT</span
                   ><span class="text-gray-300">=</span><span class="text-scale-3">geojson</span>
+                  <template v-if="selectedCityCode"
+                    ><br />
+                    <span class="text-gray-300">&amp; </span
+                    ><span class="text-primary-800">CQL_FILTER</span
+                    ><span class="text-gray-300">=</span
+                    ><span class="text-scale-3">city_code='{{ selectedCityCode }}'</span>
+                  </template>
                 </div>
               </div>
 
@@ -223,7 +282,7 @@ const wfsParams: Param[] = [
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
               <p class="text-xs text-gray-500">
-                Téléchargement du raster complet au format GeoTIFF (EPSG:2154).
+                Téléchargement des calques au format GeoTIFF (EPSG:2154).
               </p>
             </div>
             <svg
@@ -245,13 +304,7 @@ const wfsParams: Param[] = [
           <Transition name="accordion">
             <div v-if="expanded === 'raster'" class="border-t border-gray-100 px-3 py-3 space-y-2">
               <div
-                v-for="dataset in [
-                  {
-                    label: 'Plantabilité',
-                    url: `${origin}/api/rasters/plantability.tif`
-                  },
-                  { label: 'Végéstrate', url: `${origin}/api/rasters/vegestrate.tif` }
-                ]"
+                v-for="dataset in rasterDatasets"
                 :key="dataset.url"
                 class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
               >
@@ -283,7 +336,7 @@ const wfsParams: Param[] = [
                   Intégration QGIS — Couche → Ajouter une couche → Raster.
                 </p>
                 <p class="text-xs text-primary-800">
-                  Collez l'URL comme source HTTP. Le fichier fait ~31 Mo, chargement rapide.
+                  Collez l'URL comme source HTTP. Chargement rapide.
                 </p>
               </div>
             </div>

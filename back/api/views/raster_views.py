@@ -10,6 +10,8 @@ RASTER_MAP = {
         "rasters/vegestrate_lyon_metropole_ir_02.tif",
         "vegestrate_2023_02m.tif",
     ),
+    "vulnerability": ("rasters/vulnerability.tif", "vulnerability.tif"),
+    "lcz": ("rasters/lcz.tif", "lcz.tif"),
 }
 
 
