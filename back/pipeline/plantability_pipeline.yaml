@@ -111,17 +111,3 @@ nodes:
     command: compute_plantability_counts
     depends_on:
       - raster_plantability_to_geom
-
-  - id: export_vectors
-    name: "Export Vector Files"
-    description: |
-      Export plantability tiles to FlatGeobuf files with a packed spatial index.
-      QGIS can stream these files via HTTP range requests, loading only the
-      features within the visible viewport.
-      Input:  Tile rows in the database
-      Output: media/vectors/plantability.fgb
-    command: export_vectors
-    args:
-      dataset: plantability
-    depends_on:
-      - raster_plantability_to_geom

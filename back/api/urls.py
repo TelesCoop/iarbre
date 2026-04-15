@@ -13,7 +13,6 @@ from .views import (
     CityBoundaryView,
     MetadataView,
     RasterDownloadView,
-    VectorDownloadView,
     IArbreWFSView,
     OrthophotoTileView,
 )
@@ -46,18 +45,6 @@ urlpatterns = [
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
         name="download-raster",
-    ),
-    path(
-        "vectors/<str:vector_type>/",
-        VectorDownloadView.as_view(),
-        name="download-vector",
-    ),
-    # Served directly by nginx in production (Range request support).
-    # Django fallback for local dev.
-    path(
-        "vectors/<str:vector_type>.<str:ext>",
-        VectorDownloadView.as_view(),
-        name="download-vector-ext",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),

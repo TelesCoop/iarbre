@@ -5,9 +5,9 @@ import { ref } from "vue"
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wfs" | "raster" | "vector" | null>(null)
+const expanded = ref<"wfs" | "raster" | null>(null)
 
-const toggle = (service: "wfs" | "raster" | "vector") => {
+const toggle = (service: "wfs" | "raster") => {
   expanded.value = expanded.value === service ? null : service
 }
 
@@ -44,6 +44,11 @@ const wfsParams: Param[] = [
     key: "BBOX",
     value: "minLat,minLon,maxLat,maxLon",
     desc: "Emprise géographique en degrés décimaux"
+  },
+  {
+    key: "CQL_FILTER",
+    value: "city_code='69123'",
+    desc: "Filtre par commune (code INSEE) — réduit le volume de données"
   }
 ]
 </script>
@@ -78,7 +83,7 @@ const wfsParams: Param[] = [
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800">WEB FEATURE SERVICE</p>
               <p class="text-xs text-gray-500">
-                Objets géographiques vecteur, interrogeables et filtrables.
+                Objets géographiques vecteur, interrogeables et filtrables par commune.
               </p>
             </div>
             <div class="flex gap-1 shrink-0">
@@ -107,6 +112,17 @@ const wfsParams: Param[] = [
 
           <Transition name="accordion">
             <div v-if="expanded === 'wfs'" class="border-t border-gray-100 px-3 py-3 space-y-4">
+              <div class="bg-amber-50 border-l-2 border-amber-500 px-3 py-3 rounded-r-md">
+                <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
+                <p class="text-xs text-amber-800">
+                  Le jeu complet contient 21 millions de tuiles. Utilisez un filtre par commune
+                  (<span class="font-mono">city_code</span>) ou par emprise (<span class="font-mono"
+                    >BBOX</span
+                  >) pour limiter le volume. Pour une consultation rapide, préférez le
+                  téléchargement raster ci-dessous.
+                </p>
+              </div>
+
               <div class="bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
                 <div class="flex items-center justify-between px-2.5 py-2 border-b border-gray-100">
                   <span class="text-xs text-gray-400">URL du service</span>
@@ -261,98 +277,13 @@ const wfsParams: Param[] = [
                   </button>
                 </div>
               </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
-
-      <div>
-        <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT VECTEUR</p>
-        <div class="border border-gray-200 rounded-md overflow-hidden">
-          <button
-            :class="[
-              'flex w-full items-center gap-2 px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
-              expanded === 'vector' ? 'rounded-t-md border-b-0' : 'rounded-md'
-            ]"
-            @click="toggle('vector')"
-          >
-            <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">VEC</span>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">REST - Vecteurs</p>
-              <p class="text-xs text-gray-500">
-                FlatGeobuf ou GeoParquet (EPSG:2154). Chargement progressif dans QGIS.
-              </p>
-            </div>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-gray-400 shrink-0 transition-transform duration-200"
-              :class="expanded === 'vector' ? 'rotate-180' : ''"
-            >
-              <path d="M2 4L6 8L10 4" />
-            </svg>
-          </button>
-
-          <Transition name="accordion">
-            <div v-if="expanded === 'vector'" class="border-t border-gray-100 px-3 py-3 space-y-2">
-              <div
-                v-for="dataset in [
-                  {
-                    label: 'Plantabilité — FlatGeobuf',
-                    url: `${origin}/api/vectors/plantability.fgb`
-                  },
-                  {
-                    label: 'Plantabilité — GeoParquet',
-                    url: `${origin}/api/vectors/plantability.parquet`
-                  },
-                  {
-                    label: 'Végéstrate — FlatGeobuf',
-                    url: `${origin}/api/vectors/vegestrate.fgb`
-                  },
-                  {
-                    label: 'Végéstrate — GeoParquet',
-                    url: `${origin}/api/vectors/vegestrate.parquet`
-                  }
-                ]"
-                :key="dataset.url"
-                class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
-              >
-                <span class="text-sm text-gray-700">{{ dataset.label }}</span>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono text-xs text-primary-500 truncate">{{ dataset.url }}</span>
-                  <button
-                    class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors shrink-0"
-                    @click="copyToClipboard(dataset.url)"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <rect x="9" y="9" width="13" height="13" rx="2" />
-                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                    </svg>
-                    Copier
-                  </button>
-                </div>
-              </div>
 
               <div class="bg-primary-50 border-l-2 border-primary-500 px-3 py-3 rounded-r-md">
                 <p class="text-xs font-bold text-primary-700 mb-1">
-                  Intégration QGIS — Couche → Ajouter une couche → Vecteur.
+                  Intégration QGIS — Couche → Ajouter une couche → Raster.
                 </p>
                 <p class="text-xs text-primary-800">
-                  Collez l'URL comme source. QGIS chargera uniquement les entités visibles dans la
-                  vue.
+                  Collez l'URL comme source HTTP. Le fichier fait ~31 Mo, chargement rapide.
                 </p>
               </div>
             </div>
