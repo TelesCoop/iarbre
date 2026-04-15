@@ -102,6 +102,19 @@ server {
         add_header         X-Cache-Status $upstream_cache_status;
     }
 
+    # Serve raster files directly from disk for QGIS /vsicurl/ support
+    # (native Range requests, no Content-Disposition: attachment).
+    location = /api/rasters/plantability.tif {
+        alias {{ backend_media_path }}/rasters/plantability.tif;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=86400" always;
+    }
+    location = /api/rasters/vegestrate.tif {
+        alias {{ backend_media_path }}/rasters/vegestrate_lyon_metropole_ir_02.tif;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=86400" always;
+    }
+
     location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
         proxy_pass         http://app_servers_{{ project_slug }};
         proxy_redirect     off;

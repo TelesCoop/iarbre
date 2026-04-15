@@ -248,9 +248,9 @@ const wfsParams: Param[] = [
                 v-for="dataset in [
                   {
                     label: 'Plantabilité',
-                    url: `${origin}/api/rasters/plantability`
+                    url: `${origin}/api/rasters/plantability.tif`
                   },
-                  { label: 'Végéstrate', url: `${origin}/api/rasters/vegestrate` }
+                  { label: 'Végéstrate', url: `${origin}/api/rasters/vegestrate.tif` }
                 ]"
                 :key="dataset.url"
                 class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
