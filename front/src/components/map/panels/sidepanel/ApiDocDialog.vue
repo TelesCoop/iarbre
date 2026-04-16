@@ -38,10 +38,42 @@ onMounted(async () => {
   }
 })
 
-const handleCityChange = (event: Event) => {
-  const value = (event.target as HTMLSelectElement).value
-  selectedCityCode.value = value || null
+const cityInputValue = ref("")
+const isCityFocused = ref(false)
+
+const filteredCities = computed(() => {
+  const q = cityInputValue.value.trim().toLowerCase()
+  if (!q) return cities.value
+  return cities.value.filter((c) => c.label.toLowerCase().includes(q))
+})
+
+const handleCityInput = (event: Event) => {
+  const raw = (event.target as HTMLInputElement).value
+  cityInputValue.value = raw
+  const match = cities.value.find((c) => c.label.toLowerCase() === raw.toLowerCase())
+  selectedCityCode.value = match ? match.value : null
 }
+
+const selectCity = (city: CityOption) => {
+  cityInputValue.value = city.label
+  selectedCityCode.value = city.value
+  isCityFocused.value = false
+}
+
+const clearCity = () => {
+  cityInputValue.value = ""
+  selectedCityCode.value = null
+}
+
+const handleCityBlur = () => {
+  // Delay to allow click on option to register before closing
+  setTimeout(() => {
+    isCityFocused.value = false
+  }, 150)
+}
+
+// Accordion state for WFS parameters (collapsed by default)
+const paramsOpen = ref(false)
 
 const cityFilterSuffix = computed(() => {
   if (!selectedCityCode.value) return ""
@@ -157,7 +189,7 @@ const rasterDatasets = [
 
           <Transition name="accordion">
             <div v-if="expanded === 'wfs'" class="border-t border-gray-100 px-3 py-3 space-y-4">
-              <div class="bg-amber-50 border-l-2 border-amber-500 px-3 py-3 rounded-r-md">
+              <div v-if="!selectedCityCode" class="bg-amber-50 px-3 py-3 rounded-md">
                 <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
                 <p class="text-xs text-amber-800">
                   Le jeu complet contient 21 millions de tuiles. Sélectionnez une commune ci-dessous
@@ -169,21 +201,56 @@ const rasterDatasets = [
               <!-- Commune selector -->
               <div>
                 <label
-                  for="wfs-city-select"
+                  for="wfs-city-input"
                   class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
                   >COMMUNE (OPTIONNEL)</label
                 >
-                <select
-                  id="wfs-city-select"
-                  class="commune-select"
-                  :value="selectedCityCode ?? ''"
-                  @change="handleCityChange"
+                <div class="commune-input-wrapper">
+                  <input
+                    id="wfs-city-input"
+                    class="commune-input"
+                    :value="cityInputValue"
+                    placeholder="Toutes les communes (tapez pour filtrer)"
+                    autocomplete="off"
+                    @input="handleCityInput"
+                    @focus="isCityFocused = true"
+                    @blur="handleCityBlur"
+                  />
+                  <button
+                    v-if="cityInputValue"
+                    type="button"
+                    class="commune-clear"
+                    aria-label="Effacer"
+                    @click="clearCity"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M1 1L13 13M1 13L13 1"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <div
+                  v-if="isCityFocused && filteredCities.length > 0"
+                  class="commune-options"
+                  role="listbox"
                 >
-                  <option value="">Toutes les communes</option>
-                  <option v-for="city in cities" :key="city.value" :value="city.value">
+                  <button
+                    v-for="city in filteredCities"
+                    :key="city.value"
+                    type="button"
+                    class="commune-option"
+                    :class="{ selected: selectedCityCode === city.value }"
+                    role="option"
+                    :aria-selected="selectedCityCode === city.value"
+                    @mousedown.prevent="selectCity(city)"
+                  >
                     {{ city.label }}
-                  </option>
-                </select>
+                  </button>
+                </div>
               </div>
 
               <div class="bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
@@ -234,37 +301,62 @@ const rasterDatasets = [
                 </div>
               </div>
 
-              <div>
-                <p class="text-2xs font-bold text-gray-400 tracking-wider mb-2">PARAMÈTRES</p>
-                <div class="border border-gray-200 rounded-md overflow-hidden">
-                  <div
-                    class="grid grid-cols-[1fr_1fr_2fr] text-2xs font-bold text-gray-400 tracking-wider border-b border-gray-200 bg-gray-100 px-2.5 py-2"
+              <div class="border border-gray-200 rounded-md overflow-hidden">
+                <button
+                  type="button"
+                  :class="[
+                    'flex w-full items-center justify-between px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
+                    paramsOpen ? 'border-b border-gray-200' : ''
+                  ]"
+                  @click="paramsOpen = !paramsOpen"
+                >
+                  <span class="text-2xs font-bold text-gray-500 tracking-wider">PARAMÈTRES</span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-gray-400 transition-transform duration-200"
+                    :class="paramsOpen ? 'rotate-180' : ''"
                   >
-                    <span>PARAMÈTRE</span>
-                    <span>VALEUR</span>
-                    <span>DESCRIPTION</span>
-                  </div>
-                  <div
-                    v-for="(param, i) in wfsParams"
-                    :key="param.key"
-                    class="grid grid-cols-[1fr_1fr_2fr] px-2.5 py-1.5 text-xs border-b border-gray-100 last:border-b-0"
-                    :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-                  >
-                    <span class="font-mono text-primary-800">{{ param.key }}</span>
-                    <span class="font-mono text-scale-3">{{ param.value }}</span>
-                    <div class="flex items-center gap-2">
-                      <span class="text-gray-600">{{ param.desc }}</span>
-                      <span
-                        v-if="param.fixed"
-                        class="text-2xs text-gray-400 border border-gray-200 rounded px-1 shrink-0"
-                        >fixe</span
-                      >
+                    <path d="M2 4L6 8L10 4" />
+                  </svg>
+                </button>
+                <Transition name="accordion">
+                  <div v-if="paramsOpen">
+                    <div
+                      class="grid grid-cols-[1fr_1fr_2fr] text-2xs font-bold text-gray-400 tracking-wider border-b border-gray-200 bg-gray-50 px-2.5 py-2"
+                    >
+                      <span>PARAMÈTRE</span>
+                      <span>VALEUR</span>
+                      <span>DESCRIPTION</span>
+                    </div>
+                    <div
+                      v-for="(param, i) in wfsParams"
+                      :key="param.key"
+                      class="grid grid-cols-[1fr_1fr_2fr] px-2.5 py-1.5 text-xs border-b border-gray-100 last:border-b-0"
+                      :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
+                    >
+                      <span class="font-mono text-primary-800">{{ param.key }}</span>
+                      <span class="font-mono text-scale-3">{{ param.value }}</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-gray-600">{{ param.desc }}</span>
+                        <span
+                          v-if="param.fixed"
+                          class="text-2xs text-gray-400 border border-gray-200 rounded px-1 shrink-0"
+                          >fixe</span
+                        >
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Transition>
               </div>
 
-              <div class="bg-primary-50 border-l-2 border-primary-500 px-3 py-3 rounded-r-md">
+              <div class="bg-primary-50 px-3 py-3 rounded-md">
                 <p class="text-xs font-bold text-primary-700 mb-1">
                   Intégration QGIS — Couche → Ajouter une couche → WFS.
                 </p>
@@ -338,7 +430,7 @@ const rasterDatasets = [
                 </div>
               </div>
 
-              <div class="bg-primary-50 border-l-2 border-primary-500 px-3 py-3 rounded-r-md">
+              <div class="bg-primary-50 px-3 py-3 rounded-md">
                 <p class="text-xs font-bold text-primary-700 mb-1">
                   Intégration QGIS — Couche → Ajouter une couche → Raster.
                 </p>
@@ -357,12 +449,50 @@ const rasterDatasets = [
 <style scoped>
 @reference "@/styles/main.css";
 
-.commune-select {
-  @apply w-full py-2 px-3 text-sm font-sans text-gray-700;
+.commune-input-wrapper {
+  @apply relative w-full;
+}
+
+.commune-input {
+  @apply w-full py-2 px-3 pr-8 text-sm font-sans text-gray-700;
   @apply bg-white border border-gray-200 rounded-lg;
-  @apply cursor-pointer transition-all;
+  @apply transition-all;
   @apply focus:border-primary-500 focus:outline-none;
-  appearance: auto;
+}
+
+.commune-input::placeholder {
+  @apply text-gray-400;
+}
+
+.commune-clear {
+  @apply absolute top-1/2 right-2 -translate-y-1/2;
+  @apply flex items-center justify-center;
+  @apply w-6 h-6 rounded-full;
+  @apply text-gray-400 hover:text-gray-700 hover:bg-gray-100;
+  @apply cursor-pointer transition-colors;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.commune-options {
+  @apply mt-1 bg-white border border-gray-200 rounded-lg;
+  @apply max-h-48 overflow-y-auto;
+}
+
+.commune-option {
+  @apply flex items-center w-full py-1.5 px-3;
+  @apply bg-transparent border-none cursor-pointer;
+  @apply text-sm font-sans text-gray-700 text-left;
+  @apply transition-colors;
+}
+
+.commune-option:hover {
+  @apply bg-primary-50;
+}
+
+.commune-option.selected {
+  @apply bg-primary-100 text-primary-700 font-medium;
 }
 
 .accordion-enter-active,
