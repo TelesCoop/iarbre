@@ -20,6 +20,7 @@ RASTER_MAP: dict[str, tuple[str, str]] = {
     "vulnerability": _entry("rasters/vulnerability.tif"),
     "vulnerability_colors": _entry("rasters/vulnerability_colors.tif"),
     "lcz": _entry("rasters/lcz.tif"),
+    "lcz_colors": _entry("rasters/lcz_colors.tif"),
 }
 
 

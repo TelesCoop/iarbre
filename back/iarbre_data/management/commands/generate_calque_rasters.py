@@ -185,30 +185,28 @@ def _embed_palette(raster_path: Path, palette: dict[int, str]) -> None:
     logger.info("Embedded palette in %s", raster_path.name)
 
 
-def _write_rgb_from_stops(
-    float_path: Path,
+def _write_rgb(
+    source_path: Path,
     output_path: Path,
-    stops: list[tuple[int, str]],
-    nodata: float,
+    nodata: int | float,
+    map_value: Callable[[np.ndarray], np.ndarray],
 ) -> None:
-    """Render a float raster as a 3-band RGB GeoTIFF via linear color interpolation.
+    """Render a single-band raster as a 3-band RGB GeoTIFF.
 
-    Produces a file QGIS displays in color out-of-the-box, even when loaded
-    remotely via ``/vsicurl/``.
+    ``map_value`` receives the masked 1D array of valid pixel values and
+    returns an ``(N, 3) uint8`` array of RGB triplets. Produces a file
+    QGIS displays with colors out-of-the-box, even loaded remotely via
+    ``/vsicurl/``.
     """
-    values = np.array([s[0] for s in stops], dtype=np.float32)
-    colors = np.array([_hex_to_rgb(s[1]) for s in stops], dtype=np.uint8)
-
-    with rasterio.open(float_path) as src:
+    with rasterio.open(source_path) as src:
         data = src.read(1)
         profile = src.profile.copy()
 
     mask = data != nodata
+    rgb_pixels = map_value(data[mask])  # (N, 3) uint8
     rgb = np.zeros((3, *data.shape), dtype=np.uint8)
     for i in range(3):
-        rgb[i][mask] = np.clip(
-            np.interp(data[mask], values, colors[:, i]), 0, 255
-        ).astype(np.uint8)
+        rgb[i][mask] = rgb_pixels[:, i]
 
     profile.update(
         dtype="uint8", count=3, nodata=None, photometric="RGB", compress="lzw"
@@ -224,6 +222,34 @@ def _write_rgb_from_stops(
     )
 
 
+def _interp_mapper(stops: list[tuple[int, str]]) -> Callable[[np.ndarray], np.ndarray]:
+    """Mapper for continuous float rasters: linear interpolation between stops."""
+    values = np.array([s[0] for s in stops], dtype=np.float32)
+    colors = np.array([_hex_to_rgb(s[1]) for s in stops], dtype=np.uint8)
+
+    def _map(flat: np.ndarray) -> np.ndarray:
+        out = np.zeros((flat.size, 3), dtype=np.uint8)
+        for i in range(3):
+            out[:, i] = np.clip(np.interp(flat, values, colors[:, i]), 0, 255)
+        return out
+
+    return _map
+
+
+def _palette_mapper(palette: dict[int, str]) -> Callable[[np.ndarray], np.ndarray]:
+    """Mapper for discrete integer rasters: lookup table from palette."""
+    max_key = max(palette.keys())
+    lut = np.zeros((max_key + 1, 3), dtype=np.uint8)
+    for k, hex_color in palette.items():
+        lut[k] = _hex_to_rgb(hex_color)
+
+    def _map(flat: np.ndarray) -> np.ndarray:
+        clipped = np.clip(flat.astype(np.int64), 0, max_key)
+        return lut[clipped]
+
+    return _map
+
+
 # -- Calque processors -------------------------------------------------------
 # All processors share the same signature so the dispatch dict stays trivial.
 
@@ -235,14 +261,17 @@ def generate_vulnerability(ref: dict, union) -> Path:
     array = _rasterize_field(qs, "vulnerability_index_day", np.float32, nodata, ref)
     raw_path = RASTERS_DIR / "vulnerability.tif"
     _write_geotiff(array, raw_path, np.float32, nodata, ref)
-    _write_rgb_from_stops(
-        raw_path, RASTERS_DIR / "vulnerability_colors.tif", VULNERABILITY_STOPS, nodata
+    _write_rgb(
+        raw_path,
+        RASTERS_DIR / "vulnerability_colors.tif",
+        nodata,
+        _interp_mapper(VULNERABILITY_STOPS),
     )
     return raw_path
 
 
 def generate_lcz(ref: dict, union) -> Path:
-    """Rasterize LCZ (uint8) with the WUDAPT palette embedded."""
+    """Rasterize LCZ with the WUDAPT palette embedded + an RGB color variant."""
     qs = Lcz.objects.filter(geometry__intersects=union)
     array = _rasterize_field(
         qs, "lcz_index", np.uint8, 0, ref, transform=_lcz_index_to_int
@@ -250,6 +279,12 @@ def generate_lcz(ref: dict, union) -> Path:
     path = RASTERS_DIR / "lcz.tif"
     _write_geotiff(array, path, np.uint8, 0, ref)
     _embed_palette(path, LCZ_PALETTE)
+    _write_rgb(
+        path,
+        RASTERS_DIR / "lcz_colors.tif",
+        0,
+        _palette_mapper(LCZ_PALETTE),
+    )
     return path
 
 

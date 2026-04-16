@@ -135,7 +135,8 @@ const rasterDatasets: RasterDataset[] = [
   { label: "Végéstrate", url: rasterUrl("vegestrate.tif") },
   { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors.tif") },
   { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability.tif") },
-  { label: "Zones climatiques locales", url: rasterUrl("lcz.tif") }
+  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors.tif") },
+  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz.tif") }
 ]
 </script>
 
