@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
 import { ref, computed, onMounted } from "vue"
-import { useApiGet } from "@/api"
+import { getCities } from "@/services/divisionService"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
@@ -30,9 +30,9 @@ const cities = ref<CityOption[]>([])
 const selectedCityCode = ref<string | null>(null)
 
 onMounted(async () => {
-  const res = await useApiGet<{ code: string; name: string }[]>("cities/")
-  if (res.data) {
-    cities.value = res.data
+  const result = await getCities()
+  if (result) {
+    cities.value = result
       .map((c) => ({ label: c.name, value: c.code }))
       .sort((a, b) => a.label.localeCompare(b.label))
   }
