@@ -435,13 +435,13 @@ const rasterDatasets: RasterDataset[] = [
                     Copier
                   </button>
                 </div>
-                <a
-                  :href="dataset.url"
-                  target="_blank"
-                  rel="noopener"
-                  class="raster-url block font-mono text-xs text-primary-500 hover:text-primary-700"
-                  >{{ dataset.url }}</a
+                <button
+                  type="button"
+                  class="raster-url block w-full text-left font-mono text-xs text-primary-500 hover:text-primary-700 cursor-pointer"
+                  @click="copyToClipboard(dataset.url)"
                 >
+                  {{ dataset.url }}
+                </button>
               </div>
 
               <div class="bg-primary-50 px-3 py-3 rounded-md">
