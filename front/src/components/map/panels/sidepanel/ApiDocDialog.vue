@@ -274,30 +274,28 @@ const rasterDatasets = [
                     Copier
                   </button>
                 </div>
-                <div class="px-2.5 py-2 bg-white font-mono text-xs leading-relaxed">
+                <div class="wfs-url-display px-2.5 py-2 bg-white font-mono text-xs leading-relaxed">
                   <span class="text-primary-500">{{ wfsBase }}</span
-                  ><br />
-                  <span class="text-gray-300">?</span><span class="text-primary-800">SERVICE</span
-                  ><span class="text-gray-300">=</span><span class="text-scale-3">WFS</span>
-                  <span class="text-gray-300"> &amp; </span
+                  ><span class="text-gray-300">?</span><span class="text-primary-800">SERVICE</span
+                  ><span class="text-gray-300">=</span><span class="text-scale-3">WFS</span
+                  ><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">VERSION</span><span class="text-gray-300">=</span
-                  ><span class="text-scale-3">2.0.0</span> <span class="text-gray-300"> &amp; </span
+                  ><span class="text-scale-3">2.0.0</span><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">REQUEST</span><span class="text-gray-300">=</span
-                  ><span class="text-scale-3">GetFeature</span><br />
-                  <span class="text-gray-300">&amp; </span
+                  ><span class="text-scale-3">GetFeature</span
+                  ><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">TYPENAMES</span
                   ><span class="text-gray-300">=</span
-                  ><span class="text-scale-3">iarbre:plantability</span><br />
-                  <span class="text-gray-300">&amp; </span
+                  ><span class="text-scale-3">iarbre:plantability</span
+                  ><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">OUTPUTFORMAT</span
-                  ><span class="text-gray-300">=</span><span class="text-scale-3">geojson</span>
-                  <template v-if="selectedCityCode"
-                    ><br />
-                    <span class="text-gray-300">&amp; </span
+                  ><span class="text-gray-300">=</span><span class="text-scale-3">geojson</span
+                  ><template v-if="selectedCityCode"
+                    ><span class="text-gray-300">&amp;</span
                     ><span class="text-primary-800">CQL_FILTER</span
                     ><span class="text-gray-300">=</span
-                    ><span class="text-scale-3">city_code='{{ selectedCityCode }}'</span>
-                  </template>
+                    ><span class="text-scale-3">city_code='{{ selectedCityCode }}'</span></template
+                  >
                 </div>
               </div>
 
@@ -448,6 +446,13 @@ const rasterDatasets = [
 
 <style scoped>
 @reference "@/styles/main.css";
+
+.wfs-url-display {
+  /* Break anywhere so the URL wraps without requiring literal spaces
+     that would end up in the clipboard if the user selects the text. */
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
 
 .commune-input-wrapper {
   @apply relative w-full;
