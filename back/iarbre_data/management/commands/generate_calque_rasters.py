@@ -33,7 +33,6 @@ from iarbre_data.utils.database import load_geodataframe_from_db
 logger = logging.getLogger(__name__)
 
 RASTERS_DIR = Path(settings.MEDIA_ROOT) / "rasters"
-REFERENCE_RASTER = "plantability.tif"
 TRANSPARENT = (0, 0, 0, 0)
 
 
@@ -85,11 +84,8 @@ VULNERABILITY_STOPS: list[tuple[int, str]] = [
     (9, "#d73026"),
 ]
 
-
-# -- LCZ index normalisation -------------------------------------------------
-
-# Natural zones A-G → codes 11-17 (WUDAPT/OGC-LCZ convention: 10 + letter rank).
-_LCZ_LETTER_TO_CODE = {"A": 11, "B": 12, "C": 13, "D": 14, "E": 15, "F": 16, "G": 17}
+# Natural LCZ zones (A-G) → integer codes 11-17 (WUDAPT/OGC convention).
+_LCZ_LETTERS = {"A": 11, "B": 12, "C": 13, "D": 14, "E": 15, "F": 16, "G": 17}
 
 
 def _lcz_index_to_int(value: Any) -> int | None:
@@ -97,22 +93,91 @@ def _lcz_index_to_int(value: Any) -> int | None:
     if value is None:
         return None
     s = str(value).strip()
-    if s in _LCZ_LETTER_TO_CODE:
-        return _LCZ_LETTER_TO_CODE[s]
+    if s in _LCZ_LETTERS:
+        return _LCZ_LETTERS[s]
     try:
         return int(s)
     except (TypeError, ValueError):
         return None
 
 
-# -- Raster writers ----------------------------------------------------------
+# -- Raster I/O helpers ------------------------------------------------------
+
+
+def _reference_grid() -> dict:
+    """Read the plantability raster header (CRS, transform, shape)."""
+    with rasterio.open(RASTERS_DIR / "plantability.tif") as src:
+        return {
+            "crs": src.crs,
+            "transform": src.transform,
+            "width": src.width,
+            "height": src.height,
+        }
+
+
+def _metro_geometry():
+    """Union of all city geometries (excluding the test city) — spatial filter."""
+    return City.objects.exclude(code="38250").aggregate(union=Union("geometry"))[
+        "union"
+    ]
+
+
+def _rasterize_field(
+    queryset,
+    field: str,
+    dtype: Any,
+    nodata: int | float,
+    ref: dict,
+    transform: Callable | None = None,
+) -> np.ndarray:
+    """Rasterize a queryset's ``field`` onto ``ref``'s grid."""
+    gdf = load_geodataframe_from_db(queryset, ["id", field])
+    cast = transform or (lambda v: v)
+    shapes = [
+        (geom, cast_val)
+        for geom, raw in zip(gdf.geometry, gdf[field])
+        if (cast_val := cast(raw)) is not None
+    ]
+    logger.info("Rasterizing %d features (field=%s)", len(shapes), field)
+    return rasterize(
+        shapes,
+        out_shape=(ref["height"], ref["width"]),
+        transform=ref["transform"],
+        fill=nodata,
+        dtype=dtype,
+    )
+
+
+def _write_geotiff(
+    array: np.ndarray, path: Path, dtype: Any, nodata: int | float, ref: dict
+) -> None:
+    """Write a single-band LZW-compressed GeoTIFF aligned with ``ref``."""
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        height=ref["height"],
+        width=ref["width"],
+        count=1,
+        dtype=dtype,
+        crs=ref["crs"],
+        transform=ref["transform"],
+        nodata=nodata,
+        compress="lzw",
+    ) as dst:
+        dst.write(array, 1)
+    logger.info("Generated %s (%.1f MB)", path, path.stat().st_size / 1024**2)
 
 
 def _embed_palette(raster_path: Path, palette: dict[int, str]) -> None:
-    """Embed an indexed RGBA palette into an integer GeoTIFF band."""
+    """Embed an indexed RGBA palette into an integer GeoTIFF band.
+
+    Missing palette indices default to fully transparent so QGIS does not
+    render unused values as solid black.
+    """
     max_key = max(palette.keys())
     cmap = {
-        i: (*_hex_to_rgb(palette[i]), 255) if i in palette else TRANSPARENT
+        i: ((*_hex_to_rgb(palette[i]), 255) if i in palette else TRANSPARENT)
         for i in range(max_key + 1)
     }
     with rasterio.open(raster_path, "r+") as dst:
@@ -159,74 +224,8 @@ def _write_rgb_from_stops(
     )
 
 
-# -- Rasterization -----------------------------------------------------------
-
-
-def _reference_grid() -> dict:
-    """Read the plantability raster to get reference grid parameters."""
-    with rasterio.open(RASTERS_DIR / REFERENCE_RASTER) as src:
-        return {
-            "crs": src.crs,
-            "transform": src.transform,
-            "width": src.width,
-            "height": src.height,
-        }
-
-
-def _metropolitan_union():
-    """Union of all city geometries, excluding the test city."""
-    return City.objects.exclude(code="38250").aggregate(union=Union("geometry"))[
-        "union"
-    ]
-
-
-def _rasterize_field(
-    queryset,
-    field: str,
-    dtype: Any,
-    nodata: int | float,
-    ref: dict,
-    transform: Callable | None = None,
-) -> np.ndarray:
-    """Rasterize a Django queryset's ``field`` into a numpy array on ``ref``'s grid."""
-    gdf = load_geodataframe_from_db(queryset, ["id", field])
-    shapes = [
-        (geom, (transform(val) if transform else val))
-        for geom, val in zip(gdf.geometry, gdf[field])
-        if (transform(val) if transform else val) is not None
-    ]
-    logger.info("Rasterizing %d features (field=%s)", len(shapes), field)
-    return rasterize(
-        shapes,
-        out_shape=(ref["height"], ref["width"]),
-        transform=ref["transform"],
-        fill=nodata,
-        dtype=dtype,
-    )
-
-
-def _write_geotiff(
-    array: np.ndarray, path: Path, dtype: Any, nodata: int | float, ref: dict
-) -> None:
-    """Write a 2D numpy array as a LZW-compressed GeoTIFF aligned with ``ref``."""
-    with rasterio.open(
-        path,
-        "w",
-        driver="GTiff",
-        height=ref["height"],
-        width=ref["width"],
-        count=1,
-        dtype=dtype,
-        crs=ref["crs"],
-        transform=ref["transform"],
-        nodata=nodata,
-        compress="lzw",
-    ) as dst:
-        dst.write(array, 1)
-    logger.info("Generated %s (%.1f MB)", path, path.stat().st_size / 1024**2)
-
-
 # -- Calque processors -------------------------------------------------------
+# All processors share the same signature so the dispatch dict stays trivial.
 
 
 def generate_vulnerability(ref: dict, union) -> Path:
@@ -254,8 +253,8 @@ def generate_lcz(ref: dict, union) -> Path:
     return path
 
 
-def apply_vegestrate_palette() -> Path:
-    """Embed the vegestrate palette in the existing raster."""
+def apply_vegestrate_palette(ref: dict, union) -> Path:
+    """Embed the vegestrate palette in the existing raster (no rasterization)."""
     path = RASTERS_DIR / "vegestrate_lyon_metropole_ir_02.tif"
     if not path.exists():
         raise ValueError(f"Raster not found: {path}")
@@ -263,10 +262,10 @@ def apply_vegestrate_palette() -> Path:
     return path
 
 
-CALQUES: dict[str, Callable] = {
-    "vulnerability": lambda ref, union: generate_vulnerability(ref, union),
-    "lcz": lambda ref, union: generate_lcz(ref, union),
-    "vegestrate": lambda ref, union: apply_vegestrate_palette(),
+CALQUES: dict[str, Callable[[dict, Any], Path]] = {
+    "vulnerability": generate_vulnerability,
+    "lcz": generate_lcz,
+    "vegestrate": apply_vegestrate_palette,
 }
 
 
@@ -286,10 +285,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         names = [options["calque"]] if options["calque"] else list(CALQUES.keys())
-        # vegestrate doesn't rasterize from DB so doesn't need the grid/union
-        needs_grid = any(n != "vegestrate" for n in names)
-        ref = _reference_grid() if needs_grid else None
-        union = _metropolitan_union() if needs_grid else None
+        ref = _reference_grid()
+        union = _metro_geometry()
 
         for name in names:
             start = time.monotonic()

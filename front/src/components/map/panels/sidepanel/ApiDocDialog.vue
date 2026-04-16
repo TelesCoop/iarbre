@@ -125,32 +125,17 @@ const wfsParams = computed<Param[]>(() => [
 interface RasterDataset {
   label: string
   url: string
-  variant?: "colors" | "raw"
 }
 
+const rasterUrl = (filename: string) => `${origin}/api/rasters/${filename}`
+
 const rasterDatasets: RasterDataset[] = [
-  {
-    label: "Plantabilité (couleurs)",
-    url: `${origin}/api/rasters/plantability_colors.tif`,
-    variant: "colors"
-  },
-  {
-    label: "Plantabilité (données brutes)",
-    url: `${origin}/api/rasters/plantability.tif`,
-    variant: "raw"
-  },
-  { label: "Végéstrate", url: `${origin}/api/rasters/vegestrate.tif` },
-  {
-    label: "Vulnérabilité chaleur (couleurs)",
-    url: `${origin}/api/rasters/vulnerability_colors.tif`,
-    variant: "colors"
-  },
-  {
-    label: "Vulnérabilité chaleur (données brutes)",
-    url: `${origin}/api/rasters/vulnerability.tif`,
-    variant: "raw"
-  },
-  { label: "Zones climatiques locales", url: `${origin}/api/rasters/lcz.tif` }
+  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors.tif") },
+  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability.tif") },
+  { label: "Végéstrate", url: rasterUrl("vegestrate.tif") },
+  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors.tif") },
+  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability.tif") },
+  { label: "Zones climatiques locales", url: rasterUrl("lcz.tif") }
 ]
 </script>
 

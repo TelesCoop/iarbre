@@ -109,6 +109,11 @@ server {
         add_header Access-Control-Allow-Origin "*" always;
         add_header Cache-Control "public, max-age=86400" always;
     }
+    location = /api/rasters/plantability_colors.tif {
+        alias {{ backend_media_path }}/rasters/plantability_colors.tif;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=86400" always;
+    }
     location = /api/rasters/vegestrate.tif {
         alias {{ backend_media_path }}/rasters/vegestrate_lyon_metropole_ir_02.tif;
         add_header Access-Control-Allow-Origin "*" always;
@@ -116,6 +121,11 @@ server {
     }
     location = /api/rasters/vulnerability.tif {
         alias {{ backend_media_path }}/rasters/vulnerability.tif;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=86400" always;
+    }
+    location = /api/rasters/vulnerability_colors.tif {
+        alias {{ backend_media_path }}/rasters/vulnerability_colors.tif;
         add_header Access-Control-Allow-Origin "*" always;
         add_header Cache-Control "public, max-age=86400" always;
     }

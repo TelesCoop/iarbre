@@ -4,14 +4,22 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
-RASTER_MAP = {
-    "plantability": ("rasters/plantability.tif", "plantability_2025.tif"),
-    "vegestrate": (
-        "rasters/vegestrate_lyon_metropole_ir_02.tif",
-        "vegestrate_2023_02m.tif",
+
+def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
+    """Build a ``(path, filename)`` tuple, defaulting filename to basename."""
+    return path, filename or Path(path).name
+
+
+# Map of raster keys -> (relative path under MEDIA_ROOT, download filename).
+RASTER_MAP: dict[str, tuple[str, str]] = {
+    "plantability": _entry("rasters/plantability.tif", "plantability_2025.tif"),
+    "plantability_colors": _entry("rasters/plantability_colors.tif"),
+    "vegestrate": _entry(
+        "rasters/vegestrate_lyon_metropole_ir_02.tif", "vegestrate_2023_02m.tif"
     ),
-    "vulnerability": ("rasters/vulnerability.tif", "vulnerability.tif"),
-    "lcz": ("rasters/lcz.tif", "lcz.tif"),
+    "vulnerability": _entry("rasters/vulnerability.tif"),
+    "vulnerability_colors": _entry("rasters/vulnerability_colors.tif"),
+    "lcz": _entry("rasters/lcz.tif"),
 }
 
 
@@ -47,10 +55,7 @@ class FileDownloadView(APIView):
 
 
 class RasterDownloadView(FileDownloadView):
-    """Download plantability/vegestrate raster files (GeoTIFF).
-
-    Example: GET /api/rasters/plantability/
-    """
+    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``."""
 
     file_map = RASTER_MAP
     download_content_type = "image/tiff"
