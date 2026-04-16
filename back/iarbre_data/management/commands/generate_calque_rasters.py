@@ -27,6 +27,23 @@ logger = logging.getLogger(__name__)
 
 RASTERS_DIR = Path(settings.MEDIA_ROOT) / "rasters"
 
+# LCZ natural zones (A-G) are mapped to integer codes 11-17 following
+# the standard WUDAPT/OGC-LCZ convention (10 + letter position).
+LCZ_LETTER_TO_CODE = {"A": 11, "B": 12, "C": 13, "D": 14, "E": 15, "F": 16, "G": 17}
+
+
+def _lcz_index_to_int(value):
+    """Convert an LCZ index string (e.g. '1', '10', 'A', 'G') to an int code."""
+    if value is None:
+        return None
+    value = str(value).strip()
+    if value in LCZ_LETTER_TO_CODE:
+        return LCZ_LETTER_TO_CODE[value]
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
 
 def _reference_grid():
     """Read the plantability raster to get the reference grid parameters."""
@@ -48,17 +65,21 @@ def _all_cities_union():
     ]
 
 
-def _rasterize_model(queryset, value_field, output_name, dtype, nodata, ref):
+def _rasterize_model(
+    queryset, value_field, output_name, dtype, nodata, ref, value_transform=None
+):
     """Rasterize a vector queryset into a GeoTIFF aligned to the reference grid."""
     gdf = load_geodataframe_from_db(queryset, ["id", value_field])
     if gdf.empty:
         raise ValueError(f"No data found for {output_name}")
 
-    shapes = [
-        (geom, val)
-        for geom, val in zip(gdf.geometry, gdf[value_field])
-        if val is not None
-    ]
+    shapes = []
+    for geom, val in zip(gdf.geometry, gdf[value_field]):
+        if value_transform is not None:
+            val = value_transform(val)
+        if val is None:
+            continue
+        shapes.append((geom, val))
 
     logger.info("Rasterizing %s (%d features)", output_name, len(shapes))
     raster = rasterize(
@@ -104,6 +125,7 @@ CALQUES = {
         "value_field": "lcz_index",
         "dtype": np.int16,
         "nodata": -1,
+        "value_transform": _lcz_index_to_int,
     },
 }
 
@@ -129,7 +151,13 @@ class Command(BaseCommand):
             start = time.monotonic()
             qs = config["queryset_fn"](union)
             path = _rasterize_model(
-                qs, config["value_field"], name, config["dtype"], config["nodata"], ref
+                qs,
+                config["value_field"],
+                name,
+                config["dtype"],
+                config["nodata"],
+                ref,
+                value_transform=config.get("value_transform"),
             )
             elapsed = time.monotonic() - start
             self.stdout.write(
