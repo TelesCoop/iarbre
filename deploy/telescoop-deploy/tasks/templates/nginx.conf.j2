@@ -124,12 +124,6 @@ server {
         add_header Access-Control-Allow-Origin "*" always;
         add_header Cache-Control "public, max-age=86400" always;
     }
-    # QGIS style sidecars (.qml) — auto-loaded alongside the raster.
-    location ~ ^/api/rasters/(\w+)\.qml$ {
-        alias {{ backend_media_path }}/rasters/$1.qml;
-        add_header Access-Control-Allow-Origin "*" always;
-        add_header Cache-Control "public, max-age=86400" always;
-    }
 
     location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
         proxy_pass         http://app_servers_{{ project_slug }};

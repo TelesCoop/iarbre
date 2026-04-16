@@ -122,10 +122,34 @@ const wfsParams = computed<Param[]>(() => [
 
 // -- Raster datasets ---------------------------------------------------------
 
-const rasterDatasets = [
-  { label: "Plantabilité", url: `${origin}/api/rasters/plantability.tif` },
+interface RasterDataset {
+  label: string
+  url: string
+  variant?: "colors" | "raw"
+}
+
+const rasterDatasets: RasterDataset[] = [
+  {
+    label: "Plantabilité (couleurs)",
+    url: `${origin}/api/rasters/plantability_colors.tif`,
+    variant: "colors"
+  },
+  {
+    label: "Plantabilité (données brutes)",
+    url: `${origin}/api/rasters/plantability.tif`,
+    variant: "raw"
+  },
   { label: "Végéstrate", url: `${origin}/api/rasters/vegestrate.tif` },
-  { label: "Vulnérabilité chaleur", url: `${origin}/api/rasters/vulnerability.tif` },
+  {
+    label: "Vulnérabilité chaleur (couleurs)",
+    url: `${origin}/api/rasters/vulnerability_colors.tif`,
+    variant: "colors"
+  },
+  {
+    label: "Vulnérabilité chaleur (données brutes)",
+    url: `${origin}/api/rasters/vulnerability.tif`,
+    variant: "raw"
+  },
   { label: "Zones climatiques locales", url: `${origin}/api/rasters/lcz.tif` }
 ]
 </script>
@@ -403,11 +427,10 @@ const rasterDatasets = [
               <div
                 v-for="dataset in rasterDatasets"
                 :key="dataset.url"
-                class="flex items-center justify-between py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
+                class="py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
               >
-                <span class="text-sm text-gray-700">{{ dataset.label }}</span>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono text-xs text-primary-500 truncate">{{ dataset.url }}</span>
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <span class="text-sm text-gray-700">{{ dataset.label }}</span>
                   <button
                     class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors shrink-0"
                     @click="copyToClipboard(dataset.url)"
@@ -426,6 +449,13 @@ const rasterDatasets = [
                     Copier
                   </button>
                 </div>
+                <a
+                  :href="dataset.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="raster-url block font-mono text-xs text-primary-500 hover:text-primary-700"
+                  >{{ dataset.url }}</a
+                >
               </div>
 
               <div class="bg-primary-50 px-3 py-3 rounded-md">
@@ -450,6 +480,11 @@ const rasterDatasets = [
 .wfs-url-display {
   /* Break anywhere so the URL wraps without requiring literal spaces
      that would end up in the clipboard if the user selects the text. */
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.raster-url {
   word-break: break-all;
   overflow-wrap: anywhere;
 }
