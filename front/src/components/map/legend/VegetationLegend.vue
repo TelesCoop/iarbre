@@ -12,7 +12,7 @@ const handleStrateClick = (indice: string) => {
 <template>
   <div
     class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1"
-    data-cy="vegetation-legend"
+    data-cy="biosphere-integrity-legend"
   >
     <div
       v-for="item in VegetationLegend"
