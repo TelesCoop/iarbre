@@ -268,11 +268,11 @@ describe("Geocoder", () => {
 
   it("search for an address in Lyon and display results", () => {
     cy.intercept("GET", `${GEOCODER_API_URL}*`).as("geocoding")
-    cy.get(".maplibregl-ctrl-geocoder--input", { timeout: 10000 }).should("be.visible").click()
-    cy.get(".maplibregl-ctrl-geocoder--input").type("Métropole de Lyon")
+    cy.get("[data-cy='map-geocoder'] input", { timeout: 10000 }).should("be.visible").click()
+    cy.get("[data-cy='map-geocoder'] input").type("Métropole de Lyon")
     cy.wait("@geocoding")
-    cy.get(".maplibregl-ctrl-geocoder .suggestions").should("be.visible")
-    cy.get(".maplibregl-ctrl-geocoder .suggestions li").should("have.length.at.least", 1)
+    cy.get("[data-cy='map-geocoder'] ul[role='listbox']").should("be.visible")
+    cy.get("[data-cy='map-geocoder'] li[role='option']").should("have.length.at.least", 1)
   })
 })
 
