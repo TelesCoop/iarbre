@@ -175,11 +175,9 @@ onUnmounted(() => {
 
 .geocoder-wrapper {
   @apply relative w-full;
-}
 
-@media (min-width: 1024px) {
-  .geocoder-wrapper {
-    width: 240px;
+  @media (min-width: 1024px) {
+    width: 15rem;
   }
 }
 
@@ -187,29 +185,25 @@ onUnmounted(() => {
   @apply flex items-center gap-1.5 px-2 py-1.5;
   @apply bg-white border border-gray-200 rounded-lg;
   @apply transition-all duration-200;
-}
 
-@media (min-width: 1024px) {
-  .geocoder-input-row {
+  @media (min-width: 1024px) {
     @apply px-3 py-2;
   }
-}
 
-.geocoder-input-row.focused,
-.geocoder-input-row.open {
-  @apply border-primary-300 ring-2 ring-primary-100;
-}
+  &.focused,
+  &.open {
+    @apply border-primary-300 ring-2 ring-primary-100;
+  }
 
-.geocoder-input-row.open {
-  @apply rounded-b-none border-b-gray-100;
+  &.open {
+    @apply rounded-b-none border-b-gray-100;
+  }
 }
 
 .geocoder-search-icon {
   @apply w-3 h-3 shrink-0 text-gray-400;
-}
 
-@media (min-width: 1024px) {
-  .geocoder-search-icon {
+  @media (min-width: 1024px) {
     @apply w-4 h-4;
   }
 }
@@ -254,20 +248,24 @@ onUnmounted(() => {
   @apply flex items-start gap-2.5 px-3 py-2.5 cursor-pointer;
   @apply transition-colors duration-100;
   @apply border-b border-gray-100 last:border-b-0;
-}
 
-.geocoder-result:hover,
-.geocoder-result.active {
-  @apply bg-primary-500;
+  &:is(:hover, .active) {
+    @apply bg-primary-500;
+
+    .geocoder-pin {
+      @apply text-white;
+    }
+    .geocoder-result-name {
+      @apply text-white;
+    }
+    .geocoder-result-address {
+      @apply text-white/80;
+    }
+  }
 }
 
 .geocoder-pin {
   @apply w-4 h-4 shrink-0 mt-0.5 text-gray-400 transition-colors;
-}
-
-.geocoder-result:hover .geocoder-pin,
-.geocoder-result.active .geocoder-pin {
-  @apply text-white;
 }
 
 .geocoder-result-text {
@@ -278,18 +276,8 @@ onUnmounted(() => {
   @apply text-sm font-medium text-gray-900 transition-colors;
 }
 
-.geocoder-result:hover .geocoder-result-name,
-.geocoder-result.active .geocoder-result-name {
-  @apply text-white;
-}
-
 .geocoder-result-address {
   @apply text-xs text-gray-500 transition-colors truncate;
-}
-
-.geocoder-result:hover .geocoder-result-address,
-.geocoder-result.active .geocoder-result-address {
-  @apply text-white/80;
 }
 
 .geocoder-dropdown-enter-active,
