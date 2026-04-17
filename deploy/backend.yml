@@ -91,12 +91,12 @@
           become: true
       when: dedicated_database and (clonecode.changed or force_update is defined)
 
-        # Re-generate calque rasters (vulnerability, lcz, vegestrate) so the
-        # GeoTIFFs served at /api/rasters/ stay in sync with the latest data
-        # and color palettes. Idempotent — fails silently if source rasters
-        # or DB rows are missing.
-        - name: Regenerate calque rasters with platform colors
-          shell:
-            cmd: "{{ project_slug }}-ctl generate_calque_rasters"
-          ignore_errors: true
+    # Re-generate calque rasters (vulnerability, lcz, vegestrate) so the
+    # GeoTIFFs served at /api/rasters/ stay in sync with the latest data
+    # and color palettes. Idempotent — fails silently if source rasters
+    # or DB rows are missing.
+    - name: Regenerate calque rasters with platform colors
+      shell:
+        cmd: "{{ project_slug }}-ctl generate_calque_rasters"
+      ignore_errors: true
       when: branch is not defined and (clonecode.changed or force_update is defined)
