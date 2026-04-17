@@ -99,6 +99,8 @@ const handleCopyCoordinates = async () => {
 }
 
 .coordinates-text {
-  @apply tabular-nums tracking-tight truncate min-w-0;
+  @apply tabular-nums tracking-tight whitespace-nowrap;
+  /* Fixed width to prevent resize when coordinates change */
+  width: 19ch;
 }
 </style>
