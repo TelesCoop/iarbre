@@ -30,7 +30,7 @@ describe("MapSidePanelDownload", () => {
   it("should expand WFS section and show params table and URL", () => {
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("WEB FEATURE SERVICE").click()
-    cy.contains("PARAMÈTRES").should("be.visible")
+    cy.contains("PARAMÈTRES").should("be.visible").click()
     cy.contains("TYPENAMES").should("be.visible")
     cy.contains("OUTPUTFORMAT").should("be.visible")
     cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")

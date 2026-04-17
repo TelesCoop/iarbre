@@ -3,7 +3,7 @@ import time
 
 from django.contrib.gis.geos import Polygon
 from gisserver.crs import CRS84, WEB_MERCATOR, CRS
-from gisserver.features import FeatureType, ServiceDescription
+from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
 from iarbre_data.settings import SRID_DB
@@ -67,10 +67,12 @@ class TileFeatureType(FeatureType):
 
 LAMBERT93 = CRS.from_string(f"urn:ogc:def:crs:EPSG::{SRID_DB}")
 
-_tile_qs = Tile.objects.only(
+_tile_qs = Tile.objects.select_related("city").only(
     "geometry",
     "plantability_indice",
     "plantability_normalized_indice",
+    "city__code",
+    "city__name",
 )
 
 _vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
@@ -148,6 +150,8 @@ class IArbreWFSView(WFSView):
                     "geometry",
                     "plantability_indice",
                     "plantability_normalized_indice",
+                    FeatureField("city_code", model_attribute="city.code"),
+                    FeatureField("city_name", model_attribute="city.name"),
                 ],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
