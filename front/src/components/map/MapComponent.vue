@@ -165,6 +165,8 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   .legend-container {
     top: 0;
     @apply mt-2;
+    display: grid;
+    grid-template-columns: 1fr;
     width: auto;
   }
 
@@ -217,14 +219,9 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 .legend-info-row {
-  @apply flex flex-row items-center gap-2 w-full pointer-events-auto min-w-0;
-}
-
-/* Keep w-full on desktop so the row is constrained to the legend width */
-@media (min-width: 1024px) {
-  .legend-info-row {
-    @apply w-full;
-  }
+  @apply flex flex-row items-center gap-2 pointer-events-auto w-full;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .grid-size-info {

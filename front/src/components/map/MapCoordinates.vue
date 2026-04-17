@@ -2,10 +2,8 @@
 import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { copyToClipboard } from "@/utils/clipboard"
-import { useToast } from "@/composables/useToast"
 
 const mapStore = useMapStore()
-const toast = useToast()
 const isCopied = ref(false)
 
 const formattedCoordinates = computed(() => {
@@ -16,12 +14,6 @@ const formattedCoordinates = computed(() => {
 const handleCopyCoordinates = async () => {
   await copyToClipboard(formattedCoordinates.value)
   isCopied.value = true
-  toast.add({
-    severity: "success",
-    summary: "Coordonnées copiées",
-    life: 3000,
-    group: "br"
-  })
   setTimeout(() => {
     isCopied.value = false
   }, 2000)
@@ -38,6 +30,17 @@ const handleCopyCoordinates = async () => {
     @click="handleCopyCoordinates"
   >
     <svg
+      v-if="isCopied"
+      class="coordinates-icon copied-icon"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      viewBox="0 0 24 24"
+    >
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+    <svg
+      v-else
       class="coordinates-icon"
       fill="none"
       stroke="currentColor"
@@ -78,7 +81,11 @@ const handleCopyCoordinates = async () => {
 }
 
 .coordinates-button.copied {
-  @apply border-green-500 bg-green-50;
+  @apply border-primary-500 bg-primary-50;
+}
+
+.copied-icon {
+  @apply text-primary-500;
 }
 
 .coordinates-icon {
