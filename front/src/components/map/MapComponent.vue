@@ -62,7 +62,6 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <!-- Top-right controls stack -->
   <div class="top-right-controls">
-    <MapCoordinates />
     <MapGeocoder />
   </div>
 
@@ -103,16 +102,19 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <!-- Legend - top left -->
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLegend />
-    <div
-      v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"
-      class="grid-size-info"
-    >
-      <div class="grid-size-label">Résolution</div>
-      <div class="grid-size-value">
-        <div class="tile-pixel"></div>
-        <span class="grid-size-number">{{ gridSize }}</span>
-        <span class="grid-size-unit">m</span>
+    <div class="legend-info-row">
+      <div
+        v-if="appStore.isDesktop && mapStore.selectedDataType === 'plantability' && gridSize"
+        class="grid-size-info"
+      >
+        <div class="grid-size-label">Résolution</div>
+        <div class="grid-size-value">
+          <div class="tile-pixel"></div>
+          <span class="grid-size-number">{{ gridSize }}</span>
+          <span class="grid-size-unit">m</span>
+        </div>
       </div>
+      <MapCoordinates />
     </div>
     <MapFiltersStatus />
   </div>
@@ -214,8 +216,19 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 }
 
+.legend-info-row {
+  @apply flex flex-row items-center gap-2 w-full pointer-events-auto min-w-0;
+}
+
+/* Keep w-full on desktop so the row is constrained to the legend width */
+@media (min-width: 1024px) {
+  .legend-info-row {
+    @apply w-full;
+  }
+}
+
 .grid-size-info {
-  @apply flex flex-row items-center gap-2.5 py-2 px-3 bg-white border border-gray-200 rounded-lg pointer-events-auto font-sans;
+  @apply flex flex-row items-center gap-2.5 py-1.5 px-2.5 bg-white border border-gray-200 rounded-lg pointer-events-auto font-sans shrink-0;
 }
 
 .grid-size-label {
@@ -231,7 +244,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 .grid-size-number {
-  @apply text-base font-bold text-gray-800 leading-none tabular-nums;
+  @apply text-sm font-bold text-gray-800 leading-none tabular-nums;
 }
 
 .grid-size-unit {
