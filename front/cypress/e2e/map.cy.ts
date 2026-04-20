@@ -12,7 +12,7 @@ describe("Map - Desktop", () => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -42,9 +42,9 @@ describe("Map - Desktop", () => {
     )
   })
 
-  it("changes to cadastre map style", () => {
+  it("changes to orthophoto map style", () => {
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.ORTHOPHOTO}"]`).should("be.visible").click()
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -89,6 +89,26 @@ describe("Map - Desktop", () => {
     cy.getBySel("map-context-data").should("contain", "Cliquez sur un carreau")
   })
 
+  it("renders layer toggle buttons in the bottom-left controls", () => {
+    cy.getBySel("bottom-left-controls").should("be.visible")
+
+    // The three layer chips must live inside the bottom-left stack,
+    // stacked below the background selector.
+    cy.getBySel("bottom-left-controls").within(() => {
+      cy.getBySel("bg-selector-toggle").should("be.visible")
+      cy.getBySel("qpv-toggle").should("be.visible").and("contain.text", "QPV")
+      cy.getBySel("cadastre-toggle").should("be.visible").and("contain.text", "Cadastre")
+      cy.getBySel("boundary-toggle").should("be.visible").and("contain.text", "Communes")
+    })
+
+    // Positioned in the bottom-left quadrant of the viewport.
+    cy.getBySel("bottom-left-controls").then(($el) => {
+      const rect = $el[0].getBoundingClientRect()
+      expect(rect.left).to.be.lessThan(DESKTOP_VIEWPORT.width / 2)
+      expect(rect.bottom).to.be.greaterThan(DESKTOP_VIEWPORT.height / 2)
+    })
+  })
+
   it("adds QPV layer when toggled", () => {
     // Desktop QPV toggle is in the sidebar
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
@@ -121,10 +141,6 @@ describe("Map - Desktop", () => {
 
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
-    cy.mapCheckQPVLayer(true)
-
-    cy.getBySel("bg-selector-toggle").should("be.visible").click()
-    cy.get(`[data-cy="bg-option-${MapStyle.CADASTRE}"]`).should("be.visible").click()
     cy.mapCheckQPVLayer(true)
 
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
@@ -192,7 +208,7 @@ describe("Map - Mobile", () => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
@@ -246,7 +262,7 @@ describe("Geocoder", () => {
   beforeEach(() => {
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data Plan loaded")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 

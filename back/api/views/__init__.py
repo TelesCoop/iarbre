@@ -7,5 +7,6 @@ from .boundary_views import CityBoundaryView  # noqa: F401
 from .database_version_views import MetadataView  # noqa: F401
 from .raster_views import RasterDownloadView  # noqa: F401
 from .wfs_views import IArbreWFSView  # noqa: F401
+from .orthophoto_views import OrthophotoTileView  # noqa: F401
 from .vegetation_views import VegetationTileView  # noqa: F401
 from .wms_views import WMSView  # noqa: F401

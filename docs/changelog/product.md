@@ -1,5 +1,25 @@
 # Journal des changements
 
+## 🔖 0.28.0 (2026-04-15) : Ajout du calque de biodiversité et des orthophotos en fond de carte
+
+### ✨ feat : Ajout des orthophotos 2023 en fond de carte
+
+Dans la liste des fonds de carte, on peut maintenant choisir d'afficher les orthophotos 2023 qui sont plus précises et plus hautes résolutions que les images satelittes ESRI qui sont aussi disponibles.
+
+&rarr; PR[#597](https://github.com/TelesCoop/iarbre/pull/597)
+
+### ✨ feat : Ajout du calque d'intégrité fonctionnelle de la biosphère à l'échelle de la Métropole de Lyon
+
+Grace au travail de [Emile Balembois](https://millenaire3.grandlyon.com/ressources/2025/l-integrite-de-la-biosphere-un-regard-complementaire-sur-la-biodiversite-applique-a-l-echelle-de-la-metropole-de-lyon) sur la territorialisation de la limite planétaire d'intégrité fonctionnelle de la biosphère nous pouvons maintenant proposer un nouveau calque sur la plateforme !
+
+&rarr; PR[#477](https://github.com/TelesCoop/iarbre/pull/477)
+
+### 🛠️ enhance: Fix de petits bugs
+
+Le lien de la newsletter ne fonctionnait plus, ajout de la roadmap produit sur site et petits changements cosmétiques.
+
+&rarr; PR[#602](https://github.com/TelesCoop/iarbre/pull/602)
+
 ## 🔖 0.27.0 (2026-04-01) : Petits changements sur le site statique et sur la cartographie
 
 ### 🛠️ enhance: Mise à jour du site iarbre.fr

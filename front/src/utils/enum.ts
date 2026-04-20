@@ -2,7 +2,8 @@ import { getMetadata } from "../services/metadataService"
 
 export enum GeoLevel {
   TILE = "tile",
-  LCZ = "lcz"
+  LCZ = "lcz",
+  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
 }
 
 export enum DataType {
@@ -10,13 +11,15 @@ export enum DataType {
   VULNERABILITY = "vulnerability",
   CLIMATE_ZONE = "lcz",
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
-  VEGESTRATE = "vegestrate"
+  VEGESTRATE = "vegestrate",
+  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
 }
 
 export enum MapStyle {
-  OSM = "Plan",
+  OSM = "osm",
+  ORTHOPHOTO = "orthophoto",
   SATELLITE = "satellite",
-  CADASTRE = "Cadastre"
+  CADASTRE = "cadastre"
 }
 
 export enum SelectionMode {
@@ -30,6 +33,7 @@ export enum SelectionMode {
 
 export const MapStyleToLabel: Record<MapStyle, string> = {
   [MapStyle.OSM]: "Plan de la ville",
+  [MapStyle.ORTHOPHOTO]: "Orthophoto Lyon 2023",
   [MapStyle.SATELLITE]: "Images satellite",
   [MapStyle.CADASTRE]: "Cadastre"
 }
@@ -39,7 +43,8 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
   [DataType.VULNERABILITY]: "Vulnérabilité chaleur",
   [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
-  [DataType.VEGESTRATE]: "Strates végétales"
+  [DataType.VEGESTRATE]: "Strates végétales",
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -47,6 +52,7 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.CLIMATE_ZONE]: GeoLevel.LCZ,
   [DataType.VULNERABILITY]: GeoLevel.LCZ,
   [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
   [DataType.VEGESTRATE]: GeoLevel.TILE
 }
 
@@ -60,7 +66,9 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.PLANTABILITY_VULNERABILITY]:
     '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (2025-07)</a>',
   [DataType.VEGESTRATE]:
-    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>'
+    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
+    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois — Licence CC BY-NC-SA 4.0</a>'
 }
 
 export const getDataTypeAttributionSource = (dataType: DataType): string => {

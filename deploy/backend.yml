@@ -36,7 +36,6 @@
             dest: "{{ backend_media_path }}"
             state: link
       when: not dedicated_database
-
     - import_tasks: telescoop-deploy/tasks/install-and-update-django.yml
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
