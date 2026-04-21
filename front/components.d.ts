@@ -87,6 +87,7 @@ declare module 'vue' {
     MapLayerToggles: typeof import('./src/components/map/MapLayerToggles.vue')['default']
     MapLegend: typeof import('./src/components/map/legend/MapLegend.vue')['default']
     MapQpvToggleButton: typeof import('./src/components/map/panels/MapQpvToggleButton.vue')['default']
+    MapResolution: typeof import('./src/components/map/MapResolution.vue')['default']
     MapScoresDrawer: typeof import('./src/components/map/panels/MapScoresDrawer.vue')['default']
     MapSidePanel: typeof import('./src/components/map/panels/sidepanel/MapSidePanel.vue')['default']
     MapSidePanelDownload: typeof import('./src/components/map/panels/sidepanel/MapSidePanelDownload.vue')['default']
