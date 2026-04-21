@@ -38,9 +38,7 @@
         path: "/etc/nginx/sites-enabled/{{ item }}"
         state: absent
       loop:
-        - "{{ project_slug }}-showcase"
         - "https-{{ main_hostname }}"
-        - "https-{{ showcase_hostname }}"
       notify:
         - Reload nginx
 
@@ -48,7 +46,6 @@
       ansible.builtin.command: "certbot delete --cert-name {{ item }} -n"
       loop:
         - "{{ main_hostname }}"
-        - "{{ showcase_hostname }}"
       become: true
       ignore_errors: true
       when: item is match("^feature-.*")
