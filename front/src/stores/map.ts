@@ -89,7 +89,12 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
+      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
+        "step",
+        ["get", "indice"],
+        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      ]
     }
   })
 
@@ -333,13 +338,14 @@ export const useMapStore = defineStore("map", () => {
 
     if (datatype === DataType.VEGESTRATE) {
       // Raster source for vegetation
-      const { year, resolution, postprocess, version } =
+      const { year, resolution, postprocess, version, kind } =
         VegestrateModeToParams[vegestrateMode.value]
       const params = new URLSearchParams({
         year: String(year),
         resolution,
         postprocess: String(postprocess),
-        version: version !== null ? String(version) : ""
+        version: version !== null ? String(version) : "",
+        kind
       })
       const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png?${params}`
       map.addSource(sourceId, {

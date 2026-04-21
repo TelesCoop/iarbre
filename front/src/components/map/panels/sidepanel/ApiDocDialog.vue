@@ -73,6 +73,10 @@ const datasets = [
   {
     label: "Végéstrate 2023 - post-traité v3",
     url: `${origin}/api/rasters/vegestrate/?year=2023&resolution=02&postprocess=true&version=3`
+  },
+  {
+    label: "Végéstrate 2023 - post-traité v3 - hauteur (nDSM avec filtrage médian)",
+    url: `${origin}/api/rasters/vegestrate/?year=2023&resolution=02&postprocess=true&version=3&kind=elevation`
   }
 ]
 </script>
