@@ -36,9 +36,10 @@ class RasterDownloadView(APIView):
             )
             version_param = request.query_params.get("version", "")
             version = int(version_param) if version_param and postprocess else None
+            kind = request.query_params.get("kind", "class")
 
             filename_tif = VEGESTRATE_FILES.get(
-                (year, resolution, postprocess, version)
+                (year, resolution, postprocess, version, kind)
             )
             if not filename_tif:
                 raise Http404("No raster file for the requested parameters")

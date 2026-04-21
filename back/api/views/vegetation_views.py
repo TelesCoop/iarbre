@@ -15,7 +15,11 @@ from rasterio.warp import Resampling
 from rasterio.windows import from_bounds
 from rest_framework.views import APIView
 
-from api.constants import VEGESTRATE_COLOR_MAP, VEGESTRATE_FILES
+from api.constants import (
+    VEGESTRATE_COLOR_MAP,
+    VEGESTRATE_ELEVATION_COLOR_MAP,
+    VEGESTRATE_FILES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +42,9 @@ class VegetationTileView(APIView):
         postprocess = request.query_params.get("postprocess", "true").lower() == "true"
         version_param = request.query_params.get("version", "")
         version = int(version_param) if version_param and postprocess else None
+        kind = request.query_params.get("kind", "class")
 
-        filename = VEGESTRATE_FILES.get((year, resolution, postprocess, version))
+        filename = VEGESTRATE_FILES.get((year, resolution, postprocess, version, kind))
         if not filename:
             raise Http404("No raster file for the requested parameters")
 
@@ -89,7 +94,12 @@ class VegetationTileView(APIView):
                     h, w = data.shape
                     rgba_data = np.zeros((h, w, 4), dtype=np.uint8)
 
-                    for value, color in VEGESTRATE_COLOR_MAP.items():
+                    color_map = (
+                        VEGESTRATE_ELEVATION_COLOR_MAP
+                        if kind == "elevation"
+                        else VEGESTRATE_COLOR_MAP
+                    )
+                    for value, color in color_map.items():
                         mask = data == value
                         rgba_data[mask] = color
 
