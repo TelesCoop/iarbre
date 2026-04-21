@@ -94,44 +94,44 @@ onUnmounted(() => {
 
 <template>
   <div ref="wrapperRef" class="geocoder-wrapper" data-cy="map-geocoder">
-    <div class="geocoder-input-row" :class="{ open: isOpen, focused }">
+    <div :class="{ open: isOpen, focused }" class="geocoder-input-row">
       <svg
         class="geocoder-search-icon"
         fill="none"
-        viewBox="0 0 24 24"
         stroke="currentColor"
         stroke-width="2"
+        viewBox="0 0 24 24"
       >
         <circle cx="11" cy="11" r="8" />
         <path d="M21 21l-4.35-4.35" stroke-linecap="round" />
       </svg>
       <input
         v-model="query"
+        aria-label="Rechercher une adresse"
+        autocomplete="off"
         class="geocoder-input"
         placeholder="Recherche"
-        autocomplete="off"
         type="search"
-        aria-label="Rechercher une adresse"
-        @input="search"
         @focus="focused = true"
+        @input="search"
         @keydown="handleKeydown"
       />
       <AppSpinner v-if="loading" class="geocoder-spinner" />
       <button
         v-else-if="query"
-        type="button"
-        class="geocoder-clear"
         aria-label="Effacer"
+        class="geocoder-clear"
+        type="button"
         @click="clear"
       >
         <svg
-          width="10"
-          height="10"
-          viewBox="0 0 14 14"
           fill="none"
+          height="10"
           stroke="currentColor"
-          stroke-width="2.5"
           stroke-linecap="round"
+          stroke-width="2.5"
+          viewBox="0 0 14 14"
+          width="10"
         >
           <path d="M1 1L13 13M1 13L13 1" />
         </svg>
@@ -143,19 +143,19 @@ onUnmounted(() => {
         <li
           v-for="(result, i) in results"
           :key="result.id"
-          class="geocoder-result"
-          :class="{ active: i === activeIndex }"
-          role="option"
           :aria-selected="i === activeIndex"
-          @mousedown.prevent="selectResult(result)"
+          :class="{ active: i === activeIndex }"
+          class="geocoder-result"
+          role="option"
           @mousemove="activeIndex = i"
+          @mousedown.prevent="selectResult(result)"
         >
           <svg
             class="geocoder-pin"
-            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            viewBox="0 0 24 24"
           >
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
@@ -192,7 +192,7 @@ onUnmounted(() => {
 
   &.focused,
   &.open {
-    @apply border-primary-300 ring-2 ring-primary-100;
+    @apply border-primary-300;
   }
 
   &.open {
