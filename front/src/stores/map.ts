@@ -37,16 +37,19 @@ import {
   QPV_BORDER_COLOR,
   QPV_BORDER_WIDTH,
   QPV_BORDER_OPACITY,
-  BOUNDARY_BORDER_COLOR,
-  BOUNDARY_BORDER_WIDTH,
-  BOUNDARY_BORDER_OPACITY,
+  CITY_BORDER_COLOR,
+  CITY_BORDER_WIDTH,
+  CITY_BORDER_OPACITY,
   CADASTRE_COLOR,
   CADASTRE_BORDER_WIDTH,
   CADASTRE_BORDER_OPACITY,
   CADASTRE_SELECTED_BORDER_WIDTH,
   CADASTRE_SELECTED_BORDER_OPACITY,
   CADASTRE_SELECTED_FILL_OPACITY,
-  CADASTRE_DEFAULT_FILL_OPACITY
+  CADASTRE_DEFAULT_FILL_OPACITY,
+  CITY_CASING_COLOR,
+  CITY_CASING_WIDTH,
+  CITY_CASING_OPACITY
 } from "@/utils/mapLayers"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -596,15 +599,29 @@ export const useMapStore = defineStore("map", () => {
       : undefined
 
     if (!mapInstance.getLayer("city-boundary")) {
+      // White casing drawn first so the coloured line stays legible on any basemap
+      mapInstance.addLayer(
+        {
+          id: "city-boundary-border-casing",
+          type: "line",
+          source: "city-boundary-source",
+          paint: {
+            "line-color": CITY_CASING_COLOR,
+            "line-width": CITY_CASING_WIDTH,
+            "line-opacity": CITY_CASING_OPACITY
+          }
+        },
+        beforeId
+      )
       mapInstance.addLayer(
         {
           id: "city-boundary",
           type: "line",
           source: "city-boundary-source",
           paint: {
-            "line-color": BOUNDARY_BORDER_COLOR,
-            "line-width": BOUNDARY_BORDER_WIDTH,
-            "line-opacity": BOUNDARY_BORDER_OPACITY
+            "line-color": CITY_BORDER_COLOR,
+            "line-width": CITY_BORDER_WIDTH,
+            "line-opacity": CITY_BORDER_OPACITY
           }
         },
         beforeId

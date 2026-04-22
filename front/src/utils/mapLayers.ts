@@ -25,10 +25,13 @@ export const QPV_BORDER_OPACITY = 1
 // ---------------------------------------------------------------------------
 // Communes (city boundaries)
 // ---------------------------------------------------------------------------
+export const CITY_CASING_COLOR = "#FFFFFF"
+export const CITY_CASING_WIDTH = 6
+export const CITY_CASING_OPACITY = 0.9
 
-export const BOUNDARY_BORDER_COLOR = getCssVar("--color-primary-500")
-export const BOUNDARY_BORDER_WIDTH = 2.5
-export const BOUNDARY_BORDER_OPACITY = 0.7
+export const CITY_BORDER_COLOR = getCssVar("--color-primary-500")
+export const CITY_BORDER_WIDTH = 2.5
+export const CITY_BORDER_OPACITY = 0.7
 
 // ---------------------------------------------------------------------------
 // Cadastre
