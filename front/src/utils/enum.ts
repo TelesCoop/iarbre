@@ -1,5 +1,3 @@
-import { getMetadata } from "../services/metadataService"
-
 export enum GeoLevel {
   TILE = "tile",
   LCZ = "lcz",

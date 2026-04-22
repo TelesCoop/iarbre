@@ -7,7 +7,13 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <a :href="documentationUrl" class="methodology-banner" target="_blank">
+      <a
+        :href="documentationUrl"
+        class="methodology-banner"
+        target="_blank"
+        rel="noopener external"
+        title="Documentation sur la méthodologie - nouvelle fenêtre"
+      >
         <svg
           fill="none"
           height="16"
@@ -88,7 +94,14 @@
         <MapBoundaryToggleButton />
         <MapContextTools />
       </div>
-      <a v-if="isPanelOpen" :href="documentationUrl" class="methodology-link-mobile">
+      <a
+        v-if="isPanelOpen"
+        :href="documentationUrl"
+        class="methodology-link-mobile"
+        target="_blank"
+        rel="noopener external"
+        title="Documentation sur la méthodologie - nouvelle fenêtre"
+      >
         Voir la méthodologie
       </a>
     </div>
