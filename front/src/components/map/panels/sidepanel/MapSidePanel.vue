@@ -7,7 +7,7 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <a :href="documentationUrl" class="methodology-banner">
+      <a :href="documentationUrl" class="methodology-banner" target="_blank">
         <svg
           fill="none"
           height="16"
