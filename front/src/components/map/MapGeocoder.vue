@@ -16,8 +16,6 @@ const focused = ref(false)
 const activeIndex = ref(-1)
 let searchMarker: maplibregl.Marker | null = null
 
-const PULSE_BASE = "absolute inset-0 m-auto w-[1.125rem] h-[1.125rem] rounded-full bg-primary-500"
-
 const createDiv = (...classes: string[]): HTMLDivElement => {
   const el = document.createElement("div")
   el.className = classes.join(" ")
@@ -25,14 +23,11 @@ const createDiv = (...classes: string[]): HTMLDivElement => {
 }
 
 const createPulseElement = (): HTMLElement => {
-  const el = createDiv("relative w-12 h-12")
+  const el = createDiv("geocoder-pulse")
   el.append(
-    createDiv(PULSE_BASE, "border-[0.1875rem] border-white z-[1]"),
-    createDiv(PULSE_BASE, "opacity-35 [animation:geocoder-pulse_2s_ease-out_infinite]"),
-    createDiv(
-      PULSE_BASE,
-      "opacity-35 [animation:geocoder-pulse_2s_ease-out_infinite] [animation-delay:0.7s]"
-    )
+    createDiv("geocoder-pulse__dot"),
+    createDiv("geocoder-pulse__ring"),
+    createDiv("geocoder-pulse__ring")
   )
   return el
 }
@@ -107,20 +102,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="wrapperRef" class="relative w-full lg:w-60" data-cy="map-geocoder">
-    <div
-      :class="[
-        'flex items-center gap-1.5 px-2 py-1.5 lg:px-3 lg:py-2',
-        'bg-white border rounded-lg transition-all duration-200',
-        isOpen
-          ? 'border-primary-300 border-b-gray-100 rounded-b-none'
-          : focused
-            ? 'border-primary-300'
-            : 'border-gray-200'
-      ]"
-    >
+  <div ref="wrapperRef" class="geocoder-wrapper" data-cy="map-geocoder">
+    <div :class="{ open: isOpen, focused }" class="geocoder-input-row">
       <svg
-        class="w-3 h-3 lg:w-4 lg:h-4 shrink-0 text-gray-400"
+        class="geocoder-search-icon"
         fill="none"
         stroke="currentColor"
         stroke-width="2"
@@ -133,18 +118,18 @@ onUnmounted(() => {
         v-model="query"
         aria-label="Rechercher une adresse"
         autocomplete="off"
-        class="geocoder-input flex-1 min-w-0 bg-transparent border-none outline-none text-xs font-sans font-medium text-gray-700"
+        class="geocoder-input"
         placeholder="Recherche"
         type="search"
         @focus="focused = true"
         @input="search"
         @keydown="handleKeydown"
       />
-      <AppSpinner v-if="loading" class="w-3.5 h-3.5 shrink-0 text-primary-500" />
+      <AppSpinner v-if="loading" class="geocoder-spinner" />
       <button
         v-else-if="query"
         aria-label="Effacer"
-        class="flex items-center justify-center shrink-0 w-4 h-4 rounded text-gray-400 bg-transparent border-none cursor-pointer transition-colors hover:text-gray-700 hover:bg-gray-100"
+        class="geocoder-clear"
         type="button"
         @click="clear"
       >
@@ -163,23 +148,19 @@ onUnmounted(() => {
     </div>
 
     <Transition name="geocoder-dropdown">
-      <ul
-        v-if="isOpen"
-        class="absolute left-0 right-0 z-50 bg-white border border-primary-300 border-t-0 rounded-b-lg shadow-lg overflow-hidden overflow-y-auto m-0 p-0 list-none max-h-80"
-        role="listbox"
-      >
+      <ul v-if="isOpen" class="geocoder-results" role="listbox">
         <li
           v-for="(result, i) in results"
           :key="result.id"
           :aria-selected="i === activeIndex"
-          :data-active="i === activeIndex"
-          class="group flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-gray-100 last:border-b-0 hover:bg-primary-500 data-[active=true]:bg-primary-500"
+          :class="{ active: i === activeIndex }"
+          class="geocoder-result"
           role="option"
           @mousemove="activeIndex = i"
           @mousedown.prevent="selectResult(result)"
         >
           <svg
-            class="w-4 h-4 shrink-0 mt-0.5 transition-colors text-gray-400 group-hover:text-white group-data-[active=true]:text-white"
+            class="geocoder-pin"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
@@ -188,18 +169,9 @@ onUnmounted(() => {
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          <div class="flex flex-col min-w-0">
-            <span
-              class="text-sm font-medium transition-colors text-gray-900 group-hover:text-white group-data-[active=true]:text-white"
-            >
-              {{ result.name }}
-            </span>
-            <span
-              v-if="result.address"
-              class="text-xs transition-colors truncate text-gray-500 group-hover:text-white/80 group-data-[active=true]:text-white/80"
-            >
-              {{ result.address }}
-            </span>
+          <div class="geocoder-result-text">
+            <span class="geocoder-result-name">{{ result.name }}</span>
+            <span v-if="result.address" class="geocoder-result-address">{{ result.address }}</span>
           </div>
         </li>
       </ul>
@@ -210,12 +182,116 @@ onUnmounted(() => {
 <style scoped>
 @reference "@/styles/main.css";
 
-.geocoder-input::-webkit-search-cancel-button {
-  display: none;
+.geocoder-wrapper {
+  @apply relative w-full;
+
+  @media (min-width: 1024px) {
+    @apply w-60;
+  }
 }
 
-.geocoder-input::placeholder {
-  @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+.geocoder-input-row {
+  @apply flex items-center gap-1.5 px-2 py-1.5;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply transition-all duration-200;
+
+  @media (min-width: 1024px) {
+    @apply px-3 py-2;
+  }
+
+  &.focused,
+  &.open {
+    @apply border-primary-300;
+  }
+
+  &.open {
+    @apply rounded-b-none border-b-gray-100;
+  }
+}
+
+.geocoder-search-icon {
+  @apply w-3 h-3 shrink-0 text-gray-400;
+
+  @media (min-width: 1024px) {
+    @apply w-4 h-4;
+  }
+}
+
+.geocoder-input {
+  @apply flex-1 min-w-0 bg-transparent border-none outline-none;
+  @apply text-xs font-sans font-medium text-gray-700;
+
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  &::placeholder {
+    @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+  }
+}
+
+.geocoder-spinner {
+  @apply w-3.5 h-3.5 shrink-0 text-primary-500;
+}
+
+.geocoder-clear {
+  @apply flex items-center justify-center shrink-0;
+  @apply w-4 h-4 rounded text-gray-400;
+  @apply bg-transparent border-none cursor-pointer transition-colors;
+
+  &:hover {
+    @apply text-gray-700 bg-gray-100;
+  }
+}
+
+.geocoder-results {
+  @apply absolute left-0 right-0 z-50;
+  @apply bg-white border border-primary-300 border-t-0 rounded-b-lg;
+  @apply shadow-lg overflow-hidden overflow-y-auto;
+  @apply m-0 p-0 list-none;
+  max-height: 20rem;
+}
+
+.geocoder-result {
+  @apply flex items-start gap-2.5 px-3 py-2.5 cursor-pointer;
+  @apply transition-colors duration-100;
+  @apply border-b border-gray-100;
+
+  &:last-child {
+    @apply border-b-0;
+  }
+
+  &:is(:hover, .active) {
+    @apply bg-primary-500;
+
+    .geocoder-pin {
+      @apply text-white;
+    }
+
+    .geocoder-result-name {
+      @apply text-white;
+    }
+
+    .geocoder-result-address {
+      @apply text-white/80;
+    }
+  }
+}
+
+.geocoder-pin {
+  @apply w-4 h-4 shrink-0 mt-0.5 text-gray-400 transition-colors;
+}
+
+.geocoder-result-text {
+  @apply flex flex-col min-w-0;
+}
+
+.geocoder-result-name {
+  @apply text-sm font-medium text-gray-900 transition-colors;
+}
+
+.geocoder-result-address {
+  @apply text-xs text-gray-500 transition-colors truncate;
 }
 
 .geocoder-dropdown-enter-active,
@@ -233,6 +309,27 @@ onUnmounted(() => {
 </style>
 
 <style>
+@reference "@/styles/main.css";
+
+.geocoder-pulse {
+  @apply relative w-12 h-12;
+}
+
+.geocoder-pulse__dot {
+  @apply absolute inset-0 m-auto w-[1.125rem] h-[1.125rem] rounded-full bg-primary-500;
+  @apply border-[0.1875rem] border-white z-[1];
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.25);
+}
+
+.geocoder-pulse__ring {
+  @apply absolute inset-0 m-auto w-[1.125rem] h-[1.125rem] rounded-full bg-primary-500 opacity-35;
+  animation: geocoder-pulse 2s ease-out infinite;
+
+  &:nth-child(3) {
+    animation-delay: 0.7s;
+  }
+}
+
 @keyframes geocoder-pulse {
   0% {
     transform: scale(1);
