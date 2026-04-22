@@ -4,25 +4,29 @@
  * only need to be made in one place.
  */
 
+function getCssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
 // ---------------------------------------------------------------------------
 // QPV (Quartiers Prioritaires de la Ville)
 // ---------------------------------------------------------------------------
 
 /** White halo drawn behind the QPV line so it stays legible on every basemap. */
 export const QPV_CASING_COLOR = "#FFFFFF"
-export const QPV_CASING_WIDTH = 3
+export const QPV_CASING_WIDTH = 6
 export const QPV_CASING_OPACITY = 0.9
 
-/** Main QPV border colour – vivid violet, visible on light, dark and satellite backgrounds. */
-export const QPV_BORDER_COLOR = "#7C3AED"
-export const QPV_BORDER_WIDTH = 1
+/** Main QPV border colour. */
+export const QPV_BORDER_COLOR = getCssVar("--color-primary-900")
+export const QPV_BORDER_WIDTH = 2.5
 export const QPV_BORDER_OPACITY = 1
 
 // ---------------------------------------------------------------------------
 // Communes (city boundaries)
 // ---------------------------------------------------------------------------
 
-export const BOUNDARY_BORDER_COLOR = "#426A45"
+export const BOUNDARY_BORDER_COLOR = getCssVar("--color-primary-500")
 export const BOUNDARY_BORDER_WIDTH = 2.5
 export const BOUNDARY_BORDER_OPACITY = 0.7
 
