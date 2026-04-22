@@ -16,19 +16,12 @@ const focused = ref(false)
 const activeIndex = ref(-1)
 let searchMarker: maplibregl.Marker | null = null
 
-const createDiv = (...classes: string[]): HTMLDivElement => {
-  const el = document.createElement("div")
-  el.className = classes.join(" ")
-  return el
-}
+const div = (className: string): HTMLDivElement =>
+  Object.assign(document.createElement("div"), { className })
 
 const createPulseElement = (): HTMLElement => {
-  const el = createDiv("geocoder-pulse")
-  el.append(
-    createDiv("geocoder-pulse__dot"),
-    createDiv("geocoder-pulse__ring"),
-    createDiv("geocoder-pulse__ring")
-  )
+  const el = div("geocoder-pulse")
+  el.append(div("geocoder-pulse__dot"), div("geocoder-pulse__ring"), div("geocoder-pulse__ring"))
   return el
 }
 
