@@ -7,10 +7,7 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <a
-        :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
-        class="methodology-banner"
-      >
+      <a :href="documentationUrl" class="methodology-banner">
         <svg
           fill="none"
           height="16"
@@ -91,11 +88,7 @@
         <MapBoundaryToggleButton />
         <MapContextTools />
       </div>
-      <a
-        v-if="isPanelOpen"
-        :href="`https://docs.iarbre.fr/methodology/${mapStore.selectedDataType}/`"
-        class="methodology-link-mobile"
-      >
+      <a v-if="isPanelOpen" :href="documentationUrl" class="methodology-link-mobile">
         Voir la méthodologie
       </a>
     </div>
@@ -112,10 +105,13 @@
 import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
+import { DataTypeToDocumentationUrl } from "@/utils/enum"
 import MapBoundaryToggleButton from "../MapBoundaryToggleButton.vue"
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
+
+const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 const isPanelOpen = ref(false)
