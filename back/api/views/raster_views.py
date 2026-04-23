@@ -1,42 +1,65 @@
-import os
-from django.http import FileResponse, Http404
+from pathlib import Path
+
 from django.conf import settings
+from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
-RASTER_MAP = {
-    "plantability": ("rasters/plantability.tif", "plantability_2025.tif"),
-    "vegestrate": (
-        "rasters/vegestrate_lyon_metropole_ir_02.tif",
-        "vegestrate_2023_02m.tif",
+
+def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
+    """Build a ``(path, filename)`` tuple, defaulting filename to basename."""
+    return path, filename or Path(path).name
+
+
+# Map of raster keys -> (relative path under MEDIA_ROOT, download filename).
+RASTER_MAP: dict[str, tuple[str, str]] = {
+    "plantability": _entry("rasters/plantability.tif", "plantability_2025.tif"),
+    "plantability_colors": _entry("rasters/plantability_colors.tif"),
+    "vegestrate": _entry(
+        "rasters/vegestrate_lyon_metropole_ir_02.tif", "vegestrate_2023_02m.tif"
     ),
+    "vulnerability": _entry("rasters/vulnerability.tif"),
+    "vulnerability_colors": _entry("rasters/vulnerability_colors.tif"),
+    "lcz": _entry("rasters/lcz.tif"),
+    "lcz_colors": _entry("rasters/lcz_colors.tif"),
 }
 
 
-class RasterDownloadView(APIView):
-    """API endpoint to download the plantability and vegestrate raster files.
+class FileDownloadView(APIView):
+    """Base view for serving pre-generated static files from MEDIA_ROOT.
 
-    Example: GET /api/rasters/plantability/ or GET /api/rasters/vegestrate/
+    Subclasses set ``file_map`` and ``download_content_type`` to configure
+    which files are available and how they are served.
     """
 
-    def get(self, request, raster_type):
-        if raster_type not in RASTER_MAP:
-            raise Http404(
-                "Raster does not exist, only plantability or vegestrate are available."
-            )
+    file_map: dict[str, tuple[str, str]] = {}
+    download_content_type: str = "application/octet-stream"
 
-        relative_path, filename = RASTER_MAP[raster_type]
-        raster_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+    def get(self, request, file_key: str):
+        if file_key not in self.file_map:
+            available = ", ".join(self.file_map)
+            raise Http404(f"Unknown key '{file_key}'. Available: {available}.")
 
-        if not os.path.exists(raster_path):
-            raise Http404(
-                "Raster file not found. Please send an email to contact@telescoop.fr"
-            )
+        relative_path, filename = self.file_map[file_key]
+        full_path = Path(settings.MEDIA_ROOT) / relative_path
+
+        if not full_path.exists():
+            raise Http404(f"File not found: {filename}.")
 
         response = FileResponse(
-            open(raster_path, "rb"),
-            content_type="image/tiff",
+            full_path.open("rb"),
+            content_type=self.download_content_type,
             as_attachment=True,
             filename=filename,
         )
         response["Cache-Control"] = "public, max-age=3600"
         return response
+
+
+class RasterDownloadView(FileDownloadView):
+    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``."""
+
+    file_map = RASTER_MAP
+    download_content_type = "image/tiff"
+
+    def get(self, request, raster_type: str):
+        return super().get(request, raster_type)
