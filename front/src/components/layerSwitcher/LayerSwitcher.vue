@@ -13,26 +13,6 @@ const selectedDataType = computed({
 
 const options = [
   {
-    label: DataTypeToLabel[DataType.PLANTABILITY],
-    value: DataType.PLANTABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.VULNERABILITY],
-    value: DataType.VULNERABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.CLIMATE_ZONE],
-    value: DataType.CLIMATE_ZONE
-  },
-  {
-    label: DataTypeToLabel[DataType.PLANTABILITY_VULNERABILITY],
-    value: DataType.PLANTABILITY_VULNERABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY],
-    value: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
-  },
-  {
     label: DataTypeToLabel[DataType.VEGESTRATE],
     value: DataType.VEGESTRATE
   }
