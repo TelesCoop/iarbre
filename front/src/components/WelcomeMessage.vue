@@ -105,6 +105,35 @@ const openFeedback = () => {
         </button>
 
         <a
+          href="https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+        >
+          <span class="text-2xl">📖</span>
+          <div>
+            <h4 class="font-medium">Consulter la documentation</h4>
+            <p class="text-sm">
+              Comprenez les calques : plantabilité, vulnérabilité à la chaleur, végétation
+              stratifiée et leur croisement.
+            </p>
+          </div>
+        </a>
+
+        <a
+          href="https://docs.iarbre.fr/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+        >
+          <span class="text-2xl">🔧</span>
+          <div>
+            <h4 class="font-medium">Documentation technique</h4>
+            <p class="text-sm">Accédez à la documentation technique de l'API et des données.</p>
+          </div>
+        </a>
+
+        <a
           href="https://iarbre.fr/#newsletter"
           target="_blank"
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
