@@ -1,5 +1,24 @@
 # Journal des changements
 
+## 🔖 0.29.0 (2026-04-29) : Ajout de documentation métier et améliorations de l'UX
+
+### ✨ feat : Ajout de lien vers la documentation métier
+
+Nous avons écrit une documentation métier en plus de la documentation technique pour décrire de manière plus accessible les méthodologies utilisées. Les liens sur la cartographie mènenet maintenant vers ces documents (sur Notion) et plus vers la documentation technique de [docs.iarbre.fr](https://docs.iarbre.fr).
+
+### 🛠️ enhance: Amélioration du comportement du composant de geocoding
+
+Le composant permettant de rechercher une adresse avait une comportement insatisfaisant car il n'indiquait pas clairment l'emplacement sur la carte.
+Le composant a été mis à jour pour indiquer plus clairement l'emplacement et centrer la carte de manière plus resserrée dessus.
+
+### 🛠️ enhance: Amélioration de la visualisation des limites de QPVs et villes
+
+Le code couleur a été revu ainsi que le style des délimitations pour rendre plus visible.
+
+### 🛠️ enhance: Amélioration diverses
+
+Des petits déplacements de composants (notamment des coordonnées géographiques) et des suppressions ont eu lieu pour alléger l'interface.
+
 ## 🔖 0.28.0 (2026-04-15) : Ajout du calque de biodiversité et des orthophotos en fond de carte
 
 ### ✨ feat : Ajout des orthophotos 2023 en fond de carte
