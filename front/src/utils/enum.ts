@@ -1,5 +1,3 @@
-import { getMetadata } from "../services/metadataService"
-
 export enum GeoLevel {
   TILE = "tile",
   LCZ = "lcz",
@@ -73,6 +71,22 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
 
 export const getDataTypeAttributionSource = (dataType: DataType): string => {
   return DataTypeToAttributionSource[dataType]
+}
+
+const DOCUMENTATION_BASE_URL =
+  "https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
+
+export const DataTypeToDocumentationUrl: Record<DataType, string> = {
+  [DataType.PLANTABILITY]:
+    "https://erasme.notion.site/Lire-le-score-de-plantabilit-33444e49a3ad8080bb66f23ad06bb6a1",
+  [DataType.VULNERABILITY]:
+    "https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1",
+  [DataType.PLANTABILITY_VULNERABILITY]:
+    "https://erasme.notion.site/Croisement-plantabilit-vuln-rabilit-la-chaleur-33644e49a3ad80b9a0aeeba0910920f8",
+  [DataType.VEGESTRATE]:
+    "https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d",
+  [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: DOCUMENTATION_BASE_URL
 }
 
 export enum VulnerabilityCategory {

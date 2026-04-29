@@ -6,6 +6,14 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-04-21T09:58_postgres_backup.dump
+
+**Changements :** :
+
+- Les rasters de végétations ont maintenant un tilling interne pour les servir plus vite.
+- Ajout également d'un raster avec la hauteur de végétation. La hauteur provient d'une normalized DSM
+  produite à l'aide du LIDAR 2023 de la métropole de Lyon et du code de vegestrate au moment du Commit [8ebbdf1](https://github.com/TelesCoop/vegestrate/commit/8ebbdf15b5c10a0343d9467edbe790faf8ed6f23).
+
 ## 2026-04-09T13:15_postgres_backup.dump
 
 **Changements :** :
