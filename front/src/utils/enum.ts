@@ -86,7 +86,8 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
   [DataType.VEGESTRATE]:
     "https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d",
   [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
-  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: DOCUMENTATION_BASE_URL
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
+    "https://erasme.notion.site/Comment-territorialiser-une-limite-plan-taire-35144e49a3ad805681b3f55275b608c4"
 }
 
 export enum VulnerabilityCategory {
