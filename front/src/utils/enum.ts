@@ -62,14 +62,14 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.VULNERABILITY]:
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2024-09)</a>',
   [DataType.PLANTABILITY_VULNERABILITY]:
-    '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME</a>',
+    '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (2025-07)</a>',
   [DataType.VEGESTRATE]:
     '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois — Licence CC BY-NC-SA 4.0</a>'
 }
 
-export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
+export const getDataTypeAttributionSource = (dataType: DataType): string => {
   return DataTypeToAttributionSource[dataType]
 }
 

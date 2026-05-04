@@ -40,7 +40,6 @@
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
         django_workers: 5
-        dedicated_database: "{{ branch is not defined }}"
         allow_backup: false
         database_password: "{{ vault_database_password }}"
         # If you use custom template, do not name it settings.j2
