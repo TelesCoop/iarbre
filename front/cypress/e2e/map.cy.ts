@@ -276,6 +276,58 @@ describe("Geocoder", () => {
   })
 })
 
+describe("Map - Biosphere functional integrity", () => {
+  const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+
+  beforeEach(() => {
+    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.visit(`/${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}/13/45.07126/5.55430`)
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
+    cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
+  })
+
+  it("shows biosphere empty message before clicking", () => {
+    cy.getBySel("map-context-data").should("contain", "Cliquez sur une zone.")
+  })
+
+  it("shows land cover entries with percentages after clicking a tile", () => {
+    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", {
+      body: [
+        { landCover: "feuillu", landCoverLabel: "Feuillu", binary: true, percentage: 55.3 },
+        {
+          landCover: "zone_impermeable",
+          landCoverLabel: "Zone imperméable",
+          binary: false,
+          percentage: 44.7
+        }
+      ]
+    }).as("landCover")
+
+    cy.getBySel("map-component").click("center")
+    cy.wait("@landCover")
+
+    cy.contains("Couvertures du sol").should("be.visible")
+    cy.contains("Feuillu").should("be.visible")
+    cy.contains("55.3%").should("be.visible")
+    cy.contains("Semi-naturel").should("be.visible")
+    cy.contains("Zone imperméable").should("be.visible")
+    cy.contains("44.7%").should("be.visible")
+    cy.contains("Non semi-naturel").should("be.visible")
+  })
+
+  it("does not show land cover section when API returns empty list", () => {
+    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", {
+      body: []
+    }).as("landCover")
+
+    cy.getBySel("map-component").click("center")
+    cy.wait("@landCover")
+
+    cy.contains("Couvertures du sol").should("not.exist")
+  })
+})
+
 describe("Welcome message", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.55430")

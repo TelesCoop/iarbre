@@ -2,6 +2,7 @@
 import { computed } from "vue"
 import { type BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
+import BiosphereLandCoverInfo from "@/components/contextData/biosphereIntegrity/BiosphereLandCoverInfo.vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -33,10 +34,15 @@ defineProps<BiosphereIntegrityCardProps>()
     <template #content="{ data: biosphereIntegrityData }">
       <div class="text-sm text-center font-sans">
         <p>
-          Pour chaque pixel de la zone sélectionnée, il y a dans un rayon de 500m
-          {{ biosphereIntegrityData.indice }}% d'espace semi-naturel.
+          Il y a
+          {{ biosphereIntegrityData.indice }}% d'espace semi-naturel pour la zone sélectionnée.
         </p>
       </div>
+      <hr />
+      <div class="text-sm text-center font-sans">
+        <p>Dans un rayon de 500m autour du point sélectionné, on trouve :</p>
+      </div>
+      <BiosphereLandCoverInfo :data="biosphereIntegrityData" />
     </template>
     <template #legend> </template>
   </context-data-main-container>
