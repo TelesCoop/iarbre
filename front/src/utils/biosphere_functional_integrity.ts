@@ -41,9 +41,9 @@ export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
 ]
 
 export enum BiosphereIntegrityLegendName {
-  LOW = "Biodiversité disfonctionnelle",
-  MID = "Biodiversité fonctionnelle",
-  HIGH = "Biodiversité très fonctionnelle"
+  LOW = "Entre 0% et 25%",
+  MID = "Entre 25% et 50%",
+  HIGH = "Entre 50% et 100%"
 }
 
 export enum BiosphereIntegrityColor {
