@@ -32,17 +32,13 @@ defineProps<BiosphereIntegrityCardProps>()
       />
     </template>
     <template #content="{ data: biosphereIntegrityData }">
-      <div class="text-sm text-center font-sans">
-        <p>
-          Il y a
-          {{ biosphereIntegrityData.indice }}% d'espace semi-naturel pour la zone sélectionnée.
+      <div class="flex flex-col gap-3">
+        <p class="text-sm text-center font-sans">
+          Il y a {{ biosphereIntegrityData.indice }}% d'espace semi-naturel dans un rayon de 500m
+          autour de la zone 4x4m sélectionnée.
         </p>
+        <BiosphereLandCoverInfo :data="biosphereIntegrityData" />
       </div>
-      <hr />
-      <div class="text-sm text-center font-sans">
-        <p>Dans un rayon de 500m autour du point sélectionné, on trouve :</p>
-      </div>
-      <BiosphereLandCoverInfo :data="biosphereIntegrityData" />
     </template>
     <template #legend> </template>
   </context-data-main-container>

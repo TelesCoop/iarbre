@@ -5,6 +5,7 @@ import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
+  type GeoJSONSource,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -255,6 +256,54 @@ export const useMapStore = defineStore("map", () => {
     return [fillLayer, lineLayer]
   }
 
+  const IFB_CLICK_SQUARE_SOURCE = "ifb-click-square-source"
+  const IFB_CLICK_SQUARE_LAYER = "ifb-click-square-layer"
+  const IFB_SQUARE_HALF_SIZE_M = 2
+
+  const drawClickSquare = (map: Map, lat: number, lng: number) => {
+    const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
+    const lngOffset = IFB_SQUARE_HALF_SIZE_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const square = {
+      type: "Feature" as const,
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [
+          [
+            [lng - lngOffset, lat - latOffset],
+            [lng + lngOffset, lat - latOffset],
+            [lng + lngOffset, lat + latOffset],
+            [lng - lngOffset, lat + latOffset],
+            [lng - lngOffset, lat - latOffset]
+          ]
+        ]
+      },
+      properties: {}
+    }
+    const source = map.getSource(IFB_CLICK_SQUARE_SOURCE) as GeoJSONSource | undefined
+    if (source) {
+      source.setData(square)
+    } else {
+      map.addSource(IFB_CLICK_SQUARE_SOURCE, { type: "geojson", data: square })
+      map.addLayer({
+        id: IFB_CLICK_SQUARE_LAYER,
+        type: "line",
+        source: IFB_CLICK_SQUARE_SOURCE,
+        paint: { "line-color": "#FFFFFF", "line-width": 2 }
+      })
+    }
+    console.info("cypress: IFB click square drawn")
+  }
+
+  const removeClickSquare = (map: Map) => {
+    if (map.getLayer(IFB_CLICK_SQUARE_LAYER)) {
+      map.removeLayer(IFB_CLICK_SQUARE_LAYER)
+    }
+    if (map.getSource(IFB_CLICK_SQUARE_SOURCE)) {
+      map.removeSource(IFB_CLICK_SQUARE_SOURCE)
+    }
+    console.info("cypress: IFB click square removed")
+  }
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
@@ -279,7 +328,11 @@ export const useMapStore = defineStore("map", () => {
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
           : undefined
-      highlightFeature(map, layerId, featureId)
+      if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng)
+      } else {
+        highlightFeature(map, layerId, featureId)
+      }
       // Highlight cell in the legend that correspond to clicked tile
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         const properties = e.features![0].properties
@@ -404,6 +457,9 @@ export const useMapStore = defineStore("map", () => {
       }
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
+      }
+      if (mapInstance.getLayer(IFB_CLICK_SQUARE_LAYER)) {
+        removeClickSquare(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {

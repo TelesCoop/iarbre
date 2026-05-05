@@ -326,6 +326,28 @@ describe("Map - Biosphere functional integrity", () => {
 
     cy.contains("Couvertures du sol").should("not.exist")
   })
+
+  it("draws a 4x4m square on click instead of highlighting tile border", () => {
+    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", { body: [] }).as("landCover")
+
+    cy.getBySel("map-component").click("center")
+    cy.wait("@landCover")
+
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square drawn")
+  })
+
+  it("removes click square when switching to another data type", () => {
+    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", { body: [] }).as("landCover")
+
+    cy.getBySel("map-component").click("center")
+    cy.wait("@landCover")
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square drawn")
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
+
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square removed")
+  })
 })
 
 describe("Welcome message", () => {
