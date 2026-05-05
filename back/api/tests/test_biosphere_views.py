@@ -32,11 +32,13 @@ class BiosphereLandCoverAtPointViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["landCover"], LandCoverClass.FEUILLU)
-        self.assertEqual(data["landCoverLabel"], "Feuillu")
-        self.assertEqual(data["binary"], True)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["landCover"], LandCoverClass.FEUILLU)
+        self.assertEqual(data[0]["landCoverLabel"], "Feuillu")
+        self.assertEqual(data[0]["binary"], True)
 
-    def test_point_outside_coverage_returns_404(self):
+    def test_point_outside_coverage_returns_empty(self):
         response = self.client.get(self.url, {"lat": 48.8566, "lng": 2.3522})
 
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
