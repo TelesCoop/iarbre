@@ -15,6 +15,7 @@ from .views import (
     RasterDownloadView,
     IArbreWFSView,
     OrthophotoTileView,
+    BiosphereLandCoverAtPointView,
 )
 
 router = routers.DefaultRouter()
@@ -55,5 +56,10 @@ urlpatterns = [
         "orthophoto/<int:z>/<int:x>/<int:y>.png",
         OrthophotoTileView.as_view(),
         name="orthophoto-tile",
+    ),
+    path(
+        "biosphere/land-cover-at-point/",
+        BiosphereLandCoverAtPointView.as_view(),
+        name="biosphere-land-cover-at-point",
     ),
 ]
