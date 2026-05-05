@@ -259,6 +259,9 @@ export const useMapStore = defineStore("map", () => {
   const IFB_CLICK_SQUARE_SOURCE = "ifb-click-square-source"
   const IFB_CLICK_SQUARE_LAYER = "ifb-click-square-layer"
   const IFB_SQUARE_HALF_SIZE_M = 2
+  const IFB_CLICK_CIRCLE_SOURCE = "ifb-click-circle-source"
+  const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
+  const IFB_CIRCLE_RADIUS_M = 500
 
   const drawClickSquare = (map: Map, lat: number, lng: number) => {
     const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
@@ -291,6 +294,31 @@ export const useMapStore = defineStore("map", () => {
         paint: { "line-color": "#FFFFFF", "line-width": 2 }
       })
     }
+
+    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
+    const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const steps = 64
+    const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
+      const angle = (i * 2 * Math.PI) / steps
+      return [lng + lngRadiusDeg * Math.cos(angle), lat + latRadiusDeg * Math.sin(angle)]
+    })
+    const circle = {
+      type: "Feature" as const,
+      geometry: { type: "Polygon" as const, coordinates: [circleCoords] },
+      properties: {}
+    }
+    const circleSource = map.getSource(IFB_CLICK_CIRCLE_SOURCE) as GeoJSONSource | undefined
+    if (circleSource) {
+      circleSource.setData(circle)
+    } else {
+      map.addSource(IFB_CLICK_CIRCLE_SOURCE, { type: "geojson", data: circle })
+      map.addLayer({
+        id: IFB_CLICK_CIRCLE_LAYER,
+        type: "line",
+        source: IFB_CLICK_CIRCLE_SOURCE,
+        paint: { "line-color": "#FFFFFF", "line-width": 2 }
+      })
+    }
     console.info("cypress: IFB click square drawn")
   }
 
@@ -300,6 +328,12 @@ export const useMapStore = defineStore("map", () => {
     }
     if (map.getSource(IFB_CLICK_SQUARE_SOURCE)) {
       map.removeSource(IFB_CLICK_SQUARE_SOURCE)
+    }
+    if (map.getLayer(IFB_CLICK_CIRCLE_LAYER)) {
+      map.removeLayer(IFB_CLICK_CIRCLE_LAYER)
+    }
+    if (map.getSource(IFB_CLICK_CIRCLE_SOURCE)) {
+      map.removeSource(IFB_CLICK_CIRCLE_SOURCE)
     }
     console.info("cypress: IFB click square removed")
   }
