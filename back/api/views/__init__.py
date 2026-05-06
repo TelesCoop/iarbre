@@ -8,3 +8,4 @@ from .database_version_views import MetadataView  # noqa: F401
 from .raster_views import RasterDownloadView  # noqa: F401
 from .wfs_views import IArbreWFSView  # noqa: F401
 from .orthophoto_views import OrthophotoTileView  # noqa: F401
+from .biosphere_views import BiosphereLandCoverAtPointView  # noqa: F401

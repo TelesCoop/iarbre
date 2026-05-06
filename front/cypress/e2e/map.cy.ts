@@ -276,6 +276,19 @@ describe("Geocoder", () => {
   })
 })
 
+describe("Map - Biosphere functional integrity", () => {
+  beforeEach(() => {
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.visit(`/${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}/13/45.07126/5.55430`)
+    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
+    cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
+  })
+
+  it("shows biosphere empty message before clicking", () => {
+    cy.getBySel("map-context-data").should("contain", "Cliquez sur une zone.")
+  })
+})
+
 describe("Welcome message", () => {
   beforeEach(() => {
     cy.visit("/plantability/13/45.07126/5.55430")

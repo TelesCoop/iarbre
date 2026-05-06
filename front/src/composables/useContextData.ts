@@ -6,6 +6,7 @@ import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_planta
 import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 import type { VegetationData } from "@/types/vegetation"
 import { getTileDetails } from "@/services/tileService"
+import { getBiosphereLandCoverAtPoint } from "@/services/biosphereService"
 import { DataType, DataTypeToGeolevel, GeoLevel } from "@/utils/enum"
 
 type ContextData =
@@ -26,7 +27,9 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
     indexValue?: string | number,
     sourceValues?: any,
     vulnScoreDay?: number,
-    vulnScoreNight?: number
+    vulnScoreNight?: number,
+    lat?: number,
+    lng?: number
   ) => {
     if (!featureId) return null
     const stringId = String(featureId)
@@ -40,11 +43,14 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
         return
       }
     } else if (selectedDataType.value === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      const landCoverData =
+        lat !== undefined && lng !== undefined ? await getBiosphereLandCoverAtPoint(lat, lng) : null
       newData = {
         id: stringId,
         indice: +indexValue,
         geolevel: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-        datatype: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+        datatype: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY,
+        landCovers: landCoverData ?? null
       } as BiosphereIntegrityData
     } else if (
       indexValue !== undefined &&
