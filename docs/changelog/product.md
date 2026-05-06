@@ -1,5 +1,13 @@
 # Journal des changements
 
+## 🔖 0.29.0 (2026-05-06) : Interactivité du calque de biodiversité
+
+### ✨ feat : Obtenir des détails du score de biodiversité
+
+La palette de couleur a été retravaillé ainsi que la légende mais surtout maintenant on peut cliquer sur le calque pour obtenir l'occupation des sols dans un rayon de 1kms et donc une explicabilité du score.
+
+$rarr; PR[#636](https://github.com/TelesCoop/iarbre/pull/636)
+
 ## 🔖 0.29.0 (2026-04-29) : Ajout de documentation métier et améliorations de l'UX
 
 ### ✨ feat : Ajout de lien vers la documentation métier
