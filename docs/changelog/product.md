@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.29.0 (2026-05-06) : Interactivité du calque de biodiversité
+## 🔖 0.30.0 (2026-05-06) : Interactivité du calque de biodiversité
 
 ### ✨ feat : Obtenir des détails du score de biodiversité
 
