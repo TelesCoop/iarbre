@@ -45,7 +45,7 @@ describe("MapContextDataBiosphereIntegrity", () => {
 
   it("shows non semi-naturel label when binary is false", () => {
     cy.mount(MapContextDataBiosphereIntegrity, { props: { data: mockData } })
-    cy.contains("Non semi-naturel").should("be.visible")
+    cy.contains("Artificiel").should("be.visible")
   })
 
   it("hides land cover section when landCovers is null", () => {

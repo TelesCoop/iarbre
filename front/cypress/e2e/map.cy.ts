@@ -277,10 +277,7 @@ describe("Geocoder", () => {
 })
 
 describe("Map - Biosphere functional integrity", () => {
-  const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
-
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit(`/${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}/13/45.07126/5.55430`)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
@@ -310,10 +307,10 @@ describe("Map - Biosphere functional integrity", () => {
     cy.contains("Couvertures du sol").should("be.visible")
     cy.contains("Feuillu").should("be.visible")
     cy.contains("55.3%").should("be.visible")
-    cy.contains("Semi-naturel").should("be.visible")
+    cy.contains("Artificiel").should("be.visible")
     cy.contains("Zone imperméable").should("be.visible")
     cy.contains("44.7%").should("be.visible")
-    cy.contains("Non semi-naturel").should("be.visible")
+    cy.contains("Artificiel").should("be.visible")
   })
 
   it("does not show land cover section when API returns empty list", () => {

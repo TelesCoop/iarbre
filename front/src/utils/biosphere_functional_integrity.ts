@@ -1,16 +1,10 @@
-export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
-  "#d4d4d4",
-  0,
-  "#d73026",
-  12,
-  "#BF5A16",
-  25,
-  "#A6CC4A",
-  50,
-  "#55B250",
-  75,
-  "#025400"
-]
+export enum BiosphereIntegrityColor {
+  CRITICAL = "#d73026",
+  LOW = "#BF5A16",
+  MID = "#A6CC4A",
+  GOOD = "#55B250",
+  HIGH = "#025400"
+}
 
 export enum BiosphereIntegrityLegendName {
   CRITICAL = "Entre 0% et 12%",
@@ -20,13 +14,19 @@ export enum BiosphereIntegrityLegendName {
   HIGH = "Entre 75% et 100%"
 }
 
-export enum BiosphereIntegrityColor {
-  CRITICAL = "#d73026",
-  LOW = "#BF5A16",
-  MID = "#A6CC4A",
-  GOOD = "#55B250",
-  HIGH = "#025400"
-}
+export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
+  "#d4d4d4",
+  0,
+  BiosphereIntegrityColor.CRITICAL,
+  12,
+  BiosphereIntegrityColor.LOW,
+  25,
+  BiosphereIntegrityColor.MID,
+  50,
+  BiosphereIntegrityColor.GOOD,
+  75,
+  BiosphereIntegrityColor.HIGH
+]
 
 export const BiosphereIntegrityLegend: Record<
   BiosphereIntegrityLegendName,

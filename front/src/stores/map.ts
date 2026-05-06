@@ -291,7 +291,11 @@ export const useMapStore = defineStore("map", () => {
         id: IFB_CLICK_SQUARE_LAYER,
         type: "line",
         source: IFB_CLICK_SQUARE_SOURCE,
-        paint: { "line-color": "#FFFFFF", "line-width": 2 }
+        paint: {
+          "line-color": QPV_CASING_COLOR,
+          "line-width": QPV_CASING_WIDTH,
+          "line-opacity": QPV_CASING_OPACITY
+        }
       })
     }
 
