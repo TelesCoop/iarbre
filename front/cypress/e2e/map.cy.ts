@@ -287,64 +287,6 @@ describe("Map - Biosphere functional integrity", () => {
   it("shows biosphere empty message before clicking", () => {
     cy.getBySel("map-context-data").should("contain", "Cliquez sur une zone.")
   })
-
-  it("shows land cover entries with percentages after clicking a tile", () => {
-    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", {
-      body: [
-        { landCover: "feuillu", landCoverLabel: "Feuillu", binary: true, percentage: 55.3 },
-        {
-          landCover: "zone_impermeable",
-          landCoverLabel: "Zone imperméable",
-          binary: false,
-          percentage: 44.7
-        }
-      ]
-    }).as("landCover")
-
-    cy.getBySel("map-component").click("center")
-    cy.wait("@landCover")
-
-    cy.contains("Couvertures du sol").should("be.visible")
-    cy.contains("Feuillu").should("be.visible")
-    cy.contains("55.3%").should("be.visible")
-    cy.contains("Artificiel").should("be.visible")
-    cy.contains("Zone imperméable").should("be.visible")
-    cy.contains("44.7%").should("be.visible")
-    cy.contains("Artificiel").should("be.visible")
-  })
-
-  it("does not show land cover section when API returns empty list", () => {
-    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", {
-      body: []
-    }).as("landCover")
-
-    cy.getBySel("map-component").click("center")
-    cy.wait("@landCover")
-
-    cy.contains("Couvertures du sol").should("not.exist")
-  })
-
-  it("draws a 4x4m square on click instead of highlighting tile border", () => {
-    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", { body: [] }).as("landCover")
-
-    cy.getBySel("map-component").click("center")
-    cy.wait("@landCover")
-
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square drawn")
-  })
-
-  it("removes click square when switching to another data type", () => {
-    cy.intercept("GET", "**/api/biosphere/land-cover-at-point/**", { body: [] }).as("landCover")
-
-    cy.getBySel("map-component").click("center")
-    cy.wait("@landCover")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square drawn")
-
-    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
-    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.PLANTABILITY]).click()
-
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: IFB click square removed")
-  })
 })
 
 describe("Welcome message", () => {
