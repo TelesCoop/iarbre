@@ -46,10 +46,14 @@ const arcColor = computed(() => {
     case "climate":
       return "text-primary-600"
     case "biosphereIntegrity": {
-      const idx = BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP.indexOf(
-        Math.min(Math.floor(props.percentage / 5) * 5, 90)
-      )
-      return String(BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP[idx !== -1 ? idx + 1 : 0])
+      const map = BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      let color = String(map[0])
+      for (let i = 1; i < map.length - 1; i += 2) {
+        if (props.percentage >= (map[i] as number)) {
+          color = String(map[i + 1])
+        }
+      }
+      return color
     }
     default:
       return "#9CA3AF"
