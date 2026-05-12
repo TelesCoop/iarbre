@@ -67,26 +67,7 @@
   <div :class="{ 'is-open': isPanelOpen }" class="mobile-panel" data-cy="mobile-panel">
     <div class="mobile-panel-header">
       <button class="mobile-panel-handle" data-cy="mobile-panel-handle" @click="togglePanel">
-        <div class="handle-bar"></div>
-        <div class="handle-row">
-          <span class="handle-text">{{ isPanelOpen ? "Fermer" : "Voir les détails" }}</span>
-          <svg
-            :class="{ 'rotate-180': isPanelOpen }"
-            class="handle-icon"
-            fill="none"
-            height="14"
-            viewBox="0 0 16 16"
-            width="14"
-          >
-            <path
-              d="M4 10L8 6L12 10"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-            />
-          </svg>
-        </div>
+        <span class="handle-text">{{ isPanelOpen ? "Fermer" : "Voir les détails" }}</span>
       </button>
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapQpvToggleButton />
@@ -195,23 +176,12 @@ watch(
 }
 
 .mobile-panel-handle {
-  @apply w-full flex flex-col items-center py-1.5 cursor-pointer;
-}
-
-.handle-bar {
-  @apply w-10 h-1 bg-gray-300 rounded-full;
-}
-
-.handle-row {
-  @apply flex items-center gap-1 py-2;
+  @apply w-full flex items-center justify-center py-3 cursor-pointer;
+  @apply min-h-11;
 }
 
 .handle-text {
-  @apply text-xs font-medium text-gray-500;
-}
-
-.handle-icon {
-  @apply text-gray-400 transition-transform duration-300;
+  @apply text-sm font-medium text-gray-700;
 }
 
 .mobile-panel-toggles {
