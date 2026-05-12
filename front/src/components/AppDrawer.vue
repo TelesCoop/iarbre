@@ -147,20 +147,7 @@ onUnmounted(() => {
             data-cy="drawer-close"
             @click="close"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1 1L13 13M1 13L13 1"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
+            Fermer
           </button>
         </div>
 
@@ -200,22 +187,24 @@ onUnmounted(() => {
 }
 
 .drawer-close {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: none;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
   background: transparent;
-  color: #6b7280;
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
   transition: all 0.2s;
 }
 
 .drawer-close:hover {
   background-color: #f3f4f6;
-  color: #1f2937;
+  border-color: #d1d5db;
 }
 
 .drawer-content {
