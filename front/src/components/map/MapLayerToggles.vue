@@ -48,10 +48,8 @@ const mapStore = useMapStore()
 }
 
 .layer-chip {
-  @apply flex items-center gap-1.5 px-3.5 py-2 rounded-full;
-  @apply text-sm font-sans font-medium;
-  @apply min-h-11;
-  @apply md:gap-1 md:px-2.5 md:py-1 md:text-xs md:min-h-0;
+  @apply flex items-center gap-1 px-2.5 py-1 rounded-full;
+  @apply text-xs font-sans font-medium;
   @apply border border-gray-200 bg-gray-50 text-gray-500;
   @apply cursor-pointer transition-all duration-150;
 }
