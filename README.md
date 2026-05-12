@@ -16,7 +16,6 @@ Voici comment le dépôt est organisé :
 IArbre/
 ├── back/      # Code backend (Python Django)
 ├── front/     # Code frontend (Vue.js)
-├── static/     # Page web statique du projet (HTML,CSS)
 ├── deploy/    # Configuration de déploiement (Ansible)
 ├── docs/    # Documentation (Markdown)
 └── .pre-commit-config.yaml  # Configuration des hooks pré-commit
@@ -31,10 +30,6 @@ pour calculer les indices (plantabilité, etc.) et servir ces données à traver
 ### **front/**
 
 Le frontend est construit avec **Vue.js** 🌟. Principalement ce frontend sert la carte..
-
-### **static/**
-
-Page web statique utilisant **HTML/CSS** 🌐. Pour donner des informations générales sur le projet.
 
 ### **deploy/**
 
@@ -90,5 +85,4 @@ Vous pouvez également contribuer directement en proposant de nouvelles fonction
 
 ## 🌐 URLs Préproduction
 
-- **Site vitrine** : https://preprod-showcase.iarbre.fr
 - **Cartographie** : https://preprod-carte.iarbre.fr
