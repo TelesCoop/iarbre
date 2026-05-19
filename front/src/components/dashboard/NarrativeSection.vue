@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .section-header {
-  @apply sticky top-0 z-10 bg-gray-50 py-3 border-b border-gray-200;
+  @apply top-0 z-10 bg-gray-50 py-3 border-b border-gray-200;
 }
 
 .section-title {

@@ -146,7 +146,7 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 flex flex-row items-center gap-4 w-full;
+  @apply flex flex-row items-center gap-4;
 }
 
 .score-col {

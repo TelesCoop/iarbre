@@ -171,19 +171,3 @@ const { svgRef } = useD3Chart(
     </div>
   </DashboardWidgetCard>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.widget-body {
-  @apply flex-1 w-full min-h-[200px];
-}
-
-.widget-empty {
-  @apply flex-1 flex items-center justify-center;
-}
-
-.empty-text {
-  @apply text-sm text-gray-400;
-}
-</style>

@@ -53,7 +53,6 @@ const hasData = computed(() => store.dashboardData !== null && !store.loading)
     <NarrativeSection
       title="Risques et vulnérabilités"
       question="À quels risques climatiques le territoire est-il exposé ?"
-      :full-width="true"
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>

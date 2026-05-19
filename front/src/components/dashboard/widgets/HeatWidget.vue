@@ -266,7 +266,7 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 flex flex-row items-center gap-8 w-full;
+  @apply flex flex-row gap-4;
 }
 
 .scores-col {
@@ -299,30 +299,5 @@ const { svgRef } = useD3Chart(
 
 .spider-wrapper {
   @apply relative flex items-center justify-center w-full aspect-square max-w-56 max-h-56 flex-1;
-}
-
-.chart-tooltip {
-  @apply absolute pointer-events-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md;
-  @apply bg-white border border-gray-100 text-xs whitespace-nowrap -translate-x-1/2 z-10;
-}
-
-.tooltip-dot {
-  @apply w-2 h-2 rounded-full shrink-0;
-}
-
-.tooltip-label {
-  @apply text-gray-600 font-medium;
-}
-
-.tooltip-value {
-  @apply text-gray-800 font-bold tabular-nums;
-}
-
-.tooltip-sep {
-  @apply text-gray-300;
-}
-
-.tooltip-level {
-  @apply text-gray-400;
 }
 </style>

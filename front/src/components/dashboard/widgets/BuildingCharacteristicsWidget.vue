@@ -64,7 +64,7 @@ const bars = computed(() => [
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 flex flex-col gap-5 w-full justify-center;
+  @apply flex flex-col gap-5 justify-center;
 }
 
 .bar-item {
