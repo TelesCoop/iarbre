@@ -4,6 +4,7 @@ import AppSpinner from "@/components/shared/AppSpinner.vue"
 import NarrativeSection from "@/components/dashboard/NarrativeSection.vue"
 import PlantabilityWidget from "@/components/dashboard/widgets/PlantabilityWidget.vue"
 import HeatWidget from "@/components/dashboard/widgets/HeatWidget.vue"
+import BiosphereWidget from "@/components/dashboard/widgets/BiosphereWidget.vue"
 import SurfaceTypeWidget from "@/components/dashboard/widgets/SurfaceTypeWidget.vue"
 import VegetationSurfaceWidget from "@/components/dashboard/widgets/VegetationSurfaceWidget.vue"
 import BuildingCharacteristicsWidget from "@/components/dashboard/widgets/BuildingCharacteristicsWidget.vue"
@@ -33,10 +34,11 @@ const hasData = computed(() => store.dashboardData !== null && !store.loading)
     </NarrativeSection>
 
     <NarrativeSection
-      title="Inventaire stratifié de végétation"
-      question="Quelle est la place de la végétation aujourd'hui ?"
+      title="Végétation et biodiversité"
+      question="Quelle est la place des espaces naturelles actuellement ?"
     >
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
+      <BiosphereWidget :data="store.dashboardData!.biosphere" />
     </NarrativeSection>
 
     <NarrativeSection

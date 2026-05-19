@@ -22,6 +22,7 @@ declare module 'vue' {
     BiosphereFunctionalIntegrityLegend: typeof import('./src/components/map/legend/BiosphereFunctionalIntegrityLegend.vue')['default']
     BiosphereIntegrityMainContextDataScore: typeof import('./src/components/contextData/biosphereIntegrity/BiosphereIntegrityMainContextDataScore.vue')['default']
     BiosphereLandCoverInfo: typeof import('./src/components/contextData/biosphereIntegrity/BiosphereLandCoverInfo.vue')['default']
+    BiosphereWidget: typeof import('./src/components/dashboard/widgets/BiosphereWidget.vue')['default']
     BivariateCellLabel: typeof import('./src/components/map/score/BivariateCellLabel.vue')['default']
     BuildingCharacteristicsWidget: typeof import('./src/components/dashboard/widgets/BuildingCharacteristicsWidget.vue')['default']
     CircularProgress: typeof import('./src/components/progress/CircularProgress.vue')['default']

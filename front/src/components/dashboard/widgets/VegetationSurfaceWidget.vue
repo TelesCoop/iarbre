@@ -160,8 +160,8 @@ const { svgRef } = useD3Chart(
 
 <template>
   <DashboardWidgetCard
-    :subtitle="`Distribution de la végétation par strates`"
-    title="Végétation existante"
+    :subtitle="`Découpage en trois strates : haute (>1.5m), moyenne (<1.5m) et pelouses.`"
+    title="Inventaire stratifié de végétation existante"
   >
     <div v-if="hasData" class="widget-body">
       <svg ref="svgRef" width="100%" height="100%" />
