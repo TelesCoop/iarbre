@@ -33,7 +33,7 @@ onMounted(() => {
 
 @media (min-width: 1024px) {
   .dashboard-view-wrapper {
-    margin-left: 64px;
+    margin-left: 4.5rem;
   }
 }
 
