@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 interface Props {
-  title: string
+  title?: string
   subtitle?: string
 }
 
 withDefaults(defineProps<Props>(), {
+  title: undefined,
   subtitle: undefined
 })
 </script>
@@ -12,7 +13,9 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div class="widget-card">
     <div class="widget-header">
-      <h3 class="widget-title">{{ title }}</h3>
+      <h3 class="widget-title">
+        <slot name="title">{{ title }}</slot>
+      </h3>
       <p v-if="subtitle" class="widget-subtitle">{{ subtitle }}</p>
     </div>
     <div class="widget-content">
@@ -42,6 +45,14 @@ withDefaults(defineProps<Props>(), {
 
 .widget-title {
   @apply text-sm md:text-base font-semibold text-gray-900;
+}
+
+.widget-title :deep(a) {
+  @apply text-blue-600 underline underline-offset-2;
+}
+
+.widget-title :deep(a:hover) {
+  @apply text-blue-800;
 }
 
 .widget-subtitle {

@@ -106,7 +106,7 @@ const currentLabel = computed(() => {
 }
 
 .header-title {
-  @apply text-xl md:text-2xl font-bold text-gray-900;
+  @apply text-3xl md:text-2xl font-bold text-gray-900;
 }
 
 .header-badges {

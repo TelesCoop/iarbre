@@ -84,10 +84,15 @@ const { svgRef } = useD3Chart(
 </script>
 
 <template>
-  <DashboardWidgetCard
-    subtitle="Répartition du territoire"
-    title="Types de surface (étude ZCL du CEREMA 2023)"
-  >
+  <DashboardWidgetCard subtitle="Perméabilité des sols">
+    <template #title>
+      Types de surface (<a
+        href="https://www.data.gouv.fr/datasets/cartographie-des-zones-climatiques-locales-lcz-des-88-aires-urbaines-de-plus-de-50-000-habitants-de-france-metropolitaine"
+        target="_blank"
+        rel="noopener noreferrer"
+        >ZCL du CEREMA 2023</a
+      >)
+    </template>
     <div class="widget-body">
       <div class="donut-wrapper">
         <svg ref="svgRef" width="100%" height="100%" />

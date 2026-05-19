@@ -29,7 +29,7 @@ const bars = computed(() => [
   {
     label: "Superficie moyenne",
     value: props.buildings.averageBuildingFootprintM2,
-    max: 5000,
+    max: 500,
     color: BUILDING_WIDGET_COLORS.footprint,
     display: `${Math.round(props.buildings.averageBuildingFootprintM2)} m²`
   }
@@ -37,10 +37,15 @@ const bars = computed(() => [
 </script>
 
 <template>
-  <DashboardWidgetCard
-    subtitle="Indicateurs moyens sur les bâtiments"
-    title="Caractéristiques du bâti (d'après la BD Topo)"
-  >
+  <DashboardWidgetCard subtitle="Indicateurs moyens sur les bâtiments">
+    <template #title>
+      Caractéristiques du bâti (<a
+        href="https://www.data.gouv.fr/datasets/bd-topo-r"
+        target="_blank"
+        rel="noopener noreferrer"
+        >BD Topo</a
+      >)
+    </template>
     <div class="widget-body">
       <div v-for="bar in bars" :key="bar.label" class="bar-item">
         <span class="bar-label">{{ bar.label }}</span>

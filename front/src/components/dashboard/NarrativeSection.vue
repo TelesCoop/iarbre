@@ -34,11 +34,11 @@ withDefaults(defineProps<Props>(), {
 }
 
 .section-title {
-  @apply text-base font-bold text-gray-900;
+  @apply text-2xl font-bold text-gray-900;
 }
 
 .section-question {
-  @apply text-sm text-gray-500 mt-0.5;
+  @apply text-xl text-gray-500 mt-0.5;
 }
 
 .section-body {
