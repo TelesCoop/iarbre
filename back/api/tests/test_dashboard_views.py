@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Polygon
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.dashboard_views import _avg_from_counts, _m2_to_ha, _safe_round
+from api.views.dashboard_views import _avg_from_counts, _safe_round
 from iarbre_data.settings import SRID_DB
 from iarbre_data.factories import (
     BiosphereFunctionalIntegrityFactory,
@@ -139,10 +139,10 @@ class DashboardViewTest(TestCase):
     def test_vegetation_values(self):
         data = self.client.get(self.url).json()
         veg = data["vegetation"]
-        self.assertEqual(veg["totalHa"], 100.0)
-        self.assertEqual(veg["treesSurfaceHa"], 50.0)
-        self.assertEqual(veg["bushesSurfaceHa"], 20.0)
-        self.assertEqual(veg["grassSurfaceHa"], 30.0)
+        self.assertEqual(veg["totalm2"], 1000000.0)
+        self.assertEqual(veg["treesSurfaceM2"], 500000.0)
+        self.assertEqual(veg["bushesSurfaceM2"], 200000.0)
+        self.assertEqual(veg["grassSurfaceM2"], 300000.0)
 
     def test_lcz_values(self):
         data = self.client.get(self.url).json()
@@ -164,7 +164,7 @@ class DashboardEmptyDataTest(TestCase):
         data = self.client.get(self.url, {"city_code": "38250"}).json()
         self.assertEqual(data["vulnerability"]["averageDay"], 0)
         self.assertEqual(data["lcz"]["averageBuildingSurfaceRate"], 0)
-        self.assertEqual(data["vegetation"]["totalHa"], 0)
+        self.assertEqual(data["vegetation"]["totalm2"], 0)
         self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], 0)
         self.assertEqual(data["biosphere"]["averageIndice"], 0)
 
@@ -175,10 +175,6 @@ class HelperFunctionsTest(SimpleTestCase):
 
     def test_safe_round_value(self):
         self.assertEqual(_safe_round(6.666), 6.7)
-
-    def test_m2_to_ha(self):
-        self.assertEqual(_m2_to_ha(50_000), 5.0)
-        self.assertEqual(_m2_to_ha(0), 0)
 
     def test_avg_from_counts_empty(self):
         self.assertEqual(_avg_from_counts({}), 0.0)

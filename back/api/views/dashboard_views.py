@@ -31,10 +31,6 @@ def _safe_round(value: float | None) -> float:
     return round(value, INDICE_ROUNDING_DECIMALS) if value is not None else 0
 
 
-def _m2_to_ha(value: float) -> float:
-    return round(value / M2_TO_HA, 1) if value else 0
-
-
 def _json_avg(key: str) -> Avg:
     return Avg(Cast(KeyTextTransform(key, "details"), output_field=FloatField()))
 
@@ -236,10 +232,10 @@ class DashboardView(APIView):
         total = trees + bushes + grass
 
         return {
-            "totalHa": _m2_to_ha(total),
-            "treesSurfaceHa": _m2_to_ha(trees),
-            "bushesSurfaceHa": _m2_to_ha(bushes),
-            "grassSurfaceHa": _m2_to_ha(grass),
+            "totalm2": total,
+            "treesSurfaceM2": trees,
+            "bushesSurfaceM2": bushes,
+            "grassSurfaceM2": grass,
         }
 
     @staticmethod

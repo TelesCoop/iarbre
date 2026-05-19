@@ -29,10 +29,10 @@ export interface DashboardVulnerability {
 }
 
 export interface DashboardVegetation {
-  totalHa: number
-  treesSurfaceHa: number
-  bushesSurfaceHa: number
-  grassSurfaceHa: number
+  totalm2: number
+  treesSurfaceM2: number
+  bushesSurfaceM2: number
+  grassSurfaceM2: number
 }
 
 export interface DashboardLcz {

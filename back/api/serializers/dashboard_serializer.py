@@ -32,10 +32,10 @@ class DashboardVulnerabilitySerializer(serializers.Serializer):
 
 
 class DashboardVegetationSerializer(serializers.Serializer):
-    totalHa = serializers.FloatField()
-    treesSurfaceHa = serializers.FloatField()
-    bushesSurfaceHa = serializers.FloatField()
-    grassSurfaceHa = serializers.FloatField()
+    totalm2 = serializers.FloatField()
+    treesSurfaceM2 = serializers.FloatField()
+    bushesSurfaceM2 = serializers.FloatField()
+    grassSurfaceM2 = serializers.FloatField()
 
 
 class DashboardLczSerializer(serializers.Serializer):

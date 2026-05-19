@@ -12,24 +12,23 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const hasData = computed(() => props.data.totalHa >= 1)
+const m2ToKm2 = (m2: number) => m2 / 1_000_000
 
-const totalDisplay = computed(() => {
-  const ha = props.data.totalHa
-  if (ha >= 10000) return `${(ha / 10000).toFixed(1)} km²`
-  return `${Math.round(ha)} ha`
-})
+const hasData = computed(() => props.data.totalm2 >= 1)
+
+const totalDisplay = computed(
+  () => `${m2ToKm2(props.data.totalm2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
+)
 
 const items = computed(() => [
-  { label: "TOTALE", value: props.data.totalHa, color: "#426a45" },
-  { label: "HAUTE", value: props.data.treesSurfaceHa, color: VEGETATION_COLORS.trees },
-  { label: "MOYENNE", value: props.data.bushesSurfaceHa, color: VEGETATION_COLORS.bushes },
-  { label: "BASSE", value: props.data.grassSurfaceHa, color: VEGETATION_COLORS.grass }
+  { label: "TOTALE", value: m2ToKm2(props.data.totalm2), color: "#426a45" },
+  { label: "HAUTE", value: m2ToKm2(props.data.treesSurfaceM2), color: VEGETATION_COLORS.trees },
+  { label: "MOYENNE", value: m2ToKm2(props.data.bushesSurfaceM2), color: VEGETATION_COLORS.bushes },
+  { label: "BASSE", value: m2ToKm2(props.data.grassSurfaceM2), color: VEGETATION_COLORS.grass }
 ])
 
-function formatHa(ha: number): string {
-  if (ha >= 10000) return `${(ha / 10000).toFixed(1)} km²`
-  return `${Math.round(ha)} ha`
+function formatKm2(km2: number): string {
+  return `${km2.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
 }
 
 const { svgRef } = useD3Chart(
@@ -110,7 +109,7 @@ const { svgRef } = useD3Chart(
       .attr("font-weight", "bold")
       .attr("fill", "white")
       .attr("opacity", animate ? 0 : 1)
-      .text((d) => `${Math.round(d.value)}`)
+      .text((d) => `${d.value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}`)
 
     if (animate) {
       valLabels
@@ -133,7 +132,7 @@ const { svgRef } = useD3Chart(
       .attr("font-weight", "600")
       .attr("fill", "#374151")
       .attr("opacity", animate ? 0 : 1)
-      .text((d) => formatHa(d.value))
+      .text((d) => formatKm2(d.value))
 
     if (animate) {
       haLabels
@@ -161,7 +160,7 @@ const { svgRef } = useD3Chart(
 
 <template>
   <DashboardWidgetCard
-    :subtitle="`Végétation totale : ${totalDisplay}`"
+    :subtitle="`Distribution de la végétation par strates`"
     title="Végétation existante"
   >
     <div v-if="hasData" class="widget-body">
