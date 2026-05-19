@@ -12,7 +12,15 @@ from rest_framework.views import APIView
 
 from api.constants import INDICE_ROUNDING_DECIMALS
 from api.serializers.dashboard_serializer import DashboardSerializer
-from iarbre_data.models import City, Iris, Lcz, Vegestrate, Vulnerability
+from iarbre_data.models import (
+    BiosphereFunctionalIntegrity,
+    City,
+    Data,
+    Iris,
+    Lcz,
+    Vegestrate,
+    Vulnerability,
+)
 
 M2_TO_HA = 10_000
 
@@ -28,12 +36,10 @@ def _m2_to_ha(value: float) -> float:
 
 
 def _json_avg(key: str) -> Avg:
-    """Build Avg(Cast(KeyTextTransform(key, 'details'), FloatField)) expression."""
     return Avg(Cast(KeyTextTransform(key, "details"), output_field=FloatField()))
 
 
 def _json_avg_built_only(key: str) -> Avg:
-    """Avg over built LCZ indices only (conditional aggregation)."""
     return Avg(
         Case(
             When(
@@ -46,7 +52,6 @@ def _json_avg_built_only(key: str) -> Avg:
 
 
 def _avg_from_counts(counts: dict) -> float:
-    """Compute weighted average plantability from pre-computed counts dict."""
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -55,8 +60,6 @@ def _avg_from_counts(counts: dict) -> float:
 
 @dataclass
 class DashboardScope:
-    """Geographic scale resolved from query parameters."""
-
     city: City | None
     iris: Iris | None
     geometry_filter: dict
@@ -82,6 +85,8 @@ class DashboardView(APIView):
             "vulnerability": self._aggregate_vulnerability(scope.geometry_filter),
             "vegetation": self._aggregate_vegetation(scope),
             "lcz": self._aggregate_lcz(scope.geometry_filter),
+            "buildings": self._aggregate_buildings(scope.geometry_filter),
+            "biosphere": self._aggregate_biosphere(scope.geometry_filter),
         }
         serializer = DashboardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -264,3 +269,24 @@ class DashboardView(APIView):
             "totalVegetationRate": _safe_round(result["avg_ver"]),
             "waterRate": _safe_round(result["avg_war"]),
         }
+
+    @staticmethod
+    def _aggregate_buildings(geometry_filter: dict) -> dict:
+        qs = Data.objects.filter(factor="Bâtiments")
+        if geometry_filter:
+            qs = qs.filter(**geometry_filter)
+        result = qs.annotate(
+            area_m2=Cast(Area("geometry"), output_field=FloatField())
+        ).aggregate(avg_area=Avg("area_m2"))
+        avg = result["avg_area"]
+        return {
+            "averageBuildingFootprintM2": _safe_round(avg if avg is not None else 0.0)
+        }
+
+    @staticmethod
+    def _aggregate_biosphere(geometry_filter: dict) -> dict:
+        qs = BiosphereFunctionalIntegrity.objects.all()
+        if geometry_filter:
+            qs = qs.filter(**geometry_filter)
+        result = qs.aggregate(avg_indice=Avg("indice"))
+        return {"averageIndice": _safe_round(result["avg_indice"])}
