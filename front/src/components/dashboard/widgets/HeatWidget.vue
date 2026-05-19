@@ -211,7 +211,7 @@ const { svgRef } = useD3Chart(
 <template>
   <DashboardWidgetCard
     subtitle="Vulnérabilité aux températures extrêmes"
-    title="Etude sur l'exposition, la difficulté à faire face et la sensibilité par îlot"
+    title="Étude sur l'exposition, la difficulté à faire face et la sensibilité par îlot"
   >
     <div class="widget-body">
       <div class="scores-col">

@@ -2,12 +2,9 @@
 interface Props {
   title: string
   question: string
-  fullWidth?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
-  fullWidth: false
-})
+defineProps<Props>()
 </script>
 
 <template>
@@ -16,7 +13,7 @@ withDefaults(defineProps<Props>(), {
       <h2 class="section-title">{{ title }}</h2>
       <p class="section-question">{{ question }}</p>
     </div>
-    <div :class="['section-body', { 'section-body--full': fullWidth }]">
+    <div class="section-body">
       <slot />
     </div>
   </section>
@@ -30,7 +27,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .section-header {
-  @apply top-0 z-10 bg-gray-50 py-3 border-b border-gray-200;
+  @apply bg-gray-50 py-3 border-b border-gray-200;
 }
 
 .section-title {
@@ -49,10 +46,6 @@ withDefaults(defineProps<Props>(), {
 @media (min-width: 768px) {
   .section-body {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .section-body--full {
-    grid-template-columns: 1fr;
   }
 }
 </style>

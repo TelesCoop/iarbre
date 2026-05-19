@@ -29,7 +29,7 @@ export interface DashboardVulnerability {
 }
 
 export interface DashboardVegetation {
-  totalm2: number
+  totalM2: number
   treesSurfaceM2: number
   bushesSurfaceM2: number
   grassSurfaceM2: number

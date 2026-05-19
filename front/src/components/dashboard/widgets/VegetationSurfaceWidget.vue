@@ -14,14 +14,14 @@ const props = defineProps<Props>()
 
 const m2ToKm2 = (m2: number) => m2 / 1_000_000
 
-const hasData = computed(() => props.data.totalm2 >= 1)
+const hasData = computed(() => props.data.totalM2 >= 1)
 
 const totalDisplay = computed(
-  () => `${m2ToKm2(props.data.totalm2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
+  () => `${m2ToKm2(props.data.totalM2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
 )
 
 const items = computed(() => [
-  { label: "TOTALE", value: m2ToKm2(props.data.totalm2), color: "#426a45" },
+  { label: "TOTALE", value: m2ToKm2(props.data.totalM2), color: "#426a45" },
   { label: "HAUTE", value: m2ToKm2(props.data.treesSurfaceM2), color: VEGETATION_COLORS.trees },
   { label: "MOYENNE", value: m2ToKm2(props.data.bushesSurfaceM2), color: VEGETATION_COLORS.bushes },
   { label: "BASSE", value: m2ToKm2(props.data.grassSurfaceM2), color: VEGETATION_COLORS.grass }
@@ -120,7 +120,7 @@ const { svgRef } = useD3Chart(
         .attr("opacity", 1)
     }
 
-    const haLabels = g
+    const km2Labels = g
       .selectAll(".ha-label")
       .data(data)
       .join("text")
@@ -135,7 +135,7 @@ const { svgRef } = useD3Chart(
       .text((d) => formatKm2(d.value))
 
     if (animate) {
-      haLabels
+      km2Labels
         .transition()
         .delay(600)
         .duration(300)

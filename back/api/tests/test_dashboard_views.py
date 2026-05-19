@@ -139,7 +139,7 @@ class DashboardViewTest(TestCase):
     def test_vegetation_values(self):
         data = self.client.get(self.url).json()
         veg = data["vegetation"]
-        self.assertEqual(veg["totalm2"], 1000000.0)
+        self.assertEqual(veg["totalM2"], 1000000.0)
         self.assertEqual(veg["treesSurfaceM2"], 500000.0)
         self.assertEqual(veg["bushesSurfaceM2"], 200000.0)
         self.assertEqual(veg["grassSurfaceM2"], 300000.0)
@@ -164,7 +164,7 @@ class DashboardEmptyDataTest(TestCase):
         data = self.client.get(self.url, {"city_code": "38250"}).json()
         self.assertEqual(data["vulnerability"]["averageDay"], 0)
         self.assertEqual(data["lcz"]["averageBuildingSurfaceRate"], 0)
-        self.assertEqual(data["vegetation"]["totalm2"], 0)
+        self.assertEqual(data["vegetation"]["totalM2"], 0)
         self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], 0)
         self.assertEqual(data["biosphere"]["averageIndice"], 0)
 

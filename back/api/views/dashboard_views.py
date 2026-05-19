@@ -232,7 +232,7 @@ class DashboardView(APIView):
         total = trees + bushes + grass
 
         return {
-            "totalm2": total,
+            "totalM2": total,
             "treesSurfaceM2": trees,
             "bushesSurfaceM2": bushes,
             "grassSurfaceM2": grass,
@@ -275,9 +275,7 @@ class DashboardView(APIView):
             area_m2=Cast(Area("geometry"), output_field=FloatField())
         ).aggregate(avg_area=Avg("area_m2"))
         avg = result["avg_area"]
-        return {
-            "averageBuildingFootprintM2": _safe_round(avg if avg is not None else 0.0)
-        }
+        return {"averageBuildingFootprintM2": _safe_round(avg)}
 
     @staticmethod
     def _aggregate_biosphere(geometry_filter: dict) -> dict:
