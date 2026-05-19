@@ -18,7 +18,7 @@ export const HEAT_COLORS = {
 } as const
 
 export const BUILDING_WIDGET_COLORS = {
-  surface: "#F59E0B",
-  height: "#6366F1",
-  footprint: "#3B82F6"
+  surface: "#67a54c",
+  height: "#51a1e3",
+  footprint: "#eb9249"
 } as const

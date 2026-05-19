@@ -47,11 +47,13 @@ const bars = computed(() => {
 
 const { svgRef } = useD3Chart(
   ({ svg, width, height }: D3ChartContext, animate: boolean) => {
-    const barH = Math.min(height * 0.5, 32)
-    const chartTotalH = barH + 14 + 10
+    const pctH = 16
+    const barH = Math.min(height * 0.45, 30)
+    const labelH = 16
+    const chartTotalH = pctH + barH + labelH
     const offsetY = Math.max((height - chartTotalH) / 2, 0)
-    const barY = 0
-    const labelY = barY + barH + 14
+    const barY = pctH
+    const labelY = barY + barH + labelH - 2
     const gap = 1.5
 
     const g = svg.append("g").attr("transform", `translate(0,${offsetY})`)
@@ -91,6 +93,22 @@ const { svgRef } = useD3Chart(
         .attr("width", (d) => (d as (typeof segments)[0]).w)
     }
 
+    g.selectAll(".seg-pct")
+      .data(segments.filter((s) => s.pct >= 0.06))
+      .join("text")
+      .attr("class", "seg-pct")
+      .attr("x", (d) => d.x + d.w / 2)
+      .attr("y", barY - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "9px")
+      .attr("fill", "#6B7280")
+      .attr("opacity", animate ? 0 : 1)
+      .text((d) => `${(d.pct * 100).toFixed(0)}%`)
+
+    if (animate) {
+      g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
+    }
+
     g.selectAll(".seg-label")
       .data(segments.filter((s) => s.pct >= 0.06))
       .join("text")
@@ -101,24 +119,6 @@ const { svgRef } = useD3Chart(
       .attr("font-size", "9px")
       .attr("fill", "#9CA3AF")
       .text((d) => d.label)
-
-    g.selectAll(".seg-pct")
-      .data(segments.filter((s) => s.pct >= 0.06))
-      .join("text")
-      .attr("class", "seg-pct")
-      .attr("x", (d) => d.x + d.w / 2)
-      .attr("y", barY + barH / 2)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("font-size", "9px")
-      .attr("font-weight", "600")
-      .attr("fill", "#fff")
-      .attr("opacity", animate ? 0 : 1)
-      .text((d) => `${(d.pct * 100).toFixed(0)}%`)
-
-    if (animate) {
-      g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
-    }
   },
   [bars]
 )
@@ -127,13 +127,15 @@ const { svgRef } = useD3Chart(
 <template>
   <DashboardWidgetCard subtitle="Indice moyen de plantabilité" title="Plantabilité">
     <div class="widget-body">
-      <DashboardArcScore
-        :color="arcColor"
-        :max-value="PLANTABILITY_MAX_SCORE"
-        :value="score"
-        label="plantabilité"
-      />
-      <div class="chart-container">
+      <div class="score-col">
+        <DashboardArcScore
+          :color="arcColor"
+          :max-value="PLANTABILITY_MAX_SCORE"
+          :value="score"
+          label="plantabilité"
+        />
+      </div>
+      <div class="chart-col">
         <svg ref="svgRef" width="100%" height="100%" />
       </div>
     </div>
@@ -144,10 +146,14 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 flex flex-col items-center justify-center gap-4 w-full;
+  @apply flex-1 flex flex-row items-center gap-4 w-full;
 }
 
-.chart-container {
-  @apply flex-1 w-full min-h-10;
+.score-col {
+  @apply flex flex-col items-center justify-center shrink-0;
+}
+
+.chart-col {
+  @apply flex-1 min-h-20;
 }
 </style>

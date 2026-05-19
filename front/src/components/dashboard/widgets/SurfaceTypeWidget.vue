@@ -16,31 +16,28 @@ const slices = computed(() => {
   const impermeableVal =
     Math.round(((props.data.buildingRate ?? 0) + (props.data.impermeableSurfaceRate ?? 0)) * 10) /
     10
+  const permeableVal = Math.round((props.data.permeableSoilRate ?? 0) * 10) / 10
+  const autresVal = Math.max(0, Math.round((100 - impermeableVal - permeableVal) * 10) / 10)
   return [
-    { label: "Imperméable", value: impermeableVal, color: SURFACE_COLORS.impermeable },
     {
-      label: "Perméable",
-      value: props.data.permeableSoilRate ?? 0,
-      color: SURFACE_COLORS.permeableSoil
+      label: "Surface minérale imperméable",
+      value: impermeableVal,
+      color: SURFACE_COLORS.impermeable
     },
-    {
-      label: "Végétation",
-      value: props.data.totalVegetationRate ?? 0,
-      color: SURFACE_COLORS.vegetation
-    },
-    { label: "Eau", value: props.data.waterRate ?? 0, color: SURFACE_COLORS.water }
+    { label: "Sol nu perméable", value: permeableVal, color: SURFACE_COLORS.permeableSoil },
+    { label: "Autres surfaces", value: autresVal, color: SURFACE_COLORS.vegetation }
   ].filter((s) => s.value > 0)
 })
 
+const primaryVal = computed(() => slices.value[0]?.value ?? 0)
+
 const { svgRef } = useD3Chart(
   ({ svg, width, height }: D3ChartContext, animate: boolean) => {
-    const legendH = 52
-    const chartH = height - legendH
-    const radius = Math.min(width, chartH) / 2
+    const radius = Math.min(width, height) / 2
     if (radius <= 0) return
 
     const cx = width / 2
-    const cy = chartH / 2
+    const cy = height / 2
 
     const pie = d3
       .pie<(typeof slices.value)[0]>()
@@ -81,36 +78,6 @@ const { svgRef } = useD3Chart(
           return (t) => arcGen({ ...d, endAngle: interp(t) })!
         })
     }
-
-    const legendY = chartH + legendH / 2
-    const itemW = width / slices.value.length
-
-    slices.value.forEach((item, i) => {
-      const x = itemW * i + 8
-      svg
-        .append("circle")
-        .attr("cx", x)
-        .attr("cy", legendY - 8)
-        .attr("r", 4)
-        .attr("fill", item.color)
-      svg
-        .append("text")
-        .attr("x", x + 10)
-        .attr("y", legendY - 8)
-        .attr("dominant-baseline", "central")
-        .attr("font-size", "9px")
-        .attr("fill", "#374151")
-        .text(item.label)
-      svg
-        .append("text")
-        .attr("x", x + 10)
-        .attr("y", legendY + 8)
-        .attr("dominant-baseline", "central")
-        .attr("font-size", "9px")
-        .attr("font-weight", "600")
-        .attr("fill", "#6B7280")
-        .text(`${item.value.toFixed(1)}%`)
-    })
   },
   [slices]
 )
@@ -122,7 +89,21 @@ const { svgRef } = useD3Chart(
     title="Types de surface (étude ZCL du CEREMA 2023)"
   >
     <div class="widget-body">
-      <svg ref="svgRef" width="100%" height="100%" />
+      <div class="donut-wrapper">
+        <svg ref="svgRef" width="100%" height="100%" />
+        <div class="donut-center">
+          <span class="donut-val">{{ primaryVal.toFixed(1) }}%</span>
+        </div>
+      </div>
+      <div class="legend">
+        <div v-for="s in slices" :key="s.label" class="legend-item">
+          <span class="legend-dot" :style="{ backgroundColor: s.color }" />
+          <div class="legend-text">
+            <span class="legend-label">{{ s.label }}</span>
+            <span class="legend-value">{{ s.value.toFixed(1) }} %</span>
+          </div>
+        </div>
+      </div>
     </div>
   </DashboardWidgetCard>
 </template>
@@ -131,6 +112,44 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 w-full min-h-[200px];
+  @apply flex-1 flex flex-row items-center gap-6 w-full;
+}
+
+.donut-wrapper {
+  @apply relative flex items-center justify-center shrink-0;
+  width: 160px;
+  height: 160px;
+}
+
+.donut-center {
+  @apply absolute inset-0 flex flex-col items-center justify-center pointer-events-none;
+}
+
+.donut-val {
+  @apply text-base font-bold text-gray-800;
+}
+
+.legend {
+  @apply flex flex-col gap-4 flex-1;
+}
+
+.legend-item {
+  @apply flex items-start gap-2;
+}
+
+.legend-dot {
+  @apply w-2.5 h-2.5 rounded-full shrink-0 mt-0.5;
+}
+
+.legend-text {
+  @apply flex flex-col;
+}
+
+.legend-label {
+  @apply text-xs text-gray-500;
+}
+
+.legend-value {
+  @apply text-sm font-semibold text-gray-800 tabular-nums;
 }
 </style>

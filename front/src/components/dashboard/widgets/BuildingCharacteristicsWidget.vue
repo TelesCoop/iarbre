@@ -16,7 +16,6 @@ const bars = computed(() => [
     label: "Taux de surface bâtie",
     value: props.lcz.averageBuildingSurfaceRate,
     max: 100,
-    unit: "%",
     color: BUILDING_WIDGET_COLORS.surface,
     display: `${props.lcz.averageBuildingSurfaceRate.toFixed(1)} %`
   },
@@ -24,7 +23,6 @@ const bars = computed(() => [
     label: "Hauteur moyenne",
     value: props.lcz.averageBuildingHeight,
     max: 50,
-    unit: "m",
     color: BUILDING_WIDGET_COLORS.height,
     display: `${props.lcz.averageBuildingHeight.toFixed(1)} m`
   },
@@ -32,7 +30,6 @@ const bars = computed(() => [
     label: "Superficie moyenne",
     value: props.buildings.averageBuildingFootprintM2,
     max: 5000,
-    unit: "m²",
     color: BUILDING_WIDGET_COLORS.footprint,
     display: `${Math.round(props.buildings.averageBuildingFootprintM2)} m²`
   }
@@ -46,11 +43,7 @@ const bars = computed(() => [
   >
     <div class="widget-body">
       <div v-for="bar in bars" :key="bar.label" class="bar-item">
-        <div class="bar-header">
-          <span class="bar-dot" :style="{ backgroundColor: bar.color }" />
-          <span class="bar-label">{{ bar.label }}</span>
-          <span class="bar-value">{{ bar.display }}</span>
-        </div>
+        <span class="bar-label">{{ bar.label }}</span>
         <div class="bar-track">
           <div
             class="bar-fill"
@@ -58,7 +51,9 @@ const bars = computed(() => [
               width: `${Math.min((bar.value / bar.max) * 100, 100)}%`,
               backgroundColor: bar.color
             }"
-          />
+          >
+            <span class="bar-inner-value">{{ bar.display }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -76,29 +71,21 @@ const bars = computed(() => [
   @apply flex flex-col gap-1.5;
 }
 
-.bar-header {
-  @apply flex items-center gap-2 text-xs;
-}
-
-.bar-dot {
-  @apply w-2 h-2 rounded-full shrink-0;
-}
-
 .bar-label {
-  @apply text-gray-500 flex-1;
-}
-
-.bar-value {
-  @apply font-semibold text-gray-700 tabular-nums;
+  @apply text-xs text-gray-500 uppercase tracking-wide;
 }
 
 .bar-track {
-  @apply w-full h-2 bg-gray-100 rounded-full overflow-hidden;
+  @apply w-full h-11 bg-gray-100 rounded-lg overflow-hidden;
 }
 
 .bar-fill {
-  @apply h-full rounded-full;
+  @apply h-full rounded-lg flex items-center px-3;
   animation: barGrow 700ms ease-out both;
+}
+
+.bar-inner-value {
+  @apply text-sm font-bold text-white whitespace-nowrap;
 }
 
 @keyframes barGrow {
