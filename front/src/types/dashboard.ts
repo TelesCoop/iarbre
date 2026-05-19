@@ -46,6 +46,14 @@ export interface DashboardLcz {
   waterRate: number
 }
 
+export interface DashboardBuildings {
+  averageBuildingFootprintM2: number
+}
+
+export interface DashboardBiosphere {
+  averageIndice: number
+}
+
 export interface DashboardData {
   city: DashboardCity | null
   areaHa: number
@@ -53,6 +61,8 @@ export interface DashboardData {
   vulnerability: DashboardVulnerability
   vegetation: DashboardVegetation
   lcz: DashboardLcz
+  buildings: DashboardBuildings
+  biosphere: DashboardBiosphere
 }
 
 export interface BubbleItem {

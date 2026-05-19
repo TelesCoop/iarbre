@@ -94,8 +94,7 @@ const currentLabel = computed(() => {
 @reference "@/styles/main.css";
 
 .dashboard-header {
-  @apply relative mb-6 md:mb-8;
-  z-index: 10;
+  @apply relative mb-6 md:mb-8 z-20;
 }
 
 .header-top {

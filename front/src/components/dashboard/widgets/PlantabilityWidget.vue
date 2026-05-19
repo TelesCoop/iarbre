@@ -4,10 +4,10 @@ import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardPlantability } from "@/types/dashboard"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { PLANTABILITY_COLOR_MAP, PlantabilityScoreThreshold } from "@/utils/plantability"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
-const PLANTABILITY_MAX_SCORE = 10
+const PLANTABILITY_MAX_SCORE = PlantabilityScoreThreshold.VERY_FAVORED
 
 interface Props {
   data: DashboardPlantability
@@ -148,7 +148,6 @@ const { svgRef } = useD3Chart(
 }
 
 .chart-container {
-  @apply flex-1 w-full;
-  min-height: 40px;
+  @apply flex-1 w-full min-h-10;
 }
 </style>

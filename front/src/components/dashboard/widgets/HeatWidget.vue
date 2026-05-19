@@ -7,9 +7,10 @@ import type { DashboardVulnerability } from "@/types/dashboard"
 import { useDashboardStore } from "@/stores/dashboard"
 import { HEAT_COLORS } from "@/utils/dashboardColors"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
+import { vulnerabilityScore, VulnerabilityType } from "@/utils/vulnerability"
 
-const VULNERABILITY_MAX_SCORE = 9
-const POLAR_MAX_SCORE = 3
+const VULNERABILITY_MAX_SCORE = vulnerabilityScore.TOTAL
+const POLAR_MAX_SCORE = vulnerabilityScore[VulnerabilityType.EXPOSITION]
 
 interface Props {
   data: DashboardVulnerability
@@ -29,7 +30,7 @@ const axes = computed(() => {
   return [
     { label: "Exposition", value: expo, color: palette.value.expo },
     { label: "Sensibilité", value: sensibility, color: palette.value.sensibility },
-    { label: "Cap. adapt.", value: capaf, color: palette.value.capaf }
+    { label: "Difficulté à faire face", value: capaf, color: palette.value.capaf }
   ]
 })
 
@@ -226,7 +227,7 @@ const { svgRef } = useD3Chart(
 <template>
   <DashboardWidgetCard
     subtitle="Vulnérabilité aux températures extrêmes"
-    title="Zones climatiques locales"
+    title="Etude sur l'exposition, la difficulté à faire face et la sensibilité par îlot"
   >
     <div class="widget-body">
       <div class="toggle-row">
@@ -279,11 +280,7 @@ const { svgRef } = useD3Chart(
 }
 
 .arc-wrapper {
-  @apply relative flex items-center justify-center w-full;
-  aspect-ratio: 1;
-  max-width: 240px;
-  max-height: 240px;
-  flex: 1 1 0;
+  @apply relative flex items-center justify-center w-full aspect-square max-w-60 max-h-60 flex-1;
 }
 
 .arc-center {
@@ -300,9 +297,7 @@ const { svgRef } = useD3Chart(
 
 .chart-tooltip {
   @apply absolute pointer-events-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md;
-  @apply bg-white border border-gray-100 text-xs whitespace-nowrap;
-  transform: translateX(-50%);
-  z-index: 10;
+  @apply bg-white border border-gray-100 text-xs whitespace-nowrap -translate-x-1/2 z-10;
 }
 
 .tooltip-dot {

@@ -2,7 +2,7 @@
 import { onMounted } from "vue"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import DashboardHeader from "@/components/dashboard/DashboardHeader.vue"
-import DashboardGrid from "@/components/dashboard/DashboardGrid.vue"
+import DashboardNarrative from "@/components/dashboard/DashboardNarrative.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 
 const store = useDashboardStore()
@@ -17,7 +17,7 @@ onMounted(() => {
     <SidebarComponent />
     <main class="dashboard-content scrollbar">
       <DashboardHeader />
-      <DashboardGrid />
+      <DashboardNarrative />
     </main>
   </div>
 </template>
