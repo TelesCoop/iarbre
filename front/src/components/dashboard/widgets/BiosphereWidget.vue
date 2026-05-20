@@ -106,7 +106,7 @@ const { svgRef } = useD3Chart(
 <template>
   <DashboardWidgetCard
     subtitle="Décris la part des surfaces maitrisées par l'Homme et les surfaces naturelles."
-    title="Indice moyen d'intégrité fonctionnelle de la niosphère"
+    title="Indice moyen d'intégrité fonctionnelle de la biosphère"
   >
     <div class="widget-body">
       <div class="score-col">
