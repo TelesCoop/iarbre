@@ -24,14 +24,14 @@ const SCORE_BG_CLASSES: Record<number, string> = {
 </script>
 
 <template>
-  <div class="plantability-legend" data-cy="plantability-legend">
+  <div class="flex flex-row lg:flex-col items-center gap-2 font-sans" data-cy="plantability-legend">
     <div class="legend-header">
       <span class="legend-title">Plantabilité</span>
     </div>
     <div class="legend-content">
-      <div class="legend-label legend-label-left">
-        <span class="label-indicator">−</span>
-        <span class="label-text">Non plantable</span>
+      <div class="legend-label">
+        <span class="legend-axis-indicator">−</span>
+        <span class="legend-axis-text text-right">Non plantable</span>
       </div>
       <div class="legend-scale">
         <ScoreLabel
@@ -39,10 +39,10 @@ const SCORE_BG_CLASSES: Record<number, string> = {
           :key="scoreIndex"
           :background-color-class="SCORE_BG_CLASSES[scoreIndex]"
           :class="[
-            'score-item',
+            'transition-transform duration-150 ease-out hover:scale-y-110',
             arrayIndex === 0 ? 'rounded-l' : '',
             arrayIndex === scoreIndices.length - 1 ? 'rounded-r' : '',
-            mapStore.isFiltered(scoreIndex) ? 'is-filtered' : ''
+            mapStore.isFiltered(scoreIndex) ? 'z-10 relative' : ''
           ]"
           :clickable="true"
           :is-selected="mapStore.isFiltered(scoreIndex)"
@@ -51,80 +51,10 @@ const SCORE_BG_CLASSES: Record<number, string> = {
           @click="handleScoreClick"
         />
       </div>
-      <div class="legend-label legend-label-right">
-        <span class="label-text">Plantable</span>
-        <span class="label-indicator">+</span>
+      <div class="legend-label">
+        <span class="legend-axis-text text-left">Plantable</span>
+        <span class="legend-axis-indicator">+</span>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.plantability-legend {
-  @apply flex flex-row items-center gap-2 font-sans;
-}
-
-@media (min-width: 1024px) {
-  .plantability-legend {
-    @apply flex-col gap-2;
-  }
-}
-
-.legend-header {
-  @apply flex items-center justify-center;
-}
-
-.legend-title {
-  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
-}
-
-@media (min-width: 1024px) {
-  .legend-title {
-    @apply text-sm;
-  }
-}
-
-.legend-content {
-  @apply flex items-center justify-center gap-1;
-}
-
-@media (min-width: 1024px) {
-  .legend-content {
-    @apply gap-3;
-  }
-}
-
-.legend-label {
-  @apply hidden lg:flex items-center gap-1 text-xs text-gray-600;
-}
-
-.label-indicator {
-  @apply font-bold text-sm text-gray-400;
-}
-
-.label-text {
-  @apply font-sans text-sm leading-tight;
-}
-
-.legend-label-left .label-text {
-  @apply text-right;
-}
-
-.legend-label-right .label-text {
-  @apply text-left;
-}
-
-.legend-scale {
-  @apply flex items-center rounded overflow-hidden;
-}
-
-.score-item {
-  @apply transition-transform duration-150 ease-out hover:scale-y-110;
-}
-
-.score-item.is-filtered {
-  @apply z-10 relative;
-}
-</style>

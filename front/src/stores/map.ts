@@ -5,6 +5,7 @@ import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
+  type GeoJSONSource,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -30,6 +31,27 @@ import { generateBivariateColorExpression } from "@/utils/plantability_vulnerabi
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  QPV_CASING_COLOR,
+  QPV_CASING_WIDTH,
+  QPV_CASING_OPACITY,
+  QPV_BORDER_COLOR,
+  QPV_BORDER_WIDTH,
+  QPV_BORDER_OPACITY,
+  CITY_BORDER_COLOR,
+  CITY_BORDER_WIDTH,
+  CITY_BORDER_OPACITY,
+  CADASTRE_COLOR,
+  CADASTRE_BORDER_WIDTH,
+  CADASTRE_BORDER_OPACITY,
+  CADASTRE_SELECTED_BORDER_WIDTH,
+  CADASTRE_SELECTED_BORDER_OPACITY,
+  CADASTRE_SELECTED_FILL_OPACITY,
+  CADASTRE_DEFAULT_FILL_OPACITY,
+  CITY_CASING_COLOR,
+  CITY_CASING_WIDTH,
+  CITY_CASING_OPACITY
+} from "@/utils/mapLayers"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
@@ -234,6 +256,92 @@ export const useMapStore = defineStore("map", () => {
     return [fillLayer, lineLayer]
   }
 
+  const IFB_CLICK_SQUARE_SOURCE = "ifb-click-square-source"
+  const IFB_CLICK_SQUARE_LAYER = "ifb-click-square-layer"
+  const IFB_SQUARE_HALF_SIZE_M = 2
+  const IFB_CLICK_CIRCLE_SOURCE = "ifb-click-circle-source"
+  const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
+  const IFB_CIRCLE_RADIUS_M = 500
+
+  const drawClickSquare = (map: Map, lat: number, lng: number) => {
+    const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
+    const lngOffset = IFB_SQUARE_HALF_SIZE_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const square = {
+      type: "Feature" as const,
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [
+          [
+            [lng - lngOffset, lat - latOffset],
+            [lng + lngOffset, lat - latOffset],
+            [lng + lngOffset, lat + latOffset],
+            [lng - lngOffset, lat + latOffset],
+            [lng - lngOffset, lat - latOffset]
+          ]
+        ]
+      },
+      properties: {}
+    }
+    const source = map.getSource(IFB_CLICK_SQUARE_SOURCE) as GeoJSONSource | undefined
+    if (source) {
+      source.setData(square)
+    } else {
+      map.addSource(IFB_CLICK_SQUARE_SOURCE, { type: "geojson", data: square })
+      map.addLayer({
+        id: IFB_CLICK_SQUARE_LAYER,
+        type: "line",
+        source: IFB_CLICK_SQUARE_SOURCE,
+        paint: {
+          "line-color": QPV_CASING_COLOR,
+          "line-width": QPV_CASING_WIDTH,
+          "line-opacity": QPV_CASING_OPACITY
+        }
+      })
+    }
+
+    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
+    const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const steps = 64
+    const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
+      const angle = (i * 2 * Math.PI) / steps
+      return [lng + lngRadiusDeg * Math.cos(angle), lat + latRadiusDeg * Math.sin(angle)]
+    })
+    const circle = {
+      type: "Feature" as const,
+      geometry: { type: "Polygon" as const, coordinates: [circleCoords] },
+      properties: {}
+    }
+    const circleSource = map.getSource(IFB_CLICK_CIRCLE_SOURCE) as GeoJSONSource | undefined
+    if (circleSource) {
+      circleSource.setData(circle)
+    } else {
+      map.addSource(IFB_CLICK_CIRCLE_SOURCE, { type: "geojson", data: circle })
+      map.addLayer({
+        id: IFB_CLICK_CIRCLE_LAYER,
+        type: "line",
+        source: IFB_CLICK_CIRCLE_SOURCE,
+        paint: { "line-color": "#FFFFFF", "line-width": 2 }
+      })
+    }
+    console.info("cypress: IFB click square drawn")
+  }
+
+  const removeClickSquare = (map: Map) => {
+    if (map.getLayer(IFB_CLICK_SQUARE_LAYER)) {
+      map.removeLayer(IFB_CLICK_SQUARE_LAYER)
+    }
+    if (map.getSource(IFB_CLICK_SQUARE_SOURCE)) {
+      map.removeSource(IFB_CLICK_SQUARE_SOURCE)
+    }
+    if (map.getLayer(IFB_CLICK_CIRCLE_LAYER)) {
+      map.removeLayer(IFB_CLICK_CIRCLE_LAYER)
+    }
+    if (map.getSource(IFB_CLICK_CIRCLE_SOURCE)) {
+      map.removeSource(IFB_CLICK_CIRCLE_SOURCE)
+    }
+    console.info("cypress: IFB click square removed")
+  }
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
@@ -258,7 +366,11 @@ export const useMapStore = defineStore("map", () => {
         geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
           ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
           : undefined
-      highlightFeature(map, layerId, featureId)
+      if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng)
+      } else {
+        highlightFeature(map, layerId, featureId)
+      }
       // Highlight cell in the legend that correspond to clicked tile
       if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         const properties = e.features![0].properties
@@ -288,7 +400,15 @@ export const useMapStore = defineStore("map", () => {
       } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
         contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
       } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-        contextData.setData(featureId, score)
+        contextData.setData(
+          featureId,
+          score,
+          undefined,
+          undefined,
+          undefined,
+          e.lngLat.lat,
+          e.lngLat.lng
+        )
       } else {
         contextData.setData(featureId)
       }
@@ -375,6 +495,9 @@ export const useMapStore = defineStore("map", () => {
       }
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
+      }
+      if (mapInstance.getLayer(IFB_CLICK_SQUARE_LAYER)) {
+        removeClickSquare(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
@@ -498,14 +621,31 @@ export const useMapStore = defineStore("map", () => {
         ? TERRA_DRAW_POLYGON_LAYER
         : undefined
 
+      // White casing drawn first so the coloured line stays legible on any basemap
+      mapInstance.addLayer(
+        {
+          id: "qpv-border-casing",
+          type: "line",
+          source: "qpv-source",
+          paint: {
+            "line-color": QPV_CASING_COLOR,
+            "line-width": QPV_CASING_WIDTH,
+            "line-opacity": QPV_CASING_OPACITY
+          }
+        },
+        beforeId
+      )
+
+      // Main QPV border drawn on top of the casing
       mapInstance.addLayer(
         {
           id: "qpv-border",
           type: "line",
           source: "qpv-source",
           paint: {
-            "line-color": "#D97706",
-            "line-width": 3
+            "line-color": QPV_BORDER_COLOR,
+            "line-width": QPV_BORDER_WIDTH,
+            "line-opacity": QPV_BORDER_OPACITY
           }
         },
         beforeId
@@ -519,6 +659,9 @@ export const useMapStore = defineStore("map", () => {
   const removeQPVLayer = (mapInstance: Map) => {
     if (mapInstance.getLayer("qpv-border")) {
       mapInstance.removeLayer("qpv-border")
+    }
+    if (mapInstance.getLayer("qpv-border-casing")) {
+      mapInstance.removeLayer("qpv-border-casing")
       mapInstance.once("render", () => {
         console.info(`cypress: QPV data removed`)
       })
@@ -558,15 +701,29 @@ export const useMapStore = defineStore("map", () => {
       : undefined
 
     if (!mapInstance.getLayer("city-boundary")) {
+      // White casing drawn first so the coloured line stays legible on any basemap
+      mapInstance.addLayer(
+        {
+          id: "city-boundary-border-casing",
+          type: "line",
+          source: "city-boundary-source",
+          paint: {
+            "line-color": CITY_CASING_COLOR,
+            "line-width": CITY_CASING_WIDTH,
+            "line-opacity": CITY_CASING_OPACITY
+          }
+        },
+        beforeId
+      )
       mapInstance.addLayer(
         {
           id: "city-boundary",
           type: "line",
           source: "city-boundary-source",
           paint: {
-            "line-color": "#426A45",
-            "line-width": 2.5,
-            "line-opacity": 0.7
+            "line-color": CITY_BORDER_COLOR,
+            "line-width": CITY_BORDER_WIDTH,
+            "line-opacity": CITY_BORDER_OPACITY
           }
         },
         beforeId
@@ -577,6 +734,9 @@ export const useMapStore = defineStore("map", () => {
   const removeBoundaryLayers = (mapInstance: Map) => {
     if (mapInstance.getLayer("city-boundary")) {
       mapInstance.removeLayer("city-boundary")
+    }
+    if (mapInstance.getLayer("city-boundary-border-casing")) {
+      mapInstance.removeLayer("city-boundary-border-casing")
     }
     if (mapInstance.getSource("city-boundary-source")) {
       mapInstance.removeSource("city-boundary-source")
@@ -626,7 +786,7 @@ export const useMapStore = defineStore("map", () => {
           source: "cadastre-source",
           "source-layer": "cadastre--cadastre",
           paint: {
-            "fill-color": "#8B6914",
+            "fill-color": CADASTRE_COLOR,
             "fill-opacity": 0.0
           }
         },
@@ -642,9 +802,9 @@ export const useMapStore = defineStore("map", () => {
           source: "cadastre-source",
           "source-layer": "cadastre--cadastre",
           paint: {
-            "line-color": "#8B6914",
-            "line-width": 1,
-            "line-opacity": 0.5
+            "line-color": CADASTRE_COLOR,
+            "line-width": CADASTRE_BORDER_WIDTH,
+            "line-opacity": CADASTRE_BORDER_OPACITY
           }
         },
         beforeId
@@ -668,22 +828,22 @@ export const useMapStore = defineStore("map", () => {
         "match",
         ["get", "parcel_id"],
         parcelId,
-        0.3,
-        0.05
+        CADASTRE_SELECTED_FILL_OPACITY,
+        CADASTRE_DEFAULT_FILL_OPACITY
       ])
       mapInstance.setPaintProperty("cadastre-border", "line-width", [
         "match",
         ["get", "parcel_id"],
         parcelId,
-        3,
-        1
+        CADASTRE_SELECTED_BORDER_WIDTH,
+        CADASTRE_BORDER_WIDTH
       ])
       mapInstance.setPaintProperty("cadastre-border", "line-opacity", [
         "match",
         ["get", "parcel_id"],
         parcelId,
-        1,
-        0.5
+        CADASTRE_SELECTED_BORDER_OPACITY,
+        CADASTRE_BORDER_OPACITY
       ])
     }
 
@@ -714,9 +874,9 @@ export const useMapStore = defineStore("map", () => {
     for (const mapId of Object.keys(mapInstancesByIds.value)) {
       const mapInstance = mapInstancesByIds.value[mapId]
       if (!mapInstance.getLayer("cadastre-fill")) continue
-      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", 0.05)
-      mapInstance.setPaintProperty("cadastre-border", "line-width", 1)
-      mapInstance.setPaintProperty("cadastre-border", "line-opacity", 0.5)
+      mapInstance.setPaintProperty("cadastre-fill", "fill-opacity", CADASTRE_DEFAULT_FILL_OPACITY)
+      mapInstance.setPaintProperty("cadastre-border", "line-width", CADASTRE_BORDER_WIDTH)
+      mapInstance.setPaintProperty("cadastre-border", "line-opacity", CADASTRE_BORDER_OPACITY)
     }
   }
 

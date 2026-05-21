@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue"
+import { computed } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
-import ClickPlantabilityDivisionData from "../division/ClickPlantabilityDivisionData.vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
@@ -36,8 +35,6 @@ const tileCount = computed(() => {
   const count = id?.split("-")[1]
   return count ? parseInt(count) : 0
 })
-
-const activeTab = ref<"details" | "divisions">("details")
 </script>
 
 <template>
@@ -61,50 +58,11 @@ const activeTab = ref<"details" | "divisions">("details")
       />
     </template>
     <template #content="{ data: plantabilityData }">
-      <!-- Tabs -->
-      <div class="tabs-container">
-        <button
-          :class="['tab-button', { active: activeTab === 'details' }]"
-          @click="activeTab = 'details'"
-        >
-          Détails
-        </button>
-        <button
-          :class="['tab-button', { active: activeTab === 'divisions' }]"
-          @click="activeTab = 'divisions'"
-        >
-          Échelons supérieurs
-        </button>
-      </div>
-
-      <!-- Tab content -->
-      <div class="tab-content">
-        <PlantabilityContextDataList v-if="activeTab === 'details'" :data="plantabilityData" />
-        <ClickPlantabilityDivisionData
-          v-else-if="activeTab === 'divisions'"
-          :plantability-data="plantabilityData"
-        />
-      </div>
+      <PlantabilityContextDataList :data="plantabilityData" />
     </template>
   </ContextDataMainContainer>
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
-
-.tabs-container {
-  @apply flex gap-1 mb-4 p-1 bg-gray-100 rounded-lg;
-}
-
-.tab-button {
-  @apply flex-1 py-2 px-3 text-sm font-medium rounded-md bg-transparent transition-all duration-200 cursor-pointer border-none text-gray-600 hover:text-gray-900;
-}
-
-.tab-button.active {
-  @apply bg-white text-primary-600;
-}
-
-.tab-content {
-  @apply flex-1 min-h-0 overflow-y-auto;
-}
 </style>

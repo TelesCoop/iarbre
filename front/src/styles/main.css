@@ -392,3 +392,60 @@
 .driver-popover-arrow-side-bottom {
   @apply border-b-white;
 }
+
+/* ========================================
+   Legend component shared styles
+   ======================================== */
+
+.legend-panel {
+  @apply flex flex-col justify-center items-center;
+  @apply gap-1 py-1.5 px-2;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply text-xs text-gray-700 font-sans;
+  @apply lg:gap-2 lg:py-2 lg:px-3 lg:text-sm;
+}
+
+.legend-attribution {
+  @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
+}
+
+.legend-header {
+  @apply flex items-center justify-center w-full;
+}
+
+.legend-title {
+  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+  @apply lg:text-sm;
+}
+
+.legend-content {
+  @apply flex items-center justify-center gap-1 lg:gap-3;
+}
+
+.legend-scale {
+  @apply flex items-center rounded overflow-hidden;
+}
+
+.legend-label {
+  @apply hidden lg:flex items-center gap-1 text-xs text-gray-600;
+}
+
+.legend-axis-indicator {
+  @apply font-bold text-sm text-gray-400;
+}
+
+.legend-axis-text {
+  @apply font-sans text-sm leading-tight;
+}
+
+.legend-item {
+  @apply flex items-center gap-2 cursor-pointer select-none transition-opacity duration-150;
+}
+
+.legend-swatch {
+  @apply w-4 h-4 border border-gray-300 rounded-sm flex-shrink-0;
+}
+
+.legend-item-label {
+  @apply text-sm text-primary-900;
+}

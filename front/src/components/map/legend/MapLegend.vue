@@ -40,27 +40,8 @@ watch(
       v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
     />
-    <p v-if="attributionHTML" class="attribution">Source : <span v-html="attributionHTML" /></p>
+    <p v-if="attributionHTML" class="legend-attribution">
+      Source : <span v-html="attributionHTML" />
+    </p>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.legend-panel {
-  @apply flex flex-col justify-center items-center;
-  @apply gap-1 py-1.5 px-2;
-  @apply bg-white border border-gray-200 rounded-lg;
-  @apply text-xs text-gray-700 font-sans;
-}
-
-.attribution {
-  @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
-}
-
-@media (min-width: 1024px) {
-  .legend-panel {
-    @apply gap-2 py-2 px-3 text-sm;
-  }
-}
-</style>
