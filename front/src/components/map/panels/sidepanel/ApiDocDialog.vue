@@ -6,9 +6,9 @@ import { getCities } from "@/services/divisionService"
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wfs" | "raster" | null>(null)
+const expanded = ref<"wfs" | "wms" | "raster" | null>(null)
 
-const toggle = (service: "wfs" | "raster") => {
+const toggle = (service: "wfs" | "wms" | "raster") => {
   expanded.value = expanded.value === service ? null : service
 }
 
@@ -18,8 +18,7 @@ const copyToClipboard = (text: string) => {
 
 const origin = window.location.origin
 const wfsBase = `${origin}/api/wfs/`
-
-// -- Commune selector -------------------------------------------------------
+const wmsBase = `${origin}/api/wms/`
 
 interface CityOption {
   label: string
@@ -84,8 +83,6 @@ const wfsFullUrl = computed(() => {
   return `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&OUTPUTFORMAT=geojson${cityFilterSuffix.value}`
 })
 
-// -- WFS params table --------------------------------------------------------
-
 interface Param {
   key: string
   value: string
@@ -120,8 +117,6 @@ const wfsParams = computed<Param[]>(() => [
   }
 ])
 
-// -- Raster datasets ---------------------------------------------------------
-
 interface RasterDataset {
   label: string
   url: string
@@ -138,6 +133,59 @@ const rasterDatasets: RasterDataset[] = [
   { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors.tif") },
   { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz.tif") }
 ]
+
+interface WmsLayer {
+  label: string
+  value: string
+}
+
+const wmsLayers: WmsLayer[] = [
+  { label: "Plantabilité", value: "iarbre:plantability" },
+  { label: "Zones Climatiques Locales", value: "iarbre:lcz" },
+  { label: "Vulnérabilité", value: "iarbre:vulnerability" },
+  { label: "Végéstrate", value: "iarbre:vegestrate" },
+  { label: "Intégrité Fonctionnelle Biosphère", value: "iarbre:biosphere" },
+  { label: "Végéstrate 2018 - brut", value: "iarbre:vegestrate_2018_raw" },
+  { label: "Végéstrate 2018 - post-traitement v3", value: "iarbre:vegestrate_2018_ppv3" },
+  { label: "Végéstrate 2023 - brut", value: "iarbre:vegestrate_2023_raw" },
+  { label: "Végéstrate 2023 - post-traitement v1", value: "iarbre:vegestrate_2023_ppv1" },
+  { label: "Végéstrate 2023 - post-traitement v2", value: "iarbre:vegestrate_2023_ppv2" },
+  { label: "Végéstrate 2023 - post-traitement v3", value: "iarbre:vegestrate_2023_ppv3" },
+  { label: "Végéstrate 2023 - hauteur (nDSM)", value: "iarbre:vegestrate_2023_ppv3_elevation" }
+]
+
+const selectedWmsLayer = ref("iarbre:plantability")
+const wmsParamsOpen = ref(false)
+
+const wmsFullUrl = computed(
+  () =>
+    `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${selectedWmsLayer.value}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
+)
+
+const wmsParams = computed<Param[]>(() => [
+  { key: "SERVICE", value: "WMS", desc: "Type de service", fixed: true },
+  { key: "VERSION", value: "1.3.0", desc: "Version du protocole", fixed: true },
+  {
+    key: "REQUEST",
+    value: "GetMap",
+    desc: "Type de requete (GetMap ou GetCapabilities)",
+    fixed: true
+  },
+  { key: "LAYERS", value: selectedWmsLayer.value, desc: "Couche - voir la liste ci-dessus" },
+  {
+    key: "BBOX",
+    value: "45.5,4.7,46.0,5.2",
+    desc: "Emprise (lat_min,lon_min,lat_max,lon_max en EPSG:4326 pour WMS 1.3.0)"
+  },
+  {
+    key: "CRS",
+    value: "EPSG:4326",
+    desc: "Systeme de coordonnees - EPSG:4326, EPSG:3857, EPSG:2154"
+  },
+  { key: "WIDTH", value: "800", desc: "Largeur de l'image en pixels" },
+  { key: "HEIGHT", value: "600", desc: "Hauteur de l'image en pixels" },
+  { key: "FORMAT", value: "image/png", desc: "Format de sortie", fixed: true }
+])
 </script>
 
 <template>
@@ -208,7 +256,6 @@ const rasterDatasets: RasterDataset[] = [
                 </p>
               </div>
 
-              <!-- Commune selector -->
               <div>
                 <label
                   for="wfs-city-input"
@@ -376,6 +423,156 @@ const rasterDatasets: RasterDataset[] = [
       </div>
 
       <div>
+        <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WMS</p>
+        <div class="border border-gray-200 rounded-md overflow-hidden">
+          <button
+            :class="[
+              'flex w-full items-center gap-2 px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
+              expanded === 'wms' ? 'rounded-t-md border-b-0' : 'rounded-md'
+            ]"
+            @click="toggle('wms')"
+          >
+            <span class="flex-none font-mono font-bold text-xs text-primary-800 w-8">WMS</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800">WEB MAP SERVICE</p>
+              <p class="text-xs text-gray-500">
+                Tuiles d'image raster, intégrables dans QGIS, OpenLayers ou Leaflet.
+              </p>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <span
+                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
+                >PNG</span
+              >
+            </div>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-gray-400 shrink-0 transition-transform duration-200"
+              :class="expanded === 'wms' ? 'rotate-180' : ''"
+            >
+              <path d="M2 4L6 8L10 4" />
+            </svg>
+          </button>
+
+          <Transition name="accordion">
+            <div v-if="expanded === 'wms'" class="border-t border-gray-100 px-3 py-3 space-y-4">
+              <div>
+                <label
+                  for="wms-layer-select"
+                  class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
+                  >COUCHE</label
+                >
+                <select id="wms-layer-select" v-model="selectedWmsLayer" class="wms-layer-select">
+                  <option v-for="layer in wmsLayers" :key="layer.value" :value="layer.value">
+                    {{ layer.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
+                <div class="flex items-center justify-between px-2.5 py-2 border-b border-gray-100">
+                  <span class="text-xs text-gray-400">URL GetMap (exemple)</span>
+                  <button
+                    class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                    @click="copyToClipboard(wmsFullUrl)"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="9" y="9" width="13" height="13" rx="2" />
+                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                    </svg>
+                    Copier
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="raster-url block w-full text-left px-2.5 py-2 bg-white font-mono text-xs text-primary-500 hover:text-primary-700 cursor-pointer"
+                  @click="copyToClipboard(wmsFullUrl)"
+                >
+                  {{ wmsFullUrl }}
+                </button>
+              </div>
+
+              <div class="border border-gray-200 rounded-md overflow-hidden">
+                <button
+                  type="button"
+                  :class="[
+                    'flex w-full items-center justify-between px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
+                    wmsParamsOpen ? 'border-b border-gray-200' : ''
+                  ]"
+                  @click="wmsParamsOpen = !wmsParamsOpen"
+                >
+                  <span class="text-2xs font-bold text-gray-500 tracking-wider">PARAMÈTRES</span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-gray-400 transition-transform duration-200"
+                    :class="wmsParamsOpen ? 'rotate-180' : ''"
+                  >
+                    <path d="M2 4L6 8L10 4" />
+                  </svg>
+                </button>
+                <Transition name="accordion">
+                  <div v-if="wmsParamsOpen">
+                    <div
+                      class="grid grid-cols-[1fr_1fr_2fr] text-2xs font-bold text-gray-400 tracking-wider border-b border-gray-200 bg-gray-50 px-2.5 py-2"
+                    >
+                      <span>PARAMÈTRE</span>
+                      <span>VALEUR</span>
+                      <span>DESCRIPTION</span>
+                    </div>
+                    <div
+                      v-for="(param, i) in wmsParams"
+                      :key="param.key"
+                      class="grid grid-cols-[1fr_1fr_2fr] px-2.5 py-1.5 text-xs border-b border-gray-100 last:border-b-0"
+                      :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
+                    >
+                      <span class="font-mono text-primary-800">{{ param.key }}</span>
+                      <span class="font-mono text-scale-3">{{ param.value }}</span>
+                      <div class="flex items-center gap-2">
+                        <span class="text-gray-600">{{ param.desc }}</span>
+                        <span
+                          v-if="param.fixed"
+                          class="text-2xs text-gray-400 border border-gray-200 rounded px-1 shrink-0"
+                          >fixe</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+              </div>
+
+              <div class="bg-primary-50 px-3 py-3 rounded-md">
+                <p class="text-xs font-bold text-primary-700 mb-1">
+                  Intégration QGIS — Couche → Ajouter une couche → WMS/WMTS.
+                </p>
+                <p class="text-xs text-primary-800">Collez l'URL de base : {{ wmsBase }}</p>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </div>
+
+      <div>
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT RASTER</p>
         <div class="border border-gray-200 rounded-md overflow-hidden">
           <button
@@ -473,6 +670,13 @@ const rasterDatasets: RasterDataset[] = [
 .raster-url {
   word-break: break-all;
   overflow-wrap: anywhere;
+}
+
+.wms-layer-select {
+  @apply w-full py-2 px-3 text-sm font-sans text-gray-700;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply transition-all;
+  @apply focus:border-primary-500 focus:outline-none;
 }
 
 .commune-input-wrapper {
