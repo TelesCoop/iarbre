@@ -436,13 +436,13 @@ const wmsParams = computed<Param[]>(() => [
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800">WEB MAP SERVICE</p>
               <p class="text-xs text-gray-500">
-                Tuiles d'image raster, intégrables dans QGIS, OpenLayers ou Leaflet.
+                Tuiles d'image raster, intégrables dans QGIS, ArcGIS ou autre SIG/cartographie.
               </p>
             </div>
             <div class="flex gap-1 shrink-0">
               <span
                 class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >PNG</span
+                >TIFF</span
               >
             </div>
             <svg
@@ -565,7 +565,7 @@ const wmsParams = computed<Param[]>(() => [
                 <p class="text-xs font-bold text-primary-700 mb-1">
                   Intégration QGIS — Couche → Ajouter une couche → WMS/WMTS.
                 </p>
-                <p class="text-xs text-primary-800">Collez l'URL de base : {{ wmsBase }}</p>
+                <p class="text-xs text-primary-800">Pour le flux WMS l'url est : {{ wmsBase }}</p>
               </div>
             </div>
           </Transition>
@@ -586,7 +586,8 @@ const wmsParams = computed<Param[]>(() => [
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
               <p class="text-xs text-gray-500">
-                Téléchargement des calques au format GeoTIFF (EPSG:2154).
+                Liens de téléchargement pour récupérer les calques en entier au format GeoTIFF
+                (EPSG:2154).
               </p>
             </div>
             <svg
@@ -643,11 +644,9 @@ const wmsParams = computed<Param[]>(() => [
 
               <div class="bg-primary-50 px-3 py-3 rounded-md">
                 <p class="text-xs font-bold text-primary-700 mb-1">
-                  Intégration QGIS — Couche → Ajouter une couche → Raster.
+                  Intégration QGIS — Couche → Ajouter une couche → WMS/WMTS.
                 </p>
-                <p class="text-xs text-primary-800">
-                  Collez l'URL comme source HTTP. Chargement rapide.
-                </p>
+                <p class="text-xs text-primary-800">Pour le flux WMS l'url est : {{ wmsBase }}</p>
               </div>
             </div>
           </Transition>

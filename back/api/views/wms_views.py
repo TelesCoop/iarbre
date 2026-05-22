@@ -22,7 +22,7 @@ _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
 
 
-class WMSView(APIView):
+class IArbreWMSView(APIView):
     """OGC WMS 1.1.1 / 1.3.0 endpoint serving raster layers.
 
     Supported requests:
