@@ -16,7 +16,7 @@
 
 - name: Remove GIS server supervisor configuration
   file:
-    path: "{{ supervisor_conf }}/{{ project_slug }}_backend_wfs.conf"
+    path: "{{ supervisor_conf }}/{{ project_slug }}_backend_gisserver.conf"
     state: absent
 
 - name: Stop GIS server supervisor process
