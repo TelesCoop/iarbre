@@ -15,13 +15,8 @@ from tqdm import tqdm
 
 from iarbre_data.models import City, Vegestrate
 from iarbre_data.settings import BASE_DIR
+from iarbre_data.utils.calque_config import VEGESTRATE_VEGESTRATE_STRATE_VALUES
 from iarbre_data.utils.database import log_progress
-
-STRATE_VALUES = {
-    "herbacee": 1,
-    "arbustif": 2,
-    "arborescent": 3,
-}
 
 STRIP_HEIGHT = 2000
 
@@ -85,9 +80,9 @@ class Command(BaseCommand):
 
                 shapes = sorted(
                     [
-                        (shape(json.loads(geom_json)), STRATE_VALUES[strate])
+                        (shape(json.loads(geom_json)), VEGESTRATE_STRATE_VALUES[strate])
                         for geom_json, strate in qs
-                        if strate in STRATE_VALUES
+                        if strate in VEGESTRATE_STRATE_VALUES
                     ],
                     key=lambda x: x[1],
                 )

@@ -26,10 +26,15 @@ def _lcz_index_to_int(value: Any) -> int | None:
         return None
 
 
+VEGESTRATE_STRATE_VALUES: dict[str, int] = {
+    "herbacee": 1,
+    "arbustif": 2,
+    "arborescent": 3,
+}
+
+
 def _vegestrate_strate_to_int(value: Any) -> int | None:
-    return {"herbacee": 1, "arbustif": 2, "arborescent": 3}.get(
-        str(value) if value else ""
-    )
+    return VEGESTRATE_STRATE_VALUES.get(str(value) if value else "")
 
 
 def _hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
