@@ -14,20 +14,20 @@
     name: "{{ project_slug }}-backend"
     state: absent
 
-- name: Remove WFS supervisor configuration
+- name: Remove GIS server supervisor configuration
   file:
     path: "{{ supervisor_conf }}/{{ project_slug }}_backend_wfs.conf"
     state: absent
 
-- name: Stop WFS supervisor process
+- name: Stop GIS server supervisor process
   supervisorctl:
-    name: "{{ project_slug }}-backend-wfs"
+    name: "{{ project_slug }}-backend-gisserver"
     state: stopped
   ignore_errors: yes
 
-- name: Remove WFS supervisor process
+- name: Remove GIS server supervisor process
   supervisorctl:
-    name: "{{ project_slug }}-backend-wfs"
+    name: "{{ project_slug }}-backend-gisserver"
     state: absent
 
 - name: Remove control script

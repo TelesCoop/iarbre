@@ -5,8 +5,8 @@ upstream app_servers_{{ project_slug }} {
   server 127.0.0.1:{{ backend_application_port }};
 }
 
-upstream app_servers_wfs_{{ project_slug }} {
-  server 127.0.0.1:{{ wfs_application_port }};
+upstream app_servers_gisserver_{{ project_slug }} {
+  server 127.0.0.1:{{ gisserver_application_port }};
 }
 {% endif %}
 
@@ -91,7 +91,7 @@ server {
     }
 
     location /api/wfs/ {
-        proxy_pass         http://app_servers_wfs_{{ project_slug }};
+        proxy_pass         http://app_servers_gisserver_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
@@ -107,7 +107,7 @@ server {
     }
 
     location /api/wms/ {
-        proxy_pass         http://app_servers_wfs_{{ project_slug }};
+        proxy_pass         http://app_servers_gisserver_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
