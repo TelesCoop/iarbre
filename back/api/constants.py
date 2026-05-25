@@ -120,7 +120,7 @@ WMS_LAYERS.update(
     {
         f"iarbre:{name}": {
             "title": cfg.title,
-            "path": f"rasters/{cfg.tif_path or name + '.tif'}",
+            "path": f"rasters/WMS/{cfg.tif_path or name + '.tif'}",
             "render_fn": cfg.make_render_fn(),
         }
         for name, cfg in CALQUE_REGISTRY.items()
