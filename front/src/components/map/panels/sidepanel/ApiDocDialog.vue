@@ -29,12 +29,19 @@ const cities = ref<CityOption[]>([])
 const selectedCityCode = ref<string | null>(null)
 
 onMounted(async () => {
-  const result = await getCities()
-  if (result) {
-    cities.value = result
+  const [citiesResult, layersResponse] = await Promise.all([
+    getCities(),
+    fetch(`${wmsBase}?REQUEST=GetLayers`).then((r) => (r.ok ? r.json() : []))
+  ])
+  if (citiesResult) {
+    cities.value = citiesResult
       .map((c) => ({ label: c.name, value: c.code }))
       .sort((a, b) => a.label.localeCompare(b.label))
   }
+  wmsLayers.value = (layersResponse as { name: string; title: string }[]).map((l) => ({
+    label: l.title,
+    value: l.name
+  }))
 })
 
 const cityInputValue = ref("")
@@ -122,16 +129,16 @@ interface RasterDataset {
   url: string
 }
 
-const rasterUrl = (filename: string) => `${origin}/api/rasters/${filename}`
+const rasterUrl = (key: string) => `${origin}/api/rasters/${key}/`
 
 const rasterDatasets: RasterDataset[] = [
-  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors.tif") },
-  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability.tif") },
-  { label: "Végéstrate", url: rasterUrl("vegestrate.tif") },
-  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors.tif") },
-  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability.tif") },
-  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors.tif") },
-  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz.tif") }
+  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
+  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
+  { label: "Végéstrate", url: rasterUrl("vegestrate") },
+  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
+  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
+  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
+  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz") }
 ]
 
 interface WmsLayer {
@@ -139,21 +146,7 @@ interface WmsLayer {
   value: string
 }
 
-const wmsLayers: WmsLayer[] = [
-  { label: "Plantabilité", value: "iarbre:plantability" },
-  { label: "Zones Climatiques Locales", value: "iarbre:lcz" },
-  { label: "Vulnérabilité", value: "iarbre:vulnerability" },
-  { label: "Végéstrate", value: "iarbre:vegestrate" },
-  { label: "Intégrité Fonctionnelle Biosphère", value: "iarbre:biosphere" },
-  { label: "Végéstrate 2018 - brut", value: "iarbre:vegestrate_2018_raw" },
-  { label: "Végéstrate 2018 - post-traitement v3", value: "iarbre:vegestrate_2018_ppv3" },
-  { label: "Végéstrate 2023 - brut", value: "iarbre:vegestrate_2023_raw" },
-  { label: "Végéstrate 2023 - post-traitement v1", value: "iarbre:vegestrate_2023_ppv1" },
-  { label: "Végéstrate 2023 - post-traitement v2", value: "iarbre:vegestrate_2023_ppv2" },
-  { label: "Végéstrate 2023 - post-traitement v3", value: "iarbre:vegestrate_2023_ppv3" },
-  { label: "Végéstrate 2023 - hauteur (nDSM)", value: "iarbre:vegestrate_2023_ppv3_elevation" }
-]
-
+const wmsLayers = ref<WmsLayer[]>([])
 const selectedWmsLayer = ref("iarbre:plantability")
 const wmsParamsOpen = ref(false)
 

@@ -1,11 +1,11 @@
 import io
 import logging
-import os
+from pathlib import Path
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 import rasterio
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from PIL import Image
@@ -46,10 +46,21 @@ class IArbreWMSView(APIView):
             return self._get_capabilities(request, version)
         if req_type == "GETMAP":
             return self._get_map(request, version)
+        if req_type == "GETLAYERS":
+            return self._get_layers()
         return HttpResponse(
-            "Unsupported REQUEST. Use GetCapabilities or GetMap.",
+            "Unsupported REQUEST. Use GetCapabilities, GetMap or GetLayers.",
             status=400,
             content_type="text/plain",
+        )
+
+    def _get_layers(self):
+        return JsonResponse(
+            [
+                {"name": name, "title": meta["title"]}
+                for name, meta in WMS_LAYERS.items()
+            ],
+            safe=False,
         )
 
     def _get_capabilities(self, request, version):
@@ -98,8 +109,8 @@ class IArbreWMSView(APIView):
             for crs in _SUPPORTED_CRS:
                 SubElement(layer, crs_tag).text = crs
 
-            raster_path = os.path.join(settings.MEDIA_ROOT, meta["path"])
-            if not os.path.exists(raster_path):
+            raster_path = Path(settings.MEDIA_ROOT) / meta["path"]
+            if not raster_path.exists():
                 continue
 
             with rasterio.open(raster_path) as src:
@@ -171,8 +182,8 @@ class IArbreWMSView(APIView):
         else:
             west, south, east, north = bbox_vals
 
-        raster_path = os.path.join(settings.MEDIA_ROOT, layer["path"])
-        if not os.path.exists(raster_path):
+        raster_path = Path(settings.MEDIA_ROOT) / layer["path"]
+        if not raster_path.exists():
             return HttpResponse(
                 "Raster file not found", status=404, content_type="text/plain"
             )
@@ -191,7 +202,9 @@ class IArbreWMSView(APIView):
             )
         except Exception:
             logger.exception("Error generating WMS GetMap for layer %s", layer_name)
-            return self._empty_image(width, height)
+            return HttpResponse(
+                "Rendering error", status=500, content_type="text/plain"
+            )
 
     def _render_layer(
         self, raster_path, crs, west, south, east, north, width, height, render_fn
