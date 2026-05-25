@@ -38,6 +38,12 @@
     group: root
     mode: 0644
 
+- name: Reload supervisord config
+  command: supervisorctl reread
+
+- name: Update supervisord processes
+  command: supervisorctl update
+
 - name: Install {{ project_slug }}-backend-gisserver supervisor
   supervisorctl:
     name: "{{ project_slug }}-backend-gisserver"
@@ -77,6 +83,20 @@
     name: "{{ project_slug }}-backend-gisserver"
     state: restarted
   when: clonecode.changed or force_update is defined
+
+- name: Verify backend is running
+  uri:
+    url: "http://localhost:{{ backend_application_port }}/api/health-check/"
+    status_code: 200
+  retries: 5
+  delay: 3
+
+- name: Verify gisserver is running
+  uri:
+    url: "http://localhost:{{ gisserver_application_port }}/api/health-check/"
+    status_code: 200
+  retries: 5
+  delay: 3
 # - name: "daily database backup"
 #   cron:
 #     user: "{{ main_user }}"
