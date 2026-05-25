@@ -14,6 +14,22 @@
     name: "{{ project_slug }}-backend"
     state: absent
 
+- name: Remove WFS supervisor configuration
+  file:
+    path: "{{ supervisor_conf }}/{{ project_slug }}_backend_wfs.conf"
+    state: absent
+
+- name: Stop WFS supervisor process
+  supervisorctl:
+    name: "{{ project_slug }}-backend-wfs"
+    state: stopped
+  ignore_errors: yes
+
+- name: Remove WFS supervisor process
+  supervisorctl:
+    name: "{{ project_slug }}-backend-wfs"
+    state: absent
+
 - name: Remove control script
   file:
     path: "/usr/local/bin/{{ project_slug }}-ctl"

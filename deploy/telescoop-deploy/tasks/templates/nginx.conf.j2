@@ -4,6 +4,10 @@
 upstream app_servers_{{ project_slug }} {
   server 127.0.0.1:{{ backend_application_port }};
 }
+
+upstream app_servers_wfs_{{ project_slug }} {
+  server 127.0.0.1:{{ wfs_application_port }};
+}
 {% endif %}
 
 {% if frontend_mode == "SSR" -%}
@@ -87,7 +91,7 @@ server {
     }
 
     location /api/wfs/ {
-        proxy_pass         http://app_servers_{{ project_slug }};
+        proxy_pass         http://app_servers_wfs_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
@@ -100,6 +104,16 @@ server {
         proxy_cache_key    "$uri$is_args$args";
         proxy_cache_lock   on;
         add_header         X-Cache-Status $upstream_cache_status;
+    }
+
+    location /api/wms/ {
+        proxy_pass         http://app_servers_wfs_{{ project_slug }};
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+        proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
     location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
