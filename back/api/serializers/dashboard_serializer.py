@@ -55,6 +55,7 @@ class DashboardBuildingsSerializer(serializers.Serializer):
 
 class DashboardBiosphereSerializer(serializers.Serializer):
     averageIndice = serializers.FloatField()
+    distribution = serializers.DictField()
 
 
 class DashboardSerializer(serializers.Serializer):

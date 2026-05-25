@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from django.contrib.gis.db.models.functions import Area
-from django.db.models import Avg, Case, FloatField, QuerySet, Sum, When
+from django.db.models import Avg, Case, Count, FloatField, QuerySet, Sum, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
@@ -282,5 +282,13 @@ class DashboardView(APIView):
         qs = BiosphereFunctionalIntegrity.objects.all()
         if geometry_filter:
             qs = qs.filter(**geometry_filter)
-        result = qs.aggregate(avg_indice=Avg("indice"))
-        return {"averageIndice": _safe_round(result["avg_indice"])}
+        distribution = {
+            str(row["indice"]): row["count"]
+            for row in qs.values("indice")
+            .annotate(count=Count("id"))
+            .order_by("indice")
+        }
+        return {
+            "averageIndice": _safe_round(_avg_from_counts(distribution)),
+            "distribution": distribution,
+        }

@@ -52,6 +52,7 @@ export interface DashboardBuildings {
 
 export interface DashboardBiosphere {
   averageIndice: number
+  distribution: Record<string, number>
 }
 
 export interface DashboardData {
