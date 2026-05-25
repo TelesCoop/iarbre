@@ -1,4 +1,5 @@
 backend_application_port: 8032 # must be unique for each project on the same server
+gisserver_application_port: 8034
 frontend_application_port: 3002 # must be unique for each project on the same server
 environment_suffix: "_preprod"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"

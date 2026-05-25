@@ -3,6 +3,7 @@ branch_hash: "{{ branch_slug | hash('md5') }}"
 unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
 
 backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
+gisserver_application_port: "9{{ unique_number }}"
 frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
 environment_suffix: "-feature-{{ branch_slug }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
