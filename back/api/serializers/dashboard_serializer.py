@@ -18,6 +18,7 @@ class DashboardPlantabilitySerializer(serializers.Serializer):
     averageNormalizedIndice = serializers.FloatField()
     distribution = serializers.DictField()
     distributionByDivision = DashboardPlantabilityDivisionSerializer(many=True)
+    metaFactors = serializers.DictField(child=serializers.FloatField())
 
 
 class DashboardVulnerabilitySerializer(serializers.Serializer):

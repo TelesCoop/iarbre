@@ -15,6 +15,7 @@ export interface DashboardPlantability {
   averageNormalizedIndice: number
   distribution: Record<string, number>
   distributionByDivision: DashboardPlantabilityDivision[]
+  metaFactors: Record<string, number>
 }
 
 export interface DashboardVulnerability {

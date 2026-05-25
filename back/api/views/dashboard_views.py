@@ -151,6 +151,7 @@ class DashboardView(APIView):
                 ),
                 "distribution": scope.iris.plantability_counts,
                 "distributionByDivision": [],
+                "metaFactors": scope.iris.meta_factors_avg or {},
             }
 
         if scope.city:
@@ -162,14 +163,23 @@ class DashboardView(APIView):
                 "distributionByDivision": self._plantability_by_subdivision(
                     Iris.objects.filter(city=scope.city)
                 ),
+                "metaFactors": scope.city.meta_factors_avg or {},
             }
 
         total_counts: dict[str, int] = {}
+        meta_totals: dict[str, float] = {}
+        meta_city_count = 0
         divisions = []
 
-        for city in scope.cities_qs.only("code", "name", "plantability_counts"):
+        for city in scope.cities_qs.only(
+            "code", "name", "plantability_counts", "meta_factors_avg"
+        ):
             for key, count in city.plantability_counts.items():
                 total_counts[key] = total_counts.get(key, 0) + count
+            if city.meta_factors_avg:
+                for key, val in city.meta_factors_avg.items():
+                    meta_totals[key] = meta_totals.get(key, 0.0) + val
+                meta_city_count += 1
             divisions.append(
                 {
                     "code": city.code,
@@ -181,10 +191,17 @@ class DashboardView(APIView):
                 }
             )
 
+        meta_factors_avg = (
+            {k: _safe_round(v / meta_city_count) for k, v in meta_totals.items()}
+            if meta_city_count > 0
+            else {}
+        )
+
         return {
             "averageNormalizedIndice": _safe_round(_avg_from_counts(total_counts)),
             "distribution": total_counts,
             "distributionByDivision": divisions,
+            "metaFactors": meta_factors_avg,
         }
 
     @staticmethod

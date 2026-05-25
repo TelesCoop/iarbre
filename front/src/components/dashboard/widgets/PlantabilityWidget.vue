@@ -1,19 +1,37 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardPlantability } from "@/types/dashboard"
-import { PLANTABILITY_COLOR_MAP, PlantabilityScoreThreshold } from "@/utils/plantability"
+import {
+  META_FACTOR_COLORS,
+  PLANTABILITY_COLOR_MAP,
+  PlantabilityScoreThreshold
+} from "@/utils/plantability"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 const PLANTABILITY_MAX_SCORE = PlantabilityScoreThreshold.VERY_FAVORED
+const SPIDER_MAX = 55
+
+const LABEL_LINES: Record<string, string[]> = {
+  "Réseaux et infrastructures": ["Réseaux &", "infrastr."],
+  "Infrastructure de transport": ["Transport &", "mobilité"],
+  Bâtiments: ["Bâtiments"],
+  "Espaces verts": ["Espaces verts"],
+  "Aménagements urbains": ["Aménag.", "urbains"],
+  "Plan d'eau": ["Plan d'eau"],
+  "Espaces artificialisés": ["Esp.", "artificialisés"]
+}
 
 interface Props {
   data: DashboardPlantability
 }
 
 const props = defineProps<Props>()
+
+type AxisData = { lines: string[]; value: number; color: string }
+type HoveredAxis = { label: string; value: number; color: string } | null
 
 const score = computed(() => Math.round(props.data.averageNormalizedIndice * 10) / 10)
 const arcColor = computed(() => {
@@ -44,6 +62,21 @@ const bars = computed(() => {
   const total = entries.reduce((a, b) => a + b.value, 0)
   return entries.map((e) => ({ ...e, pct: total > 0 ? e.value / total : 0 }))
 })
+
+const spiderAxes = computed<AxisData[]>(() => {
+  const mf = props.data.metaFactors
+
+  if (!mf) return []
+  return Object.entries(mf).map(([label, value]) => ({
+    lines: LABEL_LINES[label] ?? [label],
+    value,
+    color: META_FACTOR_COLORS[label] ?? "#C4C4C4"
+  }))
+})
+
+const spiderCurrentRatios = ref<number[]>([])
+const hoveredAxis = ref<HoveredAxis>(null)
+const tooltipPos = ref({ x: 0, y: 0 })
 
 const { svgRef } = useD3Chart(
   ({ svg, width, height }: D3ChartContext, animate: boolean) => {
@@ -122,6 +155,172 @@ const { svgRef } = useD3Chart(
   },
   [bars]
 )
+
+const { svgRef: spiderSvgRef } = useD3Chart(
+  ({ svg, width, height }: D3ChartContext, animate: boolean) => {
+    const axes = spiderAxes.value
+    if (axes.length === 0) return
+
+    const size = Math.min(width, height)
+    if (size <= 0) return
+
+    const cx = width / 2
+    const cy = height / 2
+    const radius = size / 2 - 38
+    const numAxes = axes.length
+    const angleSlice = (2 * Math.PI) / numAxes
+    const rScale = d3.scaleLinear().range([0, radius]).domain([0, SPIDER_MAX])
+
+    const g = svg.append("g").attr("transform", `translate(${cx},${cy})`)
+
+    function polyPoints(ratios: number[]): string {
+      return ratios
+        .map((r, i) => {
+          const angle = angleSlice * i - Math.PI / 2
+          const rv = rScale(r * SPIDER_MAX)
+          return `${rv * Math.cos(angle)},${rv * Math.sin(angle)}`
+        })
+        .join(" ")
+    }
+
+    for (let level = 1; level <= 4; level++) {
+      const r = rScale((level / 4) * SPIDER_MAX)
+      const pts = d3.range(numAxes).map((i) => {
+        const angle = angleSlice * i - Math.PI / 2
+        return `${r * Math.cos(angle)},${r * Math.sin(angle)}`
+      })
+      g.append("polygon")
+        .attr("points", pts.join(" "))
+        .attr("fill", level === 4 ? "#f9fafb" : "none")
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 1)
+    }
+
+    axes.forEach((_, i) => {
+      const angle = angleSlice * i - Math.PI / 2
+      g.append("line")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", rScale(SPIDER_MAX) * Math.cos(angle))
+        .attr("y2", rScale(SPIDER_MAX) * Math.sin(angle))
+        .attr("stroke", "#e5e7eb")
+        .attr("stroke-width", 1)
+    })
+
+    const targetRatios = axes.map((a) => Math.min(Math.max(a.value / SPIDER_MAX, 0), 1))
+    const startRatios = animate ? spiderCurrentRatios.value.slice() : targetRatios
+
+    const blobFill = g
+      .append("polygon")
+      .attr("points", polyPoints(startRatios))
+      .attr("fill", arcColor.value)
+      .attr("fill-opacity", 0.2)
+
+    const blobStroke = g
+      .append("polygon")
+      .attr("points", polyPoints(startRatios))
+      .attr("fill", "none")
+      .attr("stroke", arcColor.value)
+      .attr("stroke-width", 2)
+
+    if (animate) {
+      const tween = () => (t: number) =>
+        polyPoints(startRatios.map((s, i) => s + (targetRatios[i] - s) * t))
+      blobFill.transition().duration(700).ease(d3.easeCubicOut).attrTween("points", tween)
+      blobStroke.transition().duration(700).ease(d3.easeCubicOut).attrTween("points", tween)
+    }
+
+    spiderCurrentRatios.value = targetRatios
+
+    axes.forEach((axis, i) => {
+      const angle = angleSlice * i - Math.PI / 2
+      const ratio = targetRatios[i]
+      const r = rScale(ratio * SPIDER_MAX)
+      const dotX = r * Math.cos(angle)
+      const dotY = r * Math.sin(angle)
+
+      const dotG = g.append("g").attr("class", "dot-group")
+      dotG
+        .append("circle")
+        .attr("cx", dotX)
+        .attr("cy", dotY)
+        .attr("r", 4)
+        .attr("fill", axis.color)
+        .attr("stroke", "white")
+        .attr("stroke-width", 1.5)
+
+      dotG
+        .append("circle")
+        .attr("cx", dotX)
+        .attr("cy", dotY)
+        .attr("r", 10)
+        .attr("fill", "transparent")
+        .style("cursor", "pointer")
+        .on("mouseenter", function (event: MouseEvent) {
+          g.selectAll<SVGGElement, unknown>(".dot-group circle:first-child")
+            .transition()
+            .duration(150)
+            .attr("opacity", 0.3)
+          d3.select(this.parentNode as Element)
+            .select("circle")
+            .transition()
+            .duration(150)
+            .attr("opacity", 1)
+          hoveredAxis.value = { label: axis.lines.join(" "), value: axis.value, color: axis.color }
+          const rect = spiderSvgRef.value?.closest(".spider-wrapper")?.getBoundingClientRect()
+          if (rect)
+            tooltipPos.value = { x: event.clientX - rect.left, y: event.clientY - rect.top - 44 }
+        })
+        .on("mousemove", (event: MouseEvent) => {
+          const rect = spiderSvgRef.value?.closest(".spider-wrapper")?.getBoundingClientRect()
+          if (rect)
+            tooltipPos.value = { x: event.clientX - rect.left, y: event.clientY - rect.top - 44 }
+        })
+        .on("mouseleave", function () {
+          g.selectAll<SVGGElement, unknown>(".dot-group circle:first-child")
+            .transition()
+            .duration(200)
+            .attr("opacity", 1)
+          hoveredAxis.value = null
+        })
+
+      const labelR = radius + 16
+      const lx = labelR * Math.cos(angle)
+      const ly = labelR * Math.sin(angle)
+      const cosA = Math.cos(angle)
+      const anchor = cosA > 0.2 ? "start" : cosA < -0.2 ? "end" : "middle"
+      const sinA = Math.sin(angle)
+      const baseline = sinA < -0.5 ? "auto" : sinA > 0.5 ? "hanging" : "central"
+
+      const labelG = g.append("g").attr("transform", `translate(${lx},${ly})`)
+      const labelText = labelG
+        .append("text")
+        .attr("text-anchor", anchor)
+        .attr("dominant-baseline", baseline)
+        .attr("font-size", "8px")
+        .attr("fill", "#9CA3AF")
+
+      axis.lines.forEach((line, li) => {
+        labelText
+          .append("tspan")
+          .attr("x", 0)
+          .attr("dy", li === 0 ? 0 : "1.1em")
+          .text(line)
+      })
+
+      labelG
+        .append("text")
+        .attr("text-anchor", anchor)
+        .attr("dominant-baseline", baseline)
+        .attr("dy", `${axis.lines.length * 1.2}em`)
+        .attr("font-size", "9px")
+        .attr("font-weight", "600")
+        .attr("fill", "#374151")
+        .text(`${axis.value.toFixed(1)}%`)
+    })
+  },
+  [spiderAxes, arcColor]
+)
 </script>
 
 <template>
@@ -134,9 +333,21 @@ const { svgRef } = useD3Chart(
           :value="score"
           label="plantabilité"
         />
+        <svg ref="svgRef" class="distribution-chart" />
       </div>
-      <div class="chart-col">
-        <svg ref="svgRef" width="100%" height="100%" />
+      <div class="spider-col">
+        <div class="spider-wrapper">
+          <svg ref="spiderSvgRef" width="100%" height="100%" style="overflow: visible" />
+          <div
+            v-if="hoveredAxis"
+            class="chart-tooltip"
+            :style="{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }"
+          >
+            <span class="tooltip-dot" :style="{ backgroundColor: hoveredAxis.color }" />
+            <span class="tooltip-label">{{ hoveredAxis.label }}</span>
+            <span class="tooltip-value">{{ hoveredAxis.value.toFixed(1) }}%</span>
+          </div>
+        </div>
       </div>
     </div>
   </DashboardWidgetCard>
@@ -146,14 +357,22 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex flex-row items-center gap-4;
+  @apply flex flex-col gap-6 flex-1 w-full;
 }
 
 .score-col {
-  @apply flex flex-col items-center justify-center shrink-0;
+  @apply flex flex-row items-center gap-4 shrink-0 w-full;
 }
 
-.chart-col {
-  @apply flex-1 min-h-20;
+.distribution-chart {
+  @apply flex-1 h-12;
+}
+
+.spider-col {
+  @apply flex-1 flex flex-col min-h-[160px];
+}
+
+.spider-wrapper {
+  @apply relative flex-1 w-full;
 }
 </style>
