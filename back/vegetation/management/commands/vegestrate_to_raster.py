@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 from iarbre_data.models import City, Vegestrate
 from iarbre_data.settings import BASE_DIR
-from iarbre_data.utils.calque_config import VEGESTRATE_VEGESTRATE_STRATE_VALUES
+from iarbre_data.utils.calque_config import VEGESTRATE_STRATE_VALUES
 from iarbre_data.utils.database import log_progress
 
 STRIP_HEIGHT = 2000

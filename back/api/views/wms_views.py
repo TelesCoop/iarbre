@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
+_bounds_cache: dict[str, tuple[float, float, float, float]] = {}
 
 
 class IArbreWMSView(APIView):
@@ -113,10 +114,13 @@ class IArbreWMSView(APIView):
             if not raster_path.exists():
                 continue
 
-            with rasterio.open(raster_path) as src:
-                t = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
-                west, south = t.transform(src.bounds.left, src.bounds.bottom)
-                east, north = t.transform(src.bounds.right, src.bounds.top)
+            if name not in _bounds_cache:
+                with rasterio.open(raster_path) as src:
+                    t = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+                    west, south = t.transform(src.bounds.left, src.bounds.bottom)
+                    east, north = t.transform(src.bounds.right, src.bounds.top)
+                _bounds_cache[name] = (west, south, east, north)
+            west, south, east, north = _bounds_cache[name]
 
             if is_130:
                 geo_bb = SubElement(layer, "EX_GeographicBoundingBox")
