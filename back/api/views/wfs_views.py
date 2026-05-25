@@ -2,6 +2,7 @@ import logging
 import time
 
 from django.contrib.gis.geos import Polygon
+from django.http import JsonResponse
 from gisserver.crs import CRS84, WEB_MERCATOR, CRS
 from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
@@ -93,7 +94,16 @@ class IArbreWFSView(WFSView):
 
     def dispatch(self, request, *args, **kwargs):
         params = {k.upper(): v for k, v in request.GET.items()}
-        if params.get("REQUEST", "").upper() != "GETFEATURE":
+        req = params.get("REQUEST", "").upper()
+
+        if req == "GETTYPES":
+            types = [
+                {"name": f"iarbre:{ft.name}", "title": ft.title or ft.name}
+                for ft in self.get_feature_types()
+            ]
+            return JsonResponse(types, safe=False)
+
+        if req != "GETFEATURE":
             return super().dispatch(request, *args, **kwargs)
 
         typename = params.get("TYPENAMES") or params.get("TYPENAME", "unknown")
@@ -146,6 +156,7 @@ class IArbreWFSView(WFSView):
             TileFeatureType(
                 _tile_qs,
                 name="plantability",
+                title="Plantabilité",
                 fields=[
                     "geometry",
                     "plantability_indice",
@@ -157,6 +168,8 @@ class IArbreWFSView(WFSView):
             ),
             TileFeatureType(
                 _vegestrate_qs,
+                name="vegestrate",
+                title="Végéstrate",
                 fields=["geometry", "strate", "surface"],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),

@@ -116,3 +116,8 @@ class WMSGetMapTest(TestCase):
         params = {**self.valid_params, "HEIGHT": "abc"}
         response = self.client.get(WMS_URL, params)
         self.assertEqual(response.status_code, 400)
+
+    def test_unsupported_format_returns_400(self):
+        params = {**self.valid_params, "FORMAT": "image/tiff"}
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 400)

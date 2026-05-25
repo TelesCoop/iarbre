@@ -5,9 +5,8 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 import rasterio
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from PIL import Image
 from pyproj import Transformer
 from rasterio.warp import Resampling
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
-_bounds_cache: dict[str, tuple[float, float, float, float]] = {}
+_CAPABILITIES_CACHE_TTL = 60 * 60
 
 
 class IArbreWMSView(APIView):
@@ -38,7 +37,6 @@ class IArbreWMSView(APIView):
         All other CRS or WMS 1.1.1  -> lon/lat (west, south, east, north)
     """
 
-    @method_decorator(cache_page(60 * 60))
     def get(self, request):
         req_type = request.query_params.get("REQUEST", "").upper()
         version = request.query_params.get("VERSION", "1.3.0")
@@ -65,6 +63,11 @@ class IArbreWMSView(APIView):
         )
 
     def _get_capabilities(self, request, version):
+        cache_key = f"wms:capabilities:{version}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return HttpResponse(cached, content_type="text/xml; charset=utf-8")
+
         base_url = request.build_absolute_uri("/api/wms/")
         is_130 = version == "1.3.0"
         crs_tag = "CRS" if is_130 else "SRS"
@@ -114,13 +117,16 @@ class IArbreWMSView(APIView):
             if not raster_path.exists():
                 continue
 
-            if name not in _bounds_cache:
+            bounds_key = f"wms:bounds:{name}"
+            bounds = cache.get(bounds_key)
+            if bounds is None:
                 with rasterio.open(raster_path) as src:
                     t = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
                     west, south = t.transform(src.bounds.left, src.bounds.bottom)
                     east, north = t.transform(src.bounds.right, src.bounds.top)
-                _bounds_cache[name] = (west, south, east, north)
-            west, south, east, north = _bounds_cache[name]
+                bounds = (west, south, east, north)
+                cache.set(bounds_key, bounds, timeout=None)
+            west, south, east, north = bounds
 
             if is_130:
                 geo_bb = SubElement(layer, "EX_GeographicBoundingBox")
@@ -150,6 +156,7 @@ class IArbreWMSView(APIView):
         xml_bytes = b'<?xml version="1.0" encoding="UTF-8"?>\n' + tostring(
             root, encoding="unicode"
         ).encode("utf-8")
+        cache.set(cache_key, xml_bytes, timeout=_CAPABILITIES_CACHE_TTL)
         return HttpResponse(xml_bytes, content_type="text/xml; charset=utf-8")
 
     def _get_map(self, request, version):
@@ -159,6 +166,14 @@ class IArbreWMSView(APIView):
         if not layer:
             return HttpResponse(
                 f"Unknown layer: {layer_name}. Available: {', '.join(WMS_LAYERS)}",
+                status=400,
+                content_type="text/plain",
+            )
+
+        fmt = params.get("FORMAT", "image/png")
+        if fmt != "image/png":
+            return HttpResponse(
+                f"Unsupported FORMAT '{fmt}'. Supported: image/png",
                 status=400,
                 content_type="text/plain",
             )

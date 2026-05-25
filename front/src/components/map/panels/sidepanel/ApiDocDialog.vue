@@ -28,10 +28,19 @@ interface CityOption {
 const cities = ref<CityOption[]>([])
 const selectedCityCode = ref<string | null>(null)
 
+interface TypeOption {
+  label: string
+  value: string
+}
+
+const wfsTypes = ref<TypeOption[]>([])
+const selectedWfsTypename = ref("iarbre:plantability")
+
 onMounted(async () => {
-  const [citiesResult, layersResponse] = await Promise.all([
+  const [citiesResult, layersResponse, typesResponse] = await Promise.all([
     getCities(),
-    fetch(`${wmsBase}?REQUEST=GetLayers`).then((r) => (r.ok ? r.json() : []))
+    fetch(`${wmsBase}?REQUEST=GetLayers`).then((r) => (r.ok ? r.json() : [])),
+    fetch(`${wfsBase}?REQUEST=GetTypes`).then((r) => (r.ok ? r.json() : []))
   ])
   if (citiesResult) {
     cities.value = citiesResult
@@ -42,6 +51,13 @@ onMounted(async () => {
     label: l.title,
     value: l.name
   }))
+  wfsTypes.value = (typesResponse as { name: string; title: string }[]).map((t) => ({
+    label: t.title,
+    value: t.name
+  }))
+  if (wfsTypes.value.length > 0) {
+    selectedWfsTypename.value = wfsTypes.value[0].value
+  }
 })
 
 const cityInputValue = ref("")
@@ -87,7 +103,7 @@ const cityFilterSuffix = computed(() => {
 })
 
 const wfsFullUrl = computed(() => {
-  return `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&OUTPUTFORMAT=geojson${cityFilterSuffix.value}`
+  return `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=${selectedWfsTypename.value}&OUTPUTFORMAT=geojson${cityFilterSuffix.value}`
 })
 
 interface Param {
@@ -97,32 +113,40 @@ interface Param {
   fixed?: boolean
 }
 
-const wfsParams = computed<Param[]>(() => [
-  { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
-  { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
-  { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
-  {
-    key: "TYPENAMES",
-    value: "iarbre:plantability",
-    desc: "Jeu de données — iarbre:plantability ou iarbre:vegestrate"
-  },
-  { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
-  {
-    key: "CRS",
-    value: "EPSG:4326",
-    desc: "Système de coordonnées — ex. EPSG:4326, EPSG:2154, EPSG:3857"
-  },
-  {
-    key: "BBOX",
-    value: "minLat,minLon,maxLat,maxLon",
-    desc: "Emprise géographique en degrés décimaux"
-  },
-  {
-    key: "CQL_FILTER",
-    value: selectedCityCode.value ? `city_code='${selectedCityCode.value}'` : "city_code='69123'",
-    desc: "Filtre par commune (code INSEE) — réduit le volume de données"
+const wfsParams = computed<Param[]>(() => {
+  const base: Param[] = [
+    { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
+    { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
+    { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
+    {
+      key: "TYPENAMES",
+      value: selectedWfsTypename.value,
+      desc:
+        wfsTypes.value.length > 0
+          ? `Jeu de données — ${wfsTypes.value.map((t) => t.value).join(", ")}`
+          : "Jeu de données"
+    },
+    { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
+    {
+      key: "CRS",
+      value: "EPSG:4326",
+      desc: "Système de coordonnées — ex. EPSG:4326, EPSG:2154, EPSG:3857"
+    },
+    {
+      key: "BBOX",
+      value: "minLat,minLon,maxLat,maxLon",
+      desc: "Emprise géographique en degrés décimaux"
+    }
+  ]
+  if (selectedCityCode.value) {
+    base.push({
+      key: "CQL_FILTER",
+      value: `city_code='${selectedCityCode.value}'`,
+      desc: "Filtre par commune (code INSEE) — réduit le volume de données"
+    })
   }
-])
+  return base
+})
 
 interface RasterDataset {
   label: string
@@ -251,6 +275,23 @@ const wmsParams = computed<Param[]>(() => [
 
               <div>
                 <label
+                  for="wfs-typename-select"
+                  class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
+                  >COUCHE</label
+                >
+                <select
+                  id="wfs-typename-select"
+                  v-model="selectedWfsTypename"
+                  class="wms-layer-select"
+                >
+                  <option v-for="t in wfsTypes" :key="t.value" :value="t.value">
+                    {{ t.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label
                   for="wfs-city-input"
                   class="text-2xs font-bold text-gray-400 tracking-wider mb-1.5 block"
                   >COMMUNE (OPTIONNEL)</label
@@ -336,7 +377,7 @@ const wmsParams = computed<Param[]>(() => [
                   ><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">TYPENAMES</span
                   ><span class="text-gray-300">=</span
-                  ><span class="text-scale-3">iarbre:plantability</span
+                  ><span class="text-scale-3">{{ selectedWfsTypename }}</span
                   ><span class="text-gray-300">&amp;</span
                   ><span class="text-primary-800">OUTPUTFORMAT</span
                   ><span class="text-gray-300">=</span><span class="text-scale-3">geojson</span
@@ -435,7 +476,7 @@ const wmsParams = computed<Param[]>(() => [
             <div class="flex gap-1 shrink-0">
               <span
                 class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >TIFF</span
+                >PNG</span
               >
             </div>
             <svg
