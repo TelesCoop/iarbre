@@ -106,6 +106,7 @@ const riskInterpretation = computed(() => {
       :interpretation="plantabilityInterpretation"
       description="Le score reflète à quel point il est possible, sans transformation, de planter un arbre en pleine terre. C'est la référence avec la contrainte la plus grande."
       source="Indice calculé par pondération de 35 facteurs d'occupation du sol : réseaux, bâti, espaces verts, plans d'eau, transport, espaces artificialisés et aménagements urbains."
+      source-link="https://erasme.notion.site/Lire-le-score-de-plantabilit-33444e49a3ad8080bb66f23ad06bb6a1"
     >
       <PlantabilityWidget :data="store.dashboardData!.plantability" />
     </NarrativeSection>
@@ -118,6 +119,7 @@ const riskInterpretation = computed(() => {
       :interpretation="vegetationInterpretation"
       description="Les arbres, la canopé, sont au service du climat urbain. C'est pourquoi il est important de pouvoir quantifier la taille de la canopé et suivre les évolutions. C'est un des axes du Plan Climat Air Energie Territorial (PCAET)."
       source="Inventaire réalisé grâce au model FlairHub de l'IGN sur les orthophotos de la Métropole et des relevées LIDAR THD de la métropole."
+      source-link="https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d"
     >
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
       <BiosphereWidget :data="store.dashboardData!.biosphere" />
@@ -131,6 +133,7 @@ const riskInterpretation = computed(() => {
       :interpretation="constraintsInterpretation"
       description="Les zones imperméabilisés sont une contrainte pour la plantation d'arbre en pleine terre, mais aussi un endroit où la chaleur va plus se stocker et augmenter les ruissellements de l'eau de pluie au détriment de l'infiltration. Néanmoins des zones de bâtie dense peuvent avoir une effet positif sur l'ombre en journée et améliorer le confort thermique dans la rue."
       source="Les données proviennent de la caractérisation des sols par le CEREMA au cours de leur étude de Zones Climatiques Locales de 2023."
+      source-link="https://www.cerema.fr/fr/actualites/cerema-publie-nouvelles-donnees-surchauffe-urbaine"
     >
       <BuildingCharacteristicsWidget
         :lcz="store.dashboardData!.lcz"
@@ -146,7 +149,8 @@ const riskInterpretation = computed(() => {
       :finding="riskFinding"
       :interpretation="riskInterpretation"
       description="La vulnérabilité à la chaleur se définit sur trois axes : l'exposition, la sensibilité et la difficulté à faire face. On fait la distinction aussi le jour et la nuit car sur ces trois axes les choses se passent différement."
-      source="C'est une étude de l'institut Paris Région répliquée par la métrole de Lyon."
+      source="C'est une étude de l'institut Paris Région répliquée par la métropole de Lyon."
+      source-link="https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1"
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>

@@ -7,6 +7,7 @@ interface Props {
   interpretation?: string
   description?: string
   source?: string
+  sourceLink?: string
 }
 
 defineProps<Props>()
@@ -36,6 +37,15 @@ defineProps<Props>()
     </div>
     <p v-if="source" class="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
       {{ source }}
+      <br />
+      <a
+        v-if="sourceLink"
+        :href="sourceLink"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline hover:text-gray-600"
+        >En savoir plus.</a
+      >
     </p>
   </section>
 </template>
