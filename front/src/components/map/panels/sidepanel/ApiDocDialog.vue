@@ -2,6 +2,7 @@
 import AppDialog from "@/components/shared/AppDialog.vue"
 import { ref, computed, onMounted } from "vue"
 import { getCities } from "@/services/divisionService"
+import { getFullBaseApiUrl } from "@/api"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
@@ -153,7 +154,23 @@ interface RasterDataset {
   url: string
 }
 
-const rasterUrl = (key: string) => `${origin}/api/rasters/${key}/`
+const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
+
+const downloadRaster = async (url: string) => {
+  const response = await fetch(url)
+  if (!response.ok) return
+  const disposition = response.headers.get("Content-Disposition")
+  let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
+  const match = disposition?.match(/filename="?([^"]+)"?/)
+  if (match) filename = match[1]
+  const blob = await response.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = blobUrl
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(blobUrl)
+}
 
 const rasterDatasets: RasterDataset[] = [
   { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
@@ -620,7 +637,7 @@ const wmsParams = computed<Param[]>(() => [
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
               <p class="text-xs text-gray-500">
-                Liens de téléchargement pour récupérer les calques en entier au format GeoTIFF
+                Téléchargement direct pour récupérer les calques en entier au format GeoTIFF
                 (EPSG:2154).
               </p>
             </div>
@@ -650,30 +667,13 @@ const wmsParams = computed<Param[]>(() => [
                 <div class="flex items-center justify-between gap-2 mb-1">
                   <span class="text-sm text-gray-700">{{ dataset.label }}</span>
                   <button
-                    class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors shrink-0"
-                    @click="copyToClipboard(dataset.url)"
+                    type="button"
+                    class="text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 transition-colors rounded px-2 py-1 shrink-0 cursor-pointer"
+                    @click="downloadRaster(dataset.url)"
                   >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <rect x="9" y="9" width="13" height="13" rx="2" />
-                      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                    </svg>
-                    Copier
+                    Télécharger
                   </button>
                 </div>
-                <button
-                  type="button"
-                  class="raster-url block w-full text-left font-mono text-xs text-primary-500 hover:text-primary-700 cursor-pointer"
-                  @click="copyToClipboard(dataset.url)"
-                >
-                  {{ dataset.url }}
-                </button>
               </div>
 
               <div class="bg-primary-50 px-3 py-3 rounded-md">

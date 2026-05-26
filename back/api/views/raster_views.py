@@ -10,17 +10,15 @@ def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
     return path, filename or Path(path).name
 
 
-# Map of raster keys -> (relative path under MEDIA_ROOT, download filename).
+base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
-    "plantability": _entry("rasters/plantability.tif", "plantability_2025.tif"),
-    "plantability_colors": _entry("rasters/plantability_colors.tif"),
-    "vegestrate": _entry(
-        "rasters/vegestrate_lyon_metropole_ir_02.tif", "vegestrate_2023_02m.tif"
-    ),
-    "vulnerability": _entry("rasters/vulnerability.tif"),
-    "vulnerability_colors": _entry("rasters/vulnerability_colors.tif"),
-    "lcz": _entry("rasters/lcz.tif"),
-    "lcz_colors": _entry("rasters/lcz_colors.tif"),
+    "plantability": _entry(base_dir + "plantability.tif"),
+    "plantability_colors": _entry(base_dir + "plantability_2025.tif"),
+    "vegestrate": _entry(base_dir + "vegestrate_lyon_metropole_ir_02.tif"),
+    "vulnerability": _entry(base_dir + "vulnerability.tif"),
+    "vulnerability_colors": _entry(base_dir + "vulnerability_colors.tif"),
+    "lcz": _entry(base_dir + "lcz.tif"),
+    "lcz_colors": _entry(base_dir + "lcz_colors.tif"),
 }
 
 
