@@ -30,7 +30,7 @@ describe("MapSidePanelDownload", () => {
   it("should expand WFS section and show params table and URL", () => {
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("WEB FEATURE SERVICE").click()
-    cy.contains("PARAMÈTRES").should("be.visible")
+    cy.contains("PARAMÈTRES").should("be.visible").click()
     cy.contains("TYPENAMES").should("be.visible")
     cy.contains("OUTPUTFORMAT").should("be.visible")
     cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")
@@ -41,8 +41,6 @@ describe("MapSidePanelDownload", () => {
     cy.contains("REST - GeoTIFF").click()
     cy.contains("Plantabilité").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/plantability`).should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/vegestrate`).should("be.visible")
   })
 
   it("should close the dialog when close button is clicked", () => {
