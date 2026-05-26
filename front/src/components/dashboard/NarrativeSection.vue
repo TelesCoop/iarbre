@@ -1,51 +1,31 @@
 <script lang="ts" setup>
 interface Props {
+  sectionNumber: string
   title: string
   question: string
+  finding?: string
+  description?: string
 }
 
 defineProps<Props>()
 </script>
 
 <template>
-  <section class="narrative-section">
-    <div class="section-header">
-      <h2 class="section-title">{{ title }}</h2>
-      <p class="section-question">{{ question }}</p>
+  <section class="flex flex-col gap-5">
+    <div class="flex flex-col gap-1.5 pb-4 border-b border-gray-200">
+      <div class="flex items-baseline gap-2">
+        <span class="text-xs font-mono font-semibold text-gray-400 tabular-nums shrink-0">{{
+          sectionNumber
+        }}</span>
+        <span class="text-primary-400 text-xs shrink-0">↘</span>
+        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+      </div>
+      <p class="text-sm text-gray-500 italic">{{ question }}</p>
+      <p v-if="finding" class="font-serif text-2xl font-bold text-gray-900 mt-1">{{ finding }}</p>
+      <p v-if="description" class="text-sm text-gray-500">{{ description }}</p>
     </div>
-    <div class="section-body">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
       <slot />
     </div>
   </section>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.narrative-section {
-  @apply flex flex-col gap-4;
-}
-
-.section-header {
-  @apply bg-gray-50 py-3 border-b border-gray-200;
-}
-
-.section-title {
-  @apply text-xl font-bold text-gray-900;
-}
-
-.section-question {
-  @apply text-lg text-gray-500 mt-0.5;
-}
-
-.section-body {
-  @apply grid gap-4 md:gap-6;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 768px) {
-  .section-body {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-</style>
