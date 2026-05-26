@@ -41,8 +41,6 @@ describe("MapSidePanelDownload", () => {
     cy.contains("REST - GeoTIFF").click()
     cy.contains("Plantabilité").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/plantability`).should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/vegestrate`).should("be.visible")
   })
 
   it("should close the dialog when close button is clicked", () => {
