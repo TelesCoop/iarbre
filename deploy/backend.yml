@@ -90,8 +90,4 @@
             }
           become: true
 
-        - name: Remove test fixtures (Villard-de-Lans) from restored database
-          shell:
-            cmd: "{{ project_slug }}-ctl delete_test_data"
-
       when: dedicated_database and (clonecode.changed or force_update is defined)
