@@ -4,7 +4,9 @@ interface Props {
   title: string
   question: string
   finding?: string
+  interpretation?: string
   description?: string
+  source?: string
 }
 
 defineProps<Props>()
@@ -21,11 +23,19 @@ defineProps<Props>()
         <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
       </div>
       <p class="text-sm text-gray-500 italic">{{ question }}</p>
-      <p v-if="finding" class="font-serif text-2xl font-bold text-gray-900 mt-1">{{ finding }}</p>
-      <p v-if="description" class="text-sm text-gray-500">{{ description }}</p>
+      <p v-if="finding" class="text-3xl font-bold text-primary-600 tabular-nums mt-1 leading-tight">
+        {{ finding }}
+      </p>
+      <p v-if="interpretation" class="text-sm font-semibold text-gray-800 leading-relaxed">
+        {{ interpretation }}
+      </p>
+      <p v-if="description" class="text-sm text-gray-500 leading-relaxed">{{ description }}</p>
     </div>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
       <slot />
     </div>
+    <p v-if="source" class="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
+      {{ source }}
+    </p>
   </section>
 </template>

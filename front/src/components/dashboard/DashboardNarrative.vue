@@ -20,10 +20,34 @@ const plantabilityFinding = computed(() => {
   return `${score.toLocaleString("fr-FR")}/10 en indice moyen de plantabilité`
 })
 
+const plantabilityInterpretation = computed(() => {
+  if (!store.dashboardData) return ""
+  const score = Math.round(store.dashboardData.plantability.averageNormalizedIndice * 10) / 10
+  if (score >= 7)
+    return "Il existe de nombreux espaces qui peuvent être végétalisé, et pas seulement des espaces déjà végétalisés à densifier."
+  if (score >= 5)
+    return "Il existe un nombre conséquent d'espaces directement disponibles, notamment des surfaces déjà végétalisées à densifier."
+  if (score >= 3)
+    return "Le potentiel reste modéré, probablement principalement de la densification de végétation existante."
+  return "La végétalisation est très contrainte. Les marges de manoeuvre se limitent à densifier l'existant."
+})
+
 const vegetationFinding = computed(() => {
   if (!store.dashboardData) return ""
   const totalKm2 = store.dashboardData.vegetation.totalM2 / 1_000_000
   return `${totalKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km² de végétation inventoriée`
+})
+
+const vegetationInterpretation = computed(() => {
+  if (!store.dashboardData) return ""
+  const v = store.dashboardData.vegetation
+  if (v.totalM2 < 1) return ""
+  const treePct = v.treesSurfaceM2 / v.totalM2
+  if (treePct > 0.5)
+    return "Il y a une majorité de grands arbres. C'est rare et une zone sans doute à préserver."
+  if (treePct > 0.3)
+    return "La végétation est diversifiée, mais la strate haute, les arbres, restent minoritaires face aux surfaces herbacées. Les surfaces en herbe sont le plus souvent des champs cultivés, et les haies."
+  return "La végétation haute est peu représentée. Le strate herbacée assure l'essentiel de la couverture verte."
 })
 
 const constraintsFinding = computed(() => {
@@ -33,12 +57,33 @@ const constraintsFinding = computed(() => {
   return `${rate.toLocaleString("fr-FR")} % de surfaces imperméables`
 })
 
+const constraintsInterpretation = computed(() => {
+  if (!store.dashboardData) return ""
+  const lcz = store.dashboardData.lcz
+  const rate = (lcz.buildingRate ?? 0) + (lcz.impermeableSurfaceRate ?? 0)
+  if (rate >= 70)
+    return "L'imperméabilisation massive restreint fortement les possibilités de renaturation."
+  if (rate >= 50)
+    return "Les surfaces imperméables constituent un frein significatif, il faudra engager des moyens pour transformer le territoire."
+  return "Le taux d'imperméabilisation laisse des marges de manoeuvre réelles pour végétaliser et transformer les espaces."
+})
+
 const riskFinding = computed(() => {
   if (!store.dashboardData) return ""
   const v = store.dashboardData.vulnerability
   const day = v.averageDay.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
   const night = v.averageNight.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
   return `${day}/9 de jour · ${night}/9 de nuit`
+})
+
+const riskInterpretation = computed(() => {
+  if (!store.dashboardData) return ""
+  const v = store.dashboardData.vulnerability
+  const diff = v.averageDay - v.averageNight
+  if (diff > 0.5) return "La vulnérabilitée à la chaleur est particulièrement forte en journée."
+  if (diff < -0.5)
+    return "La vulnérabilitée à la chaleur est particulièrement forte la nuit. C'est peut être le signe d'un effet d'îlot persistant."
+  return "La vulnérabilitée à la chaleur n'a pas une distinction nette entre jour et nuit."
 })
 </script>
 
@@ -58,7 +103,9 @@ const riskFinding = computed(() => {
       title="Potentiel de végétalisation"
       question="Combien de surfaces sont disponibles immédiatement pour planter des strates hautes ?"
       :finding="plantabilityFinding"
-      description="Le score de plantabilité mesure la capacité des surfaces à accueillir une végétalisation en strate haute."
+      :interpretation="plantabilityInterpretation"
+      description="Le score reflète à quel point il est possible, sans transformation, de planter un arbre en pleine terre. C'est la référence avec la contrainte la plus grande."
+      source="Indice calculé par pondération de 35 facteurs d'occupation du sol : réseaux, bâti, espaces verts, plans d'eau, transport, espaces artificialisés et aménagements urbains."
     >
       <PlantabilityWidget :data="store.dashboardData!.plantability" />
     </NarrativeSection>
@@ -68,7 +115,9 @@ const riskFinding = computed(() => {
       title="Végétation et biodiversité"
       question="Quelle est la place des espaces naturels actuellement ?"
       :finding="vegetationFinding"
-      description="L'inventaire stratifié répertorie la végétation existante selon trois niveaux de hauteur : haute, moyenne et basse."
+      :interpretation="vegetationInterpretation"
+      description="Les arbres, la canopé, sont au service du climat urbain. C'est pourquoi il est important de pouvoir quantifier la taille de la canopé et suivre les évolutions. C'est un des axes du Plan Climat Air Energie Territorial (PCAET)."
+      source="Inventaire réalisé grâce au model FlairHub de l'IGN sur les orthophotos de la Métropole et des relevées LIDAR THD de la métropole."
     >
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
       <BiosphereWidget :data="store.dashboardData!.biosphere" />
@@ -77,9 +126,11 @@ const riskFinding = computed(() => {
     <NarrativeSection
       section-number="03"
       title="Contraintes du territoire"
-      question="Quelles sont les contraintes bloquantes ?"
+      question="Qu'est ce qui freine l'aménagement et les transformations du territoire ?"
       :finding="constraintsFinding"
-      description="Les surfaces imperméables et le bâti dense constituent les principales limites à la végétalisation."
+      :interpretation="constraintsInterpretation"
+      description="Les zones imperméabilisés sont une contrainte pour la plantation d'arbre en pleine terre, mais aussi un endroit où la chaleur va plus se stocker et augmenter les ruissellements de l'eau de pluie au détriment de l'infiltration. Néanmoins des zones de bâtie dense peuvent avoir une effet positif sur l'ombre en journée et améliorer le confort thermique dans la rue."
+      source="Les données proviennent de la caractérisation des sols par le CEREMA au cours de leur étude de Zones Climatiques Locales de 2023."
     >
       <BuildingCharacteristicsWidget
         :lcz="store.dashboardData!.lcz"
@@ -91,9 +142,11 @@ const riskFinding = computed(() => {
     <NarrativeSection
       section-number="04"
       title="Risques et vulnérabilités"
-      question="À quels risques climatiques le territoire est-il exposé ?"
+      question="Quelle est la vulnérabilité à la chaleur du territoire ?"
       :finding="riskFinding"
-      description="La vulnérabilité climatique croise exposition, sensibilité et capacité d'adaptation par îlot de chaleur urbain."
+      :interpretation="riskInterpretation"
+      description="La vulnérabilité à la chaleur se définit sur trois axes : l'exposition, la sensibilité et la difficulté à faire face. On fait la distinction aussi le jour et la nuit car sur ces trois axes les choses se passent différement."
+      source="C'est une étude de l'institut Paris Région répliquée par la métrole de Lyon."
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>

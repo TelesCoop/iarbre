@@ -48,11 +48,11 @@ withDefaults(defineProps<Props>(), {
 }
 
 .widget-title :deep(a) {
-  @apply text-blue-600 underline underline-offset-2;
+  @apply text-primary-500 underline underline-offset-2;
 }
 
 .widget-title :deep(a:hover) {
-  @apply text-blue-800;
+  @apply text-primary-800;
 }
 
 .widget-subtitle {
