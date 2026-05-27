@@ -80,10 +80,10 @@ const riskInterpretation = computed(() => {
   if (!store.dashboardData) return ""
   const v = store.dashboardData.vulnerability
   const diff = v.averageDay - v.averageNight
-  if (diff > 0.5) return "La vulnérabilitée à la chaleur est particulièrement forte en journée."
+  if (diff > 0.5) return "La vulnérabilité à la chaleur est particulièrement forte en journée."
   if (diff < -0.5)
-    return "La vulnérabilitée à la chaleur est particulièrement forte la nuit. C'est peut être le signe d'un effet d'îlot persistant."
-  return "La vulnérabilitée à la chaleur n'a pas une distinction nette entre jour et nuit."
+    return "La vulnérabilité à la chaleur est particulièrement forte la nuit. C'est peut être le signe d'un effet d'îlot persistant."
+  return "La vulnérabilité à la chaleur n'a pas une distinction nette entre jour et nuit."
 })
 </script>
 
@@ -117,8 +117,8 @@ const riskInterpretation = computed(() => {
       question="Quelle est la place des espaces naturels actuellement ?"
       :finding="vegetationFinding"
       :interpretation="vegetationInterpretation"
-      description="Les arbres, la canopé, sont au service du climat urbain. C'est pourquoi il est important de pouvoir quantifier la taille de la canopé et suivre les évolutions. C'est un des axes du Plan Climat Air Energie Territorial (PCAET)."
-      source="Inventaire réalisé grâce au model FlairHub de l'IGN sur les orthophotos de la Métropole et des relevées LIDAR THD de la métropole."
+      description="Les arbres, la canopée, sont au service du climat urbain. C'est pourquoi il est important de pouvoir quantifier la taille de la canopée et suivre les évolutions. C'est un des axes du Plan Climat Air Energie Territorial (PCAET)."
+      source="Inventaire réalisé grâce au model FlairHub de l'IGN sur les orthophotos de la Métropole et des relevés LIDAR THD de la métropole."
       source-link="https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d"
     >
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
@@ -148,7 +148,7 @@ const riskInterpretation = computed(() => {
       question="Quelle est la vulnérabilité à la chaleur du territoire ?"
       :finding="riskFinding"
       :interpretation="riskInterpretation"
-      description="La vulnérabilité à la chaleur se définit sur trois axes : l'exposition, la sensibilité et la difficulté à faire face. On fait la distinction aussi le jour et la nuit car sur ces trois axes les choses se passent différement."
+      description="La vulnérabilité à la chaleur se définit sur trois axes : l'exposition, la sensibilité et la difficulté à faire face. On fait la distinction aussi le jour et la nuit car sur ces trois axes les choses se passent différemment."
       source="C'est une étude de l'institut Paris Région répliquée par la métropole de Lyon."
       source-link="https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1"
     >
