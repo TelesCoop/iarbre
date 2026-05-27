@@ -16,10 +16,6 @@ const m2ToKm2 = (m2: number) => m2 / 1_000_000
 
 const hasData = computed(() => props.data.totalM2 >= 1)
 
-const totalDisplay = computed(
-  () => `${m2ToKm2(props.data.totalM2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
-)
-
 const items = computed(() => [
   { label: "TOTALE", value: m2ToKm2(props.data.totalM2), color: "#426a45" },
   { label: "HAUTE", value: m2ToKm2(props.data.treesSurfaceM2), color: VEGETATION_COLORS.trees },

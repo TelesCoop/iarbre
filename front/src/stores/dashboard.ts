@@ -15,7 +15,6 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const cities = ref<CityOption[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const heatMode = ref<"day" | "night">("day")
 
   const selectedCity = computed(() => {
     if (!selectedCityCode.value) return null
@@ -70,10 +69,6 @@ export const useDashboardStore = defineStore("dashboard", () => {
     fetchDashboardData()
   }
 
-  function toggleHeatMode() {
-    heatMode.value = heatMode.value === "day" ? "night" : "day"
-  }
-
   return {
     selectedScale,
     selectedCityCode,
@@ -81,11 +76,9 @@ export const useDashboardStore = defineStore("dashboard", () => {
     cities,
     loading,
     error,
-    heatMode,
     selectedCity,
     fetchDashboardData,
     setScale,
-    setCity,
-    toggleHeatMode
+    setCity
   }
 })

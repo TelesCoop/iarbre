@@ -118,7 +118,7 @@ const riskInterpretation = computed(() => {
       :finding="vegetationFinding"
       :interpretation="vegetationInterpretation"
       description="Les arbres, la canopée, sont au service du climat urbain. C'est pourquoi il est important de pouvoir quantifier la taille de la canopée et suivre les évolutions. C'est un des axes du Plan Climat Air Energie Territorial (PCAET)."
-      source="Inventaire réalisé grâce au model FlairHub de l'IGN sur les orthophotos de la Métropole et des relevés LIDAR THD de la métropole."
+      source="Inventaire réalisé grâce au modèle FlairHub de l'IGN sur les orthophotos de la Métropole et des relevés LIDAR THD de la métropole."
       source-link="https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d"
     >
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />

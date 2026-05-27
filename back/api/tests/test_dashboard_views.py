@@ -152,6 +152,16 @@ class DashboardViewTest(TestCase):
         self.assertEqual(lcz["impermeableSurfaceRate"], 30.0)
         self.assertEqual(lcz["totalVegetationRate"], 40.0)
 
+    def test_biosphere_values(self):
+        data = self.client.get(self.url).json()
+        biosphere = data["biosphere"]
+        self.assertEqual(biosphere["averageIndice"], 70.0)
+        self.assertEqual(biosphere["distribution"], {"70": 1})
+
+    def test_buildings_value(self):
+        data = self.client.get(self.url).json()
+        self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], 25_000_000.0)
+
 
 @override_settings(CACHES=NO_CACHE)
 class DashboardEmptyDataTest(TestCase):
@@ -167,6 +177,46 @@ class DashboardEmptyDataTest(TestCase):
         self.assertEqual(data["vegetation"]["totalM2"], 0)
         self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], 0)
         self.assertEqual(data["biosphere"]["averageIndice"], 0)
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardMetaFactorsTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
+        self.city = CityFactory(
+            code="38250",
+            name="Villard-de-Lans",
+            geometry=VILLARD_SQUARE,
+            plantability_counts={"0": 0, "2": 0, "4": 0, "6": 0, "8": 0, "10": 10},
+            meta_factors_avg={"eau": 0.4, "bati": 0.3},
+        )
+
+    def test_city_meta_factors_returned(self):
+        data = self.client.get(self.url, {"city_code": "38250"}).json()
+        self.assertEqual(data["plantability"]["metaFactors"], {"eau": 0.4, "bati": 0.3})
+
+    def test_metropole_averages_meta_factors_across_cities(self):
+        CityFactory(
+            code="69001",
+            geometry=VILLARD_SQUARE,
+            plantability_counts={"0": 0, "2": 0, "4": 0, "6": 0, "8": 0, "10": 10},
+            meta_factors_avg={"eau": 0.8, "bati": 0.1},
+        )
+        data = self.client.get(self.url).json()
+        mf = data["plantability"]["metaFactors"]
+        self.assertAlmostEqual(mf["eau"], 0.6, places=1)
+        self.assertAlmostEqual(mf["bati"], 0.2, places=1)
+
+    def test_metropole_skips_cities_without_meta_factors(self):
+        CityFactory(
+            code="69001",
+            geometry=VILLARD_SQUARE,
+            plantability_counts={"0": 0, "2": 0, "4": 0, "6": 0, "8": 0, "10": 10},
+            meta_factors_avg=None,
+        )
+        data = self.client.get(self.url).json()
+        self.assertEqual(data["plantability"]["metaFactors"], {"eau": 0.4, "bati": 0.3})
 
 
 class HelperFunctionsTest(SimpleTestCase):
