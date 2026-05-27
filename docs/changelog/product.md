@@ -1,12 +1,45 @@
 # Journal des changements
 
+## 🔖 0.31.0 (2026-05-27) : Tableau de bord narratif et améliorations des services WMF/WMS
+
+### ✨ feat : Tableau de bord narratif
+
+Le tableau de bord permet de résumer les indicateurs de la cartographie et de les croiser sur un territoire sélectionné. C'était précédement une collection en grille, ce qui rendait difficile l'inteprétation. Nous avons re-travaillé les graphiques et essayé de rendre ce tableau de bord plus narratif afin de mieux comprendre rapidement les grands enjeux avant de se plonger dans la cartographie.
+
+&rarr; PR[#651](https://github.com/TelesCoop/iarbre/pull/651)
+
+### 🛠️ enhance : Sortir le site vitrine du mono repo
+
+Le site vitrine alourdissait le mono-repo avec la synchronisation de son contenu. De plus il fallait une mise en production pour le mettre à jour.
+Il a maintenant son [repo](https://github.com/TelesCoop/iarbre-website) dédié. Il y a une légère refonte au passage pour clarifier la proposition
+de valeur.
+
+&rarr; PR[#629](https://github.com/TelesCoop/iarbre/pull/629)
+
+### ✨ feat : Ajout d'un service WMS
+
+Un endpoint permet maintenant de se connecter à un flux WMS, depuis QGIS par exemple. Les explications pour se connecter sont dispo en bas à gauche
+de la cartographie `Obtenir les données`. L'API REST pour récupérer les rasters (GeoTIFF) en entier a aussi été complété. On peut maintenant récupérer tous les calques colorisées ou en version "brute" c'est à dire en niveau de gris avec les classes.
+
+&rarr; PR[#613](https://github.com/TelesCoop/iarbre/pull/613)
+
+### 🛠️ enhance : Ajout d'un supervisor dédié pour les flux
+
+Des process se chargent uniquement de partager les flux WFS/WMS et ne peuvent donc plus bloquer la navigation sur la cartographie.
+
+&rarr; PR[#656](https://github.com/TelesCoop/iarbre/pull/656)
+
+### 🛠️ enhance : Améliorations UI/UX sur les boutons de cadastres, QPV et communes
+
+&rarr; PR[#646](https://github.com/TelesCoop/iarbre/pull/646)
+
 ## 🔖 0.30.0 (2026-05-06) : Interactivité du calque de biodiversité
 
 ### ✨ feat : Obtenir des détails du score de biodiversité
 
 La palette de couleur a été retravaillé ainsi que la légende mais surtout maintenant on peut cliquer sur le calque pour obtenir l'occupation des sols dans un rayon de 1kms et donc une explicabilité du score.
 
-$rarr; PR[#636](https://github.com/TelesCoop/iarbre/pull/636)
+&rarr; PR[#636](https://github.com/TelesCoop/iarbre/pull/636)
 
 ## 🔖 0.29.0 (2026-04-29) : Ajout de documentation métier et améliorations de l'UX
 
