@@ -85,7 +85,7 @@ const bars = computed(() => {
 }
 
 .bar-track {
-  @apply w-full h-11 bg-gray-100 rounded-lg overflow-hidden;
+  @apply w-full h-9 bg-gray-100 rounded-lg overflow-hidden;
 }
 
 .bar-fill {

@@ -30,12 +30,12 @@ defineProps<Props>()
       <p v-if="interpretation" class="text-sm font-semibold text-gray-800 leading-relaxed">
         {{ interpretation }}
       </p>
-      <p v-if="description" class="text-sm text-gray-500 leading-relaxed">{{ description }}</p>
+      <p v-if="description" class="text-sm text-gray-600 leading-relaxed">{{ description }}</p>
     </div>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
       <slot />
     </div>
-    <p v-if="source" class="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
+    <p v-if="source" class="text-xs text-gray-600 italic border-t border-gray-100 pt-3">
       {{ source }}
       <br />
       <a
@@ -43,7 +43,7 @@ defineProps<Props>()
         :href="sourceLink"
         target="_blank"
         rel="noopener noreferrer"
-        class="underline hover:text-gray-600"
+        class="underline hover:text-gray-800"
         >En savoir plus.</a
       >
     </p>
