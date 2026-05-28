@@ -16,3 +16,9 @@ export const HEAT_COLORS = {
   day: { expo: "#FBBF24", sensibility: "#F59E0B", capaf: "#D97706", accent: "#F59E0B" },
   night: { expo: "#818CF8", sensibility: "#6366F1", capaf: "#4F46E5", accent: "#6366F1" }
 } as const
+
+export const BUILDING_WIDGET_COLORS = {
+  surface: "#67a54c",
+  height: "#51a1e3",
+  footprint: "#eb9249"
+} as const

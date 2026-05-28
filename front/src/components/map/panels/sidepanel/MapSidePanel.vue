@@ -132,7 +132,7 @@ watch(
   @apply border-r border-gray-200;
   @apply transition-transform duration-300 ease-out;
   @apply fixed top-0 z-20;
-  left: 64px;
+  left: 4.5rem;
   width: var(--width-sidepanel);
 }
 

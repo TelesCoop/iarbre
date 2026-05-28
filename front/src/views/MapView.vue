@@ -78,7 +78,7 @@ const handleMapUpdate = (params: MapParams) => {
 
 @media (min-width: 1024px) {
   .map-view-wrapper {
-    margin-left: 64px;
+    margin-left: 4.5rem;
   }
 }
 

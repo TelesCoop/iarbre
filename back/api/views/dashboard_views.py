@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from django.contrib.gis.db.models.functions import Area
-from django.db.models import Avg, Case, FloatField, QuerySet, Sum, When
+from django.db.models import Avg, Case, Count, FloatField, QuerySet, Sum, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
@@ -12,7 +12,15 @@ from rest_framework.views import APIView
 
 from api.constants import INDICE_ROUNDING_DECIMALS
 from api.serializers.dashboard_serializer import DashboardSerializer
-from iarbre_data.models import City, Iris, Lcz, Vegestrate, Vulnerability
+from iarbre_data.models import (
+    BiosphereFunctionalIntegrity,
+    City,
+    Data,
+    Iris,
+    Lcz,
+    Vegestrate,
+    Vulnerability,
+)
 
 M2_TO_HA = 10_000
 
@@ -23,17 +31,11 @@ def _safe_round(value: float | None) -> float:
     return round(value, INDICE_ROUNDING_DECIMALS) if value is not None else 0
 
 
-def _m2_to_ha(value: float) -> float:
-    return round(value / M2_TO_HA, 1) if value else 0
-
-
 def _json_avg(key: str) -> Avg:
-    """Build Avg(Cast(KeyTextTransform(key, 'details'), FloatField)) expression."""
     return Avg(Cast(KeyTextTransform(key, "details"), output_field=FloatField()))
 
 
 def _json_avg_built_only(key: str) -> Avg:
-    """Avg over built LCZ indices only (conditional aggregation)."""
     return Avg(
         Case(
             When(
@@ -46,7 +48,6 @@ def _json_avg_built_only(key: str) -> Avg:
 
 
 def _avg_from_counts(counts: dict) -> float:
-    """Compute weighted average plantability from pre-computed counts dict."""
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -55,8 +56,6 @@ def _avg_from_counts(counts: dict) -> float:
 
 @dataclass
 class DashboardScope:
-    """Geographic scale resolved from query parameters."""
-
     city: City | None
     iris: Iris | None
     geometry_filter: dict
@@ -82,6 +81,8 @@ class DashboardView(APIView):
             "vulnerability": self._aggregate_vulnerability(scope.geometry_filter),
             "vegetation": self._aggregate_vegetation(scope),
             "lcz": self._aggregate_lcz(scope.geometry_filter),
+            "buildings": self._aggregate_buildings(scope.geometry_filter),
+            "biosphere": self._aggregate_biosphere(scope.geometry_filter),
         }
         serializer = DashboardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -150,6 +151,7 @@ class DashboardView(APIView):
                 ),
                 "distribution": scope.iris.plantability_counts,
                 "distributionByDivision": [],
+                "metaFactors": scope.iris.meta_factors_avg or {},
             }
 
         if scope.city:
@@ -161,14 +163,23 @@ class DashboardView(APIView):
                 "distributionByDivision": self._plantability_by_subdivision(
                     Iris.objects.filter(city=scope.city)
                 ),
+                "metaFactors": scope.city.meta_factors_avg or {},
             }
 
         total_counts: dict[str, int] = {}
+        meta_totals: dict[str, float] = {}
+        meta_city_count = 0
         divisions = []
 
-        for city in scope.cities_qs.only("code", "name", "plantability_counts"):
+        for city in scope.cities_qs.only(
+            "code", "name", "plantability_counts", "meta_factors_avg"
+        ):
             for key, count in city.plantability_counts.items():
                 total_counts[key] = total_counts.get(key, 0) + count
+            if city.meta_factors_avg:
+                for key, val in city.meta_factors_avg.items():
+                    meta_totals[key] = meta_totals.get(key, 0.0) + val
+                meta_city_count += 1
             divisions.append(
                 {
                     "code": city.code,
@@ -180,10 +191,17 @@ class DashboardView(APIView):
                 }
             )
 
+        meta_factors_avg = (
+            {k: _safe_round(v / meta_city_count) for k, v in meta_totals.items()}
+            if meta_city_count > 0
+            else {}
+        )
+
         return {
             "averageNormalizedIndice": _safe_round(_avg_from_counts(total_counts)),
             "distribution": total_counts,
             "distributionByDivision": divisions,
+            "metaFactors": meta_factors_avg,
         }
 
     @staticmethod
@@ -231,10 +249,10 @@ class DashboardView(APIView):
         total = trees + bushes + grass
 
         return {
-            "totalHa": _m2_to_ha(total),
-            "treesSurfaceHa": _m2_to_ha(trees),
-            "bushesSurfaceHa": _m2_to_ha(bushes),
-            "grassSurfaceHa": _m2_to_ha(grass),
+            "totalM2": total,
+            "treesSurfaceM2": trees,
+            "bushesSurfaceM2": bushes,
+            "grassSurfaceM2": grass,
         }
 
     @staticmethod
@@ -263,4 +281,31 @@ class DashboardView(APIView):
             "treeCoverRate": _safe_round(result["avg_vhr"]),
             "totalVegetationRate": _safe_round(result["avg_ver"]),
             "waterRate": _safe_round(result["avg_war"]),
+        }
+
+    @staticmethod
+    def _aggregate_buildings(geometry_filter: dict) -> dict:
+        qs = Data.objects.filter(factor="Bâtiments")
+        if geometry_filter:
+            qs = qs.filter(**geometry_filter)
+        result = qs.annotate(
+            area_m2=Cast(Area("geometry"), output_field=FloatField())
+        ).aggregate(avg_area=Avg("area_m2"))
+        avg = result["avg_area"]
+        return {"averageBuildingFootprintM2": _safe_round(avg)}
+
+    @staticmethod
+    def _aggregate_biosphere(geometry_filter: dict) -> dict:
+        qs = BiosphereFunctionalIntegrity.objects.all()
+        if geometry_filter:
+            qs = qs.filter(**geometry_filter)
+        distribution = {
+            str(row["indice"]): row["count"]
+            for row in qs.values("indice")
+            .annotate(count=Count("id"))
+            .order_by("indice")
+        }
+        return {
+            "averageIndice": _safe_round(_avg_from_counts(distribution)),
+            "distribution": distribution,
         }
