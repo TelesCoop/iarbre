@@ -27,8 +27,8 @@ const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.sele
     <a
       :href="documentationUrl"
       class="methodology-link"
-      target="_blank"
       rel="noopener external"
+      target="_blank"
       title="Documentation sur la méthodologie - nouvelle fenêtre"
     >
       Voir la méthodologie
@@ -41,7 +41,7 @@ const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.sele
 @reference "@/styles/main.css";
 
 .methodology-link {
-  @apply self-start text-xs font-medium text-gray-600 underline underline-offset-4;
+  @apply self-end text-xs font-medium text-gray-600 underline underline-offset-4;
   @apply transition-colors duration-200 hover:text-primary-700;
 }
 
