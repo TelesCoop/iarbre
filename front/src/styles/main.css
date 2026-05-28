@@ -212,13 +212,6 @@
   @apply cursor-pointer;
 }
 
-.vulnerability-table-row {
-  @apply grid grid-cols-12 gap-2 md:gap-4 p-2 md:p-4;
-  @apply hover:bg-primary-100;
-  @apply transition-all duration-200 items-center;
-  @apply border-l-2 border-transparent;
-}
-
 /* Map Control Styles */
 .map-control {
   @apply bg-white rounded-lg border border-gray-200;

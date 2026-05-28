@@ -38,7 +38,7 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
           <slot :data="data" name="score" />
         </div>
 
-        <div :class="['content-section', colorScheme !== 'plantability' && 'overflow-y-scroll']">
+        <div class="content-section">
           <slot :data="data" :full-height="fullHeight" name="content" />
           <div v-if="$slots.legend" class="legend-section">
             <slot :data="data" name="legend" />
@@ -73,11 +73,11 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 }
 
 .score-section {
-  @apply flex justify-center gap-8 pr-4 lg:pr-0 lg:pb-3 border-r lg:border-r-0 lg:border-b border-gray-100;
+  @apply flex shrink-0 justify-center gap-8 pr-4 lg:pr-0 lg:pb-3 border-r lg:border-r-0 lg:border-b border-gray-100;
 }
 
 .content-section {
-  @apply flex-1 min-h-0 flex flex-col;
+  @apply flex-1 min-h-0 flex flex-col overflow-y-auto;
   @apply w-full;
 }
 </style>

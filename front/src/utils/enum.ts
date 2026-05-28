@@ -97,9 +97,9 @@ export enum VulnerabilityCategory {
 }
 
 export const VulnerabilityCategoryToIcon: Record<VulnerabilityCategory, string> = {
-  [VulnerabilityCategory.EXPOSITION]: "🌡️",
-  [VulnerabilityCategory.CAPACITY_TO_FACE]: "🏥",
-  [VulnerabilityCategory.SENSIBILITY]: "👥"
+  [VulnerabilityCategory.EXPOSITION]: "heat",
+  [VulnerabilityCategory.CAPACITY_TO_FACE]: "capacity",
+  [VulnerabilityCategory.SENSIBILITY]: "people"
 }
 
 export const VulnerabilityCategoryToDescription: Record<VulnerabilityCategory, string> = {

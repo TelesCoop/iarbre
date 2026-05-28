@@ -7,53 +7,6 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <a
-        :href="documentationUrl"
-        class="methodology-banner"
-        target="_blank"
-        rel="noopener external"
-        title="Documentation sur la méthodologie - nouvelle fenêtre"
-      >
-        <svg
-          fill="none"
-          height="16"
-          viewBox="0 0 16 16"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            height="13"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="1.5"
-            width="11"
-            x="2.5"
-            y="1.5"
-          />
-          <path
-            d="M5 5.5h6M5 8h6M5 10.5h4"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-width="1.5"
-          />
-        </svg>
-        <span class="flex-1">Voir la méthodologie</span>
-        <svg
-          fill="none"
-          height="16"
-          viewBox="0 0 16 16"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M6 12L10 8L6 4"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-        </svg>
-      </a>
       <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
@@ -75,16 +28,6 @@
         <MapBoundaryToggleButton />
         <MapContextTools />
       </div>
-      <a
-        v-if="isPanelOpen"
-        :href="documentationUrl"
-        class="methodology-link-mobile"
-        target="_blank"
-        rel="noopener external"
-        title="Documentation sur la méthodologie - nouvelle fenêtre"
-      >
-        Voir la méthodologie
-      </a>
     </div>
 
     <div class="mobile-panel-content">
@@ -99,13 +42,10 @@
 import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { DataTypeToDocumentationUrl } from "@/utils/enum"
 import MapBoundaryToggleButton from "../MapBoundaryToggleButton.vue"
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
-
-const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 const isPanelOpen = ref(false)
@@ -138,17 +78,6 @@ watch(
 
 .map-sidepanel.is-hidden {
   transform: translateX(-100%);
-}
-
-.methodology-banner {
-  @apply flex items-center gap-2 px-3 py-3 mt-4 rounded-lg w-full flex-shrink-0;
-  @apply bg-primary-500 text-off-white text-sm font-sans font-medium;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.methodology-banner:hover {
-  opacity: 0.9;
 }
 
 .sidebar-footer {
@@ -195,16 +124,5 @@ watch(
 
 .mobile-panel-scroll {
   @apply px-3 pb-3 w-full overflow-y-auto flex-1 min-h-0;
-}
-
-.methodology-link-mobile {
-  @apply mx-3 mb-2 px-3 py-2 rounded-lg;
-  @apply bg-primary-500 text-off-white text-xs font-medium text-center block;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.methodology-link-mobile:hover {
-  opacity: 0.9;
 }
 </style>

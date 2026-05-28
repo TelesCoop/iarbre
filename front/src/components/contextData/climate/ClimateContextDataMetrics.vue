@@ -47,6 +47,7 @@ const climateGroups = computed((): ContextDataFactorGroup[] => {
   <ContextDataListContainer
     :groups="climateGroups"
     color-scheme="climate"
+    variant="cards"
     :full-height="fullHeight"
     :scrollable="true"
     aria-label="Liste des indicateurs climatiques par catégorie"

@@ -88,6 +88,7 @@ const distributionEntries = computed(() => {
         :groups="genericFactorGroups"
         aria-label="Liste des paramètres de plantabilité par catégorie"
         color-scheme="plantability"
+        variant="cards"
       />
     </template>
 
