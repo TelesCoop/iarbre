@@ -5,6 +5,7 @@ import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCa
 import type { DashboardVegetation } from "@/types/dashboard"
 import { VEGETATION_COLORS } from "@/utils/dashboardColors"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
+import { getContrastTextHex } from "@/utils/color"
 
 interface Props {
   data: DashboardVegetation
@@ -16,12 +17,19 @@ const m2ToKm2 = (m2: number) => m2 / 1_000_000
 
 const hasData = computed(() => props.data.totalM2 >= 1)
 
-const items = computed(() => [
-  { label: "TOTALE", value: m2ToKm2(props.data.totalM2), color: "#426a45" },
-  { label: "HAUTE", value: m2ToKm2(props.data.treesSurfaceM2), color: VEGETATION_COLORS.trees },
-  { label: "MOYENNE", value: m2ToKm2(props.data.bushesSurfaceM2), color: VEGETATION_COLORS.bushes },
-  { label: "BASSE", value: m2ToKm2(props.data.grassSurfaceM2), color: VEGETATION_COLORS.grass }
-])
+const items = computed(() => {
+  const entries = [
+    { label: "TOTALE", value: m2ToKm2(props.data.totalM2), color: "#426a45" },
+    { label: "HAUTE", value: m2ToKm2(props.data.treesSurfaceM2), color: VEGETATION_COLORS.trees },
+    {
+      label: "MOYENNE",
+      value: m2ToKm2(props.data.bushesSurfaceM2),
+      color: VEGETATION_COLORS.bushes
+    },
+    { label: "BASSE", value: m2ToKm2(props.data.grassSurfaceM2), color: VEGETATION_COLORS.grass }
+  ]
+  return entries.map((e) => ({ ...e, textColor: getContrastTextHex(e.color) }))
+})
 
 function formatKm2(km2: number): string {
   return `${km2.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
@@ -103,7 +111,7 @@ const { svgRef } = useD3Chart(
       .attr("dominant-baseline", "central")
       .attr("font-size", "9px")
       .attr("font-weight", "bold")
-      .attr("fill", "white")
+      .attr("fill", (d) => d.textColor)
       .attr("opacity", animate ? 0 : 1)
       .text((d) => `${d.value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}`)
 

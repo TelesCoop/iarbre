@@ -3,6 +3,7 @@ import { computed } from "vue"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import type { DashboardBuildings, DashboardLcz } from "@/types/dashboard"
 import { BUILDING_WIDGET_COLORS } from "@/utils/dashboardColors"
+import { getContrastTextHex } from "@/utils/color"
 
 interface Props {
   lcz: DashboardLcz
@@ -11,29 +12,32 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const bars = computed(() => [
-  {
-    label: "Taux de surface bâtie",
-    value: props.lcz.averageBuildingSurfaceRate,
-    max: 100,
-    color: BUILDING_WIDGET_COLORS.surface,
-    display: `${props.lcz.averageBuildingSurfaceRate.toFixed(1)} %`
-  },
-  {
-    label: "Hauteur moyenne",
-    value: props.lcz.averageBuildingHeight,
-    max: 50,
-    color: BUILDING_WIDGET_COLORS.height,
-    display: `${props.lcz.averageBuildingHeight.toFixed(1)} m`
-  },
-  {
-    label: "Superficie moyenne",
-    value: props.buildings.averageBuildingFootprintM2,
-    max: 500,
-    color: BUILDING_WIDGET_COLORS.footprint,
-    display: `${Math.round(props.buildings.averageBuildingFootprintM2)} m²`
-  }
-])
+const bars = computed(() => {
+  const entries = [
+    {
+      label: "Taux de surface bâtie",
+      value: props.lcz.averageBuildingSurfaceRate,
+      max: 100,
+      color: BUILDING_WIDGET_COLORS.surface,
+      display: `${props.lcz.averageBuildingSurfaceRate.toFixed(1)} %`
+    },
+    {
+      label: "Hauteur moyenne",
+      value: props.lcz.averageBuildingHeight,
+      max: 50,
+      color: BUILDING_WIDGET_COLORS.height,
+      display: `${props.lcz.averageBuildingHeight.toFixed(1)} m`
+    },
+    {
+      label: "Superficie moyenne",
+      value: props.buildings.averageBuildingFootprintM2,
+      max: 500,
+      color: BUILDING_WIDGET_COLORS.footprint,
+      display: `${Math.round(props.buildings.averageBuildingFootprintM2)} m²`
+    }
+  ]
+  return entries.map((e) => ({ ...e, textColor: getContrastTextHex(e.color) }))
+})
 </script>
 
 <template>
@@ -57,7 +61,7 @@ const bars = computed(() => [
               backgroundColor: bar.color
             }"
           >
-            <span class="bar-inner-value">{{ bar.display }}</span>
+            <span class="bar-inner-value" :style="{ color: bar.textColor }">{{ bar.display }}</span>
           </div>
         </div>
       </div>
@@ -90,7 +94,7 @@ const bars = computed(() => [
 }
 
 .bar-inner-value {
-  @apply text-sm font-bold text-white whitespace-nowrap;
+  @apply text-sm font-bold whitespace-nowrap;
 }
 
 @keyframes barGrow {

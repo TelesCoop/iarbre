@@ -56,7 +56,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .widget-subtitle {
-  @apply text-xs text-gray-500 mt-0.5;
+  @apply text-sm text-gray-800 mt-0.5;
 }
 
 .widget-content {

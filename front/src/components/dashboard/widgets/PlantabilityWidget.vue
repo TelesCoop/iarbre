@@ -9,6 +9,7 @@ import {
   PLANTABILITY_COLOR_MAP,
   PlantabilityScoreThreshold
 } from "@/utils/plantability"
+import { getContrastTextHex } from "@/utils/color"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 const PLANTABILITY_MAX_SCORE = PlantabilityScoreThreshold.VERY_FAVORED
@@ -53,12 +54,16 @@ const bars = computed(() => {
 const metaFactorBars = computed(() => {
   const mf = props.data.metaFactors
   if (!mf) return []
-  return Object.entries(mf).map(([label, value]) => ({
-    label,
-    value,
-    color: META_FACTOR_COLORS[label] ?? "#C4C4C4",
-    display: `${value.toFixed(1)}%`
-  }))
+  return Object.entries(mf).map(([label, value]) => {
+    const color = META_FACTOR_COLORS[label] ?? "#C4C4C4"
+    return {
+      label,
+      value,
+      color,
+      textColor: getContrastTextHex(color),
+      display: `${value.toFixed(1)}%`
+    }
+  })
 })
 
 const { svgRef } = useD3Chart(
@@ -154,6 +159,7 @@ const { svgRef } = useD3Chart(
         <svg ref="svgRef" class="distribution-chart" />
       </div>
       <div class="meta-factors">
+        <p class="widget-subtitle">Méta facteurs d'occupation des sols :</p>
         <div v-for="bar in metaFactorBars" :key="bar.label" class="bar-item">
           <span class="bar-label">{{ bar.label }}</span>
           <div class="bar-track">
@@ -164,7 +170,9 @@ const { svgRef } = useD3Chart(
                 backgroundColor: bar.color
               }"
             >
-              <span class="bar-inner-value">{{ bar.display }}</span>
+              <span class="bar-inner-value" :style="{ color: bar.textColor }">{{
+                bar.display
+              }}</span>
             </div>
           </div>
         </div>
@@ -192,6 +200,10 @@ const { svgRef } = useD3Chart(
   @apply flex flex-col gap-1.5;
 }
 
+.widget-subtitle {
+  @apply text-sm text-gray-800 mt-0.5;
+}
+
 .bar-item {
   @apply flex flex-col gap-0.5;
 }
@@ -210,7 +222,7 @@ const { svgRef } = useD3Chart(
 }
 
 .bar-inner-value {
-  @apply text-[0.625rem] font-bold text-white whitespace-nowrap;
+  @apply text-[0.625rem] font-bold whitespace-nowrap;
 }
 
 @keyframes barGrow {
