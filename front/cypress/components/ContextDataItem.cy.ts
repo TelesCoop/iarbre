@@ -1,28 +1,29 @@
-import ContextDataItem from "@/components/contextData/shared/ContextDataItem.vue"
+import ContextDataFactorRow from "@/components/contextData/shared/ContextDataFactorRow.vue"
 import type { ContextDataFactor, ContextDataVulnerabilityFactor } from "@/types/contextData"
 
-describe("ContextDataItem.vue", () => {
+describe("ContextDataFactorRow.vue", () => {
   const baseFactor: ContextDataFactor = {
     key: "test-factor",
     label: "Test Factor",
     value: "50",
     unit: "%",
-    icon: "🌡️",
+    icon: "heat",
+    impact: "positive",
     description: "Test description"
   }
 
   it("renders basic factor with all props", () => {
-    cy.mount(ContextDataItem, {
+    cy.mount(ContextDataFactorRow, {
       props: {
-        item: baseFactor
+        factor: baseFactor
       }
     })
 
     cy.contains("Test Factor").should("be.visible")
     cy.contains("50").should("be.visible")
     cy.contains("%").should("be.visible")
-    cy.contains("🌡️").should("be.visible")
-    cy.contains("Test description").should("be.visible")
+    cy.get('[data-cy="factor-test-factor"]').should("exist")
+    cy.get(".impact-positive").should("exist")
   })
 
   it("renders vulnerability factor with day and night scores", () => {
@@ -36,18 +37,18 @@ describe("ContextDataItem.vue", () => {
     const getScoreColor = () => "bg-red-500"
     const getScoreLabel = () => "High"
 
-    cy.mount(ContextDataItem, {
+    cy.mount(ContextDataFactorRow, {
       props: {
-        item: vulnerabilityFactor,
-        colorScheme: "vulnerability",
+        factor: vulnerabilityFactor,
+        variant: "vulnerability",
         getScoreColor,
         getScoreLabel
       }
     })
 
-    cy.contains("☀️ Jour").should("be.visible")
-    cy.contains("🌙 Nuit").should("be.visible")
     cy.get('[data-cy="vulnerability-context-data-score"]').should("have.length", 2)
+    cy.get('[data-cy="vulnerability-context-data-2"]').should("exist")
+    cy.get('[data-cy="vulnerability-context-data-3"]').should("exist")
   })
 
   it("renders vulnerability factor with null scores", () => {
@@ -61,16 +62,16 @@ describe("ContextDataItem.vue", () => {
     const getScoreColor = () => "bg-red-500"
     const getScoreLabel = () => "High"
 
-    cy.mount(ContextDataItem, {
+    cy.mount(ContextDataFactorRow, {
       props: {
-        item: vulnerabilityFactor,
-        colorScheme: "vulnerability",
+        factor: vulnerabilityFactor,
+        variant: "vulnerability",
         getScoreColor,
         getScoreLabel
       }
     })
 
-    cy.contains("☀️ Jour").should("be.visible")
-    cy.contains("🌙 Nuit").should("be.visible")
+    cy.get('[data-cy="vulnerability-context-data-score"]').should("have.length", 2)
+    cy.contains("-").should("exist")
   })
 })
