@@ -1,6 +1,8 @@
 import factory
 from django.contrib.gis.geos import Polygon
 from iarbre_data.models import (
+    BiosphereFunctionalIntegrity,
+    Data,
     Tile,
     Iris,
     City,
@@ -83,6 +85,22 @@ class VegestrateFactory(factory.django.DjangoModelFactory):
     geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
     strate = "herbacee"
     surface = 100.0
+
+
+class DataFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Data
+
+    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    factor = "Bâtiments"
+
+
+class BiosphereFunctionalIntegrityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BiosphereFunctionalIntegrity
+
+    geometry = factory.LazyFunction(lambda: Polygon.from_bbox((0, 0, 1, 1)))
+    indice = factory.Faker("random_int", min=0, max=100)
 
 
 class LczFactory(factory.django.DjangoModelFactory):

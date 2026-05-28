@@ -394,6 +394,47 @@
 }
 
 /* ========================================
+   Dashboard widget shared styles
+   ======================================== */
+
+.widget-body {
+  @apply flex-1 w-full min-h-[200px];
+}
+
+.widget-empty {
+  @apply flex-1 flex items-center justify-center;
+}
+
+.empty-text {
+  @apply text-sm text-gray-400;
+}
+
+.chart-tooltip {
+  @apply absolute pointer-events-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md;
+  @apply bg-white border border-gray-100 text-xs whitespace-nowrap -translate-x-1/2 z-10;
+}
+
+.tooltip-dot {
+  @apply w-2 h-2 rounded-full shrink-0;
+}
+
+.tooltip-label {
+  @apply text-gray-600 font-medium;
+}
+
+.tooltip-value {
+  @apply text-gray-800 font-bold tabular-nums;
+}
+
+.tooltip-sep {
+  @apply text-gray-300;
+}
+
+.tooltip-level {
+  @apply text-gray-400;
+}
+
+/* ========================================
    Legend component shared styles
    ======================================== */
 

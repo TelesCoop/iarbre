@@ -29,12 +29,12 @@ const handleGithubClick = () => {
   window.open("https://github.com/TelesCoop/iarbre", "_blank")
 }
 
+const handleMapClick = () => {
+  router.push({ name: "map" })
+}
+
 const handleDashboardClick = () => {
-  if (isDashboard.value) {
-    router.push({ name: "map" })
-  } else {
-    router.push({ name: "dashboard" })
-  }
+  router.push({ name: "dashboard" })
 }
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -209,41 +209,57 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       />
     </button>
 
-    <button
-      :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
-      :class="['sidebar-dashboard-button', { active: isDashboard }]"
-      data-cy="dashboard-button"
-      @click="handleDashboardClick"
-    >
-      <svg
-        v-if="!isDashboard"
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+    <nav class="sidebar-nav">
+      <button
+        :class="['sidebar-nav-button', { active: !isDashboard }]"
+        aria-label="Carte"
+        @click="handleMapClick"
       >
-        <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-        <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-        <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-        <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-      </svg>
-      <svg
-        v-else
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="sidebar-nav-label">Carte</span>
+      </button>
+      <button
+        :class="['sidebar-nav-button', { active: isDashboard }]"
+        aria-label="Tableau de bord"
+        data-cy="dashboard-button"
+        @click="handleDashboardClick"
       >
-        <path
-          d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linejoin="round"
-        />
-      </svg>
-    </button>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
+          <rect
+            x="14"
+            y="14"
+            width="7"
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+        </svg>
+        <span class="sidebar-nav-label">Tableau<br />de bord</span>
+      </button>
+    </nav>
 
     <div class="sidebar-icons">
       <button aria-label="Contact" class="sidebar-icon-button" @click="handleContactClick">
@@ -477,13 +493,32 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 
     <div class="mobile-bar-icons">
       <button
-        :aria-label="isDashboard ? 'Retour à la carte' : 'Tableau de bord'"
+        :class="['mobile-bar-button', { 'mobile-bar-button-active': !isDashboard }]"
+        aria-label="Carte"
+        @click="handleMapClick"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
         :class="['mobile-bar-button', { 'mobile-bar-button-active': isDashboard }]"
+        aria-label="Tableau de bord"
         data-cy="dashboard-button-mobile"
         @click="handleDashboardClick"
       >
         <svg
-          v-if="!isDashboard"
           width="20"
           height="20"
           viewBox="0 0 24 24"
@@ -501,21 +536,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
             rx="1.5"
             stroke="currentColor"
             stroke-width="2"
-          />
-        </svg>
-        <svg
-          v-else
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
           />
         </svg>
       </button>
@@ -633,7 +653,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply border-r-primary-300 border-r-1;
   @apply bg-white z-50;
   left: 0;
-  width: 64px;
+  width: 4.5rem;
 }
 
 .sidebar-logo {
@@ -646,8 +666,8 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply flex flex-col items-center;
   @apply bg-[#426A45];
   @apply mt-auto;
-  gap: 16px;
-  padding: 24px 0;
+  gap: 1rem;
+  padding: 1.5rem 0;
   flex-shrink: 0;
 }
 
@@ -655,8 +675,8 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply flex items-center justify-center cursor-pointer;
   @apply bg-transparent border-none p-0;
   @apply transition-opacity hover:opacity-80;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .sidebar-toggle-panel {
@@ -665,22 +685,35 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply transition-all duration-200;
   @apply hover:bg-gray-200;
   width: 100%;
-  height: 40px;
+  height: 2.5rem;
   flex-shrink: 0;
 }
 
-.sidebar-dashboard-button {
-  @apply hidden lg:flex items-center justify-center cursor-pointer;
+.sidebar-nav {
+  @apply hidden lg:flex flex-col;
+  @apply border-b-1 border-gray-200;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-button {
+  @apply flex flex-col items-center justify-center cursor-pointer;
   @apply bg-gray-50 border-none text-gray-500;
   @apply transition-all duration-200;
-  @apply hover:bg-primary-100 hover:text-primary-700;
+  @apply hover:bg-primary-50 hover:text-primary-600;
   width: 100%;
-  height: 48px;
-  flex-shrink: 0;
+  height: 4rem;
+  gap: 0.25rem;
 }
 
-.sidebar-dashboard-button.active {
+.sidebar-nav-button.active {
   @apply bg-primary-100 text-primary-700;
+  @apply border-l-2 border-l-primary-600;
+}
+
+.sidebar-nav-label {
+  @apply text-center leading-tight;
+  font-size: 0.5625rem;
+  font-weight: 500;
 }
 
 .toggle-chevron {
@@ -692,7 +725,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply fixed bottom-0 left-0 right-0 z-50;
   @apply flex items-center justify-between px-4;
   @apply bg-[#426A45];
-  height: 56px;
+  height: 3.5rem;
 }
 
 .mobile-bar-logo {

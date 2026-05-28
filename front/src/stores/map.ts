@@ -735,6 +735,9 @@ export const useMapStore = defineStore("map", () => {
     if (mapInstance.getLayer("city-boundary")) {
       mapInstance.removeLayer("city-boundary")
     }
+    if (mapInstance.getLayer("city-boundary-border-casing")) {
+      mapInstance.removeLayer("city-boundary-border-casing")
+    }
     if (mapInstance.getSource("city-boundary-source")) {
       mapInstance.removeSource("city-boundary-source")
     }

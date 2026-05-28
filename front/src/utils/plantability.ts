@@ -4,6 +4,7 @@ import {
   PlantabilityMetaCategory,
   PlantabilityScore
 } from "@/types/plantability"
+import { metaFactorColors } from "@/theme/iArbre"
 
 export enum PlantabilityScoreThreshold {
   IMPOSSIBLE = 0,
@@ -186,6 +187,8 @@ export const PLANTABILITY_FACTORS_META_CATEGORIES = {
   [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityMetaCategory.PLANS_EAU,
   [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityMetaCategory.PLANS_EAU
 }
+
+export const META_FACTOR_COLORS = metaFactorColors
 
 export const ZoomToGridSize: Record<number, number> = {
   10: 100,

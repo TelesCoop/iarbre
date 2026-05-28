@@ -3,6 +3,7 @@ branch_hash: "{{ branch_slug | hash('md5') }}"
 unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
 
 backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
+gisserver_application_port: "9{{ unique_number }}"
 frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
 environment_suffix: "-feature-{{ branch_slug }}"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
@@ -10,14 +11,10 @@ project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
 main_hostname: "feature-{{ branch_slug[:20] }}-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
-hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
 use_password: true
 
 # hostnames mentioned here are redirected to the main hostname
 redirect_hostnames: []
-
-showcase_hostname: "feature-{{ branch_slug[:20] }}-showcase.iarbre.fr"
-showcase_redirect_hostnames: []
 
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 
@@ -28,7 +25,6 @@ backend_media_path: "{{ project_dir }}/backend/back/media"
 branch_slug: "{{ branch | replace('/','-') }}"
 frontend_branch: "{{ branch }}"
 backend_branch: "{{ branch }}"
-showcase_branch: "{{ branch }}"
 
 environment_name: "feature-{{ branch_slug }}"
 

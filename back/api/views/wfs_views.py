@@ -2,8 +2,9 @@ import logging
 import time
 
 from django.contrib.gis.geos import Polygon
+from django.http import JsonResponse
 from gisserver.crs import CRS84, WEB_MERCATOR, CRS
-from gisserver.features import FeatureType, ServiceDescription
+from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
 from iarbre_data.settings import SRID_DB
@@ -67,10 +68,12 @@ class TileFeatureType(FeatureType):
 
 LAMBERT93 = CRS.from_string(f"urn:ogc:def:crs:EPSG::{SRID_DB}")
 
-_tile_qs = Tile.objects.only(
+_tile_qs = Tile.objects.select_related("city").only(
     "geometry",
     "plantability_indice",
     "plantability_normalized_indice",
+    "city__code",
+    "city__name",
 )
 
 _vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
@@ -91,7 +94,16 @@ class IArbreWFSView(WFSView):
 
     def dispatch(self, request, *args, **kwargs):
         params = {k.upper(): v for k, v in request.GET.items()}
-        if params.get("REQUEST", "").upper() != "GETFEATURE":
+        req = params.get("REQUEST", "").upper()
+
+        if req == "GETTYPES":
+            types = [
+                {"name": f"iarbre:{ft.name}", "title": ft.title or ft.name}
+                for ft in self.get_feature_types()
+            ]
+            return JsonResponse(types, safe=False)
+
+        if req != "GETFEATURE":
             return super().dispatch(request, *args, **kwargs)
 
         typename = params.get("TYPENAMES") or params.get("TYPENAME", "unknown")
@@ -144,15 +156,20 @@ class IArbreWFSView(WFSView):
             TileFeatureType(
                 _tile_qs,
                 name="plantability",
+                title="Plantabilité",
                 fields=[
                     "geometry",
                     "plantability_indice",
                     "plantability_normalized_indice",
+                    FeatureField("city_code", model_attribute="city.code"),
+                    FeatureField("city_name", model_attribute="city.name"),
                 ],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
             TileFeatureType(
                 _vegestrate_qs,
+                name="vegestrate",
+                title="Végéstrate",
                 fields=["geometry", "strate", "surface"],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),

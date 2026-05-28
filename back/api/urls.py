@@ -14,6 +14,7 @@ from .views import (
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
+    IArbreWMSView,
     OrthophotoTileView,
     BiosphereLandCoverAtPointView,
 )
@@ -52,6 +53,7 @@ urlpatterns = [
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
     path("wfs/", IArbreWFSView.as_view()),
+    path("wms/", IArbreWMSView.as_view()),
     path(
         "orthophoto/<int:z>/<int:x>/<int:y>.png",
         OrthophotoTileView.as_view(),

@@ -1,3 +1,4 @@
+import mercantile
 from django.contrib.gis.geos import Polygon
 from django.core.management import call_command
 from django.test import TestCase
@@ -8,8 +9,10 @@ from iarbre_data.models import City, Data, Iris, Lcz, MVTTile, Tile, Vulnerabili
 
 class DeleteTestDataTest(TestCase):
     def setUp(self):
-        # Test city centered at the populate.py coordinates
+        # Test city centered at the populate.py coordinates (Lambert-93)
+        # ~ lon 5.55, lat 45.06 in WGS84
         self.test_geometry = Polygon.from_bbox((898000, 6441000, 903000, 6446000))
+        self.test_geometry.srid = 2154
         self.test_city = City.objects.create(
             name="Villard-de-Lans",
             code=CITY_CODE,
@@ -29,12 +32,35 @@ class DeleteTestDataTest(TestCase):
             geometry=self.test_geometry, vulnerability_index_day=1
         )
         self.test_qpv = Data.objects.create(geometry=self.test_geometry, factor="QPV")
+
+        # MVT tile inside the Villard-de-Lans bbox at zoom 13
+        wgs84_geom = self.test_geometry.clone()
+        wgs84_geom.transform(4326)
+        center_tile = mercantile.tile(
+            (wgs84_geom.extent[0] + wgs84_geom.extent[2]) / 2,
+            (wgs84_geom.extent[1] + wgs84_geom.extent[3]) / 2,
+            13,
+        )
         self.test_mvt = MVTTile.objects.create(
-            zoom_level=13, tile_x=0, tile_y=0, geolevel="tile", datatype="tile"
+            zoom_level=13,
+            tile_x=center_tile.x,
+            tile_y=center_tile.y,
+            geolevel="tile",
+            datatype="plantability",
+        )
+
+        # Production MVT tile far from Villard-de-Lans (must be preserved)
+        self.production_mvt = MVTTile.objects.create(
+            zoom_level=13,
+            tile_x=4140,  # Lyon area, outside Villard bbox
+            tile_y=2910,
+            geolevel="tile",
+            datatype="plantability",
         )
 
         # Real production data far from Villard-de-Lans (Lyon area)
         self.real_geometry = Polygon.from_bbox((840000, 6510000, 850000, 6520000))
+        self.real_geometry.srid = 2154
         self.real_city = City.objects.create(
             name="Lyon", code="69123", geometry=self.real_geometry
         )
@@ -62,10 +88,11 @@ class DeleteTestDataTest(TestCase):
         self.assertTrue(Vulnerability.objects.filter(pk=self.real_vuln.pk).exists())
         self.assertTrue(Data.objects.filter(pk=self.real_qpv.pk).exists())
 
-    def test_wipes_all_mvt_tiles(self):
+    def test_deletes_only_test_area_mvt_tiles(self):
         call_command("delete_test_data")
 
-        self.assertFalse(MVTTile.objects.exists())
+        self.assertFalse(MVTTile.objects.filter(pk=self.test_mvt.pk).exists())
+        self.assertTrue(MVTTile.objects.filter(pk=self.production_mvt.pk).exists())
 
     def test_no_op_when_no_test_city(self):
         self.test_city.delete()

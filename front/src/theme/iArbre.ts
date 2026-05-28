@@ -10,3 +10,13 @@ export const primaryColors = {
   800: "#2B4822",
   900: "#002814"
 }
+
+export const metaFactorColors: Record<string, string> = {
+  "Espaces verts": "#55B250",
+  "Plan d'eau": "#38bdf8",
+  "Aménagements urbains": "#a3c4a8",
+  Bâtiments: "#94a3b8",
+  "Infrastructure de transport": "#6D8766",
+  "Réseaux et infrastructures": "#DDAD14",
+  "Espaces artificialisés": "#BF5A16"
+}
