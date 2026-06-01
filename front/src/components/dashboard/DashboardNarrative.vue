@@ -9,6 +9,7 @@ import SurfaceTypeWidget from "@/components/dashboard/widgets/SurfaceTypeWidget.
 import VegetationSurfaceWidget from "@/components/dashboard/widgets/VegetationSurfaceWidget.vue"
 import BuildingCharacteristicsWidget from "@/components/dashboard/widgets/BuildingCharacteristicsWidget.vue"
 import { useDashboardStore } from "@/stores/dashboard"
+import DashboardFooter from "@/components/dashboard/DashboardFooter.vue"
 
 const store = useDashboardStore()
 
@@ -111,6 +112,8 @@ const riskInterpretation = computed(() => {
       <PlantabilityWidget :data="store.dashboardData!.plantability" />
     </NarrativeSection>
 
+    <hr class="border-gray-400" />
+
     <NarrativeSection
       section-number="02"
       title="Végétation et biodiversité"
@@ -124,6 +127,8 @@ const riskInterpretation = computed(() => {
       <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
       <BiosphereWidget :data="store.dashboardData!.biosphere" />
     </NarrativeSection>
+
+    <hr class="border-gray-400" />
 
     <NarrativeSection
       section-number="03"
@@ -142,6 +147,8 @@ const riskInterpretation = computed(() => {
       <SurfaceTypeWidget :data="store.dashboardData!.lcz" />
     </NarrativeSection>
 
+    <hr class="border-gray-400" />
+
     <NarrativeSection
       section-number="04"
       title="Risques et vulnérabilités"
@@ -154,5 +161,7 @@ const riskInterpretation = computed(() => {
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>
+
+    <DashboardFooter />
   </div>
 </template>
