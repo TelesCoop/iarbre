@@ -27,7 +27,10 @@ defineProps<Props>()
       <p v-if="finding" class="text-3xl font-bold text-primary-600 tabular-nums mt-1 leading-tight">
         {{ finding }}
       </p>
-      <p v-if="interpretation" class="text-sm font-semibold text-gray-800 leading-relaxed">
+      <p
+        v-if="interpretation"
+        class="text-base font-semibold text-gray-800 leading-relaxed max-w-[68.75%]"
+      >
         {{ interpretation }}
       </p>
       <p v-if="description" class="text-sm text-gray-600 leading-relaxed">{{ description }}</p>
