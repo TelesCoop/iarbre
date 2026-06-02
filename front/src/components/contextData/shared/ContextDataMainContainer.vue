@@ -2,6 +2,10 @@
 import { computed } from "vue"
 import type { ContextDataMainContainerProps } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
+import AppButton from "@/components/shared/AppButton.vue"
+import IconInfo from "@/components/icons/IconInfo.vue"
+import { useMapStore } from "@/stores/map"
+import { DataTypeToDocumentationUrl } from "@/utils/enum"
 
 interface MainContainerProps extends ContextDataMainContainerProps {
   data?: any | null
@@ -23,6 +27,14 @@ const props = withDefaults(defineProps<MainContainerProps>(), {
 
 const ariaDescribedBy = computed(() => `${props.colorScheme}-description`)
 const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
+
+const mapStore = useMapStore()
+
+const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
+
+const openMethodology = () => {
+  window.open(documentationUrl.value, "_blank", "noopener,noreferrer")
+}
 </script>
 
 <template>
@@ -33,8 +45,24 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
     role="dialog"
   >
     <div class="panel-content">
+      <div class="panel-methodology">
+        <AppButton
+          class="methodology-button"
+          data-cy="methodology-button"
+          size="sm"
+          title="Documentation sur la méthodologie - nouvelle fenêtre"
+          variant="primary"
+          @click="openMethodology"
+        >
+          <template #icon-left>
+            <IconInfo :size="14" aria-hidden="true" />
+          </template>
+          Voir la méthodologie
+        </AppButton>
+      </div>
+
       <div v-if="data" class="data-layout">
-        <div class="score-section">
+        <div v-if="$slots.score" class="score-section">
           <slot :data="data" name="score" />
         </div>
 
@@ -62,18 +90,23 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
   @apply py-3 md:py-4 flex flex-col gap-4 md:gap-5 text-sm min-h-0 flex-1 w-full;
 }
 
-.data-layout {
-  @apply flex flex-row flex-wrap items-center gap-4 min-h-0 flex-1;
+.panel-methodology {
+  @apply flex justify-end;
 }
 
-@media (min-width: 1024px) {
-  .data-layout {
-    @apply flex-col;
-  }
+.methodology-button {
+  @apply px-2.5 py-1 text-xs gap-1 whitespace-nowrap;
+  @apply bg-primary-900 border-primary-900 text-white;
+  @apply hover:bg-primary-800 hover:border-primary-800;
+}
+
+.data-layout {
+  @apply flex flex-col items-center gap-4 min-h-0 flex-1 w-full;
 }
 
 .score-section {
-  @apply flex shrink-0 justify-center gap-8 pr-4 lg:pr-0 lg:pb-3 border-r lg:border-r-0 lg:border-b border-gray-100;
+  @apply flex shrink-0 flex-wrap items-center justify-center gap-4 lg:gap-8;
+  @apply w-full pb-3 border-b border-gray-100;
 }
 
 .content-section {

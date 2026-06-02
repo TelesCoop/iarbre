@@ -24,7 +24,7 @@ const SCORE_BG_CLASSES: Record<number, string> = {
 </script>
 
 <template>
-  <div class="flex flex-row lg:flex-col items-center gap-2 font-sans" data-cy="plantability-legend">
+  <div class="flex flex-col items-center gap-1 lg:gap-2 font-sans" data-cy="plantability-legend">
     <div class="legend-header">
       <span class="legend-title">Plantabilité</span>
     </div>

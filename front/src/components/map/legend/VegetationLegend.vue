@@ -10,7 +10,7 @@ const handleStrateClick = (indice: string) => {
 </script>
 
 <template>
-  <div class="flex flex-col items-start gap-2 font-sans" data-cy="vegetation-legend">
+  <div class="flex flex-col items-center gap-2 font-sans" data-cy="vegetation-legend">
     <div class="legend-header">
       <span class="legend-title">Strate végétale</span>
     </div>

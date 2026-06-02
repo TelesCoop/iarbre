@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
 }
 
 .bg-selector-toggle-preview {
-  @apply w-12 h-12 rounded flex items-center justify-center;
+  @apply w-10 h-10 lg:w-12 lg:h-12 rounded flex items-center justify-center;
   @apply bg-gray-100;
   overflow: hidden;
   flex-shrink: 0;

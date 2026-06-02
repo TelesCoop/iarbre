@@ -23,9 +23,7 @@
         <span class="handle-text">{{ isPanelOpen ? "Fermer" : "Voir les détails" }}</span>
       </button>
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
-        <MapQpvToggleButton />
-        <MapCadastreToggleButton />
-        <MapBoundaryToggleButton />
+        <MapLayerToggles />
         <MapContextTools />
       </div>
     </div>
@@ -42,7 +40,6 @@
 import { ref, watch, computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import MapBoundaryToggleButton from "../MapBoundaryToggleButton.vue"
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
@@ -114,7 +111,7 @@ watch(
 }
 
 .mobile-panel-toggles {
-  @apply flex items-center justify-center gap-2 px-3 pb-2;
+  @apply flex flex-wrap items-center justify-center gap-2 px-3 pb-2;
 }
 
 .mobile-panel-content {

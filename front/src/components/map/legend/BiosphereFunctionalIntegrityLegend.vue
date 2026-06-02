@@ -10,7 +10,7 @@ const handleClick = (name: string) => {
 </script>
 
 <template>
-  <div class="flex flex-col items-start gap-2 font-sans" data-cy="biosphere-integrity-legend">
+  <div class="flex flex-col items-center gap-2 font-sans" data-cy="biosphere-integrity-legend">
     <div class="legend-header">
       <span class="legend-title">Part d'espaces naturels dans le km² voisin</span>
     </div>

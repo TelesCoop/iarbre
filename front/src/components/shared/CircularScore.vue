@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue"
 import * as d3 from "d3"
+import ContextDataCompactScore from "@/components/contextData/shared/ContextDataCompactScore.vue"
 import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -174,7 +175,7 @@ watch([targetAngle, arcColor], () => render(true))
   <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
-    <div class="relative inline-flex items-center justify-center" :class="sizeClasses">
+    <div class="relative hidden lg:inline-flex items-center justify-center" :class="sizeClasses">
       <svg
         ref="svgRef"
         :viewBox="`0 0 ${SVG_SIZE} ${SVG_SIZE}`"
@@ -198,6 +199,10 @@ watch([targetAngle, arcColor], () => render(true))
           {{ scoreDisplay }}
         </span>
       </div>
+    </div>
+
+    <div class="lg:hidden">
+      <ContextDataCompactScore :color="arcColor" :label="name || label" :value="scoreDisplay" />
     </div>
   </section>
 </template>
