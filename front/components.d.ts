@@ -50,6 +50,7 @@ declare module 'vue' {
     DrawingModeToggle: typeof import('./src/components/map/DrawingModeToggle.vue')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
     ExpandToggle: typeof import('./src/components/toggle/ExpandToggle.vue')['default']
+    FeedbackBanner: typeof import('./src/components/FeedbackBanner.vue')['default']
     FeedbackForm: typeof import('./src/components/forms/FeedbackForm.vue')['default']
     FeedbackPopin: typeof import('./src/components/FeedbackPopin.vue')['default']
     FilterIndicator: typeof import('./src/components/map/legend/FilterIndicator.vue')['default']
