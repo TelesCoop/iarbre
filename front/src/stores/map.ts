@@ -25,7 +25,7 @@ import { getCityBoundaries } from "@/services/boundaryService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
@@ -341,10 +341,6 @@ export const useMapStore = defineStore("map", () => {
     }
     console.info("cypress: IFB click square removed")
   }
-
-  // Land-use detail (top5 occupation) is only available from this zoom level;
-  // below it the tile feature carries the aggregated score distribution.
-  const PLANTABILITY_DETAIL_ZOOM = 17
 
   const applyTileSelection = (
     map: Map,
@@ -1113,9 +1109,11 @@ export const useMapStore = defineStore("map", () => {
     },
     contextData: {
       data: contextData.data,
+      error: contextData.error,
       setData: contextData.setData,
       setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
+      retry: contextData.retry,
       toggleContextData: contextData.toggleContextData
     },
     clearAllFilters,

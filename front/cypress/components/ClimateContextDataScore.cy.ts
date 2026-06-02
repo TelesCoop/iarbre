@@ -56,7 +56,7 @@ describe("ClimateContextDataScore.vue", () => {
       }
     })
 
-    cy.get('[data-cy="climate-context-data-score"] .zone-swatch')
+    cy.get('[data-cy="climate-context-data-score"] .score-header-swatch')
       .should("have.attr", "style")
       .and("include", "background-color")
   })

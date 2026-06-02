@@ -1,12 +1,16 @@
 <script lang="ts" setup>
+import MethodologyButton from "@/components/shared/MethodologyButton.vue"
+
 interface Props {
   withBorder?: boolean
   showContextTools?: boolean
+  showMethodology?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   withBorder: true,
-  showContextTools: true
+  showContextTools: true,
+  showMethodology: true
 })
 </script>
 
@@ -16,6 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
     data-cy="map-layer-switcher"
   >
     <LayerSwitcher />
+    <MethodologyButton v-if="props.showMethodology" class="self-end" />
     <MapContextTools v-if="props.showContextTools" />
   </div>
 </template>

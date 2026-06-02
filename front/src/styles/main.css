@@ -456,7 +456,7 @@
 }
 
 .legend-title {
-  @apply text-xs font-semibold text-gray-500 uppercase tracking-wider leading-tight;
+  @apply text-xs font-semibold text-gray-600 uppercase tracking-wider leading-tight;
   @apply lg:text-sm;
 }
 
@@ -469,11 +469,11 @@
 }
 
 .legend-label {
-  @apply hidden lg:flex items-center gap-1.5 text-gray-500;
+  @apply hidden lg:flex items-center gap-1.5 text-gray-600;
 }
 
 .legend-axis-indicator {
-  @apply font-semibold text-sm text-gray-400 leading-none;
+  @apply font-semibold text-sm text-gray-500 leading-none;
   @apply uppercase;
 }
 
@@ -490,5 +490,5 @@
 }
 
 .legend-item-label {
-  @apply text-xs text-gray-700 lg:text-sm;
+  @apply text-xs text-gray-600 lg:text-sm;
 }

@@ -3,27 +3,17 @@ import { type PlantabilityData, PlantabilityImpact } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
 import { toRef, computed } from "vue"
 import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
+import ContextDataZoomHint from "@/components/contextData/shared/ContextDataZoomHint.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
-import AppButton from "@/components/shared/AppButton.vue"
 import PlantabilityDistributionChart from "./PlantabilityDistributionChart.vue"
-import { useMapStore } from "@/stores/map"
+import { PLANTABILITY_DETAIL_ZOOM, PLANTABILITY_DISTRIBUTION_ZOOM } from "@/utils/plantability"
 
 interface PlantabilityFactorsProps {
   data: PlantabilityData
 }
 
 const props = defineProps<PlantabilityFactorsProps>()
-
-const mapStore = useMapStore()
-
-// Land-use detail is only loaded once the map reaches this zoom level;
-// below it the backend returns the score distribution over the area.
-const LAND_USE_DETAIL_ZOOM = 17
-const DISTRIBUTION_ZOOM = 15
-
-const zoomToLandUseDetail = () => mapStore.zoomTo(LAND_USE_DETAIL_ZOOM)
-const zoomToDistribution = () => mapStore.zoomTo(DISTRIBUTION_ZOOM)
 
 const { factorGroups, hasFactors } = usePlantabilityData(toRef(props, "data"))
 
@@ -102,72 +92,21 @@ const distributionEntries = computed(() => {
         color-scheme="plantability"
         variant="cards"
       />
-      <div class="zoom-hint" data-cy="zoom-out-hint" role="status">
-        <span class="zoom-hint-icon" aria-hidden="true">
-          <svg
-            fill="none"
-            height="12"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="12"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" x2="16.65" y1="21" y2="16.65" />
-            <line x1="8" x2="14" y1="11" y2="11" />
-          </svg>
-        </span>
-        <p class="zoom-hint-text">
-          Dézoomez pour voir la distribution des scores de plantabilité sur la zone.
-        </p>
-        <AppButton
-          class="zoom-hint-button"
-          data-cy="zoom-out-hint-button"
-          size="sm"
-          variant="outline"
-          @click="zoomToDistribution"
-        >
-          Dézoomer
-        </AppButton>
-      </div>
+      <ContextDataZoomHint
+        :target-zoom="PLANTABILITY_DISTRIBUTION_ZOOM"
+        direction="out"
+        message="Dézoomez pour voir la distribution des scores de plantabilité sur la zone."
+      />
     </template>
 
     <template v-else>
       <div v-if="distributionEntries.length > 0">
         <PlantabilityDistributionChart :entries="distributionEntries" />
-        <div class="zoom-hint" data-cy="zoom-hint" role="status">
-          <span class="zoom-hint-icon" aria-hidden="true">
-            <svg
-              fill="none"
-              height="12"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="12"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <line x1="21" x2="16.65" y1="21" y2="16.65" />
-              <line x1="11" x2="11" y1="8" y2="14" />
-              <line x1="8" x2="14" y1="11" y2="11" />
-            </svg>
-          </span>
-          <p class="zoom-hint-text">
-            Zoomez davantage sur la carte pour révéler le détail de l'occupation des sols.
-          </p>
-          <AppButton
-            class="zoom-hint-button"
-            data-cy="zoom-hint-button"
-            size="sm"
-            variant="primary"
-            @click="zoomToLandUseDetail"
-          >
-            Zoomer
-          </AppButton>
-        </div>
+        <ContextDataZoomHint
+          :target-zoom="PLANTABILITY_DETAIL_ZOOM"
+          direction="in"
+          message="Zoomez davantage sur la carte pour révéler le détail de l'occupation des sols."
+        />
       </div>
       <EmptyMessage
         v-else
@@ -177,27 +116,3 @@ const distributionEntries = computed(() => {
     </template>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.zoom-hint {
-  @apply flex items-center gap-2 mt-2 px-2 py-1.5;
-  @apply rounded-md border border-primary-100 bg-primary-50;
-}
-
-.zoom-hint-icon {
-  @apply flex items-center justify-center shrink-0;
-  @apply w-5 h-5 rounded-full bg-white text-primary-500;
-}
-
-.zoom-hint-text {
-  @apply flex-1 leading-tight text-primary-900;
-  @apply text-xs lg:text-sm;
-}
-
-.zoom-hint-button {
-  @apply shrink-0 px-2 py-0.5 gap-1;
-  @apply text-2xs lg:text-xs;
-}
-</style>

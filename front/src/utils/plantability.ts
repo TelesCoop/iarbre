@@ -18,6 +18,11 @@ export enum PlantabilityScoreThreshold {
 export const PLANTABILITY_SCORES = Object.values(PlantabilityScoreThreshold) as number[]
 export const PLANTABILITY_SCORES_STR = PLANTABILITY_SCORES.map(String)
 
+// Land-use occupation detail (top 5) is only available from this zoom level;
+// below it the tile feature carries the aggregated score distribution.
+export const PLANTABILITY_DETAIL_ZOOM = 17
+export const PLANTABILITY_DISTRIBUTION_ZOOM = 15
+
 export function getPlantabilityScore(id: number): string {
   if (id < PlantabilityScoreThreshold.VERY_CONSTRAINED) return PlantabilityScore.IMPOSSIBLE
   if (id < PlantabilityScoreThreshold.CONSTRAINED) return PlantabilityScore.VERY_CONSTRAINED

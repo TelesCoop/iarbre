@@ -88,6 +88,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <div v-if="appStore.isMobileOrTablet" class="mobile-top-bar">
     <MapLayerSwitcher
       :show-context-tools="false"
+      :show-methodology="false"
       :with-border="false"
       data-cy="mobile-layer-switcher"
     />
@@ -136,7 +137,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 .legend-container {
   @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2;
   @apply transition-all duration-300 ease-out;
-  top: 48px;
+  top: 88px;
   left: 0.5rem;
   width: calc(50% - 1rem);
 }

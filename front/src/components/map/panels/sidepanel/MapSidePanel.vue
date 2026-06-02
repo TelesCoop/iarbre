@@ -25,6 +25,7 @@
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapLayerToggles />
         <MapContextTools />
+        <MethodologyButton />
       </div>
     </div>
 
@@ -65,12 +66,13 @@ watch(
 @reference "@/styles/main.css";
 
 .map-sidepanel {
-  @apply hidden lg:flex h-full flex-col bg-white;
-  @apply border-r border-gray-200;
+  @apply hidden lg:flex h-full flex-col bg-white overflow-hidden;
+  @apply rounded-r-xl;
   @apply transition-transform duration-300 ease-out;
   @apply fixed top-0 z-20;
   left: 4.5rem;
   width: var(--width-sidepanel);
+  box-shadow: 8px 0 32px -16px rgba(16, 24, 40, 0.18);
 }
 
 .map-sidepanel.is-hidden {
@@ -87,10 +89,11 @@ watch(
 /* Mobile bottom panel */
 .mobile-panel {
   @apply lg:hidden fixed left-0 right-0 bg-white z-40;
-  @apply rounded-t-2xl;
+  @apply rounded-t-xl;
   @apply transition-transform duration-300 ease-out;
   bottom: 56px;
   transform: translateY(calc(100% - 40px));
+  box-shadow: 0 -8px 32px -16px rgba(16, 24, 40, 0.18);
 }
 
 .mobile-panel.is-open {
@@ -98,7 +101,7 @@ watch(
 }
 
 .mobile-panel-header {
-  @apply bg-white rounded-t-2xl border-b border-gray-200 flex-shrink-0;
+  @apply bg-white rounded-t-xl border-b border-gray-200 flex-shrink-0;
 }
 
 .mobile-panel-handle {

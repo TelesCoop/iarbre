@@ -66,7 +66,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.VEGESTRATE]:
     '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
-    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois — Licence CC BY-NC-SA 4.0</a>'
+    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois</a>'
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {

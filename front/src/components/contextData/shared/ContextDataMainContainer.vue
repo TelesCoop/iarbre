@@ -2,10 +2,6 @@
 import { computed } from "vue"
 import type { ContextDataMainContainerProps } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
-import AppButton from "@/components/shared/AppButton.vue"
-import IconInfo from "@/components/icons/IconInfo.vue"
-import { useMapStore } from "@/stores/map"
-import { DataTypeToDocumentationUrl } from "@/utils/enum"
 
 interface MainContainerProps extends ContextDataMainContainerProps {
   data?: any | null
@@ -27,14 +23,6 @@ const props = withDefaults(defineProps<MainContainerProps>(), {
 
 const ariaDescribedBy = computed(() => `${props.colorScheme}-description`)
 const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
-
-const mapStore = useMapStore()
-
-const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
-
-const openMethodology = () => {
-  window.open(documentationUrl.value, "_blank", "noopener,noreferrer")
-}
 </script>
 
 <template>
@@ -45,22 +33,6 @@ const openMethodology = () => {
     role="dialog"
   >
     <div class="panel-content">
-      <div class="panel-methodology">
-        <AppButton
-          class="methodology-button"
-          data-cy="methodology-button"
-          size="sm"
-          title="Documentation sur la méthodologie - nouvelle fenêtre"
-          variant="primary"
-          @click="openMethodology"
-        >
-          <template #icon-left>
-            <IconInfo :size="14" aria-hidden="true" />
-          </template>
-          Voir la méthodologie
-        </AppButton>
-      </div>
-
       <div v-if="data" class="data-layout">
         <div v-if="$slots.score" class="score-section">
           <slot :data="data" name="score" />
@@ -90,18 +62,8 @@ const openMethodology = () => {
   @apply py-3 md:py-4 flex flex-col gap-4 md:gap-5 text-sm min-h-0 flex-1 w-full;
 }
 
-.panel-methodology {
-  @apply flex justify-end;
-}
-
-.methodology-button {
-  @apply px-2.5 py-1 text-xs gap-1 whitespace-nowrap;
-  @apply bg-primary-900 border-primary-900 text-white;
-  @apply hover:bg-primary-800 hover:border-primary-800;
-}
-
 .data-layout {
-  @apply flex flex-col items-center gap-4 min-h-0 flex-1 w-full;
+  @apply flex flex-col items-center gap-3 min-h-0 flex-1 w-full;
 }
 
 .score-section {
@@ -110,7 +72,11 @@ const openMethodology = () => {
 }
 
 .content-section {
-  @apply flex-1 min-h-0 flex flex-col overflow-y-auto;
+  @apply flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto;
   @apply w-full;
+}
+
+.legend-section {
+  @apply w-full pt-3 border-t border-gray-100;
 }
 </style>
