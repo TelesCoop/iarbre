@@ -122,8 +122,8 @@ const { svgRef } = useD3Chart(
 
 .donut-wrapper {
   @apply relative flex items-center justify-center shrink-0;
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
 }
 
 .donut-center {

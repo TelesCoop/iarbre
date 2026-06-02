@@ -220,7 +220,7 @@ function drawSpiderChart(
       .append("text")
       .attr("text-anchor", anchor)
       .attr("dominant-baseline", baseline)
-      .attr("font-size", "9px")
+      .attr("font-size", "12px")
       .attr("fill", "#9CA3AF")
 
     axis.lines.forEach((line, lineIndex) => {
@@ -236,7 +236,7 @@ function drawSpiderChart(
       .attr("text-anchor", anchor)
       .attr("dominant-baseline", baseline)
       .attr("dy", `${axis.lines.length * 1.2}em`)
-      .attr("font-size", "10px")
+      .attr("font-size", "15px")
       .attr("font-weight", "600")
       .attr("fill", "#374151")
       .text(`${axis.value.toFixed(1)}/${POLAR_MAX_SCORE}`)
@@ -289,7 +289,7 @@ const { svgRef: nightSvgRef } = useD3Chart(
             :color="HEAT_COLORS.day.accent"
             :max-value="VULNERABILITY_MAX_SCORE"
             :value="props.data.averageDay"
-            :size="90"
+            :size="180"
           />
         </div>
         <div class="score-block">
@@ -298,7 +298,7 @@ const { svgRef: nightSvgRef } = useD3Chart(
             :color="HEAT_COLORS.night.accent"
             :max-value="VULNERABILITY_MAX_SCORE"
             :value="props.data.averageNight"
-            :size="90"
+            :size="180"
           />
         </div>
       </div>
@@ -355,7 +355,8 @@ const { svgRef: nightSvgRef } = useD3Chart(
 }
 
 .scores-col {
-  @apply flex flex-col gap-6 items-center justify-center shrink-0;
+  @apply flex flex-col gap-6 items-center justify-center;
+  flex: 1;
 }
 
 .score-block {
@@ -363,11 +364,12 @@ const { svgRef: nightSvgRef } = useD3Chart(
 }
 
 .score-mode-label {
-  @apply text-xs font-medium text-gray-500;
+  @apply text-lg font-medium text-gray-500;
 }
 
 .spiders-col {
-  @apply flex-1 flex flex-row gap-2 items-start;
+  @apply flex flex-row gap-2 items-start;
+  flex: 2;
 }
 
 .spider-block {
@@ -375,7 +377,7 @@ const { svgRef: nightSvgRef } = useD3Chart(
 }
 
 .spider-mode-label {
-  @apply text-xs font-medium text-gray-500;
+  @apply text-lg font-medium text-gray-500;
 }
 
 .spider-wrapper {
