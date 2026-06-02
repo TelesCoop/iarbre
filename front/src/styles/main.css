@@ -490,3 +490,22 @@
 .legend-item-label {
   @apply text-sm text-primary-900;
 }
+
+@media print {
+  .sidebar,
+  .mobile-bottom-bar,
+  .back-to-map,
+  .header-controls {
+    display: none !important;
+  }
+
+  .dashboard-view-wrapper {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-content {
+    padding: 1.5rem !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+}

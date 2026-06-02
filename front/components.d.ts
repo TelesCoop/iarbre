@@ -40,6 +40,7 @@ declare module 'vue' {
     DashboardArcScore: typeof import('./src/components/dashboard/shared/DashboardArcScore.vue')['default']
     DashboardBubbleChart: typeof import('./src/components/dashboard/shared/DashboardBubbleChart.vue')['default']
     DashboardDetailBars: typeof import('./src/components/dashboard/shared/DashboardDetailBars.vue')['default']
+    DashboardFooter: typeof import('./src/components/dashboard/DashboardFooter.vue')['default']
     DashboardGrid: typeof import('./src/components/dashboard/DashboardGrid.vue')['default']
     DashboardHeader: typeof import('./src/components/dashboard/DashboardHeader.vue')['default']
     DashboardNarrative: typeof import('./src/components/dashboard/DashboardNarrative.vue')['default']
