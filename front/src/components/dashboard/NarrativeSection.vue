@@ -27,12 +27,15 @@ defineProps<Props>()
       <p v-if="finding" class="text-3xl font-bold text-primary-600 tabular-nums mt-1 leading-tight">
         {{ finding }}
       </p>
-      <p v-if="interpretation" class="text-sm font-semibold text-gray-800 leading-relaxed">
+      <p
+        v-if="interpretation"
+        class="text-base font-semibold text-gray-800 leading-relaxed max-w-[68.75%]"
+      >
         {{ interpretation }}
       </p>
       <p v-if="description" class="text-sm text-gray-600 leading-relaxed">{{ description }}</p>
     </div>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+    <div class="widgets-grid">
       <slot />
     </div>
     <p v-if="source" class="text-xs text-gray-600 italic border-t border-gray-100 pt-3">
@@ -49,3 +52,21 @@ defineProps<Props>()
     </p>
   </section>
 </template>
+
+<style scoped>
+.widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.widgets-grid > :deep(:only-child) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 767px) {
+  .widgets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

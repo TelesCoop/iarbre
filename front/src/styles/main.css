@@ -17,6 +17,14 @@
   --color-primary-700: #34522a;
   --color-primary-800: #2b4822;
   --color-primary-900: #002814;
+  /* Gold accent palette (aligned with iarbre.fr identity) */
+  --color-gold-50: #faf3e1;
+  --color-gold-100: #f5e8c2;
+  --color-gold-200: #eedaa3;
+  --color-gold-300: #e6cf8a;
+  --color-gold-500: #c4ab66;
+  --color-gold-700: #82703b;
+  --color-gold-900: #40371a;
   /* Scale colors */
   --color-scale-0: #c4c4c4;
   --color-scale-1: #d1a99d;
@@ -212,13 +220,6 @@
   @apply cursor-pointer;
 }
 
-.vulnerability-table-row {
-  @apply grid grid-cols-12 gap-2 md:gap-4 p-2 md:p-4;
-  @apply hover:bg-primary-100;
-  @apply transition-all duration-200 items-center;
-  @apply border-l-2 border-transparent;
-}
-
 /* Map Control Styles */
 .map-control {
   @apply bg-white rounded-lg border border-gray-200;
@@ -243,11 +244,11 @@
 }
 
 .map-control-btn-sm {
-  @apply w-10 h-10;
+  @apply w-9 h-9 lg:w-10 lg:h-10;
 }
 
 .map-control-btn-md {
-  @apply px-3 py-2 h-10;
+  @apply px-2 py-1.5 h-9 lg:px-3 lg:py-2 lg:h-10;
 }
 
 .map-control-btn-active {
@@ -256,7 +257,7 @@
 }
 
 .map-control-icon-btn {
-  @apply w-10 h-10 p-0;
+  @apply w-9 h-9 lg:w-10 lg:h-10 p-0;
   @apply bg-white rounded-lg border border-gray-200;
   @apply flex items-center justify-center;
   @apply cursor-pointer transition-colors duration-200;
@@ -455,12 +456,12 @@
 }
 
 .legend-title {
-  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+  @apply text-xs font-semibold text-gray-600 uppercase tracking-wider leading-tight;
   @apply lg:text-sm;
 }
 
 .legend-content {
-  @apply flex items-center justify-center gap-1 lg:gap-3;
+  @apply flex items-center justify-center gap-2 lg:gap-3;
 }
 
 .legend-scale {
@@ -468,15 +469,16 @@
 }
 
 .legend-label {
-  @apply hidden lg:flex items-center gap-1 text-xs text-gray-600;
+  @apply hidden lg:flex items-center gap-1.5 text-gray-600;
 }
 
 .legend-axis-indicator {
-  @apply font-bold text-sm text-gray-400;
+  @apply font-semibold text-sm text-gray-500 leading-none;
+  @apply uppercase;
 }
 
 .legend-axis-text {
-  @apply font-sans text-sm leading-tight;
+  @apply text-xs font-medium leading-tight;
 }
 
 .legend-item {
@@ -488,5 +490,24 @@
 }
 
 .legend-item-label {
-  @apply text-sm text-primary-900;
+  @apply text-xs text-gray-600 lg:text-sm;
+}
+
+@media print {
+  .sidebar,
+  .mobile-bottom-bar,
+  .back-to-map,
+  .header-controls {
+    display: none !important;
+  }
+
+  .dashboard-view-wrapper {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-content {
+    padding: 1.5rem !important;
+    background: white !important;
+    overflow: visible !important;
+  }
 }

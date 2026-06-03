@@ -664,7 +664,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
 
 .sidebar-icons {
   @apply flex flex-col items-center;
-  @apply bg-[#426A45];
+  @apply bg-primary-500;
   @apply mt-auto;
   gap: 1rem;
   padding: 1.5rem 0;

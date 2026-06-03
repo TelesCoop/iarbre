@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { ClimateData } from "@/types/climate"
-import { getAdaptativeColorClass } from "@/utils/color"
-import { getZoneColor, CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
+import { getContrastTextHex } from "@/utils/color"
+import { CLIMATE_ZONE_COLOR } from "@/utils/climateZone"
+import ContextDataScoreHeader from "@/components/contextData/shared/ContextDataScoreHeader.vue"
 
 interface ClimateScoreProps {
   data: ClimateData
@@ -10,19 +11,23 @@ interface ClimateScoreProps {
 
 const props = defineProps<ClimateScoreProps>()
 
-const zoneBackgroundColor = computed(() =>
-  props.data?.lczIndex ? CLIMATE_ZONE_COLOR[props.data.lczIndex] || "#bcbcbc" : "#bcbcbc"
-)
+const zoneColor = computed(() => CLIMATE_ZONE_COLOR[props.data?.lczIndex] || "#D1D5DB")
+
+const zoneTextColor = computed(() => getContrastTextHex(zoneColor.value))
+
+const zoneLabel = computed(() => String(props.data?.lczIndex ?? "-"))
+
+const zoneDescription = computed(() => props.data?.lczDescription || "Description non disponible")
 </script>
 
 <template>
-  <div
-    :class="`map-context-card text-lg ${getAdaptativeColorClass(getZoneColor(props.data.lczIndex))}`"
-    :style="{ backgroundColor: zoneBackgroundColor }"
-  >
-    <span class="text-center"
-      >Zone climatique locale : <br />
-      {{ props.data.lczDescription }}</span
-    >
+  <div data-cy="climate-context-data-score">
+    <ContextDataScoreHeader
+      :swatch-color="zoneColor"
+      :swatch-label="zoneLabel"
+      :swatch-text-color="zoneTextColor"
+      :title="zoneDescription"
+      eyebrow="Zone climatique locale"
+    />
   </div>
 </template>

@@ -21,7 +21,7 @@ describe("MapContextDataBiosphereIntegrity", () => {
     ]
   }
 
-  it("displays the circular score and description text", () => {
+  it("displays the score card and description text", () => {
     cy.mount(MapContextDataBiosphereIntegrity, { props: { data: mockData } })
     cy.contains("67").should("be.visible")
     cy.contains("500m").should("be.visible")

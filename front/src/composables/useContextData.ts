@@ -18,88 +18,114 @@ type ContextData =
   | VegetationData
   | null
 
+type SetDataArgs = [
+  featureId: string | number,
+  indexValue?: string | number,
+  sourceValues?: any,
+  vulnScoreDay?: number,
+  vulnScoreNight?: number,
+  lat?: number,
+  lng?: number
+]
+
 export function useContextData(selectedDataTypeRef: Ref<DataType>) {
   const data = ref<ContextData>(null)
+  const error = ref(false)
+  const lastArgs = ref<SetDataArgs | null>(null)
   const selectedDataType = selectedDataTypeRef
 
-  const setData = async (
-    featureId: string | number,
-    indexValue?: string | number,
-    sourceValues?: any,
-    vulnScoreDay?: number,
-    vulnScoreNight?: number,
-    lat?: number,
-    lng?: number
-  ) => {
+  const setData = async (...args: SetDataArgs) => {
+    const [featureId, indexValue, sourceValues, vulnScoreDay, vulnScoreNight, lat, lng] = args
     if (!featureId) return null
+    lastArgs.value = args
+    error.value = false
     const stringId = String(featureId)
 
     let newData: ContextData = null
 
-    if (indexValue === undefined) {
-      newData = await getTileDetails(stringId, selectedDataType.value)
+    try {
+      if (indexValue === undefined) {
+        newData = await getTileDetails(stringId, selectedDataType.value)
 
-      if (!newData) {
-        return
-      }
-    } else if (selectedDataType.value === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-      const landCoverData =
-        lat !== undefined && lng !== undefined ? await getBiosphereLandCoverAtPoint(lat, lng) : null
-      newData = {
-        id: stringId,
-        indice: +indexValue,
-        geolevel: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-        datatype: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-        landCovers: landCoverData ?? null
-      } as BiosphereIntegrityData
-    } else if (
-      indexValue !== undefined &&
-      (selectedDataType.value === DataType.PLANTABILITY ||
-        selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) &&
-      (sourceValues !== undefined || selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY)
-    ) {
-      if (selectedDataType.value === DataType.PLANTABILITY) {
+        if (!newData) {
+          return
+        }
+      } else if (selectedDataType.value === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+        const landCoverData =
+          lat !== undefined && lng !== undefined
+            ? await getBiosphereLandCoverAtPoint(lat, lng)
+            : null
         newData = {
           id: stringId,
-          plantabilityNormalizedIndice: +indexValue,
-          plantabilityIndice: +indexValue,
-          details: sourceValues,
-          geolevel: DataTypeToGeolevel[selectedDataType.value],
-          datatype: DataType.PLANTABILITY,
-          iris: 0,
-          city: 0
-        } as PlantabilityData
-      } else if (selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) {
-        newData = {
-          id: stringId,
-          plantabilityNormalizedIndice: +indexValue,
-          plantabilityIndice: +indexValue,
-          vulnerabilityIndiceDay: vulnScoreDay !== undefined ? +vulnScoreDay : 0,
-          vulnerabilityIndiceNight: vulnScoreNight !== undefined ? +vulnScoreNight : 0,
-          details: sourceValues,
-          geolevel: DataTypeToGeolevel[selectedDataType.value],
-          datatype: DataType.PLANTABILITY_VULNERABILITY,
-          iris: 0,
-          city: 0
-        } as PlantabilityVulnerabilityData
+          indice: +indexValue,
+          geolevel: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
+          datatype: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY,
+          landCovers: landCoverData ?? null
+        } as BiosphereIntegrityData
+      } else if (
+        indexValue !== undefined &&
+        (selectedDataType.value === DataType.PLANTABILITY ||
+          selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) &&
+        (sourceValues !== undefined ||
+          selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY)
+      ) {
+        if (selectedDataType.value === DataType.PLANTABILITY) {
+          newData = {
+            id: stringId,
+            plantabilityNormalizedIndice: +indexValue,
+            plantabilityIndice: +indexValue,
+            details: sourceValues,
+            geolevel: DataTypeToGeolevel[selectedDataType.value],
+            datatype: DataType.PLANTABILITY,
+            iris: 0,
+            city: 0
+          } as PlantabilityData
+        } else if (selectedDataType.value === DataType.PLANTABILITY_VULNERABILITY) {
+          newData = {
+            id: stringId,
+            plantabilityNormalizedIndice: +indexValue,
+            plantabilityIndice: +indexValue,
+            vulnerabilityIndiceDay: vulnScoreDay !== undefined ? +vulnScoreDay : 0,
+            vulnerabilityIndiceNight: vulnScoreNight !== undefined ? +vulnScoreNight : 0,
+            details: sourceValues,
+            geolevel: DataTypeToGeolevel[selectedDataType.value],
+            datatype: DataType.PLANTABILITY_VULNERABILITY,
+            iris: 0,
+            city: 0
+          } as PlantabilityVulnerabilityData
+        }
       }
-    }
 
-    if (newData) {
-      data.value = newData
+      if (newData) {
+        data.value = newData
+      }
+    } catch (e) {
+      console.error("Error retrieving context data:", e)
+      error.value = true
     }
   }
 
   const setMultipleData = async (featureIds: Array<string | number>) => {
     if (featureIds.length === 0) return
+    error.value = false
 
-    const stringId = String(featureIds[0])
-    const tileData = await getTileDetails(stringId, selectedDataType.value)
-    data.value = tileData
+    try {
+      const stringId = String(featureIds[0])
+      data.value = await getTileDetails(stringId, selectedDataType.value)
+    } catch (e) {
+      console.error("Error retrieving context data:", e)
+      error.value = true
+    }
   }
 
   const removeData = () => {
     data.value = null
+    error.value = false
+    lastArgs.value = null
+  }
+
+  const retry = () => {
+    if (lastArgs.value) setData(...lastArgs.value)
   }
 
   const toggleContextData = (featureId: string | number) => {
@@ -112,9 +138,11 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
 
   return {
     data,
+    error,
     setData,
     setMultipleData,
     removeData,
+    retry,
     toggleContextData
   }
 }

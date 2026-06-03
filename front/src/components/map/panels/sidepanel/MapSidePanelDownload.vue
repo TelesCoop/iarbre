@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue"
 import ApiDocDialog from "@/components/map/panels/sidepanel/ApiDocDialog.vue"
+import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
 
 const apiDocVisible = ref(false)
 </script>
@@ -8,7 +9,10 @@ const apiDocVisible = ref(false)
 <template>
   <div class="flex w-full font-sans text-white text-base text-center px-3 pt-2">
     <div class="w-full flex flex-col items-center justify-center gap-4">
-      <span class="text-base font-serif font-bold">🌱 Collectivités, aménageurs, urbanistes</span>
+      <span class="audience-title">
+        <ContextDataIcon name="vegetation" :size="16" />
+        Collectivités, aménageurs, urbanistes
+      </span>
       <button
         class="cursor-pointer bg-white font-sans flex items-center px-4 py-2 rounded-3xl text-sm text-primary-500"
         data-cy="api-doc"
@@ -35,3 +39,11 @@ const apiDocVisible = ref(false)
   </div>
   <ApiDocDialog v-model:visible="apiDocVisible" />
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.audience-title {
+  @apply flex items-center justify-center gap-2 text-base font-serif font-bold;
+}
+</style>

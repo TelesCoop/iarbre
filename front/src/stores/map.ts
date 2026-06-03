@@ -25,7 +25,7 @@ import { getCityBoundaries } from "@/services/boundaryService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
@@ -342,6 +342,65 @@ export const useMapStore = defineStore("map", () => {
     console.info("cypress: IFB click square removed")
   }
 
+  const applyTileSelection = (
+    map: Map,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    features: any[],
+    lngLat: { lng: number; lat: number }
+  ) => {
+    const layerId = getLayerId(datatype, geolevel)
+    const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
+    const score = extractFeatureProperty(features, datatype, geolevel, "indice")
+    const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
+    const vulnScoreDay =
+      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
+        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_day")
+        : undefined
+    const vulnScoreNight =
+      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
+        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_night")
+        : undefined
+    if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      drawClickSquare(map, lngLat.lat, lngLat.lng)
+    } else {
+      highlightFeature(map, layerId, featureId)
+    }
+    // Highlight cell in the legend that correspond to clicked tile
+    if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
+      const properties = features[0].properties
+      if (
+        properties &&
+        properties.indice !== undefined &&
+        properties.vulnerability_indice_day !== undefined
+      ) {
+        selectedLegendCell.value = getBivariateCoordinates(
+          properties.indice,
+          properties.vulnerability_indice_day
+        )
+      }
+    } else {
+      selectedLegendCell.value = null
+    }
+
+    clickCoordinates.value = { lat: lngLat.lat, lng: lngLat.lng }
+
+    // Conditionally load context data based on geolevel, datatype, and zoom
+    if (
+      geolevel === GeoLevel.TILE &&
+      datatype === DataType.PLANTABILITY &&
+      map.getZoom() < PLANTABILITY_DETAIL_ZOOM
+    ) {
+      contextData.setData(featureId, score, sourceValues)
+    } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
+      contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
+    } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      contextData.setData(featureId, score, undefined, undefined, undefined, lngLat.lat, lngLat.lng)
+    } else {
+      contextData.setData(featureId)
+    }
+  }
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
@@ -353,68 +412,33 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
-
-      // Normal point mode (simple click to select a tile)
-      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
-      const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
-      const sourceValues = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
-      const vulnScoreDay =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
-          : undefined
-      const vulnScoreNight =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
-          : undefined
-      if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng)
-      } else {
-        highlightFeature(map, layerId, featureId)
-      }
-      // Highlight cell in the legend that correspond to clicked tile
-      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        const properties = e.features![0].properties
-        if (
-          properties &&
-          properties.indice !== undefined &&
-          properties.vulnerability_indice_day !== undefined
-        ) {
-          const coords = getBivariateCoordinates(
-            properties.indice,
-            properties.vulnerability_indice_day
-          )
-          selectedLegendCell.value = coords
-        }
-      } else {
-        selectedLegendCell.value = null
-      }
-
-      // Store click coordinates
-      clickCoordinates.value = {
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng
-      }
-      // Conditionally load context data based on geolevel, datatype, and zoom
-      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
-        contextData.setData(featureId, score, sourceValues)
-      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
-      } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-        contextData.setData(
-          featureId,
-          score,
-          undefined,
-          undefined,
-          undefined,
-          e.lngLat.lat,
-          e.lngLat.lng
-        )
-      } else {
-        contextData.setData(featureId)
-      }
+      applyTileSelection(map, datatype, geolevel, e.features!, {
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat
+      })
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
+  }
+
+  /**
+   * Re-query the tile under the currently selected coordinates and recompute the
+   * context data for the current zoom (land-use detail when zoomed in, score
+   * distribution when zoomed out). Called after a programmatic zoom.
+   */
+  const recalculateAtSelection = () => {
+    const map = mapInstancesByIds.value["default"]
+    if (!map || !contextData.data.value) return
+    const datatype = selectedDataType.value
+    if (!datatype) return
+    const geolevel = getGeoLevelFromDataType()
+    const layerId = getLayerId(datatype, geolevel)
+    if (!map.getLayer(layerId)) return
+    const { lng, lat } = clickCoordinates.value
+    const features = map.queryRenderedFeatures(map.project([lng, lat]), { layers: [layerId] })
+    if (features.length) {
+      applyTileSelection(map, datatype, geolevel, features, { lng, lat })
+    }
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
@@ -1043,6 +1067,17 @@ export const useMapStore = defineStore("map", () => {
     refreshLayers()
   }
 
+  const zoomTo = (targetZoom: number) => {
+    const mapInstance = mapInstancesByIds.value["default"]
+    if (!mapInstance) return
+    mapInstance.easeTo({
+      center: [clickCoordinates.value.lng, clickCoordinates.value.lat],
+      zoom: targetZoom,
+      duration: 600
+    })
+    mapInstance.once("idle", recalculateAtSelection)
+  }
+
   return {
     mapInstancesByIds,
     initMap,
@@ -1074,9 +1109,11 @@ export const useMapStore = defineStore("map", () => {
     },
     contextData: {
       data: contextData.data,
+      error: contextData.error,
       setData: contextData.setData,
       setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
+      retry: contextData.retry,
       toggleContextData: contextData.toggleContextData
     },
     clearAllFilters,
@@ -1097,6 +1134,7 @@ export const useMapStore = defineStore("map", () => {
     selectedCadastreParcel,
     clearCadastreSelection,
     use3D,
-    toggle3D
+    toggle3D,
+    zoomTo
   }
 })
