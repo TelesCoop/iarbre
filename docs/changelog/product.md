@@ -1,5 +1,19 @@
 # Journal des changements
 
+## 🔖 0.32.0 (2026-06-03) : Correctifs mineurs d'UI
+
+### 🛠️ enhance : Changements dans l'UI du panel
+
+Les visualisations des scores entre les différents calques ont été rendues plus homogène et claires.
+
+&rarr; PR[#661](https://github.com/TelesCoop/iarbre/pull/661)
+
+### 🛠️ enhance : Légères améliorations dans le tableau de bord
+
+Corrections de taille de typo, longueur de lignes et tailles relatives des graphiques.
+
+&rarr; Commit [a6b7f7d](https://github.com/TelesCoop/iarbre/commit/a6b7f7dc257eaf4d4f0ed985bc237dd5caf81c3b)
+
 ## 🔖 0.31.0 (2026-05-27) : Tableau de bord narratif et améliorations des services WMF/WMS
 
 ### ✨ feat : Tableau de bord narratif
