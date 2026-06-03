@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "text"
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "text" | "gold"
 type ButtonSize = "sm" | "md" | "lg"
 
 type ButtonType = "button" | "submit" | "reset"
@@ -87,6 +87,8 @@ const variantClasses = computed(() => {
       return "bg-transparent text-gray-700 border-transparent hover:bg-gray-100 focus:ring-2 focus:ring-gray-200"
     case "text":
       return "bg-transparent text-primary-500 border-transparent hover:text-primary-600 hover:underline p-0"
+    case "gold":
+      return "bg-gold-300 text-primary-900 border-gold-300 hover:bg-gold-500 hover:border-gold-500 focus:ring-2 focus:ring-gold-200"
     default:
       return ""
   }

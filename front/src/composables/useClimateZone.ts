@@ -59,9 +59,9 @@ export const useClimateZone = () => {
   }
 
   const climateCategoryToIcon: Record<ClimateCategory, string> = {
-    [ClimateCategory.BUILDING]: "🏢",
-    [ClimateCategory.SURFACES]: "🛣️",
-    [ClimateCategory.VEGETATION]: "🌿"
+    [ClimateCategory.BUILDING]: "building",
+    [ClimateCategory.SURFACES]: "road",
+    [ClimateCategory.VEGETATION]: "vegetation"
   }
 
   const climateCategoryToDescription: Record<ClimateCategory, string> = {
