@@ -219,7 +219,7 @@ onUnmounted(() => {
   }
 
   &::placeholder {
-    @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+    @apply text-xs font-semibold text-gray-500 uppercase font-sans tracking-normal;
   }
 }
 

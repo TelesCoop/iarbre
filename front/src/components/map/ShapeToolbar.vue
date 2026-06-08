@@ -62,13 +62,13 @@ const handleClear = () => mapStore.exitShapeMode()
 <template>
   <button
     v-tooltip.left="'Dessiner une zone'"
-    class="shape-toolbar__trigger map-control-btn map-control-btn-sm"
-    :class="{ 'map-control-btn-active': isTriggerActive }"
-    type="button"
-    data-cy="shape-toolbar-toggle"
     :aria-expanded="isOpen"
+    :class="{ 'map-control-btn-active': isTriggerActive }"
     aria-controls="shape-toolbar-panel"
     aria-label="Dessiner une zone"
+    class="shape-toolbar__trigger map-control-btn map-control-btn-sm"
+    data-cy="shape-toolbar-toggle"
+    type="button"
     @click="toggleOpen"
   >
     <img :src="triggerIcon" alt="" aria-hidden="true" class="w-6 h-6" />
@@ -78,17 +78,17 @@ const handleClear = () => mapStore.exitShapeMode()
   <div
     v-if="isOpen"
     id="shape-toolbar-panel"
+    aria-label="Outils de forme"
     class="shape-toolbar__panel"
     data-cy="shape-toolbar"
     role="toolbar"
-    aria-label="Outils de forme"
   >
     <span class="shape-toolbar__title">{{ panelTitle }}</span>
 
     <ShapeModePicker class="shape-toolbar__picker" />
 
     <template v-if="state !== 'point'">
-      <span class="shape-toolbar__rule" aria-hidden="true" />
+      <span aria-hidden="true" class="shape-toolbar__rule" />
       <div class="shape-toolbar__actions">
         <p class="shape-toolbar__hint">{{ contextHint }}</p>
         <div class="shape-toolbar__buttons">
@@ -114,10 +114,10 @@ const handleClear = () => mapStore.exitShapeMode()
           </AppButton>
           <button
             v-tooltip="'Effacer la sélection'"
-            class="shape-toolbar__clear"
-            type="button"
-            data-cy="shape-clear"
             aria-label="Effacer la sélection"
+            class="shape-toolbar__clear"
+            data-cy="shape-clear"
+            type="button"
             @click="handleClear"
           >
             <IconClose :size="16" aria-hidden="true" />
@@ -158,7 +158,7 @@ const handleClear = () => mapStore.exitShapeMode()
   min-width: min-content;
 }
 .shape-toolbar__title {
-  @apply text-[11px] font-bold uppercase tracking-wider text-gray-400;
+  @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
 }
 .shape-toolbar__picker {
   @apply justify-center;
