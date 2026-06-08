@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, computed, type PropType } from "vue"
+import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
 
 const props = defineProps({
@@ -22,6 +22,15 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
+
+// The bottom-left stack has a content-driven width (background selector + layer
+// toggles). Publish it so the centered shape card can keep itself centered in
+// the band between this stack and the draw trigger, in pure CSS.
+const bottomLeftControlsEl = ref<HTMLElement | null>(null)
+const CONTROLS_WIDTH_VAR = "--bottom-left-controls-width"
+const setControlsWidth = (px: number) =>
+  document.documentElement.style.setProperty(CONTROLS_WIDTH_VAR, `${px}px`)
+let controlsObserver: ResizeObserver | null = null
 
 onMounted(() => {
   mapStore.initMap(props.mapId, model.value.dataType!)
@@ -44,6 +53,19 @@ onMounted(() => {
 
   mapInstance.on("moveend", updateParams)
   updateParams()
+
+  if (bottomLeftControlsEl.value) {
+    controlsObserver = new ResizeObserver(() =>
+      setControlsWidth(bottomLeftControlsEl.value?.offsetWidth ?? 0)
+    )
+    controlsObserver.observe(bottomLeftControlsEl.value)
+    setControlsWidth(bottomLeftControlsEl.value.offsetWidth)
+  }
+})
+
+onBeforeUnmount(() => {
+  controlsObserver?.disconnect()
+  setControlsWidth(0)
 })
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -59,16 +81,9 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapGeocoder />
   </div>
 
-  <!-- Drawing controls positioned to the left of maplibre controls -->
-  <div class="drawing-controls-container">
-    <DrawingModeToggle />
-  </div>
-  <div v-if="mapStore.isToolbarVisible" class="selection-toolbar-container">
-    <SelectionModeToolbar />
-  </div>
-
-  <!-- Drawing controls - only visible in shape mode -->
-  <DrawingControls />
+  <!-- Unified shape selection toolbar + live readout chip -->
+  <ShapeToolbar />
+  <ShapeLiveChip />
 
   <!-- Cadastre parcel info - bottom center -->
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
@@ -77,6 +92,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <!-- Bottom-left stack: background selector + layer toggles (desktop only) -->
   <div
+    ref="bottomLeftControlsEl"
     :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]"
     data-cy="bottom-left-controls"
   >
@@ -84,24 +100,21 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapLayerToggles v-if="appStore.isDesktop" />
   </div>
 
-  <!-- Mobile top bar: layer switcher -->
-  <div v-if="appStore.isMobileOrTablet" class="mobile-top-bar">
+  <!-- Top-left stack: mobile layer switcher (mobile only), legend, then info row.
+       Stacking them in one flex column keeps the gaps between items equal. -->
+  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLayerSwitcher
+      v-if="appStore.isMobileOrTablet"
       :show-context-tools="false"
       :show-methodology="false"
       :with-border="false"
       data-cy="mobile-layer-switcher"
     />
-  </div>
-
-  <!-- Legend - top left -->
-  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLegend />
     <div class="legend-info-row">
       <MapResolution />
       <MapCoordinates />
     </div>
-    <MapFiltersStatus />
   </div>
   <WelcomeMessage />
 </template>
@@ -110,7 +123,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 @reference "@/styles/main.css";
 
 .top-right-controls {
-  @apply absolute right-2 top-2 flex flex-col gap-2 z-50;
+  @apply absolute flex flex-col gap-2;
+  z-index: var(--z-map-overlay);
+  top: var(--map-edge-gap);
+  right: var(--map-edge-gap);
   width: calc(50% - 1rem);
 }
 
@@ -128,17 +144,12 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 }
 
-.mobile-top-bar {
-  @apply absolute top-2 left-2 z-40 flex flex-col gap-2;
-  @apply lg:hidden;
-  width: calc(50% - 1rem);
-}
-
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2;
+  @apply absolute flex flex-col items-start pointer-events-none gap-2;
   @apply transition-all duration-300 ease-out;
-  top: 88px;
-  left: 0.5rem;
+  z-index: var(--z-map-overlay);
+  top: var(--map-edge-gap);
+  left: var(--map-edge-gap);
   width: calc(50% - 1rem);
 }
 
@@ -160,16 +171,17 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 
   .legend-container.sidepanel-visible {
-    left: calc(var(--width-sidepanel) + 0.5rem);
+    left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
 }
 
 .cadastre-info-container {
-  @apply absolute z-30 pointer-events-none;
+  @apply absolute pointer-events-none;
   @apply transition-all duration-300 ease-out;
+  z-index: var(--z-map-overlay);
   left: 50%;
   transform: translateX(-50%);
-  bottom: 72px;
+  bottom: var(--map-cadastre-bottom);
 }
 
 .cadastre-info-container > * {
@@ -177,29 +189,22 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 @media (min-width: 1024px) {
-  .cadastre-info-container {
-    bottom: 16px;
-  }
-
   .cadastre-info-container.sidepanel-visible {
     left: calc(50% + var(--width-sidepanel) / 2);
   }
 }
 
 .bottom-left-controls {
-  @apply absolute z-30 flex flex-col items-start gap-2;
+  @apply absolute flex flex-col items-start gap-2;
   @apply transition-all duration-300 ease-out;
-  left: 0.5rem;
-  bottom: 130px;
+  z-index: var(--z-map-overlay);
+  left: var(--map-edge-gap);
+  bottom: var(--map-overlay-bottom);
 }
 
 @media (min-width: 1024px) {
-  .bottom-left-controls {
-    bottom: 0.5rem;
-  }
-
   .bottom-left-controls.sidepanel-visible {
-    left: calc(var(--width-sidepanel) + 0.5rem);
+    left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
 }
 
@@ -207,30 +212,5 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   @apply flex flex-row items-center gap-2 pointer-events-auto w-full;
   min-width: 0;
   overflow: hidden;
-}
-
-/* Drawing controls - aligned with maplibre 3D button */
-.drawing-controls-container {
-  @apply absolute z-30;
-  bottom: 130px;
-  right: 68px;
-}
-
-.selection-toolbar-container {
-  @apply absolute z-30;
-  bottom: 180px;
-  right: 68px;
-}
-
-@media (min-width: 1024px) {
-  .drawing-controls-container {
-    bottom: 18px;
-    right: 68px;
-  }
-
-  .selection-toolbar-container {
-    bottom: 18px;
-    right: 116px;
-  }
 }
 </style>

@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
   @apply font-sans text-xs text-gray-700;
   bottom: calc(100% + 0.5rem);
   left: 0;
-  z-index: 40;
+  z-index: var(--z-map-floating);
   padding: 0.5rem 0.75rem;
   min-width: 14rem;
   max-width: 20rem;

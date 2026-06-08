@@ -1,4 +1,5 @@
 import json
+import math
 from django.test import TestCase, Client
 from django.core.files.base import ContentFile
 from django.contrib.gis.geos import Polygon
@@ -242,3 +243,45 @@ class ScoresInPolygonViewTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_polygon_area_exceeds_limit(self):
+        url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
+        # ~0.15° square near Lyon → tens of km², well over the 5 km² limit.
+        polygon = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [4.80, 45.70],
+                    [4.95, 45.70],
+                    [4.95, 45.85],
+                    [4.80, 45.85],
+                    [4.80, 45.70],
+                ]
+            ],
+        }
+        response = self.client.post(
+            url, data=json.dumps(polygon), content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("area", response.json()["error"].lower())
+
+    def test_polygon_too_many_vertices(self):
+        url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
+        # Tiny 110-point circle near Lyon: small area, but over the 100-vertex limit.
+        center_lng, center_lat, radius = 4.867, 45.809, 0.0003
+        ring = [
+            [
+                center_lng + radius * math.cos(2 * math.pi * i / 110),
+                center_lat + radius * math.sin(2 * math.pi * i / 110),
+            ]
+            for i in range(110)
+        ]
+        ring.append(ring[0])
+        polygon = {"type": "Polygon", "coordinates": [ring]}
+        response = self.client.post(
+            url, data=json.dumps(polygon), content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("vertices", response.json()["error"].lower())
