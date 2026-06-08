@@ -25,7 +25,6 @@ const centroid = (coords: number[][]): [number, number] => {
   return [sum[0] / points.length, sum[1] / points.length]
 }
 
-// Project the cached centroid to screen space. Cheap enough to run on every frame.
 const reproject = () => {
   const map = mapInstance.value
   if (!map || !centroidLngLat.value) {
@@ -35,8 +34,7 @@ const reproject = () => {
   screenPos.value = map.project(centroidLngLat.value)
 }
 
-// Re-read the shape from the store (snapshot) and refresh the cached centroid/area.
-// Runs only when the shape or its area actually changes, not on every render frame.
+// Reads the TerraDraw snapshot — call only on shape/area change, never per render frame.
 const refreshFromShape = () => {
   const coords = mapStore.shapeDrawing.getCurrentShapeCoordinates()
   if (!coords || coords.length < 3 || mapStore.drawingState === "point") {

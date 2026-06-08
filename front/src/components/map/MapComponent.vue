@@ -23,14 +23,15 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 const appStore = useAppStore()
 
-// The bottom-left stack has a content-driven width (background selector + layer
-// toggles). Publish it so the centered shape card can keep itself centered in
-// the band between this stack and the draw trigger, in pure CSS.
-const bottomLeftControlsEl = ref<HTMLElement | null>(null)
-const CONTROLS_WIDTH_VAR = "--bottom-left-controls-width"
-const setControlsWidth = (px: number) =>
-  document.documentElement.style.setProperty(CONTROLS_WIDTH_VAR, `${px}px`)
-let controlsObserver: ResizeObserver | null = null
+// Mirror the search bar's height and width onto CSS vars so the shape toolbar's
+// card can sit just below it and match its width — without hard-coding either.
+const topRightControlsEl = ref<HTMLElement | null>(null)
+const setTopRightSize = (el: HTMLElement | null) => {
+  const root = document.documentElement.style
+  root.setProperty("--top-right-controls-height", `${el?.offsetHeight ?? 0}px`)
+  root.setProperty("--top-right-controls-width", `${el?.offsetWidth ?? 0}px`)
+}
+let topRightObserver: ResizeObserver | null = null
 
 onMounted(() => {
   mapStore.initMap(props.mapId, model.value.dataType!)
@@ -54,18 +55,16 @@ onMounted(() => {
   mapInstance.on("moveend", updateParams)
   updateParams()
 
-  if (bottomLeftControlsEl.value) {
-    controlsObserver = new ResizeObserver(() =>
-      setControlsWidth(bottomLeftControlsEl.value?.offsetWidth ?? 0)
-    )
-    controlsObserver.observe(bottomLeftControlsEl.value)
-    setControlsWidth(bottomLeftControlsEl.value.offsetWidth)
+  if (topRightControlsEl.value) {
+    topRightObserver = new ResizeObserver(() => setTopRightSize(topRightControlsEl.value))
+    topRightObserver.observe(topRightControlsEl.value)
+    setTopRightSize(topRightControlsEl.value)
   }
 })
 
 onBeforeUnmount(() => {
-  controlsObserver?.disconnect()
-  setControlsWidth(0)
+  topRightObserver?.disconnect()
+  setTopRightSize(null)
 })
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -76,23 +75,18 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <div :id="mapId" class="relative w-full h-full" data-cy="map-component"></div>
   </div>
 
-  <!-- Top-right controls stack -->
-  <div class="top-right-controls">
+  <div ref="topRightControlsEl" class="top-right-controls">
     <MapGeocoder />
   </div>
 
-  <!-- Unified shape selection toolbar + live readout chip -->
   <ShapeToolbar />
   <ShapeLiveChip />
 
-  <!-- Cadastre parcel info - bottom center -->
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
   </div>
 
-  <!-- Bottom-left stack: background selector + layer toggles (desktop only) -->
   <div
-    ref="bottomLeftControlsEl"
     :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]"
     data-cy="bottom-left-controls"
   >
@@ -100,8 +94,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapLayerToggles v-if="appStore.isDesktop" />
   </div>
 
-  <!-- Top-left stack: mobile layer switcher (mobile only), legend, then info row.
-       Stacking them in one flex column keeps the gaps between items equal. -->
+  <!-- Stacking these in one flex column keeps the gaps between items equal. -->
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLayerSwitcher
       v-if="appStore.isMobileOrTablet"

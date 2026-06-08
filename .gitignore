@@ -25,3 +25,4 @@ node_modules/
 
 # Superpowers brainstorming companion artifacts (local only)
 .superpowers/
+docs/superpowers/

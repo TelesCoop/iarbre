@@ -1,18 +1,12 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
-import { useAppStore } from "@/stores/app"
 import { SelectionMode } from "@/utils/enum"
 import IconClose from "@/components/icons/IconClose.vue"
 
 const mapStore = useMapStore()
-const appStore = useAppStore()
 
-// Keep the centered panel centered within the visible map area when the side
-// panel pushes content aside (desktop only — mirrors the other centered overlays).
-const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
-
-// Local disclosure state: the centered card is hidden behind a single trigger.
+// Local disclosure state: the card is hidden behind a single trigger.
 // Closing only hides the card — the drawn shape and its score are kept; use the
 // clear (✕) action inside the card to actually discard the selection.
 const isOpen = ref(false)
@@ -44,7 +38,6 @@ const SHAPE_LABELS: Record<SelectionMode, string> = {
   [SelectionMode.SELECT]: "Sélection"
 }
 
-// Header doubles as feedback: generic while idle, the active shape's name otherwise.
 const panelTitle = computed(() =>
   state.value === "point" ? "Forme" : (SHAPE_LABELS[mapStore.selectionMode] ?? "Forme")
 )
@@ -67,7 +60,6 @@ const handleClear = () => mapStore.exitShapeMode()
 </script>
 
 <template>
-  <!-- Single round trigger, anchored where the legacy draw toggle lived. -->
   <button
     v-tooltip.left="'Dessiner une zone'"
     class="shape-toolbar__trigger map-control-btn map-control-btn-sm"
@@ -82,12 +74,11 @@ const handleClear = () => mapStore.exitShapeMode()
     <img :src="triggerIcon" alt="" aria-hidden="true" class="w-6 h-6" />
   </button>
 
-  <!-- Open card is centered, independent of the trigger position. -->
+  <!-- Card opens in the top-right corner, just below the search bar. -->
   <div
     v-if="isOpen"
     id="shape-toolbar-panel"
-    class="shape-toolbar"
-    :class="{ 'sidepanel-visible': isSidePanelVisible }"
+    class="shape-toolbar__panel"
     data-cy="shape-toolbar"
     role="toolbar"
     aria-label="Outils de forme"
@@ -149,35 +140,22 @@ const handleClear = () => mapStore.exitShapeMode()
   right: var(--map-trigger-right);
 }
 
-/* Centered card: flat language (rounded-lg, no shadow) to match the map panels;
-   fixed width so the variable hint text never resizes it. It is centered in the
-   band between the bottom-left controls' right edge (their live width is
-   published by MapComponent) and the draw trigger's left edge, re-centering
-   automatically when either side resizes or the side panel toggles. */
-.shape-toolbar {
-  @apply absolute
-         flex flex-col items-stretch gap-2 p-3
+/* Disclosure card, anchored top-right just below the search bar and matching its
+   width (both right-aligned at --map-edge-gap, so edges line up). MapComponent
+   publishes the bar's live height and width. Flat language (rounded-lg, no
+   shadow) to match the map panels. */
+.shape-toolbar__panel {
+  @apply absolute flex flex-col items-stretch gap-2 p-3
          bg-white border border-gray-200 rounded-lg
-         w-64 max-w-[calc(100vw-1rem)]
+         max-w-[calc(100vw-1rem)]
          transition-all duration-300 ease-out;
   z-index: var(--z-map-overlay);
-  bottom: var(--map-panel-bottom);
-  --shape-band-left: calc(
-    var(--map-edge-gap) + var(--bottom-left-controls-width, 0px) + var(--map-edge-gap)
-  );
-  --shape-band-right: calc(
-    100% - var(--map-trigger-right) - var(--map-trigger-size) - var(--map-edge-gap)
-  );
-  left: calc((var(--shape-band-left) + var(--shape-band-right)) / 2);
-  transform: translateX(-50%);
-}
-@media (min-width: 1024px) {
-  .shape-toolbar.sidepanel-visible {
-    --shape-band-left: calc(
-      var(--width-sidepanel) + var(--map-edge-gap) + var(--bottom-left-controls-width, 0px) +
-        var(--map-edge-gap)
-    );
-  }
+  top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
+  right: var(--map-edge-gap);
+  /* Never shrink below the mode picker: the search bar is only half-width on
+     mobile, narrower than the five shape buttons. */
+  width: var(--top-right-controls-width, 15rem);
+  min-width: min-content;
 }
 .shape-toolbar__title {
   @apply text-[11px] font-bold uppercase tracking-wider text-gray-400;

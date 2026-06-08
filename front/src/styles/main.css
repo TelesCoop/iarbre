@@ -37,8 +37,6 @@
   --map-ctrl-edge: 8px; /* maplibre bottom-right right offset */
   --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
   --map-cadastre-bottom: 72px; /* parcel info, above the bottom controls */
-  --map-panel-bottom: 5rem; /* shape card, clears the trigger row */
-  --map-trigger-size: 2.25rem; /* map-control-btn-sm: w-9 mobile / w-10 desktop */
   --map-trigger-right: 68px; /* draw trigger sits left of the maplibre controls */
 }
 
@@ -46,8 +44,6 @@
   :root {
     --map-ctrl-offset: 8px; /* → --map-overlay-bottom resolves to 18px */
     --map-cadastre-bottom: 16px;
-    --map-panel-bottom: 3.5rem;
-    --map-trigger-size: 2.5rem; /* w-10 */
   }
 }
 
