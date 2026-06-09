@@ -55,8 +55,8 @@ button.maplibregl-ctrl-3d.is-active {
 .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon,
 .maplibregl-ctrl-compass .maplibregl-ctrl-icon,
 button.maplibregl-ctrl-center svg {
-  width: 24px !important;
-  height: 24px !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
 }
 
 .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
@@ -64,7 +64,7 @@ button.maplibregl-ctrl-center svg {
 .maplibregl-ctrl-compass .maplibregl-ctrl-icon {
   background-position: center !important;
   background-repeat: no-repeat !important;
-  background-size: 22px 22px !important;
+  background-size: 1.375rem 1.375rem !important;
 }
 
 .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon {
