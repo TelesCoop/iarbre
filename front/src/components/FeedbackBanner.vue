@@ -18,8 +18,7 @@ const paddingLeft = computed(() => {
   return "4.5rem"
 })
 
-// Publish the banner's actual (wrapping) height so full-viewport pages (the map)
-// can subtract it instead of overflowing below the fold.
+// Published so full-viewport pages (the map) can subtract the banner height.
 const BANNER_HEIGHT_VAR = "--feedback-banner-height"
 const setBannerHeight = (px: number) =>
   document.documentElement.style.setProperty(BANNER_HEIGHT_VAR, `${px}px`)

@@ -80,7 +80,6 @@ export function useShapeDrawing() {
   const initDraw = (map: Map) => {
     currentMap.value = map
 
-    // Initialize Terra Draw with all available modes
     terraDraw.value = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
       modes: [
@@ -184,7 +183,6 @@ export function useShapeDrawing() {
 
     currentMode.value = mode
 
-    // Map selection modes to Terra Draw modes
     const modeMap: Record<SelectionMode, string> = {
       point: "point",
       polygon: "polygon",
@@ -223,7 +221,6 @@ export function useShapeDrawing() {
   ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
     if (!terraDraw.value) return null
 
-    // Don't call API for LCZ in non-Point mode
     if (dataType === DataType.CLIMATE_ZONE) return null
 
     // Pick the drawn polygon explicitly; select mode also injects helper Point features.
@@ -238,7 +235,6 @@ export function useShapeDrawing() {
 
     if (coordinates.length < 3) return null
 
-    // Call backend API to retrieve aggregated scores in polygon
     const scores = await getScoresInPolygon(coordinates, dataType)
 
     return scores

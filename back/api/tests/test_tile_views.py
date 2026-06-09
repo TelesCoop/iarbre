@@ -246,7 +246,6 @@ class ScoresInPolygonViewTest(TestCase):
 
     def test_polygon_area_exceeds_limit(self):
         url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
-        # ~0.15° square near Lyon → tens of km², well over the 5 km² limit.
         polygon = {
             "type": "Polygon",
             "coordinates": [
@@ -268,7 +267,6 @@ class ScoresInPolygonViewTest(TestCase):
 
     def test_polygon_too_many_vertices(self):
         url = reverse("scores-in-polygon", kwargs={"datatype": "plantability"})
-        # Tiny 110-point circle near Lyon: small area, but over the 100-vertex limit.
         center_lng, center_lat, radius = 4.867, 45.809, 0.0003
         ring = [
             [
