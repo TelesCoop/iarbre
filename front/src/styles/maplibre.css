@@ -13,8 +13,8 @@
 button.maplibregl-ctrl-center,
 .maplibregl-ctrl-3d,
 button.maplibregl-ctrl-3d {
-  width: 40px !important;
-  height: 40px !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
   padding: 0 !important;
   margin: 0 !important;
   @apply flex! items-center! justify-center!;
