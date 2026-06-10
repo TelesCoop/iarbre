@@ -19,3 +19,10 @@ compress.dump.*
 
 front/.nyc_output/
 components.d.ts
+
+# Dependencies / build caches
+node_modules/
+
+# Superpowers brainstorming companion artifacts (local only)
+.superpowers/
+docs/superpowers/

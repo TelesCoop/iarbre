@@ -1,5 +1,19 @@
 # Journal des changements
 
+## 🔖 0.33.0 (2026-06-03) : Améliorations de l'UI de la carte
+
+### 🛠️ enhance : Changements dans l'UI des boutons sur la carte
+
+Changement du style et corrections de la disposition de certains éléments.
+
+&rarr; Commit [3962f61](https://github.com/TelesCoop/iarbre/commit/3962f61251caf42a3fa08c6da4a10e1d5a08cdc6)
+
+### 🐛 fix: GET du raster de vegestrate
+
+Le nom du fichier n'était plus le bon.
+
+&rarr; Commit [8a52714](https://github.com/TelesCoop/iarbre/commit/8a52714c9d77d983a5bc87162cc91ca10017318c)
+
 ## 🔖 0.32.0 (2026-06-03) : Correctifs mineurs d'UI
 
 ### 🛠️ enhance : Changements dans l'UI du panel

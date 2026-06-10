@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
 import { useRoute } from "vue-router"
 import { useAppStore } from "@/stores/app"
 
 const appStore = useAppStore()
 const route = useRoute()
 const dismissed = ref(false)
+const bannerEl = ref<HTMLElement | null>(null)
 
 const isMapRoute = computed(() => route.name === "map" || route.name === "mapWithUrlParams")
 
@@ -16,11 +17,38 @@ const paddingLeft = computed(() => {
   }
   return "4.5rem"
 })
+
+// Published so full-viewport pages (the map) can subtract the banner height.
+const BANNER_HEIGHT_VAR = "--feedback-banner-height"
+const setBannerHeight = (px: number) =>
+  document.documentElement.style.setProperty(BANNER_HEIGHT_VAR, `${px}px`)
+
+let observer: ResizeObserver | null = null
+
+onMounted(() => {
+  if (!bannerEl.value) return
+  observer = new ResizeObserver(() => setBannerHeight(bannerEl.value?.offsetHeight ?? 0))
+  observer.observe(bannerEl.value)
+  setBannerHeight(bannerEl.value.offsetHeight)
+})
+
+watch(dismissed, (isDismissed) => {
+  if (isDismissed) {
+    observer?.disconnect()
+    setBannerHeight(0)
+  }
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  setBannerHeight(0)
+})
 </script>
 
 <template>
   <div
     v-if="!dismissed"
+    ref="bannerEl"
     :style="{ paddingLeft }"
     class="flex items-center justify-center gap-4 px-4 py-2 bg-primary-200 text-primary-900 text-sm transition-[padding] duration-300 ease-out"
   >
