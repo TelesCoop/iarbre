@@ -44,15 +44,26 @@ def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
     return gdf
 
 
+def _iter_chunks(gpkg_path: str, chunk_size: int):
+    with fiona.open(gpkg_path) as f:
+        crs = f.crs
+        chunk = []
+        for feature in f:
+            chunk.append(feature)
+            if len(chunk) == chunk_size:
+                yield geopandas.GeoDataFrame.from_features(chunk, crs=crs)
+                chunk = []
+        if chunk:
+            yield geopandas.GeoDataFrame.from_features(chunk, crs=crs)
+
+
 def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -> None:
     with fiona.open(gpkg_path) as f:
         total_features = len(f)
     log_progress(f"Total features to process: {total_features}")
 
     n_chunks = (total_features + chunk_size - 1) // chunk_size
-    for gdf_chunk in tqdm(
-        geopandas.read_file(gpkg_path, chunksize=chunk_size), total=n_chunks
-    ):
+    for gdf_chunk in tqdm(_iter_chunks(gpkg_path, chunk_size), total=n_chunks):
         save_vegestrate(simplify_geom(gdf_chunk))
 
 
