@@ -107,8 +107,10 @@ class TileDetailsView(generics.RetrieveAPIView):
 
 
 class ScoresInPolygonView(APIView):
-    MAX_POLYGON_AREA_M2 = 10_000_000
-    MAX_VERTICES = 10
+    MAX_POLYGON_AREA_M2 = 5_000_000
+    # Accommodates the circle tool (64-segment polygon) plus richer hand-drawn
+    # polygons, while still bounding the cost of the spatial query.
+    MAX_VERTICES = 100
 
     def _validate_datatype(self, datatype):
         if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
@@ -168,10 +170,11 @@ class ScoresInPolygonView(APIView):
             return polygon, None
 
         except Exception:
+            # A malformed client polygon is a client error, not a server fault.
             logger.exception("Invalid polygon geometry: %s", polygon_geojson)
             return None, Response(
                 {"error": "Invalid polygon shape"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     def _get_scores_data(self, datatype, tiles):

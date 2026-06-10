@@ -219,7 +219,7 @@ onUnmounted(() => {
   }
 
   &::placeholder {
-    @apply text-xs font-medium text-gray-500 uppercase tracking-tight;
+    @apply text-xs font-semibold text-gray-500 uppercase font-sans tracking-normal;
   }
 }
 
@@ -238,7 +238,8 @@ onUnmounted(() => {
 }
 
 .geocoder-results {
-  @apply absolute left-0 right-0 z-50;
+  @apply absolute left-0 right-0;
+  z-index: var(--z-map-floating);
   @apply bg-white border border-primary-300 border-t-0 rounded-b-lg;
   @apply shadow-lg overflow-hidden overflow-y-auto;
   @apply m-0 p-0 list-none;

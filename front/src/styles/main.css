@@ -4,6 +4,49 @@
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
 
+/*
+ * Centralized z-index scale (low → high). All map overlays share one tier (they
+ * live in different corners and never overlap each other); the mobile result
+ * sheet sits above them so it covers the map; control dropdowns sit above the
+ * sheet. Higher app tiers are listed for reference.
+ */
+:root {
+  --z-map-overlay: 30;
+  --z-map-sheet: 40;
+  --z-map-floating: 50;
+  --z-popover: 100;
+  --z-dropdown: 1000;
+  --z-toast: 9999;
+  --z-overlay-top: 10000;
+}
+
+/*
+ * Centralized map-overlay layout anchors. Mobile-first values; the 1024px
+ * override below tightens them for desktop. Every map overlay positions itself
+ * from these tokens instead of hard-coded offsets, so the corners stay in sync.
+ *
+ * The bottom anchor lines overlays up with the maplibre control group's visual
+ * bottom edge: maplibre offsets the group by --map-ctrl-offset and adds a 10px
+ * group margin, so --map-overlay-bottom = offset + margin keeps the draw trigger
+ * and the bottom-left stack flush with the zoom controls at every breakpoint.
+ */
+:root {
+  --map-edge-gap: 0.5rem; /* breathing room from the map edges */
+  --map-ctrl-group-margin: 10px; /* maplibre's default .maplibregl-ctrl margin */
+  --map-ctrl-offset: 120px; /* maplibre bottom-right bottom offset */
+  --map-ctrl-edge: 8px; /* maplibre bottom-right right offset */
+  --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
+  --map-cadastre-bottom: 72px; /* parcel info, above the bottom controls */
+  --map-trigger-right: 68px; /* draw trigger sits left of the maplibre controls */
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --map-ctrl-offset: 8px; /* → --map-overlay-bottom resolves to 18px */
+    --map-cadastre-bottom: 16px;
+  }
+}
+
 /* Define theme variables */
 @theme {
   /* Primary colors */
@@ -254,6 +297,21 @@
 .map-control-btn-active {
   @apply bg-primary-500 border-primary-500 text-white;
   @apply hover:bg-primary-600 hover:border-primary-600 hover:text-white;
+}
+
+.map-control-btn-disabled {
+  @apply opacity-40 cursor-not-allowed;
+  @apply hover:bg-white hover:border-gray-200;
+}
+
+/* Keep the disabled icon untinted even on hover, otherwise the shared
+   `.map-control-btn:hover img` white filter would render it white on the
+   white (non-highlighted) disabled background. */
+.map-control-btn-disabled img,
+.map-control-btn-disabled svg,
+.map-control-btn-disabled:hover img,
+.map-control-btn-disabled:hover svg {
+  filter: none;
 }
 
 .map-control-icon-btn {
