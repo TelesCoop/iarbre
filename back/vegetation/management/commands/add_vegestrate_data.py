@@ -1,5 +1,5 @@
+import fiona
 import geopandas
-from multiprocessing import Pool, cpu_count
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
@@ -21,7 +21,7 @@ STRATE_MAPPING = {
 }
 
 PATHS = [
-    "file_data/vegestrate/vegestrate_lyon_metropole_ir_02.gpkg",
+    "file_data/vegestrate/vegestrate_02_2023.gpkg",
 ]
 
 
@@ -45,21 +45,15 @@ def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
 
 
 def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -> None:
-    gdf_full = geopandas.read_file(gpkg_path)
-    total_features = len(gdf_full)
+    with fiona.open(gpkg_path) as f:
+        total_features = len(f)
     log_progress(f"Total features to process: {total_features}")
 
-    chunks = [
-        gdf_full.iloc[i : i + chunk_size].copy()
-        for i in range(0, total_features, chunk_size)
-    ]
-
-    n_workers = min(cpu_count(), len(chunks))
-    with Pool(processes=n_workers) as pool:
-        processed_chunks = pool.map(simplify_geom, chunks)
-
-    for gdf_chunk in tqdm(processed_chunks):
-        save_vegestrate(gdf_chunk)
+    n_chunks = (total_features + chunk_size - 1) // chunk_size
+    for gdf_chunk in tqdm(
+        geopandas.read_file(gpkg_path, chunksize=chunk_size), total=n_chunks
+    ):
+        save_vegestrate(simplify_geom(gdf_chunk))
 
 
 def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
