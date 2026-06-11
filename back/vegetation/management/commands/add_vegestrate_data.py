@@ -1,3 +1,4 @@
+import logging
 import fiona
 import geopandas
 from multiprocessing import Pool, cpu_count
@@ -11,6 +12,8 @@ from tqdm import tqdm
 from iarbre_data.utils.database import log_progress
 from iarbre_data.models import Vegestrate, City
 from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
+
+logger = logging.getLogger(__name__)
 
 STRATE_TREES = 3
 STRATE_BUSHES = 2
@@ -33,6 +36,17 @@ PATHS = [
 ]
 
 
+def _log_memory(label: str = "") -> None:
+    try:
+        with open("/proc/self/status") as fh:
+            for line in fh:
+                if line.startswith("VmRSS:"):
+                    logger.info("Memory [%s]: %s", label, line.split(":")[1].strip())
+                    return
+    except OSError:
+        pass
+
+
 def _fix_invalid(series):
     mask = ~series.is_valid
     if mask.any():
@@ -42,14 +56,18 @@ def _fix_invalid(series):
 
 
 def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
-    gdf.to_crs(SRID_DB, inplace=True)
-    gdf["geometry"] = _fix_invalid(gdf["geometry"])
-    gdf = gdf.explode(ignore_index=True)
-    gdf["geometry"] = _fix_invalid(gdf["geometry"])
-    gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
-    gdf["map_geometry"] = gdf.geometry.to_crs(SRID_MAPLIBRE)
-    gdf["map_geometry"] = _fix_invalid(gdf["map_geometry"])
-    return gdf
+    try:
+        gdf.to_crs(SRID_DB, inplace=True)
+        gdf["geometry"] = _fix_invalid(gdf["geometry"])
+        gdf = gdf.explode(ignore_index=True)
+        gdf["geometry"] = _fix_invalid(gdf["geometry"])
+        gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
+        gdf["map_geometry"] = gdf.geometry.to_crs(SRID_MAPLIBRE)
+        gdf["map_geometry"] = _fix_invalid(gdf["map_geometry"])
+        return gdf
+    except Exception:
+        logger.exception("simplify_geom failed on chunk with %d rows", len(gdf))
+        raise
 
 
 def _iter_chunks(gpkg_path: str, chunk_size: int):
@@ -72,16 +90,40 @@ def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -
 
     n_chunks = (total_features + chunk_size - 1) // chunk_size
     n_workers = min(cpu_count() // 4, n_chunks)
-    with Pool(processes=n_workers) as pool:
-        for gdf_chunk in tqdm(
-            pool.imap(simplify_geom, _iter_chunks(gpkg_path, chunk_size)),
-            total=n_chunks,
-        ):
-            save_vegestrate(gdf_chunk)
+    logger.info(
+        "Chunks: %d, workers: %d, chunk_size: %d", n_chunks, n_workers, chunk_size
+    )
+    _log_memory("before pool")
+
+    chunk_idx = 0
+    try:
+        with Pool(processes=n_workers) as pool:
+            for chunk_idx, gdf_chunk in enumerate(
+                tqdm(
+                    pool.imap(simplify_geom, _iter_chunks(gpkg_path, chunk_size)),
+                    total=n_chunks,
+                )
+            ):
+                logger.info(
+                    "Chunk %d/%d: %d rows received from worker",
+                    chunk_idx + 1,
+                    n_chunks,
+                    len(gdf_chunk),
+                )
+                _log_memory(f"chunk {chunk_idx + 1}/{n_chunks}")
+                save_vegestrate(gdf_chunk)
+    except Exception:
+        logger.exception("Processing failed at chunk %d/%d", chunk_idx + 1, n_chunks)
+        raise
 
 
 def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
     valid = vegestrate_datas[vegestrate_datas["class"].isin(STRATE_MAPPING)]
+    logger.info(
+        "save_vegestrate: %d/%d rows pass class filter",
+        len(valid),
+        len(vegestrate_datas),
+    )
 
     veget_objects = []
     for geom_val, map_geom_val, class_val in zip(
@@ -102,7 +144,12 @@ def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
             )
         )
 
-    Vegestrate.objects.bulk_create(veget_objects)
+    try:
+        Vegestrate.objects.bulk_create(veget_objects)
+        logger.info("bulk_create: inserted %d objects", len(veget_objects))
+    except Exception:
+        logger.exception("bulk_create failed for %d objects", len(veget_objects))
+        raise
 
 
 def compute_city_vegetation_surfaces():
@@ -147,7 +194,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Load Vegestrate data, compute stats for cities and save everything in DB."""
         log_progress("Cleaning Vegestrate model")
-        print(Vegestrate.objects.all().delete())
+        deleted_count, _ = Vegestrate.objects.all().delete()
+        logger.info("Deleted %d existing Vegestrate rows", deleted_count)
         log_progress("Process and save large Vegestrate data in chunks")
         process_vegestrate_data_in_chunks(PATHS[0], chunk_size=5000)
         compute_city_vegetation_surfaces()
