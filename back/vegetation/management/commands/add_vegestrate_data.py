@@ -1,5 +1,6 @@
 import fiona
 import geopandas
+from multiprocessing import Pool, cpu_count
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
@@ -70,8 +71,13 @@ def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -
     log_progress(f"Total features to process: {total_features}")
 
     n_chunks = (total_features + chunk_size - 1) // chunk_size
-    for gdf_chunk in tqdm(_iter_chunks(gpkg_path, chunk_size), total=n_chunks):
-        save_vegestrate(simplify_geom(gdf_chunk))
+    n_workers = min(cpu_count() // 4, n_chunks)
+    with Pool(processes=n_workers) as pool:
+        for gdf_chunk in tqdm(
+            pool.imap(simplify_geom, _iter_chunks(gpkg_path, chunk_size)),
+            total=n_chunks,
+        ):
+            save_vegestrate(gdf_chunk)
 
 
 def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
