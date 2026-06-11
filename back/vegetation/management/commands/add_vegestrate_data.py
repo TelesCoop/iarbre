@@ -1,9 +1,10 @@
 import fiona
 import geopandas
+from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
-from django.db.models import Sum
+from django.db.models import Func, Sum
 from tqdm import tqdm
 
 from iarbre_data.utils.database import log_progress
@@ -19,6 +20,12 @@ STRATE_MAPPING = {
     STRATE_BUSHES: "arbustif",
     STRATE_GRASS: "herbacee",
 }
+
+
+class MakeValid(Func):
+    function = "ST_MakeValid"
+    output_field = GeometryField(srid=SRID_DB)
+
 
 PATHS = [
     "file_data/vegestrate/vegestrate_02_2023.gpkg",
@@ -100,7 +107,11 @@ def compute_city_vegetation_surfaces():
             row["strate"]: float(row["total"].sq_m or 0.0)
             for row in (
                 Vegestrate.objects.filter(geometry__intersects=city.geometry)
-                .annotate(clipped_area=Area(Intersection("geometry", city.geometry)))
+                .annotate(
+                    clipped_area=Area(
+                        Intersection(MakeValid("geometry"), city.geometry)
+                    )
+                )
                 .values("strate")
                 .annotate(total=Sum("clipped_area"))
             )
