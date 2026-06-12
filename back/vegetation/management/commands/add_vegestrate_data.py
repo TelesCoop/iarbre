@@ -161,9 +161,17 @@ def save_vegestrate(vegestrate_datas: geopandas.GeoDataFrame) -> None:
 
 
 def compute_city_vegetation_surfaces():
+    import time
+
     log_progress("Computing vegetation surfaces for cities")
+    cities = list(City.objects.all())
+    total = len(cities)
+    logger.info("compute_city_vegetation_surfaces: %d cities to process", total)
+    _log_memory("before city loop")
+
     cities_to_update = []
-    for city in tqdm(City.objects.all(), desc="Computing city vegetation surfaces"):
+    t0 = time.monotonic()
+    for idx, city in enumerate(tqdm(cities, desc="Computing city vegetation surfaces")):
         surfaces = {
             row["strate"]: float(row["total"].sq_m or 0.0)
             for row in (
@@ -185,6 +193,24 @@ def compute_city_vegetation_surfaces():
         )
         cities_to_update.append(city)
 
+        if (idx + 1) % 100 == 0:
+            elapsed = time.monotonic() - t0
+            rate = (idx + 1) / elapsed
+            remaining = (total - idx - 1) / rate if rate > 0 else 0
+            logger.info(
+                "City %d/%d — %.1f cities/s — ~%.0fs remaining",
+                idx + 1,
+                total,
+                rate,
+                remaining,
+            )
+            _log_memory(f"city {idx + 1}/{total}")
+
+    logger.info(
+        "compute_city_vegetation_surfaces: loop done in %.1fs, bulk_update starting",
+        time.monotonic() - t0,
+    )
+    _log_memory("before bulk_update")
     City.objects.bulk_update(
         cities_to_update,
         [
@@ -194,16 +220,28 @@ def compute_city_vegetation_surfaces():
             "total_vegetation_surface",
         ],
     )
+    logger.info(
+        "compute_city_vegetation_surfaces: done in %.1fs total",
+        time.monotonic() - t0,
+    )
 
 
 class Command(BaseCommand):
     help = "Import Vegestrate data in the DB."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--only-city-surfaces",
+            action="store_true",
+            help="Skip cleaning and data import; only recompute city vegetation surfaces.",
+        )
+
     def handle(self, *args, **options):
         """Load Vegestrate data, compute stats for cities and save everything in DB."""
-        log_progress("Cleaning Vegestrate model")
-        deleted_count, _ = Vegestrate.objects.all().delete()
-        logger.info("Deleted %d existing Vegestrate rows", deleted_count)
-        log_progress("Process and save large Vegestrate data in chunks")
-        process_vegestrate_data_in_chunks(PATHS[0], chunk_size=5000)
+        if not options["only_city_surfaces"]:
+            log_progress("Cleaning Vegestrate model")
+            deleted_count, _ = Vegestrate.objects.all().delete()
+            logger.info("Deleted %d existing Vegestrate rows", deleted_count)
+            log_progress("Process and save large Vegestrate data in chunks")
+            process_vegestrate_data_in_chunks(PATHS[0], chunk_size=5000)
         compute_city_vegetation_surfaces()
