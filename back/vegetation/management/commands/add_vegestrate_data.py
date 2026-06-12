@@ -4,11 +4,10 @@ import fiona
 import geopandas
 import shapely
 from multiprocessing import Pool, cpu_count
-from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
-from django.db.models import Func, Sum
+from django.db.models import Sum
 from tqdm import tqdm
 
 from iarbre_data.utils.database import log_progress
@@ -26,11 +25,6 @@ STRATE_MAPPING = {
     STRATE_BUSHES: "arbustif",
     STRATE_GRASS: "herbacee",
 }
-
-
-class MakeValid(Func):
-    function = "ST_MakeValid"
-    output_field = GeometryField(srid=SRID_DB)
 
 
 PATHS = [
@@ -176,11 +170,7 @@ def compute_city_vegetation_surfaces():
             row["strate"]: float(row["total"].sq_m or 0.0)
             for row in (
                 Vegestrate.objects.filter(geometry__intersects=city.geometry)
-                .annotate(
-                    clipped_area=Area(
-                        Intersection(MakeValid("geometry"), city.geometry)
-                    )
-                )
+                .annotate(clipped_area=Area(Intersection("geometry", city.geometry)))
                 .values("strate")
                 .annotate(total=Sum("clipped_area"))
             )
@@ -193,15 +183,15 @@ def compute_city_vegetation_surfaces():
         )
         cities_to_update.append(city)
 
-        if (idx + 1) % 100 == 0:
+        if (idx + 1) % 5 == 0:
             elapsed = time.monotonic() - t0
-            rate = (idx + 1) / elapsed
-            remaining = (total - idx - 1) / rate if rate > 0 else 0
+            secs_per_city = elapsed / (idx + 1)
+            remaining = secs_per_city * (total - idx - 1)
             logger.info(
-                "City %d/%d — %.1f cities/s — ~%.0fs remaining",
+                "City %d/%d — %.1fs/city — ~%.0fs remaining",
                 idx + 1,
                 total,
-                rate,
+                secs_per_city,
                 remaining,
             )
             _log_memory(f"city {idx + 1}/{total}")
