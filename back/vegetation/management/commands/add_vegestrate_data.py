@@ -1,6 +1,8 @@
+import gc
 import logging
 import fiona
 import geopandas
+import shapely
 from multiprocessing import Pool, cpu_count
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Area, Intersection
@@ -51,11 +53,15 @@ def _fix_invalid(series):
     mask = ~series.is_valid
     if mask.any():
         series = series.copy()
-        series[mask] = series[mask].buffer(0)
+        series[mask] = shapely.make_valid(series[mask].values)
     return series
 
 
 def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
+    n_coords = int(shapely.get_num_coordinates(gdf.geometry.values).sum())
+    logger.info(
+        "simplify_geom: starting on chunk with %d rows, %d vertices", len(gdf), n_coords
+    )
     try:
         gdf.to_crs(SRID_DB, inplace=True)
         gdf["geometry"] = _fix_invalid(gdf["geometry"])
@@ -64,6 +70,7 @@ def simplify_geom(gdf: geopandas.GeoDataFrame) -> geopandas.GeoDataFrame:
         gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.5)
         gdf["map_geometry"] = gdf.geometry.to_crs(SRID_MAPLIBRE)
         gdf["map_geometry"] = _fix_invalid(gdf["map_geometry"])
+        logger.info("simplify_geom: done, %d rows", len(gdf))
         return gdf
     except Exception:
         logger.exception("simplify_geom failed on chunk with %d rows", len(gdf))
@@ -97,7 +104,7 @@ def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -
 
     chunk_idx = 0
     try:
-        with Pool(processes=n_workers) as pool:
+        with Pool(processes=n_workers, maxtasksperchild=20) as pool:
             for chunk_idx, gdf_chunk in enumerate(
                 tqdm(
                     pool.imap(simplify_geom, _iter_chunks(gpkg_path, chunk_size)),
@@ -112,6 +119,7 @@ def process_vegestrate_data_in_chunks(gpkg_path: str, chunk_size: int = 50000) -
                 )
                 _log_memory(f"chunk {chunk_idx + 1}/{n_chunks}")
                 save_vegestrate(gdf_chunk)
+                gc.collect()
     except Exception:
         logger.exception("Processing failed at chunk %d/%d", chunk_idx + 1, n_chunks)
         raise
