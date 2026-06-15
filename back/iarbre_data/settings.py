@@ -343,6 +343,11 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
+        "vegetation": {
+            "handlers": ["file_all", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
     "root": {
         "handlers": ["console", "file_errors"],
