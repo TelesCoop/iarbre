@@ -7,6 +7,7 @@ from multiprocessing import Pool, cpu_count
 from django.contrib.gis.db.models.functions import Area, Intersection
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management import BaseCommand
+from django.db import connection
 from django.db.models import Sum
 from tqdm import tqdm
 
@@ -170,6 +171,7 @@ def compute_city_vegetation_surfaces():
             row["strate"]: float(row["total"].sq_m or 0.0)
             for row in (
                 Vegestrate.objects.filter(geometry__intersects=city.geometry)
+                .extra(where=["ST_IsValid(geometry)"])
                 .annotate(clipped_area=Area(Intersection("geometry", city.geometry)))
                 .values("strate")
                 .annotate(total=Sum("clipped_area"))
@@ -225,9 +227,23 @@ class Command(BaseCommand):
             action="store_true",
             help="Skip cleaning and data import; only recompute city vegetation surfaces.",
         )
+        parser.add_argument(
+            "--fix-invalid",
+            action="store_true",
+            help="Run ST_MakeValid on invalid Vegestrate geometries, then exit.",
+        )
 
     def handle(self, *args, **options):
         """Load Vegestrate data, compute stats for cities and save everything in DB."""
+        if options["fix_invalid"]:
+            table = Vegestrate._meta.db_table
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"UPDATE {table} SET geometry = ST_MakeValid(geometry) WHERE NOT ST_IsValid(geometry)"
+                )
+                count = cursor.rowcount
+            logger.info("Fixed %d invalid Vegestrate geometries", count)
+            return
         if not options["only_city_surfaces"]:
             log_progress("Cleaning Vegestrate model")
             deleted_count, _ = Vegestrate.objects.all().delete()
