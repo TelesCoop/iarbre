@@ -11,3 +11,4 @@ from .wms_views import IArbreWMSView  # noqa: F401
 from .orthophoto_views import OrthophotoTileView  # noqa: F401
 from .biosphere_views import BiosphereLandCoverAtPointView  # noqa: F401
 from .vegetation_height_views import VegetationHeightTileView  # noqa: F401
+from .vegetation_height_views import VegetationHeightAtPointView  # noqa: F401

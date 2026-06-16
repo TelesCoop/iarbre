@@ -23,6 +23,7 @@ import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
+import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -90,6 +91,8 @@ export const useMapStore = defineStore("map", () => {
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
   const showVegestrateHeight = ref<boolean>(false)
+  const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
+  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -418,7 +421,20 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) return
+    if (heightMapClickHandler.value) {
+      map.off("click", heightMapClickHandler.value)
+      heightMapClickHandler.value = null
+    }
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const handler = async (e: any) => {
+        if (selectionMode.value !== SelectionMode.POINT) return
+        clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
+        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
+      }
+      map.on("click", handler)
+      heightMapClickHandler.value = handler
+      return
+    }
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -535,6 +551,7 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
+    vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
 
     // Update all map instances with the new layer
@@ -1276,6 +1293,7 @@ export const useMapStore = defineStore("map", () => {
     toggle3D,
     zoomTo,
     showVegestrateHeight,
-    toggleVegestrateHeight
+    toggleVegestrateHeight,
+    vegetationHeightAtPoint
   }
 })

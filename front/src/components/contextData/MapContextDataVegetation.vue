@@ -17,6 +17,20 @@ const props = withDefaults(defineProps<VegetationCardProps>(), {
 })
 
 const currentData = computed<VegetationData | null>(() => props.data ?? null)
+
+const heightDisplayData = computed(() =>
+  mapStore.vegetationHeightAtPoint !== undefined
+    ? { height: mapStore.vegetationHeightAtPoint }
+    : null
+)
+
+const displayData = computed(() =>
+  mapStore.showVegestrateHeight ? heightDisplayData.value : currentData.value
+)
+
+const emptyMessage = computed(() =>
+  mapStore.showVegestrateHeight ? "Cliquez sur un pixel." : "Cliquez sur un carreau."
+)
 </script>
 
 <template>
@@ -24,12 +38,33 @@ const currentData = computed<VegetationData | null>(() => props.data ?? null)
     color-scheme="vegetation"
     title="vegetation"
     description="Données de végétation issues de la fusion de la classification du LIDAR 2023 et de la classification des orthophotos à l'aide de FLAIR-HUB de l'IGN."
-    :data="currentData"
-    empty-message="Cliquez sur un carreau."
+    :data="displayData"
+    :empty-message="emptyMessage"
     :zoom-level="zoomLevel"
   >
-    <template #content="{ data: vegetationData }">
-      <VegestrateContextDataInfo :data="vegetationData" />
+    <template #content>
+      <div v-if="mapStore.showVegestrateHeight" class="height-info">
+        <span class="height-value">
+          {{
+            heightDisplayData?.height !== null && heightDisplayData?.height !== undefined
+              ? `${heightDisplayData.height} m`
+              : "Hors zone de végétation"
+          }}
+        </span>
+      </div>
+      <VegestrateContextDataInfo v-else-if="currentData" :data="currentData" />
     </template>
   </ContextDataMainContainer>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.height-info {
+  @apply flex items-center justify-center p-4;
+}
+
+.height-value {
+  @apply text-2xl font-bold text-gray-800;
+}
+</style>
