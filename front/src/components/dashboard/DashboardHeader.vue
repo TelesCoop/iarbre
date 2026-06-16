@@ -8,10 +8,16 @@ import type { DashboardScale } from "@/types/dashboard"
 
 const store = useDashboardStore()
 
-const scaleOptions: { label: string; value: DashboardScale }[] = [
-  { label: "Métropole", value: "metropole" },
-  { label: "Commune", value: "commune" }
-]
+const scaleOptions = computed<{ label: string; value: DashboardScale }[]>(() => {
+  const options: { label: string; value: DashboardScale }[] = [
+    { label: "Métropole", value: "metropole" },
+    { label: "Commune", value: "commune" }
+  ]
+  if (store.hasZone) {
+    options.push({ label: "Zone personnalisée", value: "zone" })
+  }
+  return options
+})
 
 const cityOptions = computed(() => store.cities.map((c) => ({ label: c.name, value: c.code })))
 
@@ -30,6 +36,9 @@ const areaDisplay = computed(() => {
 })
 
 const currentLabel = computed(() => {
+  if (store.selectedScale === "zone") {
+    return "Zone personnalisée"
+  }
   if (store.selectedScale === "commune" && store.selectedCity) {
     return store.selectedCity.name
   }

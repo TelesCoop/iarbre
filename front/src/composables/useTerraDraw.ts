@@ -187,22 +187,14 @@ export function useShapeDrawing() {
     return terraDraw.value.getSnapshot()
   }
 
-  const getScoresInShape = async (
-    dataType: DataType
-  ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
+  const getLastShapeCoordinates = (): [number, number][] | null => {
     if (!terraDraw.value) return null
 
-    // Get all drawn features
     const features = terraDraw.value.getSnapshot()
     if (features.length === 0) return null
 
-    // For now, process the last drawn feature
     const lastFeature = features[features.length - 1]
-
-    // Don't call API for LCZ in non-Point mode
-    if (dataType === DataType.CLIMATE_ZONE || lastFeature.geometry.type === GeometryType.POINT) {
-      return null
-    }
+    if (lastFeature.geometry.type === GeometryType.POINT) return null
 
     const coordinates: [number, number][] = (
       lastFeature.geometry.coordinates[0] as Array<[number, number]>
@@ -210,10 +202,20 @@ export function useShapeDrawing() {
 
     if (coordinates.length < 3) return null
 
-    // Call backend API to retrieve aggregated scores in polygon
-    const scores = await getScoresInPolygon(coordinates, dataType)
+    return coordinates
+  }
 
-    return scores
+  const getScoresInShape = async (
+    dataType: DataType
+  ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
+    // Don't call API for LCZ in non-Point mode
+    if (dataType === DataType.CLIMATE_ZONE) return null
+
+    const coordinates = getLastShapeCoordinates()
+    if (!coordinates) return null
+
+    // Call backend API to retrieve aggregated scores in polygon
+    return getScoresInPolygon(coordinates, dataType)
   }
 
   const cleanup = () => {
@@ -241,6 +243,7 @@ export function useShapeDrawing() {
     stopDrawing,
     clearDrawing,
     getScoresInShape,
+    getLastShapeCoordinates,
     getSelectedFeatures,
     onShapeFinished,
     cleanup

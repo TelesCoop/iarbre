@@ -56,6 +56,7 @@ import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
+import type { ZonePolygon } from "@/stores/zone"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -1046,6 +1047,20 @@ export const useMapStore = defineStore("map", () => {
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
 
+  const hasShapeContextData = computed(
+    () =>
+      isShapeMode.value &&
+      !isCalculating.value &&
+      !contextData.error.value &&
+      contextData.data.value != null
+  )
+
+  const getDrawnPolygon = (): ZonePolygon | null => {
+    const coordinates = shapeDrawing.getLastShapeCoordinates()
+    if (!coordinates) return null
+    return { type: "Polygon", coordinates: [coordinates] }
+  }
+
   const toggleToolbar = () => {
     isToolbarVisible.value = !isToolbarVisible.value
     // When closing toolbar, return to POINT mode
@@ -1093,6 +1108,8 @@ export const useMapStore = defineStore("map", () => {
     selectedLegendCell,
     selectionMode,
     isShapeMode,
+    hasShapeContextData,
+    getDrawnPolygon,
     isToolbarVisible,
     toggleToolbar,
     changeSelectionMode,

@@ -20,3 +20,4 @@ compress.dump.*
 front/.nyc_output/
 components.d.ts
 .superpowers/*
+docs/superpowers/*

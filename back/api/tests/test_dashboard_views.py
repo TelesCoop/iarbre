@@ -1,8 +1,11 @@
+import json
+
 from django.contrib.gis.geos import Polygon
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
 from api.views.dashboard_views import _avg_from_counts, _safe_round
+from iarbre_data.models import Tile
 from iarbre_data.settings import SRID_DB
 from iarbre_data.factories import (
     BiosphereFunctionalIntegrityFactory,
@@ -217,6 +220,129 @@ class DashboardMetaFactorsTest(TestCase):
         )
         data = self.client.get(self.url).json()
         self.assertEqual(data["plantability"]["metaFactors"], {"eau": 0.4, "bati": 0.3})
+
+
+LYON_SQUARE = Polygon(
+    (
+        (845000, 6525000),
+        (845100, 6525000),
+        (845100, 6525100),
+        (845000, 6525100),
+        (845000, 6525000),
+    ),
+    srid=SRID_DB,
+)
+
+# WGS84 polygon that transforms into LYON_SQUARE's area (mirrors in-polygon tests).
+LYON_WGS84_POLYGON = {
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [4.867256, 45.809200],
+            [4.868544, 45.809179],
+            [4.868574, 45.810079],
+            [4.867287, 45.810101],
+            [4.867256, 45.809200],
+        ]
+    ],
+}
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardPolygonViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard-in-polygon")
+        self.iris = IrisFactory(
+            code="690010101",
+            city=CityFactory(code="69001", geometry=LYON_SQUARE),
+            geometry=LYON_SQUARE,
+            meta_factors_avg={"eau": 0.4, "bati": 0.2},
+        )
+        Tile.objects.create(
+            geometry=LYON_SQUARE,
+            plantability_normalized_indice=8.0,
+            iris=self.iris,
+            city=self.iris.city,
+        )
+        VulnerabilityFactory(
+            geometry=LYON_SQUARE,
+            vulnerability_index_day=6.0,
+            vulnerability_index_night=4.0,
+        )
+        LczFactory(
+            geometry=LYON_SQUARE,
+            lcz_index="2",
+            details={
+                "hre": 15.0,
+                "bur": 20.0,
+                "ror": 30.0,
+                "bsr": 5.0,
+                "ver": 40.0,
+                "war": 5.0,
+                "vhr": 25.0,
+            },
+        )
+        VegestrateFactory(geometry=LYON_SQUARE, strate="arborescent", surface=500_000)
+
+    def _post(self, payload):
+        return self.client.post(
+            self.url, data=json.dumps(payload), content_type="application/json"
+        )
+
+    def test_returns_full_structure(self):
+        data = self._post(LYON_WGS84_POLYGON).json()
+        for key in [
+            "areaHa",
+            "plantability",
+            "vulnerability",
+            "vegetation",
+            "lcz",
+            "biosphere",
+            "buildings",
+        ]:
+            self.assertIn(key, data)
+        self.assertIsNone(data["city"])
+
+    def test_plantability_from_tiles(self):
+        plantability = self._post(LYON_WGS84_POLYGON).json()["plantability"]
+        self.assertAlmostEqual(plantability["averageNormalizedIndice"], 8.0, places=1)
+        self.assertEqual(plantability["distribution"], {"8": 1})
+        self.assertEqual(plantability["distributionByDivision"], [])
+
+    def test_meta_factors_weighted_from_iris(self):
+        plantability = self._post(LYON_WGS84_POLYGON).json()["plantability"]
+        self.assertEqual(plantability["metaFactors"], {"eau": 0.4, "bati": 0.2})
+
+    def test_vulnerability_aggregated(self):
+        vuln = self._post(LYON_WGS84_POLYGON).json()["vulnerability"]
+        self.assertEqual(vuln["averageDay"], 6.0)
+        self.assertEqual(vuln["averageNight"], 4.0)
+
+    def test_empty_polygon_returns_zeros(self):
+        far_away = {
+            "type": "Polygon",
+            "coordinates": [
+                [[2.0, 48.0], [2.01, 48.0], [2.01, 48.01], [2.0, 48.01], [2.0, 48.0]]
+            ],
+        }
+        data = self._post(far_away).json()
+        self.assertEqual(data["plantability"]["averageNormalizedIndice"], 0)
+        self.assertEqual(data["plantability"]["metaFactors"], {})
+        self.assertEqual(data["vulnerability"]["averageDay"], 0)
+
+    def test_oversized_polygon_rejected(self):
+        oversized = {
+            "type": "Polygon",
+            "coordinates": [
+                [[4.0, 45.0], [6.0, 45.0], [6.0, 46.0], [4.0, 46.0], [4.0, 45.0]]
+            ],
+        }
+        self.assertEqual(self._post(oversized).status_code, 400)
+
+    def test_empty_payload_rejected(self):
+        response = self.client.post(self.url, data="", content_type="application/json")
+        self.assertEqual(response.status_code, 400)
 
 
 class HelperFunctionsTest(SimpleTestCase):

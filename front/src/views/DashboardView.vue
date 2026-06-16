@@ -8,7 +8,11 @@ import { useDashboardStore } from "@/stores/dashboard"
 const store = useDashboardStore()
 
 onMounted(() => {
-  store.fetchDashboardData()
+  if (store.hasZone) {
+    store.setScale("zone")
+  } else {
+    store.fetchDashboardData()
+  }
 })
 </script>
 

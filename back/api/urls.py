@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView, ScoresInPolygonView
-from .views.dashboard_views import DashboardView
+from .views.dashboard_views import DashboardView, DashboardPolygonView
 from .views import (
     CityView,
     IrisView,
@@ -47,6 +47,11 @@ urlpatterns = [
         "rasters/<str:raster_type>/",
         RasterDownloadView.as_view(),
         name="download-raster",
+    ),
+    path(
+        "dashboard/in-polygon/",
+        DashboardPolygonView.as_view(),
+        name="dashboard-in-polygon",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),

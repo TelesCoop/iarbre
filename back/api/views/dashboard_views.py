@@ -12,12 +12,14 @@ from rest_framework.views import APIView
 
 from api.constants import INDICE_ROUNDING_DECIMALS
 from api.serializers.dashboard_serializer import DashboardSerializer
+from api.utils.polygon import parse_and_validate_polygon
 from iarbre_data.models import (
     BiosphereFunctionalIntegrity,
     City,
     Data,
     Iris,
     Lcz,
+    Tile,
     Vegestrate,
     Vulnerability,
 )
@@ -74,16 +76,7 @@ class DashboardView(APIView):
     @method_decorator(cache_page(60 * 60))
     def get(self, request, *args, **kwargs):
         scope = self._get_geographic_scale(request)
-        data = {
-            "city": self._serialize_city(scope.city),
-            "areaHa": round(scope.area_m2 / M2_TO_HA, 1),
-            "plantability": self._aggregate_plantability(scope),
-            "vulnerability": self._aggregate_vulnerability(scope.geometry_filter),
-            "vegetation": self._aggregate_vegetation(scope),
-            "lcz": self._aggregate_lcz(scope.geometry_filter),
-            "buildings": self._aggregate_buildings(scope.geometry_filter),
-            "biosphere": self._aggregate_biosphere(scope.geometry_filter),
-        }
+        data = assemble_dashboard_data(scope, self._aggregate_plantability(scope))
         serializer = DashboardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
@@ -309,3 +302,100 @@ class DashboardView(APIView):
             "averageIndice": _safe_round(_avg_from_counts(distribution)),
             "distribution": distribution,
         }
+
+
+def assemble_dashboard_data(scope: DashboardScope, plantability: dict) -> dict:
+    """Build the dashboard payload from a scope and a precomputed plantability dict.
+
+    Shared by the predefined-scale view (GET) and the drawn-polygon view (POST):
+    every aggregation but plantability already works off ``scope.geometry_filter``.
+    """
+    return {
+        "city": DashboardView._serialize_city(scope.city),
+        "areaHa": round(scope.area_m2 / M2_TO_HA, 1),
+        "plantability": plantability,
+        "vulnerability": DashboardView._aggregate_vulnerability(scope.geometry_filter),
+        "vegetation": DashboardView._aggregate_vegetation(scope),
+        "lcz": DashboardView._aggregate_lcz(scope.geometry_filter),
+        "buildings": DashboardView._aggregate_buildings(scope.geometry_filter),
+        "biosphere": DashboardView._aggregate_biosphere(scope.geometry_filter),
+    }
+
+
+def _meta_factors_from_polygon_tiles(tiles) -> dict:
+    """Tile-count-weighted average of the meta_factors_avg of intersected IRIS."""
+    counts_by_iris = {
+        row["iris"]: row["count"]
+        for row in tiles.exclude(iris__isnull=True)
+        .values("iris")
+        .annotate(count=Count("id"))
+    }
+    if not counts_by_iris:
+        return {}
+
+    weighted: dict[str, float] = {}
+    total_weight = 0
+    for iris in Iris.objects.filter(id__in=counts_by_iris.keys()).only(
+        "id", "meta_factors_avg"
+    ):
+        if not iris.meta_factors_avg:
+            continue
+        weight = counts_by_iris[iris.id]
+        total_weight += weight
+        for key, value in iris.meta_factors_avg.items():
+            weighted[key] = weighted.get(key, 0.0) + value * weight
+
+    if total_weight == 0:
+        return {}
+    return {key: _safe_round(value / total_weight) for key, value in weighted.items()}
+
+
+def _aggregate_plantability_from_polygon(polygon) -> dict:
+    """Plantability for an arbitrary polygon, computed from intersected tiles
+    (no precomputed plantability_counts exist for a drawn zone)."""
+    tiles = Tile.objects.filter(geometry__intersects=polygon)
+
+    avg = tiles.aggregate(avg=Avg("plantability_normalized_indice"))["avg"]
+    distribution_qs = (
+        tiles.values("plantability_normalized_indice")
+        .annotate(count=Count("id"))
+        .order_by("plantability_normalized_indice")
+    )
+    distribution = {
+        str(int(item["plantability_normalized_indice"])): item["count"]
+        for item in distribution_qs
+        if item["plantability_normalized_indice"] is not None
+    }
+
+    return {
+        "averageNormalizedIndice": _safe_round(avg),
+        "distribution": distribution,
+        "distributionByDivision": [],
+        "metaFactors": _meta_factors_from_polygon_tiles(tiles),
+    }
+
+
+class DashboardPolygonView(APIView):
+    """Aggregated dashboard data for a user-drawn polygon.
+
+    POST /api/dashboard/in-polygon/   body: GeoJSON Polygon
+    """
+
+    def post(self, request, *args, **kwargs):
+        polygon, error_response = parse_and_validate_polygon(request.data)
+        if error_response:
+            return error_response
+
+        scope = DashboardScope(
+            city=None,
+            iris=None,
+            geometry_filter={"geometry__intersects": polygon},
+            cities_qs=City.objects.none(),
+            area_m2=polygon.area,
+        )
+        data = assemble_dashboard_data(
+            scope, _aggregate_plantability_from_polygon(polygon)
+        )
+        serializer = DashboardSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
