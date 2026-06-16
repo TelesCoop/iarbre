@@ -117,7 +117,7 @@ const analyzeZone = () => {
 
 .zone-dashboard-card {
   @apply absolute flex flex-col gap-2 p-3
-         bg-gray-200 border border-gray-400 rounded-lg shadow-md;
+         bg-gray-200 border border-gray-300 rounded-lg;
   /* Interactive CTA tied to the selection: sits with the other floating controls,
      above the context-data side panel (--z-map-sheet) so it is never obscured. */
   z-index: var(--z-map-floating);
