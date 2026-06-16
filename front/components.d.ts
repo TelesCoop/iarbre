@@ -123,6 +123,7 @@ declare module 'vue' {
     UnsupportedShapeModeMessage: typeof import('./src/components/contextData/shared/UnsupportedShapeModeMessage.vue')['default']
     VegestrateContextDataInfo: typeof import('./src/components/contextData/vegestrate/VegestrateContextDataInfo.vue')['default']
     VegestrateContextTool: typeof import('./src/components/contextTools/VegestrateContextTool.vue')['default']
+    VegestrateHeightGauge: typeof import('./src/components/contextData/vegestrate/VegestrateHeightGauge.vue')['default']
     VegetationLegend: typeof import('./src/components/map/legend/VegetationLegend.vue')['default']
     VegetationSurfaceWidget: typeof import('./src/components/dashboard/widgets/VegetationSurfaceWidget.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']

@@ -282,7 +282,7 @@ export const useMapStore = defineStore("map", () => {
   const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
   const IFB_CIRCLE_RADIUS_M = 500
 
-  const drawClickSquare = (map: Map, lat: number, lng: number) => {
+  const drawClickSquare = (map: Map, lat: number, lng: number, withCircle = true) => {
     const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
     const lngOffset = IFB_SQUARE_HALF_SIZE_M / (111320 * Math.cos((lat * Math.PI) / 180))
     const square = {
@@ -317,6 +317,8 @@ export const useMapStore = defineStore("map", () => {
         }
       })
     }
+
+    if (!withCircle) return
 
     const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
     const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
@@ -429,6 +431,7 @@ export const useMapStore = defineStore("map", () => {
       const handler = async (e: any) => {
         if (selectionMode.value !== SelectionMode.POINT) return
         clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
+        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng, false)
         vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
       }
       map.on("click", handler)
