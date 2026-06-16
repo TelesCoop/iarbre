@@ -3,12 +3,12 @@ import VegestrateHeightGauge from "@/components/contextData/vegestrate/Vegestrat
 import { useMapStore } from "@/stores/map"
 
 describe("VegestrateHeightGauge", () => {
-  it("shows 'Hors zone' when no height is set", () => {
+  it("shows 'Cliquez sur un pixel.' when no height is set", () => {
     cy.mount(VegestrateHeightGauge)
     cy.window().then(() => {
       useMapStore().vegetationHeightAtPoint = undefined
     })
-    cy.contains("Hors zone").should("be.visible")
+    cy.contains("Cliquez sur un pixel.").should("be.visible")
   })
 
   it("shows 'Hors zone' when height is null (outside raster)", () => {
