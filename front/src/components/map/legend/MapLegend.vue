@@ -40,6 +40,8 @@ watch(
       v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
     />
+    <MapFiltersStatus />
+
     <p v-if="attributionHTML" class="legend-attribution">
       Source : <span v-html="attributionHTML" />
     </p>

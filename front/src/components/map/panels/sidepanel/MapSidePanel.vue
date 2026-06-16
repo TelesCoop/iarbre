@@ -88,7 +88,8 @@ watch(
 
 /* Mobile bottom panel */
 .mobile-panel {
-  @apply lg:hidden fixed left-0 right-0 bg-white z-40;
+  @apply lg:hidden fixed left-0 right-0 bg-white;
+  z-index: var(--z-map-sheet);
   @apply rounded-t-xl;
   @apply transition-transform duration-300 ease-out;
   bottom: 56px;

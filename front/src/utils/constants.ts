@@ -24,3 +24,7 @@ export const DEFAULT_MAP_PARAMS: MapParams = {
 
 // Terra Draw layer name (used to position layers below drawing layers)
 export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"
+
+// Mirrors the backend ScoresInPolygonView.MAX_POLYGON_AREA_M2 (5 km²): selections
+// larger than this are not sent to the server, to avoid saturating it.
+export const MAX_SHAPE_AREA_M2 = 5_000_000

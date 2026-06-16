@@ -14,7 +14,8 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
-  TERRA_DRAW_POLYGON_LAYER
+  TERRA_DRAW_POLYGON_LAYER,
+  MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
 import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
@@ -56,6 +57,7 @@ import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
+import { computePolygonAreaM2 } from "@/utils/geo"
 import type { ZonePolygon } from "@/stores/zone"
 
 export const useMapStore = defineStore("map", () => {
@@ -76,7 +78,8 @@ export const useMapStore = defineStore("map", () => {
     surface: number | null
   } | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
-  const isToolbarVisible = ref<boolean>(false)
+  const shapeEditing = ref<boolean>(false)
+  const liveArea = ref<number | null>(null)
   const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
@@ -970,10 +973,24 @@ export const useMapStore = defineStore("map", () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
       shapeDrawing.initDraw(mapInstance)
-      // Configure automatic calculation when a shape is finished
+      // The backend score is only queried once the shape is finished (and on
+      // subsequent edits of that finished shape). While the shape is still being
+      // drawn, only the client-side area is refreshed — no request is fired.
       shapeDrawing.onShapeFinished(() => {
-        finishShapeSelection()
+        markShapeFinished()
+        recomputeLiveArea()
+        requestScoreIfWithinLimit()
       })
+      shapeDrawing.onShapeChanged(() => {
+        recomputeLiveArea()
+        if (shapeEditing.value) {
+          requestScoreIfWithinLimit()
+        }
+      })
+      // Idempotent registration (mirrors setupClickEventOnTile): remove any prior
+      // listener before re-adding so re-initialisation never stacks handlers.
+      mapInstance.off("click", handleEditingMapClick)
+      mapInstance.on("click", handleEditingMapClick)
       mapInstance.once("render", () => {
         console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
         console.info(
@@ -1020,6 +1037,7 @@ export const useMapStore = defineStore("map", () => {
   const performCalculation = async () => {
     // Activate loading state
     isCalculating.value = true
+    contextData.error.value = false
     const loadingStartTime = Date.now()
 
     try {
@@ -1030,6 +1048,11 @@ export const useMapStore = defineStore("map", () => {
         // Set aggregated scores directly in context
         contextData.data.value = scores
       }
+    } catch (e) {
+      // Surface the failure instead of silently leaving an empty panel.
+      console.error("Error retrieving scores in shape:", e)
+      contextData.data.value = null
+      contextData.error.value = true
     } finally {
       // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
@@ -1056,17 +1079,91 @@ export const useMapStore = defineStore("map", () => {
   )
 
   const getDrawnPolygon = (): ZonePolygon | null => {
-    const coordinates = shapeDrawing.getLastShapeCoordinates()
-    if (!coordinates) return null
-    return { type: "Polygon", coordinates: [coordinates] }
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    if (!ring || ring.length < 3) return null
+    return { type: "Polygon", coordinates: [ring as [number, number][]] }
   }
 
-  const toggleToolbar = () => {
-    isToolbarVisible.value = !isToolbarVisible.value
-    // When closing toolbar, return to POINT mode
-    if (!isToolbarVisible.value) {
-      changeSelectionMode(SelectionMode.POINT)
+  // Retry path differs by mode: a shape error re-runs the polygon calculation,
+  // a tile error replays the last tile request.
+  const retryContextData = () => {
+    if (isShapeMode.value) {
+      performCalculation()
+    } else {
+      contextData.retry()
     }
+  }
+
+  const drawingState = computed<"point" | "drawing" | "editing">(() => {
+    if (selectionMode.value === SelectionMode.POINT) return "point"
+    return shapeEditing.value ? "editing" : "drawing"
+  })
+
+  const recomputeLiveArea = () => {
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    liveArea.value = ring ? computePolygonAreaM2(ring) : null
+  }
+
+  const isAreaTooLarge = computed(
+    () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
+  )
+
+  // Query the backend only for selections within the allowed size, so oversized
+  // shapes never reach the server. A too-large shape clears any stale result.
+  const requestScoreIfWithinLimit = () => {
+    if (isAreaTooLarge.value) {
+      contextData.removeData()
+    } else {
+      finishShapeSelection()
+    }
+  }
+
+  // Shared reset for both shape-session entry points (start from POINT vs. restart
+  // from EDITING). Kept as distinct public methods so call sites read by intent.
+  const resetToDrawingState = (mode: SelectionMode) => {
+    shapeEditing.value = false
+    liveArea.value = null
+    changeSelectionMode(mode)
+  }
+
+  const enterShapeMode = (mode: SelectionMode) => resetToDrawingState(mode)
+
+  const startNewShape = (mode: SelectionMode) => resetToDrawingState(mode)
+
+  const markShapeFinished = () => {
+    shapeEditing.value = true
+  }
+
+  // Distance (screen px) a click must clear the current shape by before it counts
+  // as a "new zone" rather than an attempt to edit the shape.
+  const REDRAW_MARGIN_PX = 24
+
+  // While editing, a click clearly away from the finished shape starts a fresh shape
+  // of the same type (discarding the previous one). Clicks on/near the shape are left
+  // to Terra Draw for vertex/feature editing, so a near-miss never destroys the shape.
+  const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
+    if (drawingState.value !== "editing") return
+    const map = mapInstancesByIds.value["default"]
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    if (!map || !ring) return
+
+    const screen = ring.map((coord) => map.project(coord as [number, number]))
+    const xs = screen.map((p) => p.x)
+    const ys = screen.map((p) => p.y)
+    const outside =
+      e.point.x < Math.min(...xs) - REDRAW_MARGIN_PX ||
+      e.point.x > Math.max(...xs) + REDRAW_MARGIN_PX ||
+      e.point.y < Math.min(...ys) - REDRAW_MARGIN_PX ||
+      e.point.y > Math.max(...ys) + REDRAW_MARGIN_PX
+
+    if (outside) startNewShape(selectionMode.value)
+  }
+
+  const exitShapeMode = () => {
+    shapeEditing.value = false
+    liveArea.value = null
+    shapeDrawing.clearDrawing()
+    changeSelectionMode(SelectionMode.POINT)
   }
 
   const toggle3D = () => {
@@ -1110,8 +1207,15 @@ export const useMapStore = defineStore("map", () => {
     isShapeMode,
     hasShapeContextData,
     getDrawnPolygon,
-    isToolbarVisible,
-    toggleToolbar,
+    shapeEditing,
+    liveArea,
+    isAreaTooLarge,
+    drawingState,
+    enterShapeMode,
+    startNewShape,
+    markShapeFinished,
+    handleEditingMapClick,
+    exitShapeMode,
     changeSelectionMode,
     finishShapeSelection,
     isCalculating,
@@ -1122,7 +1226,10 @@ export const useMapStore = defineStore("map", () => {
       setMode: shapeDrawing.setMode,
       clearDrawing: shapeDrawing.clearDrawing,
       getSelectedFeatures: shapeDrawing.getSelectedFeatures,
-      onShapeFinished: shapeDrawing.onShapeFinished
+      onShapeFinished: shapeDrawing.onShapeFinished,
+      onShapeChanged: shapeDrawing.onShapeChanged,
+      getCurrentShapeCoordinates: shapeDrawing.getCurrentShapeCoordinates,
+      finishCurrentPolygon: shapeDrawing.finishCurrentPolygon
     },
     contextData: {
       data: contextData.data,
@@ -1130,7 +1237,7 @@ export const useMapStore = defineStore("map", () => {
       setData: contextData.setData,
       setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
-      retry: contextData.retry,
+      retry: retryContextData,
       toggleContextData: contextData.toggleContextData
     },
     clearAllFilters,

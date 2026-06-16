@@ -71,8 +71,8 @@ const handleMapUpdate = (params: MapParams) => {
 
 .map-view-wrapper {
   @apply flex;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - var(--feedback-banner-height, 0px));
+  height: calc(100dvh - var(--feedback-banner-height, 0px));
   margin-left: 0;
 }
 
@@ -84,7 +84,6 @@ const handleMapUpdate = (params: MapParams) => {
 
 .map-container {
   @apply flex-1;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
 }
 </style>

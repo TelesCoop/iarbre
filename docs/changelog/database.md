@@ -6,6 +6,18 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-06-16T06:35_postgres_backup.dump
+
+**Changements :** :
+
+- Ré-ajout de tous les médias qui étaient manquants.
+
+## 2026-06-15T14:08_postgres_backup.dump
+
+**Changements :** :
+
+- Ajout de la version vegestrate avec le post-processing V3 qui a été désigné comme données la plus pertinente lors des évaluations.
+
 ## 2026-05-25T19:12_postgres_backup.dump
 
 **Changements :** :

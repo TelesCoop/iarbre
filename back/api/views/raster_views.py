@@ -14,7 +14,7 @@ base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
     "plantability": _entry(base_dir + "plantability.tif"),
     "plantability_colors": _entry(base_dir + "plantability_2025.tif"),
-    "vegestrate": _entry(base_dir + "vegestrate_lyon_metropole_ir_02.tif"),
+    "vegestrate": _entry(base_dir + "vegestrate_02_2023.tif"),
     "vulnerability": _entry(base_dir + "vulnerability.tif"),
     "vulnerability_colors": _entry(base_dir + "vulnerability_colors.tif"),
     "lcz": _entry(base_dir + "lcz.tif"),
