@@ -17,6 +17,7 @@ from .views import (
     IArbreWMSView,
     OrthophotoTileView,
     BiosphereLandCoverAtPointView,
+    VegetationHeightTileView,
 )
 
 router = routers.DefaultRouter()
@@ -39,6 +40,11 @@ urlpatterns = [
         "tiles/<datatype>/<id>/",
         TileDetailsView.as_view(),
         name="retrieve-tile-details",
+    ),
+    path(
+        "tiles/vegetation-height/<int:z>/<int:x>/<int:y>.png",
+        VegetationHeightTileView.as_view(),
+        name="vegetation-height-tile",
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
