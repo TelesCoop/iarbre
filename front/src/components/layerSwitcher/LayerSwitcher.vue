@@ -49,13 +49,4 @@ const options = [
     option-value="value"
     placeholder="Sélection de calque"
   />
-  <AppButton
-    v-if="selectedDataType === DataType.VEGESTRATE"
-    :variant="mapStore.showVegestrateHeight ? 'primary' : 'outline'"
-    class="w-full mt-1"
-    size="sm"
-    @click="mapStore.toggleVegestrateHeight()"
-  >
-    hauteur
-  </AppButton>
 </template>

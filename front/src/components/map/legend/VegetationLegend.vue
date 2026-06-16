@@ -1,8 +1,11 @@
 <script lang="ts" setup>
-import { VegetationLegend } from "@/utils/vegetation"
+import { computed } from "vue"
+import { VegetationLegend, ELEVATION_GRADIENT_CSS, ELEVATION_LABEL_STOPS } from "@/utils/vegetation"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
+
+const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
 
 const handleStrateClick = (indice: string) => {
   mapStore.toggleAndApplyFilter(indice)
@@ -12,30 +15,57 @@ const handleStrateClick = (indice: string) => {
 <template>
   <div class="flex flex-col items-center gap-1 lg:gap-2 font-sans" data-cy="vegetation-legend">
     <div class="legend-header">
-      <span class="legend-title">Strate végétale</span>
+      <span class="legend-title">{{
+        showElevationLegend ? "Hauteur de végétation" : "Strate végétale"
+      }}</span>
     </div>
 
-    <div class="strate-list" role="list">
-      <button
-        v-for="item in VegetationLegend"
-        :key="item.indice"
-        :aria-label="`${item.label} — cliquez pour filtrer`"
-        :aria-pressed="mapStore.isFiltered(item.indice)"
-        :class="[
-          'strate-item',
-          mapStore.isFiltered(item.indice) ? 'is-selected' : '',
-          mapStore.hasActiveFilters && !mapStore.isFiltered(item.indice) ? 'is-dimmed' : ''
-        ]"
-        :data-strate="item.indice"
-        :title="item.label"
-        role="listitem"
-        type="button"
-        @click="handleStrateClick(item.indice)"
-      >
-        <span class="strate-swatch" :style="{ backgroundColor: item.color }"></span>
-        <span class="strate-label">{{ item.label }}</span>
-      </button>
-    </div>
+    <template v-if="showElevationLegend">
+      <div class="flex flex-col gap-1 w-full select-none">
+        <div
+          class="h-4 rounded-sm border border-gray-300 w-full"
+          :style="{ background: ELEVATION_GRADIENT_CSS }"
+        ></div>
+        <div class="relative h-4 text-xs text-primary-900">
+          <span
+            v-for="(stop, i) in ELEVATION_LABEL_STOPS"
+            :key="stop.label"
+            class="absolute"
+            :style="
+              i === 0
+                ? 'left:0'
+                : i === ELEVATION_LABEL_STOPS.length - 1
+                  ? 'right:0'
+                  : `left:${stop.position}%;transform:translateX(-50%)`
+            "
+            >{{ stop.label }}</span
+          >
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <div class="strate-list" role="list">
+        <button
+          v-for="item in VegetationLegend"
+          :key="item.indice"
+          :aria-label="`${item.label} — cliquez pour filtrer`"
+          :aria-pressed="mapStore.isFiltered(item.indice)"
+          :class="[
+            'strate-item',
+            mapStore.isFiltered(item.indice) ? 'is-selected' : '',
+            mapStore.hasActiveFilters && !mapStore.isFiltered(item.indice) ? 'is-dimmed' : ''
+          ]"
+          :data-strate="item.indice"
+          :title="item.label"
+          role="listitem"
+          type="button"
+          @click="handleStrateClick(item.indice)"
+        >
+          <span class="strate-swatch" :style="{ backgroundColor: item.color }"></span>
+          <span class="strate-label">{{ item.label }}</span>
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 

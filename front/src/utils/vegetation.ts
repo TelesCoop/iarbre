@@ -24,6 +24,30 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
   color
 }))
 
+const ELEVATION_MAX = 40
+const ELEVATION_BINS = [
+  { min: 0, color: "var(--color-primary-50)" },
+  { min: 1, color: "var(--color-primary-100)" },
+  { min: 2, color: "var(--color-primary-200)" },
+  { min: 4, color: "var(--color-primary-300)" },
+  { min: 7, color: "var(--color-primary-400)" },
+  { min: 10, color: "var(--color-primary-500)" },
+  { min: 15, color: "var(--color-primary-600)" },
+  { min: 20, color: "var(--color-primary-700)" },
+  { min: 26, color: "var(--color-primary-800)" },
+  { min: 33, color: "var(--color-primary-900)" }
+]
+
+const sqrtPos = (value: number) => parseFloat((Math.sqrt(value / ELEVATION_MAX) * 100).toFixed(1))
+
+export const ELEVATION_GRADIENT_CSS = `linear-gradient(to right, ${ELEVATION_BINS.map((b) => `${b.color} ${sqrtPos(b.min)}%`).join(", ")})`
+
+export const ELEVATION_LABEL_STOPS = [
+  { label: "0m", position: 0 },
+  { label: "10m", position: sqrtPos(10) },
+  { label: "40m", position: 100 }
+]
+
 export function getZoneDesc(zone: string): string {
   return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
 }

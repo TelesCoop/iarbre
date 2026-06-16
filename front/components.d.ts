@@ -122,6 +122,7 @@ declare module 'vue' {
     SurfaceTypeWidget: typeof import('./src/components/dashboard/widgets/SurfaceTypeWidget.vue')['default']
     UnsupportedShapeModeMessage: typeof import('./src/components/contextData/shared/UnsupportedShapeModeMessage.vue')['default']
     VegestrateContextDataInfo: typeof import('./src/components/contextData/vegestrate/VegestrateContextDataInfo.vue')['default']
+    VegestrateContextTool: typeof import('./src/components/contextTools/VegestrateContextTool.vue')['default']
     VegetationLegend: typeof import('./src/components/map/legend/VegetationLegend.vue')['default']
     VegetationSurfaceWidget: typeof import('./src/components/dashboard/widgets/VegetationSurfaceWidget.vue')['default']
     VulnerabilityContextDataLegend: typeof import('./src/components/contextData/vulnerability/VulnerabilityContextDataLegend.vue')['default']
