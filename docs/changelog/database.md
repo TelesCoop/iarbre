@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-06-16T06:35_postgres_backup.dump
+
+**Changements :** :
+
+- Ré-ajout de tous les médias qui étaient manquants.
+
 ## 2026-06-15T14:08_postgres_backup.dump
 
 **Changements :** :
