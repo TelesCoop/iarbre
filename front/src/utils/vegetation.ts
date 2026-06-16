@@ -25,7 +25,7 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
 }))
 
 const ELEVATION_MAX = 40
-const ELEVATION_BINS = [
+export const ELEVATION_BINS = [
   { min: 0, color: "var(--color-primary-50)" },
   { min: 1, color: "var(--color-primary-100)" },
   { min: 2, color: "var(--color-primary-200)" },
@@ -38,13 +38,15 @@ const ELEVATION_BINS = [
   { min: 33, color: "var(--color-primary-900)" }
 ]
 
-const sqrtPos = (value: number) => parseFloat((Math.sqrt(value / ELEVATION_MAX) * 100).toFixed(1))
+export const sqrtPos = (value: number) =>
+  parseFloat((Math.sqrt(value / ELEVATION_MAX) * 100).toFixed(1))
 
 export const ELEVATION_GRADIENT_CSS = `linear-gradient(to right, ${ELEVATION_BINS.map((b) => `${b.color} ${sqrtPos(b.min)}%`).join(", ")})`
 
 export const ELEVATION_LABEL_STOPS = [
   { label: "0m", position: 0 },
   { label: "10m", position: sqrtPos(10) },
+  { label: "20m", position: sqrtPos(20) },
   { label: "40m", position: 100 }
 ]
 
