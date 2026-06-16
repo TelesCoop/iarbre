@@ -1,22 +1,105 @@
 <script lang="ts" setup>
-import { computed } from "vue"
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import { useMapStore } from "@/stores/map"
 import { useZoneStore } from "@/stores/zone"
-import { useAppStore } from "@/stores/app"
 import { formatArea } from "@/utils/geo"
 import AppButton from "@/components/shared/AppButton.vue"
 
 const mapStore = useMapStore()
 const zoneStore = useZoneStore()
-const appStore = useAppStore()
 const router = useRouter()
 
+const cardEl = ref<HTMLElement | null>(null)
+// Cached ring (lng/lat) so the high-frequency "render" handler only reprojects a
+// known shape instead of re-reading the TerraDraw snapshot on every frame.
+const ringLngLat = ref<[number, number][] | null>(null)
+const anchor = ref<{ x: number; y: number; side: "left" | "right" } | null>(null)
+
+// Gap (px) between the shape's bounding box and the card.
+const GAP = 12
+const FALLBACK_CARD_WIDTH = 208
+
 // Shown once the selection is finished (the shape is being edited, not drawn).
-const isVisible = computed(() => mapStore.drawingState === "editing")
+const isFinished = computed(() => mapStore.drawingState === "editing")
+const isVisible = computed(() => isFinished.value && anchor.value !== null)
 const areaLabel = computed(() =>
   mapStore.liveArea !== null ? formatArea(mapStore.liveArea) : null
 )
+
+const mapInstance = computed(() => mapStore.mapInstancesByIds["default"] ?? null)
+
+const reproject = () => {
+  const map = mapInstance.value
+  const ring = ringLngLat.value
+  if (!map || !ring) {
+    anchor.value = null
+    return
+  }
+  const points = ring.map((coord) => map.project(coord))
+  const xs = points.map((p) => p.x)
+  const ys = points.map((p) => p.y)
+  const maxX = Math.max(...xs)
+  const minX = Math.min(...xs)
+  const midY = (Math.min(...ys) + Math.max(...ys)) / 2
+
+  // Sit beside the zone; flip to its left when the card would overflow the map.
+  const mapWidth = map.getContainer().clientWidth
+  const cardWidth = cardEl.value?.offsetWidth ?? FALLBACK_CARD_WIDTH
+  const fitsRight = maxX + GAP + cardWidth <= mapWidth
+
+  anchor.value = fitsRight
+    ? { x: maxX + GAP, y: midY, side: "right" }
+    : { x: minX - GAP, y: midY, side: "left" }
+}
+
+const refreshFromShape = () => {
+  if (!isFinished.value) {
+    ringLngLat.value = null
+    anchor.value = null
+    return
+  }
+  ringLngLat.value = (mapStore.shapeDrawing.getCurrentShapeCoordinates() ?? null) as
+    | [number, number][]
+    | null
+  reproject()
+}
+
+let attached = false
+const attach = () => {
+  const map = mapInstance.value
+  if (!map || attached) return
+  map.on("render", reproject)
+  attached = true
+  refreshFromShape()
+}
+
+onMounted(attach)
+watch(mapInstance, attach)
+watch(() => [mapStore.drawingState, mapStore.liveArea], refreshFromShape)
+// Recompute once the card is in the DOM so the flip uses its real width.
+watch(isVisible, async (visible) => {
+  if (visible) {
+    await nextTick()
+    reproject()
+  }
+})
+
+onBeforeUnmount(() => {
+  const map = mapInstance.value
+  if (map && attached) map.off("render", reproject)
+  attached = false
+})
+
+const cardStyle = computed(() => {
+  if (!anchor.value) return {}
+  const translateX = anchor.value.side === "right" ? "0" : "-100%"
+  return {
+    left: `${anchor.value.x}px`,
+    top: `${anchor.value.y}px`,
+    transform: `translate(${translateX}, -50%)`
+  }
+})
 
 const analyzeZone = () => {
   const polygon = mapStore.getDrawnPolygon()
@@ -32,8 +115,10 @@ const analyzeZone = () => {
 <template>
   <div
     v-if="isVisible"
-    :class="['zone-dashboard-card', { 'sidepanel-visible': appStore.sidePanelVisible }]"
+    ref="cardEl"
+    class="zone-dashboard-card"
     data-cy="zone-dashboard-card"
+    :style="cardStyle"
   >
     <div class="zone-dashboard-card__info">
       <span class="zone-dashboard-card__label">Zone sélectionnée</span>
@@ -57,11 +142,7 @@ const analyzeZone = () => {
 .zone-dashboard-card {
   @apply absolute flex flex-col gap-2 p-3
          bg-white border border-gray-200 rounded-lg shadow-md;
-  @apply transition-all duration-300 ease-out;
   z-index: var(--z-map-overlay);
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: var(--map-overlay-bottom);
   min-width: 12rem;
 }
 
@@ -75,11 +156,5 @@ const analyzeZone = () => {
 
 .zone-dashboard-card__area {
   @apply text-sm font-semibold text-gray-900 whitespace-nowrap;
-}
-
-@media (min-width: 1024px) {
-  .zone-dashboard-card.sidepanel-visible {
-    left: calc(50% + var(--width-sidepanel) / 2);
-  }
 }
 </style>
