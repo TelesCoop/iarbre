@@ -17,6 +17,8 @@ from .views import (
     IArbreWMSView,
     OrthophotoTileView,
     BiosphereLandCoverAtPointView,
+    VegetationHeightTileView,
+    VegetationHeightAtPointView,
 )
 
 router = routers.DefaultRouter()
@@ -29,11 +31,21 @@ urlpatterns = [
         TileView.as_view(),
         name="retrieve-tile",
     ),
-    # Specific URL should be BEFORE general URL with <id>
+    # Specific URLs BEFORE general catch-alls with path parameters
     path(
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
         name="scores-in-polygon",
+    ),
+    path(
+        "tiles/vegetation-height/value/",
+        VegetationHeightAtPointView.as_view(),
+        name="vegetation-height-at-point",
+    ),
+    path(
+        "tiles/vegetation-height/<int:z>/<int:x>/<int:y>.png",
+        VegetationHeightTileView.as_view(),
+        name="vegetation-height-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",

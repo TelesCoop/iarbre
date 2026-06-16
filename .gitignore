@@ -16,6 +16,7 @@ site/*
 .env
 .clinerules
 compress.dump.*
+.github/*
 
 front/.nyc_output/
 components.d.ts

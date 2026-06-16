@@ -23,6 +23,7 @@ import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
+import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -89,6 +90,9 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+  const showVegestrateHeight = ref<boolean>(false)
+  const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
+  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -206,6 +210,18 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      return [
+        {
+          id: layerId,
+          type: "raster",
+          source: sourceId,
+          layout: {},
+          paint: { "raster-opacity": 0.8 }
+        }
+      ]
+    }
+
     const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
 
     if (use3D.value) {
@@ -266,7 +282,7 @@ export const useMapStore = defineStore("map", () => {
   const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
   const IFB_CIRCLE_RADIUS_M = 500
 
-  const drawClickSquare = (map: Map, lat: number, lng: number) => {
+  const drawClickSquare = (map: Map, lat: number, lng: number, withCircle = true) => {
     const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
     const lngOffset = IFB_SQUARE_HALF_SIZE_M / (111320 * Math.cos((lat * Math.PI) / 180))
     const square = {
@@ -301,6 +317,8 @@ export const useMapStore = defineStore("map", () => {
         }
       })
     }
+
+    if (!withCircle) return
 
     const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
     const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
@@ -405,6 +423,21 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    if (heightMapClickHandler.value) {
+      map.off("click", heightMapClickHandler.value)
+      heightMapClickHandler.value = null
+    }
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const handler = async (e: any) => {
+        if (selectionMode.value !== SelectionMode.POINT) return
+        clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
+        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng, false)
+        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
+      }
+      map.on("click", handler)
+      heightMapClickHandler.value = handler
+      return
+    }
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -463,6 +496,18 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
+
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=elevation`
+      map.addSource(sourceId, {
+        type: "raster",
+        tiles: [tileUrl],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     // Vector source for other data types
     const tileDataType =
       datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
@@ -505,9 +550,11 @@ export const useMapStore = defineStore("map", () => {
   const changeDataType = (datatype: DataType) => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
+    if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
+    vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
 
     // Update all map instances with the new layer
@@ -565,6 +612,11 @@ export const useMapStore = defineStore("map", () => {
 
   const refreshDatatype = () => {
     changeDataType(selectedDataType.value)
+  }
+
+  const toggleVegestrateHeight = () => {
+    showVegestrateHeight.value = !showVegestrateHeight.value
+    refreshDatatype()
   }
 
   const refreshLayers = () => {
@@ -1242,6 +1294,9 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     use3D,
     toggle3D,
-    zoomTo
+    zoomTo,
+    showVegestrateHeight,
+    toggleVegestrateHeight,
+    vegetationHeightAtPoint
   }
 })
