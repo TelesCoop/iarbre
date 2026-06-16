@@ -141,7 +141,7 @@ const analyzeZone = () => {
 
 .zone-dashboard-card {
   @apply absolute flex flex-col gap-2 p-3
-         bg-white border border-gray-200 rounded-lg shadow-md;
+         bg-primary-50 border border-primary-200 rounded-lg shadow-md;
   z-index: var(--z-map-overlay);
   min-width: 12rem;
 }
@@ -151,10 +151,10 @@ const analyzeZone = () => {
 }
 
 .zone-dashboard-card__label {
-  @apply text-[11px] font-bold uppercase tracking-wider text-gray-500;
+  @apply text-[11px] font-bold uppercase tracking-wider text-primary-700;
 }
 
 .zone-dashboard-card__area {
-  @apply text-sm font-semibold text-gray-900 whitespace-nowrap;
+  @apply text-sm font-semibold text-primary-900 whitespace-nowrap;
 }
 </style>
