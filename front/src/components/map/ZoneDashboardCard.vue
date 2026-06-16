@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import { useMapStore } from "@/stores/map"
 import { useZoneStore } from "@/stores/zone"
@@ -10,15 +10,13 @@ const mapStore = useMapStore()
 const zoneStore = useZoneStore()
 const router = useRouter()
 
-const cardEl = ref<HTMLElement | null>(null)
 // Cached ring (lng/lat) so the high-frequency "render" handler only reprojects a
 // known shape instead of re-reading the TerraDraw snapshot on every frame.
 const ringLngLat = ref<[number, number][] | null>(null)
-const anchor = ref<{ x: number; y: number; side: "left" | "right" } | null>(null)
+const anchor = ref<{ x: number; y: number } | null>(null)
 
 // Gap (px) between the shape's bounding box and the card.
 const GAP = 12
-const FALLBACK_CARD_WIDTH = 208
 
 // Shown once the selection is finished (the shape is being edited, not drawn).
 const isFinished = computed(() => mapStore.drawingState === "editing")
@@ -37,20 +35,11 @@ const reproject = () => {
     return
   }
   const points = ring.map((coord) => map.project(coord))
-  const xs = points.map((p) => p.x)
-  const ys = points.map((p) => p.y)
-  const maxX = Math.max(...xs)
-  const minX = Math.min(...xs)
-  const midY = (Math.min(...ys) + Math.max(...ys)) / 2
-
-  // Sit beside the zone; flip to its left when the card would overflow the map.
-  const mapWidth = map.getContainer().clientWidth
-  const cardWidth = cardEl.value?.offsetWidth ?? FALLBACK_CARD_WIDTH
-  const fitsRight = maxX + GAP + cardWidth <= mapWidth
-
-  anchor.value = fitsRight
-    ? { x: maxX + GAP, y: midY, side: "right" }
-    : { x: minX - GAP, y: midY, side: "left" }
+  // Always anchor the card's top-left to the zone's top-right corner: a single,
+  // stable side (no flipping) keeps it visually in the same place.
+  const maxX = Math.max(...points.map((p) => p.x))
+  const minY = Math.min(...points.map((p) => p.y))
+  anchor.value = { x: maxX + GAP, y: minY }
 }
 
 const refreshFromShape = () => {
@@ -77,13 +66,6 @@ const attach = () => {
 onMounted(attach)
 watch(mapInstance, attach)
 watch(() => [mapStore.drawingState, mapStore.liveArea], refreshFromShape)
-// Recompute once the card is in the DOM so the flip uses its real width.
-watch(isVisible, async (visible) => {
-  if (visible) {
-    await nextTick()
-    reproject()
-  }
-})
 
 onBeforeUnmount(() => {
   const map = mapInstance.value
@@ -91,15 +73,9 @@ onBeforeUnmount(() => {
   attached = false
 })
 
-const cardStyle = computed(() => {
-  if (!anchor.value) return {}
-  const translateX = anchor.value.side === "right" ? "0" : "-100%"
-  return {
-    left: `${anchor.value.x}px`,
-    top: `${anchor.value.y}px`,
-    transform: `translate(${translateX}, -50%)`
-  }
-})
+const cardStyle = computed(() =>
+  anchor.value ? { left: `${anchor.value.x}px`, top: `${anchor.value.y}px` } : {}
+)
 
 const analyzeZone = () => {
   const polygon = mapStore.getDrawnPolygon()
@@ -141,9 +117,12 @@ const analyzeZone = () => {
 
 .zone-dashboard-card {
   @apply absolute flex flex-col gap-2 p-3
-         bg-primary-50 border border-primary-200 rounded-lg shadow-md;
-  z-index: var(--z-map-overlay);
-  min-width: 12rem;
+         bg-gray-100 border border-gray-300 rounded-lg shadow-md;
+  /* Interactive CTA tied to the selection: sits with the other floating controls,
+     above the context-data side panel (--z-map-sheet) so it is never obscured. */
+  z-index: var(--z-map-floating);
+  /* Fixed size so the card never resizes as the area label changes. */
+  width: 13rem;
 }
 
 .zone-dashboard-card__info {
@@ -151,10 +130,10 @@ const analyzeZone = () => {
 }
 
 .zone-dashboard-card__label {
-  @apply text-[11px] font-bold uppercase tracking-wider text-primary-700;
+  @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
 }
 
 .zone-dashboard-card__area {
-  @apply text-sm font-semibold text-primary-900 whitespace-nowrap;
+  @apply text-sm font-semibold text-gray-900 whitespace-nowrap;
 }
 </style>
