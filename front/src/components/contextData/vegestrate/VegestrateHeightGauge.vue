@@ -57,7 +57,10 @@ const gaugeAriaLabel = computed(() => {
         >
       </div>
       <div class="height-value" aria-live="polite" aria-atomic="true">
-        <template v-if="mapStore.vegetationHeightAtPoint != null">
+        <template v-if="mapStore.vegetationHeightAtPoint === undefined">
+          <span class="height-empty">Cliquez sur un pixel.</span>
+        </template>
+        <template v-else-if="mapStore.vegetationHeightAtPoint != null">
           <span class="height-number">{{ formattedHeight }}</span>
           <span class="height-unit">m</span>
         </template>

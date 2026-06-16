@@ -80,7 +80,7 @@ class VegetationHeightTileView(APIView):
                         1,
                         window=window,
                         out_shape=(256, 256),
-                        resampling=Resampling.bilinear,
+                        resampling=Resampling.nearest,
                     )
 
                     h, w = data.shape

@@ -20,11 +20,7 @@ const props = withDefaults(defineProps<VegetationCardProps>(), {
 const currentData = computed<VegetationData | null>(() => props.data ?? null)
 
 const displayData = computed(() =>
-  mapStore.showVegestrateHeight
-    ? mapStore.vegetationHeightAtPoint !== undefined
-      ? { height: mapStore.vegetationHeightAtPoint }
-      : null
-    : currentData.value
+  mapStore.showVegestrateHeight ? { height: mapStore.vegetationHeightAtPoint } : currentData.value
 )
 
 const emptyMessage = computed(() =>
