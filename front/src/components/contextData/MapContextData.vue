@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import { useRouter } from "vue-router"
 import { useMapStore } from "@/stores/map"
-import { useZoneStore } from "@/stores/zone"
 import { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
@@ -14,8 +12,6 @@ import IconInfo from "@/components/icons/IconInfo.vue"
 import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 
 const mapStore = useMapStore()
-const zoneStore = useZoneStore()
-const router = useRouter()
 
 defineProps({
   fullHeight: {
@@ -23,13 +19,6 @@ defineProps({
     default: false
   }
 })
-
-const goToZoneDashboard = () => {
-  const polygon = mapStore.getDrawnPolygon()
-  if (!polygon) return
-  zoneStore.setZone(polygon)
-  router.push({ name: "dashboard" })
-}
 </script>
 
 <template>
@@ -83,26 +72,11 @@ const goToZoneDashboard = () => {
         :data="mapStore.contextData.data as VegetationData"
       />
     </template>
-
-    <AppButton
-      v-if="mapStore.hasShapeContextData"
-      class="zone-dashboard-cta"
-      variant="primary"
-      full-width
-      data-cy="zone-dashboard-cta"
-      @click="goToZoneDashboard"
-    >
-      Voir le tableau de bord de cette zone
-    </AppButton>
   </div>
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
-
-.zone-dashboard-cta {
-  @apply mt-4 shrink-0;
-}
 
 .context-error {
   @apply flex flex-col items-center justify-center gap-3 h-full;

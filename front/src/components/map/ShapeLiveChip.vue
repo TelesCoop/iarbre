@@ -1,9 +1,13 @@
 <script lang="ts" setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { useRouter } from "vue-router"
 import { useMapStore } from "@/stores/map"
+import { useZoneStore } from "@/stores/zone"
 import { formatArea, computePolygonAreaM2 } from "@/utils/geo"
 
 const mapStore = useMapStore()
+const zoneStore = useZoneStore()
+const router = useRouter()
 
 const screenPos = ref<{ x: number; y: number } | null>(null)
 // Cached so the high-frequency map "render" handler only reprojects a known point
@@ -57,6 +61,19 @@ const isCalculating = computed(() => mapStore.isCalculating)
 
 const isVisible = computed(() => screenPos.value !== null && areaLabel.value !== null)
 
+// Only once the zone is finalized and its scores are available.
+const showDashboardButton = computed(() => mapStore.hasShapeContextData)
+
+const goToZoneDashboard = () => {
+  const polygon = mapStore.getDrawnPolygon()
+  if (!polygon) return
+  zoneStore.setZone(polygon)
+  // Capture the geometry first, then tear down the drawing session so the chip
+  // and shape state don't linger once we leave the map.
+  mapStore.exitShapeMode()
+  router.push({ name: "dashboard" })
+}
+
 let attached = false
 const attach = () => {
   const map = mapInstance.value
@@ -83,18 +100,27 @@ onBeforeUnmount(() => {
     class="shape-live-chip"
     :class="{ 'shape-live-chip--warning': isAreaTooLarge }"
     data-cy="shape-live-chip"
-    aria-hidden="true"
     :style="{ left: `${screenPos!.x}px`, top: `${screenPos!.y}px` }"
   >
-    <span class="shape-live-chip__dot" aria-hidden="true" />
-    <span>{{ areaLabel }}</span>
-    <span v-if="isAreaTooLarge"> · Zone trop grande</span>
-    <span
-      v-else-if="isCalculating"
-      class="shape-live-chip__spinner"
-      data-cy="shape-live-chip-spinner"
-      aria-hidden="true"
-    />
+    <div class="shape-live-chip__pill" aria-hidden="true">
+      <span class="shape-live-chip__dot" />
+      <span>{{ areaLabel }}</span>
+      <span v-if="isAreaTooLarge"> · Zone trop grande</span>
+      <span
+        v-else-if="isCalculating"
+        class="shape-live-chip__spinner"
+        data-cy="shape-live-chip-spinner"
+      />
+    </div>
+    <button
+      v-if="showDashboardButton"
+      type="button"
+      class="shape-live-chip__cta"
+      data-cy="zone-dashboard-cta"
+      @click="goToZoneDashboard"
+    >
+      Voir le tableau de bord
+    </button>
   </div>
 </template>
 
@@ -103,12 +129,22 @@ onBeforeUnmount(() => {
 
 .shape-live-chip {
   @apply absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none
-         flex items-center gap-2 px-2.5 py-1.5 rounded-full
-         text-xs font-semibold text-white bg-gray-900 whitespace-nowrap;
+         flex flex-col items-center gap-1.5;
   z-index: var(--z-map-overlay);
 }
-.shape-live-chip--warning {
+.shape-live-chip__pill {
+  @apply flex items-center gap-2 px-2.5 py-1.5 rounded-full
+         text-xs font-semibold text-white bg-gray-900 whitespace-nowrap;
+}
+.shape-live-chip--warning .shape-live-chip__pill {
   @apply bg-red-700;
+}
+.shape-live-chip__cta {
+  @apply pointer-events-auto cursor-pointer
+         px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap
+         text-white bg-primary-600 shadow-md transition-colors
+         hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2
+         focus-visible:outline-primary-600;
 }
 .shape-live-chip__dot {
   @apply w-2 h-2 rounded-full bg-primary-300;
