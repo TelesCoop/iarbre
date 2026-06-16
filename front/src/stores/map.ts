@@ -89,6 +89,7 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+  const showVegestrateHeight = ref<boolean>(false)
 
   const {
     clearAllFilters,
@@ -205,6 +206,18 @@ export const useMapStore = defineStore("map", () => {
     sourceId: string
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
+
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      return [
+        {
+          id: layerId,
+          type: "raster",
+          source: sourceId,
+          layout: {},
+          paint: { "raster-opacity": 0.8 }
+        }
+      ]
+    }
 
     const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
 
@@ -405,6 +418,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) return
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -463,6 +477,18 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
+
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=elevation`
+      map.addSource(sourceId, {
+        type: "raster",
+        tiles: [tileUrl],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     // Vector source for other data types
     const tileDataType =
       datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
@@ -505,6 +531,7 @@ export const useMapStore = defineStore("map", () => {
   const changeDataType = (datatype: DataType) => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
+    if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
@@ -565,6 +592,11 @@ export const useMapStore = defineStore("map", () => {
 
   const refreshDatatype = () => {
     changeDataType(selectedDataType.value)
+  }
+
+  const toggleVegestrateHeight = () => {
+    showVegestrateHeight.value = !showVegestrateHeight.value
+    refreshDatatype()
   }
 
   const refreshLayers = () => {
@@ -1242,6 +1274,8 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     use3D,
     toggle3D,
-    zoomTo
+    zoomTo,
+    showVegestrateHeight,
+    toggleVegestrateHeight
   }
 })
