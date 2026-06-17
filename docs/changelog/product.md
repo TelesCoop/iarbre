@@ -1,5 +1,19 @@
 # Journal des changements
 
+## 🔖 0.34.0 (2026-06-17) : Ajout des dernières versions vegestrate
+
+### ✨ feat : Ajout de la hauteur de végétation
+
+Dans le panneau de l'inventaire du végétal stratifié on peut afficher un raster et interragir avec lui pour connaître la hauteur de végétation à chaque pixel.
+
+&rarr; PR [#682](https://github.com/TelesCoop/iarbre/pull/682)
+
+### 🛠️ enhance : Vegestate avec postprocess validé
+
+Des ateliers ont permis de valider une version du post-process de vegestrate qui se trouve maintenant sur la plateforme.
+
+&rarr; PR [#676](https://github.com/TelesCoop/iarbre/pull/676)
+
 ## 🔖 0.33.0 (2026-06-03) : Améliorations de l'UI de la carte
 
 ### 🛠️ enhance : Changements dans l'UI des boutons sur la carte
