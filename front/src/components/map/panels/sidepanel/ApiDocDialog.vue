@@ -176,6 +176,7 @@ const rasterDatasets: RasterDataset[] = [
   { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
   { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
   { label: "Végéstrate", url: rasterUrl("vegestrate") },
+  { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
   { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
   { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
   { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
