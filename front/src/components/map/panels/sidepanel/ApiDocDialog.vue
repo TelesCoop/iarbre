@@ -156,20 +156,33 @@ interface RasterDataset {
 
 const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
 
+type DownloadStatus = "idle" | "loading" | "success" | "error"
+const downloadStatus = ref<Record<string, DownloadStatus>>({})
+
 const downloadRaster = async (url: string) => {
-  const response = await fetch(url)
-  if (!response.ok) return
-  const disposition = response.headers.get("Content-Disposition")
-  let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
-  const match = disposition?.match(/filename="?([^"]+)"?/)
-  if (match) filename = match[1]
-  const blob = await response.blob()
-  const blobUrl = URL.createObjectURL(blob)
-  const a = document.createElement("a")
-  a.href = blobUrl
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(blobUrl)
+  downloadStatus.value[url] = "loading"
+  try {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const disposition = response.headers.get("Content-Disposition")
+    let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
+    const match = disposition?.match(/filename="?([^"]+)"?/)
+    if (match) filename = match[1]
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = blobUrl
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(blobUrl)
+    downloadStatus.value[url] = "success"
+  } catch {
+    downloadStatus.value[url] = "error"
+    return
+  }
+  setTimeout(() => {
+    if (downloadStatus.value[url] === "success") downloadStatus.value[url] = "idle"
+  }, 2000)
 }
 
 const rasterDatasets: RasterDataset[] = [
@@ -669,12 +682,28 @@ const wmsParams = computed<Param[]>(() => [
                   <span class="text-sm text-gray-700">{{ dataset.label }}</span>
                   <button
                     type="button"
-                    class="text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 transition-colors rounded px-2 py-1 shrink-0 cursor-pointer"
+                    :disabled="downloadStatus[dataset.url] === 'loading'"
+                    :class="[
+                      'text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0',
+                      downloadStatus[dataset.url] === 'loading'
+                        ? 'bg-primary-300 cursor-wait'
+                        : downloadStatus[dataset.url] === 'error'
+                          ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                          : downloadStatus[dataset.url] === 'success'
+                            ? 'bg-green-600 cursor-pointer'
+                            : 'bg-primary-500 hover:bg-primary-600 cursor-pointer'
+                    ]"
                     @click="downloadRaster(dataset.url)"
                   >
-                    Télécharger
+                    <span v-if="downloadStatus[dataset.url] === 'loading'">Téléchargement…</span>
+                    <span v-else-if="downloadStatus[dataset.url] === 'success'">Téléchargé ✓</span>
+                    <span v-else-if="downloadStatus[dataset.url] === 'error'">Échec</span>
+                    <span v-else>Télécharger</span>
                   </button>
                 </div>
+                <p v-if="downloadStatus[dataset.url] === 'error'" class="text-2xs text-red-600">
+                  Le téléchargement a échoué. Vérifiez votre connexion ou réessayez.
+                </p>
               </div>
 
               <div class="bg-primary-50 px-3 py-3 rounded-md">
