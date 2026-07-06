@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
     data-cy="map-layer-switcher"
   >
     <LayerSwitcher />
-    <MethodologyButton v-if="props.showMethodology" class="self-end" />
+    <MethodologyButton v-if="props.showMethodology" class="self-center" />
     <MapContextTools v-if="props.showContextTools" />
   </div>
 </template>
