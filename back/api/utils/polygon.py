@@ -41,9 +41,12 @@ def parse_and_validate_polygon(polygon_geojson):
         )
 
     if polygon.area > MAX_POLYGON_AREA_M2:
+        logger.error(
+            f"Polygon area {polygon.area} exceeds maximum allowed size ({MAX_POLYGON_AREA_M2 / 1_000_000} km²)"
+        )
         return None, Response(
             {
-                "error": f"Polygon area exceeds maximum allowed size ({MAX_POLYGON_AREA_M2 / 1_000_000} km²)"
+                "error": f"Polygon area {polygon.area} exceeds maximum allowed size ({MAX_POLYGON_AREA_M2 / 1_000_000} km²)"
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
