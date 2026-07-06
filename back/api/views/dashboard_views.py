@@ -322,14 +322,8 @@ def assemble_dashboard_data(scope: DashboardScope, plantability: dict) -> dict:
     }
 
 
-def _meta_factors_from_polygon_tiles(tiles) -> dict:
+def _meta_factors_from_iris_counts(counts_by_iris: dict[int, int]) -> dict:
     """Tile-count-weighted average of the meta_factors_avg of intersected IRIS."""
-    counts_by_iris = {
-        row["iris"]: row["count"]
-        for row in tiles.exclude(iris__isnull=True)
-        .values("iris")
-        .annotate(count=Count("id"))
-    }
     if not counts_by_iris:
         return {}
 
@@ -353,25 +347,26 @@ def _meta_factors_from_polygon_tiles(tiles) -> dict:
 def _aggregate_plantability_from_polygon(polygon) -> dict:
     """Plantability for an arbitrary polygon, computed from intersected tiles
     (no precomputed plantability_counts exist for a drawn zone)."""
-    tiles = Tile.objects.filter(geometry__intersects=polygon)
-
-    avg = tiles.aggregate(avg=Avg("plantability_normalized_indice"))["avg"]
-    distribution_qs = (
-        tiles.values("plantability_normalized_indice")
-        .annotate(count=Count("id"))
-        .order_by("plantability_normalized_indice")
+    tile_rows = Tile.objects.filter(geometry__intersects=polygon).values(
+        "plantability_normalized_indice", "iris"
     )
-    distribution = {
-        str(int(item["plantability_normalized_indice"])): item["count"]
-        for item in distribution_qs
-        if item["plantability_normalized_indice"] is not None
-    }
+
+    distribution: dict[str, int] = {}
+    counts_by_iris: dict[int, int] = {}
+    for row in tile_rows:
+        indice = row["plantability_normalized_indice"]
+        if indice is not None:
+            key = str(int(indice))
+            distribution[key] = distribution.get(key, 0) + 1
+        iris_id = row["iris"]
+        if iris_id is not None:
+            counts_by_iris[iris_id] = counts_by_iris.get(iris_id, 0) + 1
 
     return {
-        "averageNormalizedIndice": _safe_round(avg),
+        "averageNormalizedIndice": _safe_round(_avg_from_counts(distribution)),
         "distribution": distribution,
         "distributionByDivision": [],
-        "metaFactors": _meta_factors_from_polygon_tiles(tiles),
+        "metaFactors": _meta_factors_from_iris_counts(counts_by_iris),
     }
 
 
