@@ -27,8 +27,8 @@ const POLYGON: ZonePolygon = {
 describe("dashboard store — zone scale", () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    fetchDashboard.mockReset().mockResolvedValue({ data: { areaHa: 1 }, error: null })
-    fetchDashboardForZone.mockReset().mockResolvedValue({ data: { areaHa: 5 }, error: null })
+    fetchDashboard.mockReset().mockResolvedValue({ data: { areaKm2: 1 }, error: null })
+    fetchDashboardForZone.mockReset().mockResolvedValue({ data: { areaKm2: 5 }, error: null })
   })
 
   test("hasZone reflects the zone store", () => {
@@ -42,7 +42,7 @@ describe("dashboard store — zone scale", () => {
     useZoneStore().setZone(POLYGON)
     const store = useDashboardStore()
     store.setScale("zone")
-    await vi.waitFor(() => expect(store.dashboardData).toEqual({ areaHa: 5 }))
+    await vi.waitFor(() => expect(store.dashboardData).toEqual({ areaKm2: 5 }))
     expect(fetchDashboardForZone).toHaveBeenCalledWith(POLYGON)
     expect(fetchDashboard).not.toHaveBeenCalled()
   })

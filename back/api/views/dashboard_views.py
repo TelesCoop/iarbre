@@ -24,7 +24,7 @@ from iarbre_data.models import (
     Vulnerability,
 )
 
-M2_TO_HA = 10_000
+M2_TO_KM2 = 1_000_000
 
 BUILT_LCZ_INDICES = {"1", "2", "3", "4", "5", "6", "8", "9"}
 
@@ -312,7 +312,7 @@ def assemble_dashboard_data(scope: DashboardScope, plantability: dict) -> dict:
     """
     return {
         "city": DashboardView._serialize_city(scope.city),
-        "areaHa": round(scope.area_m2 / M2_TO_HA, 1),
+        "areaKm2": round(scope.area_m2 / M2_TO_KM2, 3),
         "plantability": plantability,
         "vulnerability": DashboardView._aggregate_vulnerability(scope.geometry_filter),
         "vegetation": DashboardView._aggregate_vegetation(scope),

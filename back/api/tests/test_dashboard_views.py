@@ -85,7 +85,7 @@ class DashboardViewTest(TestCase):
         data = self.client.get(self.url).json()
         self.assertIsNone(data["city"])
         for key in [
-            "areaHa",
+            "areaKm2",
             "plantability",
             "vulnerability",
             "vegetation",
@@ -293,7 +293,7 @@ class DashboardPolygonViewTest(TestCase):
     def test_returns_full_structure(self):
         data = self._post(LYON_WGS84_POLYGON).json()
         for key in [
-            "areaHa",
+            "areaKm2",
             "plantability",
             "vulnerability",
             "vegetation",
