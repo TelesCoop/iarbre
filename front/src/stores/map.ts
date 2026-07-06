@@ -59,6 +59,7 @@ import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
 import { computePolygonAreaM2 } from "@/utils/geo"
+import type { ZonePolygon } from "@/stores/zone"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -1121,6 +1122,20 @@ export const useMapStore = defineStore("map", () => {
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
 
+  const hasShapeContextData = computed(
+    () =>
+      isShapeMode.value &&
+      !isCalculating.value &&
+      !contextData.error.value &&
+      contextData.data.value != null
+  )
+
+  const getDrawnPolygon = (): ZonePolygon | null => {
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    if (!ring || ring.length < 3) return null
+    return { type: "Polygon", coordinates: [ring as [number, number][]] }
+  }
+
   // Retry path differs by mode: a shape error re-runs the polygon calculation,
   // a tile error replays the last tile request.
   const retryContextData = () => {
@@ -1242,6 +1257,8 @@ export const useMapStore = defineStore("map", () => {
     selectedLegendCell,
     selectionMode,
     isShapeMode,
+    hasShapeContextData,
+    getDrawnPolygon,
     shapeEditing,
     liveArea,
     isAreaTooLarge,

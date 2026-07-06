@@ -1,9 +1,22 @@
+import json
+import logging
+
+import numpy as np
+from shapely.geometry.polygon import Polygon as ShapelyPolygon
+
 from django.contrib.gis.geos import Polygon
+from django.core.management import call_command
+from django.db.models import Avg
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
 from api.views.dashboard_views import _avg_from_counts, _safe_round
+from iarbre_data.management.commands.populate import CITY_CODE
+from iarbre_data.management.commands.populate import Command as PopulateCommand
+from iarbre_data.models import City, Iris, Tile, Vulnerability
 from iarbre_data.settings import SRID_DB
+from iarbre_data.utils.database import select_city
+from iarbre_data.utils.utils_populate import HexTileShape, create_tiles_for_city
 from iarbre_data.factories import (
     BiosphereFunctionalIntegrityFactory,
     CityFactory,
@@ -30,35 +43,47 @@ NO_CACHE = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"
 
 @override_settings(CACHES=NO_CACHE)
 class DashboardViewTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.url = reverse("dashboard")
-        self.city = CityFactory(
-            code="38250",
-            name="Villard-de-Lans",
-            geometry=VILLARD_SQUARE,
-            plantability_counts={"0": 10, "2": 20, "4": 30, "6": 40, "8": 50, "10": 60},
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Build the city and its tiles the same way populate() does, but skip
+        # its IRIS step (a live fetch from an external API not available in tests).
+        (x, y) = PopulateCommand.city_center
+        radius = 2500
+        city_geometry = ShapelyPolygon(
+            (
+                (x - radius, y - radius),
+                (x + radius, y - radius),
+                (x + radius, y + radius),
+                (x - radius, y + radius),
+                (x - radius, y - radius),
+            )
         )
-        self.iris = IrisFactory(
-            code="382500101",
-            name="Centre",
-            city=self.city,
-            geometry=VILLARD_SQUARE,
-            plantability_counts={"2": 10, "8": 10},
+        cls.city = City.objects.create(
+            name="Villard-de-Lans", code=CITY_CODE, geometry=city_geometry.wkt
         )
-        VulnerabilityFactory(
-            geometry=VILLARD_SQUARE,
-            vulnerability_index_day=6.0,
-            vulnerability_index_night=4.0,
-            expo_index_day=2.0,
-            expo_index_night=1.0,
-            sensibilty_index_day=2.0,
-            sensibilty_index_night=1.5,
-            capaf_index_day=2.0,
-            capaf_index_night=1.5,
+        # Iris must exist before tile creation: create_tiles_for_city() looks up
+        # intersecting Iris to set each tile's iris_id at creation time.
+        cls.iris = IrisFactory(city=cls.city, geometry=cls.city.geometry)
+        create_tiles_for_city(
+            city=select_city(CITY_CODE).iloc[0],
+            grid_size=50,
+            tile_shape_cls=HexTileShape,
+            logger=logging.getLogger(__name__),
+            batch_size=int(1e6),
+            side_length=50,
+            height_ratio=np.sin(np.pi / 3),
         )
+
+        populate_cmd = PopulateCommand()
+        populate_cmd.city = cls.city
+        populate_cmd._generate_plantability_tiles()
+        populate_cmd.generate_vulnerability_zones()
+        call_command("compute_plantability_counts")
+
+        # populate() has no equivalent for these layers, so add minimal data on the real city footprint.
         LczFactory(
-            geometry=VILLARD_SQUARE,
+            geometry=cls.city.geometry,
             lcz_index="2",
             details={
                 "hre": 15.0,
@@ -71,18 +96,29 @@ class DashboardViewTest(TestCase):
             },
         )
         VegestrateFactory(
-            geometry=VILLARD_SQUARE, strate="arborescent", surface=500_000
+            geometry=cls.city.geometry, strate="arborescent", surface=500_000
         )
-        VegestrateFactory(geometry=VILLARD_SQUARE, strate="arbustif", surface=200_000)
-        VegestrateFactory(geometry=VILLARD_SQUARE, strate="herbacee", surface=300_000)
-        DataFactory(geometry=VILLARD_SQUARE, factor="Bâtiments")
-        BiosphereFunctionalIntegrityFactory(geometry=VILLARD_SQUARE, indice=70)
+        VegestrateFactory(
+            geometry=cls.city.geometry, strate="arbustif", surface=200_000
+        )
+        VegestrateFactory(
+            geometry=cls.city.geometry, strate="herbacee", surface=300_000
+        )
+        DataFactory(geometry=cls.city.geometry, factor="Bâtiments")
+        BiosphereFunctionalIntegrityFactory(geometry=cls.city.geometry, indice=70)
+
+        cls.city.refresh_from_db()
+        cls.iris.refresh_from_db()
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard")
 
     def test_metropole_returns_structure(self):
         data = self.client.get(self.url).json()
         self.assertIsNone(data["city"])
         for key in [
-            "areaHa",
+            "areaKm2",
             "plantability",
             "vulnerability",
             "vegetation",
@@ -95,28 +131,32 @@ class DashboardViewTest(TestCase):
     def test_metropole_plantability(self):
         data = self.client.get(self.url).json()
         plantability = data["plantability"]
-        self.assertAlmostEqual(plantability["averageNormalizedIndice"], 6.7, places=1)
+        expected = _safe_round(_avg_from_counts(self.city.plantability_counts))
+        self.assertEqual(plantability["averageNormalizedIndice"], expected)
         divisions = plantability["distributionByDivision"]
-        self.assertEqual(len(divisions), 1)
-        self.assertEqual(divisions[0]["code"], "38250")
+        self.assertEqual(len(divisions), City.objects.count())
+        self.assertEqual(divisions[0]["code"], self.city.code)
 
     def test_city_filter(self):
-        data = self.client.get(self.url, {"city_code": "38250"}).json()
-        self.assertEqual(data["city"]["code"], "38250")
-        self.assertEqual(data["city"]["name"], "Villard-de-Lans")
+        data = self.client.get(self.url, {"city_code": CITY_CODE}).json()
+        self.assertEqual(data["city"]["code"], CITY_CODE)
+        self.assertEqual(data["city"]["name"], self.city.name)
         divisions = data["plantability"]["distributionByDivision"]
-        self.assertEqual(len(divisions), 1)
-        self.assertEqual(divisions[0]["code"], "382500101")
+        self.assertEqual(len(divisions), Iris.objects.filter(city=self.city).count())
+        self.assertEqual(divisions[0]["code"], self.iris.code)
 
     def test_iris_filter(self):
-        data = self.client.get(self.url, {"iris_code": "382500101"}).json()
-        self.assertEqual(data["city"]["code"], "38250")
+        data = self.client.get(self.url, {"iris_code": self.iris.code}).json()
+        self.assertEqual(data["city"]["code"], CITY_CODE)
         self.assertEqual(data["plantability"]["distributionByDivision"], [])
-        self.assertAlmostEqual(data["plantability"]["averageNormalizedIndice"], 5.0)
+        expected = _safe_round(_avg_from_counts(self.iris.plantability_counts))
+        self.assertAlmostEqual(
+            data["plantability"]["averageNormalizedIndice"], expected
+        )
 
     def test_iris_code_priority_over_city_code(self):
         data = self.client.get(
-            self.url, {"city_code": "38250", "iris_code": "382500101"}
+            self.url, {"city_code": CITY_CODE, "iris_code": self.iris.code}
         ).json()
         self.assertEqual(data["plantability"]["distributionByDivision"], [])
 
@@ -131,18 +171,24 @@ class DashboardViewTest(TestCase):
     def test_vulnerability_values(self):
         data = self.client.get(self.url).json()
         vuln = data["vulnerability"]
-        self.assertEqual(vuln["averageDay"], 6.0)
-        self.assertEqual(vuln["averageNight"], 4.0)
-        self.assertEqual(vuln["expoDay"], 2.0)
-        self.assertEqual(vuln["expoNight"], 1.0)
+        expected = Vulnerability.objects.aggregate(
+            avg_day=Avg("vulnerability_index_day"),
+            avg_night=Avg("vulnerability_index_night"),
+            avg_expo_day=Avg("expo_index_day"),
+            avg_expo_night=Avg("expo_index_night"),
+        )
+        self.assertEqual(vuln["averageDay"], _safe_round(expected["avg_day"]))
+        self.assertEqual(vuln["averageNight"], _safe_round(expected["avg_night"]))
+        self.assertEqual(vuln["expoDay"], _safe_round(expected["avg_expo_day"]))
+        self.assertEqual(vuln["expoNight"], _safe_round(expected["avg_expo_night"]))
 
     def test_vegetation_values(self):
         data = self.client.get(self.url).json()
         veg = data["vegetation"]
-        self.assertEqual(veg["totalM2"], 1000000.0)
-        self.assertEqual(veg["treesSurfaceM2"], 500000.0)
-        self.assertEqual(veg["bushesSurfaceM2"], 200000.0)
-        self.assertEqual(veg["grassSurfaceM2"], 300000.0)
+        self.assertEqual(veg["totalM2"], 1_000_000.0)
+        self.assertEqual(veg["treesSurfaceM2"], 500_000.0)
+        self.assertEqual(veg["bushesSurfaceM2"], 200_000.0)
+        self.assertEqual(veg["grassSurfaceM2"], 300_000.0)
 
     def test_lcz_values(self):
         data = self.client.get(self.url).json()
@@ -160,7 +206,8 @@ class DashboardViewTest(TestCase):
 
     def test_buildings_value(self):
         data = self.client.get(self.url).json()
-        self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], 25_000_000.0)
+        expected = _safe_round(self.city.geometry.area)
+        self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], expected)
 
 
 @override_settings(CACHES=NO_CACHE)
@@ -217,6 +264,129 @@ class DashboardMetaFactorsTest(TestCase):
         )
         data = self.client.get(self.url).json()
         self.assertEqual(data["plantability"]["metaFactors"], {"eau": 0.4, "bati": 0.3})
+
+
+LYON_SQUARE = Polygon(
+    (
+        (845000, 6525000),
+        (845100, 6525000),
+        (845100, 6525100),
+        (845000, 6525100),
+        (845000, 6525000),
+    ),
+    srid=SRID_DB,
+)
+
+# WGS84 polygon that transforms into LYON_SQUARE's area (mirrors in-polygon tests).
+LYON_WGS84_POLYGON = {
+    "type": "Polygon",
+    "coordinates": [
+        [
+            [4.867256, 45.809200],
+            [4.868544, 45.809179],
+            [4.868574, 45.810079],
+            [4.867287, 45.810101],
+            [4.867256, 45.809200],
+        ]
+    ],
+}
+
+
+@override_settings(CACHES=NO_CACHE)
+class DashboardPolygonViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse("dashboard-in-polygon")
+        self.iris = IrisFactory(
+            code="690010101",
+            city=CityFactory(code="69001", geometry=LYON_SQUARE),
+            geometry=LYON_SQUARE,
+            meta_factors_avg={"eau": 0.4, "bati": 0.2},
+        )
+        Tile.objects.create(
+            geometry=LYON_SQUARE,
+            plantability_normalized_indice=8.0,
+            iris=self.iris,
+            city=self.iris.city,
+        )
+        VulnerabilityFactory(
+            geometry=LYON_SQUARE,
+            vulnerability_index_day=6.0,
+            vulnerability_index_night=4.0,
+        )
+        LczFactory(
+            geometry=LYON_SQUARE,
+            lcz_index="2",
+            details={
+                "hre": 15.0,
+                "bur": 20.0,
+                "ror": 30.0,
+                "bsr": 5.0,
+                "ver": 40.0,
+                "war": 5.0,
+                "vhr": 25.0,
+            },
+        )
+        VegestrateFactory(geometry=LYON_SQUARE, strate="arborescent", surface=500_000)
+
+    def _post(self, payload):
+        return self.client.post(
+            self.url, data=json.dumps(payload), content_type="application/json"
+        )
+
+    def test_returns_full_structure(self):
+        data = self._post(LYON_WGS84_POLYGON).json()
+        for key in [
+            "areaKm2",
+            "plantability",
+            "vulnerability",
+            "vegetation",
+            "lcz",
+            "biosphere",
+            "buildings",
+        ]:
+            self.assertIn(key, data)
+        self.assertIsNone(data["city"])
+
+    def test_plantability_from_tiles(self):
+        plantability = self._post(LYON_WGS84_POLYGON).json()["plantability"]
+        self.assertAlmostEqual(plantability["averageNormalizedIndice"], 8.0, places=1)
+        self.assertEqual(plantability["distribution"], {"8": 1})
+        self.assertEqual(plantability["distributionByDivision"], [])
+
+    def test_meta_factors_weighted_from_iris(self):
+        plantability = self._post(LYON_WGS84_POLYGON).json()["plantability"]
+        self.assertEqual(plantability["metaFactors"], {"eau": 0.4, "bati": 0.2})
+
+    def test_vulnerability_aggregated(self):
+        vuln = self._post(LYON_WGS84_POLYGON).json()["vulnerability"]
+        self.assertEqual(vuln["averageDay"], 6.0)
+        self.assertEqual(vuln["averageNight"], 4.0)
+
+    def test_empty_polygon_returns_zeros(self):
+        far_away = {
+            "type": "Polygon",
+            "coordinates": [
+                [[2.0, 48.0], [2.01, 48.0], [2.01, 48.01], [2.0, 48.01], [2.0, 48.0]]
+            ],
+        }
+        data = self._post(far_away).json()
+        self.assertEqual(data["plantability"]["averageNormalizedIndice"], 0)
+        self.assertEqual(data["plantability"]["metaFactors"], {})
+        self.assertEqual(data["vulnerability"]["averageDay"], 0)
+
+    def test_oversized_polygon_rejected(self):
+        oversized = {
+            "type": "Polygon",
+            "coordinates": [
+                [[4.0, 45.0], [6.0, 45.0], [6.0, 46.0], [4.0, 46.0], [4.0, 45.0]]
+            ],
+        }
+        self.assertEqual(self._post(oversized).status_code, 400)
+
+    def test_empty_payload_rejected(self):
+        response = self.client.post(self.url, data="", content_type="application/json")
+        self.assertEqual(response.status_code, 400)
 
 
 class HelperFunctionsTest(SimpleTestCase):

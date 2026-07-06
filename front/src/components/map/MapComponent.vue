@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
 import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
+import ZoneDashboardCard from "@/components/map/ZoneDashboardCard.vue"
 
 const props = defineProps({
   mapId: {
@@ -81,6 +82,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <ShapeToolbar />
   <ShapeLiveChip />
+  <ZoneDashboardCard />
 
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />

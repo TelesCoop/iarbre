@@ -61,7 +61,7 @@ class DashboardBiosphereSerializer(serializers.Serializer):
 
 class DashboardSerializer(serializers.Serializer):
     city = DashboardCitySerializer(allow_null=True)
-    areaHa = serializers.FloatField()
+    areaKm2 = serializers.FloatField()
     plantability = DashboardPlantabilitySerializer()
     vulnerability = DashboardVulnerabilitySerializer()
     vegetation = DashboardVegetationSerializer()

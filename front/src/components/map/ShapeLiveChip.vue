@@ -1,13 +1,12 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { formatArea, computePolygonAreaM2 } from "@/utils/geo"
+import { useMapRenderSync } from "@/composables/useMapRenderSync"
 
 const mapStore = useMapStore()
 
 const screenPos = ref<{ x: number; y: number } | null>(null)
-// Cached so the high-frequency map "render" handler only reprojects a known point
-// instead of re-reading the whole TerraDraw snapshot on every frame.
 const centroidLngLat = ref<[number, number] | null>(null)
 const areaM2 = ref<number | null>(null)
 
@@ -19,7 +18,6 @@ const isClosedRing = (coords: number[][]): boolean =>
   coords[0][1] === coords[coords.length - 1][1]
 
 const centroid = (coords: number[][]): [number, number] => {
-  // Drop the repeated closing vertex so it doesn't bias the average toward the first point.
   const points = isClosedRing(coords) ? coords.slice(0, -1) : coords
   const sum = points.reduce((acc, [lng, lat]) => [acc[0] + lng, acc[1] + lat], [0, 0])
   return [sum[0] / points.length, sum[1] / points.length]
@@ -34,7 +32,6 @@ const reproject = () => {
   screenPos.value = map.project(centroidLngLat.value)
 }
 
-// Reads the TerraDraw snapshot — call only on shape/area change, never per render frame.
 const refreshFromShape = () => {
   const coords = mapStore.shapeDrawing.getCurrentShapeCoordinates()
   if (!coords || coords.length < 3 || mapStore.drawingState === "point") {
@@ -44,8 +41,6 @@ const refreshFromShape = () => {
     return
   }
   centroidLngLat.value = centroid(coords)
-  // liveArea is normally set by the store; the fallback covers the brief window
-  // before the first change/finish event populates it.
   areaM2.value = mapStore.liveArea ?? computePolygonAreaM2(coords)
   reproject()
 }
@@ -55,26 +50,11 @@ const areaLabel = computed(() => (areaM2.value === null ? null : formatArea(area
 const isAreaTooLarge = computed(() => mapStore.isAreaTooLarge)
 const isCalculating = computed(() => mapStore.isCalculating)
 
-const isVisible = computed(() => screenPos.value !== null && areaLabel.value !== null)
+const isVisible = computed(
+  () => screenPos.value !== null && areaLabel.value !== null && mapStore.drawingState === "drawing"
+)
 
-let attached = false
-const attach = () => {
-  const map = mapInstance.value
-  if (!map || attached) return
-  map.on("render", reproject)
-  attached = true
-  refreshFromShape()
-}
-
-onMounted(attach)
-watch(mapInstance, attach)
-watch(() => [mapStore.drawingState, mapStore.liveArea], refreshFromShape)
-
-onBeforeUnmount(() => {
-  const map = mapInstance.value
-  if (map && attached) map.off("render", reproject)
-  attached = false
-})
+useMapRenderSync(mapInstance, reproject, refreshFromShape)
 </script>
 
 <template>

@@ -11,32 +11,39 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const m2ToKm2 = (m2: number) => m2 / 1_000_000
+const KM2_IN_M2 = 1_000_000
 
 const hasData = computed(() => props.data.totalM2 >= 1)
 
-const totalKm2 = computed(() => m2ToKm2(props.data.totalM2))
+const useKm2 = computed(() => props.data.totalM2 >= KM2_IN_M2)
+
+const formatSurface = (m2: number) => {
+  if (useKm2.value) {
+    return `${(m2 / KM2_IN_M2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
+  }
+  return `${Math.round(m2).toLocaleString("fr-FR")} m²`
+}
 
 const items = computed(() => {
   const entries = [
-    { label: "🖼️ TOTALE", value: m2ToKm2(props.data.totalM2), color: "#426a45" },
+    { label: "🖼️ TOTALE", value: props.data.totalM2, color: "#426a45" },
     {
       label: "🌳 HAUTE",
-      value: m2ToKm2(props.data.treesSurfaceM2),
+      value: props.data.treesSurfaceM2,
       color: VEGETATION_COLORS.trees
     },
     {
       label: "🌿 MOYENNE",
-      value: m2ToKm2(props.data.bushesSurfaceM2),
+      value: props.data.bushesSurfaceM2,
       color: VEGETATION_COLORS.bushes
     },
-    { label: "🌱 BASSE", value: m2ToKm2(props.data.grassSurfaceM2), color: VEGETATION_COLORS.grass }
+    { label: "🌱 BASSE", value: props.data.grassSurfaceM2, color: VEGETATION_COLORS.grass }
   ]
   return entries.map((e) => ({
     ...e,
     textColor: getContrastTextHex(e.color),
-    pct: totalKm2.value > 0 ? Math.min((e.value / totalKm2.value) * 100, 100) : 0,
-    display: `${e.value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
+    pct: props.data.totalM2 > 0 ? Math.min((e.value / props.data.totalM2) * 100, 100) : 0,
+    display: formatSurface(e.value)
   }))
 })
 </script>
