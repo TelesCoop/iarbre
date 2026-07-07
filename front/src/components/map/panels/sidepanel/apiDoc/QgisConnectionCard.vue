@@ -1,10 +1,21 @@
 <script lang="ts" setup>
+import { ref } from "vue"
 import { copyToClipboard } from "@/utils/clipboard"
 
 defineProps<{
   baseUrl: string
   steps: string[]
 }>()
+
+const copied = ref(false)
+
+const handleCopy = (url: string) => {
+  copyToClipboard(url)
+  copied.value = true
+  setTimeout(() => {
+    copied.value = false
+  }, 1500)
+}
 </script>
 
 <template>
@@ -34,10 +45,26 @@ defineProps<{
         <span class="font-mono text-xs text-primary-700 flex-1 truncate">{{ baseUrl }}</span>
         <button
           type="button"
-          class="text-2xs font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-colors rounded px-2 py-1 shrink-0"
-          @click="copyToClipboard(baseUrl)"
+          :class="[
+            'flex items-center gap-1 text-2xs font-semibold text-white transition-colors duration-200 rounded px-2 py-1 shrink-0',
+            copied ? 'bg-green-600' : 'bg-primary-500 hover:bg-primary-600'
+          ]"
+          @click="handleCopy(baseUrl)"
         >
-          Copier
+          <svg
+            v-if="copied"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          {{ copied ? "Copié" : "Copier" }}
         </button>
       </div>
     </div>
