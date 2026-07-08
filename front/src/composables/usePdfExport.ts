@@ -2,17 +2,6 @@ import { ref } from "vue"
 import { exportDashboardPdf } from "@/services/dashboardService"
 import { useToast } from "@/composables/useToast"
 
-// The app's compiled stylesheet contains every Tailwind utility used anywhere
-// in the SPA (thousands of rules, incl. modern syntax like range media
-// queries and `::-webkit-*` pseudo-elements WeasyPrint's CSS parser doesn't
-// understand). Shipping it whole makes WeasyPrint's rule-matching crawl and
-// spams warnings. Instead we keep only rules that actually apply to the
-// captured subtree, resolving media/supports conditions in the browser first
-// so WeasyPrint only ever sees plain, already-relevant declarations.
-
-// Pseudo-elements (`::before`, `::-webkit-scrollbar`, ...) aren't valid
-// arguments to matches()/querySelector() — strip them, we only need to know
-// whether the *element* the rule would attach to exists in our subtree.
 function baseSelectorForMatch(selectorText: string): string {
   return selectorText
     .split(",")
@@ -25,21 +14,26 @@ function selectorMatches(root: HTMLElement, selectorText: string): boolean {
   const selector = baseSelectorForMatch(selectorText)
   if (!selector) return false
   try {
-    return root.matches(selector) || root.querySelector(selector) !== null
-  } catch {
+    return (
+      root.matches(selector) ||
+      root.querySelector(selector) !== null ||
+      document.documentElement.matches(selector) ||
+      document.body.matches(selector)
+    )
+  } catch (e) {
+    console.error(e)
     return false
   }
 }
 
-// WeasyPrint always renders in a print context regardless of what the
-// browser reports, so force `print`/`screen` rather than asking matchMedia.
 function mediaConditionMatches(mediaText: string): boolean {
   const normalized = mediaText.trim().toLowerCase()
   if (normalized === "print") return true
   if (normalized === "screen") return false
   try {
     return window.matchMedia(mediaText).matches
-  } catch {
+  } catch (e) {
+    console.error(e)
     return false
   }
 }
@@ -47,7 +41,8 @@ function mediaConditionMatches(mediaText: string): boolean {
 function supportsConditionMatches(conditionText: string): boolean {
   try {
     return CSS.supports(conditionText)
-  } catch {
+  } catch (e) {
+    console.error(e)
     return false
   }
 }
@@ -57,15 +52,16 @@ function collectMatchedRules(rules: CSSRuleList, root: HTMLElement, out: string[
     const type = rule.constructor.name
     if (type === "CSSStyleRule") {
       const styleRule = rule as CSSStyleRule
-      if (selectorMatches(root, styleRule.selectorText)) {
+      const isVendorOnly = /::-webkit-|::-moz-/.test(styleRule.selectorText)
+      if (!isVendorOnly && selectorMatches(root, styleRule.selectorText)) {
         out.push(styleRule.cssText)
       }
-    } else if (type === "CSSFontFaceRule" || type === "CSSImportRule") {
-      // No custom fonts are embedded and the export endpoint blocks network
-      // fetches (SSRF guard), so these would only add noise/latency.
+    } else if (
+      type === "CSSFontFaceRule" ||
+      type === "CSSImportRule" ||
+      type === "CSSKeyframesRule"
+    ) {
       continue
-    } else if (type === "CSSKeyframesRule") {
-      out.push(rule.cssText)
     } else if (type === "CSSMediaRule") {
       const mediaRule = rule as CSSMediaRule
       if (mediaConditionMatches(mediaRule.media.mediaText)) {
@@ -77,8 +73,6 @@ function collectMatchedRules(rules: CSSRuleList, root: HTMLElement, out: string[
         collectMatchedRules(supportsRule.cssRules, root, out)
       }
     } else if ("cssRules" in rule) {
-      // Cascade layers, @container, and other grouping at-rules: always
-      // recurse, worst case we keep a handful of extra harmless rules.
       collectMatchedRules((rule as unknown as CSSGroupingRule).cssRules, root, out)
     }
   }
@@ -108,8 +102,6 @@ async function collectRelevantCss(root: HTMLElement): Promise<string> {
       const rules = sheet.cssRules
       if (rules) collectMatchedRules(rules, root, out)
     } catch {
-      // Cross-origin sheet without CORS headers: cssRules throws. Fall back
-      // to fetching its text directly (works for same-origin/CORS-enabled hrefs).
       if (sheet.href) {
         const rules = await cssTextFromLinkedSheet(sheet.href)
         if (rules) collectMatchedRules(rules, root, out)
@@ -169,8 +161,10 @@ export function usePdfExport() {
         severity: "error",
         summary: "Export impossible",
         detail: isTimeout
-          ? "La génération du PDF a pris trop de temps. Merci de réessayer."
-          : "Le rapport PDF n'a pas pu être généré. Merci de réessayer."
+          ? "L'export a échoué : la génération du PDF a été arrêtée (délai dépassé). Merci de réessayer."
+          : "Le rapport PDF n'a pas pu être généré. Merci de réessayer.",
+        life: 5000,
+        group: "br"
       })
     } finally {
       isExporting.value = false
