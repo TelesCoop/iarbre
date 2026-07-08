@@ -34,3 +34,4 @@ shapely==2.0.5
 telescoop_backup==0.6.5
 tqdm==4.67.3
 Unidecode==1.4.0
+weasyprint==69.0
