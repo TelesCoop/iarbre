@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 import AppButton from "@/components/shared/AppButton.vue"
+import { usePdfExport } from "@/composables/usePdfExport"
+
+const { exportElementToPdf, isExporting } = usePdfExport()
 
 const exportToPdf = () => {
-  window.print()
+  const content = document.querySelector<HTMLElement>(".dashboard-content")
+  if (!content) return
+  exportElementToPdf(content, "rapport-iarbre.pdf")
 }
 </script>
 
@@ -16,7 +21,7 @@ const exportToPdf = () => {
         Téléchargez ce tableau de bord au format PDF pour le partager ou le consulter hors ligne.
       </p>
     </div>
-    <AppButton variant="primary" size="lg" @click="exportToPdf">
+    <AppButton variant="primary" size="lg" :loading="isExporting" @click="exportToPdf">
       <template #icon-left>
         <svg
           viewBox="0 0 24 24"
@@ -33,7 +38,7 @@ const exportToPdf = () => {
           <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
       </template>
-      Télécharger le rapport complet
+      {{ isExporting ? "Génération du PDF..." : "Télécharger le rapport complet" }}
     </AppButton>
   </footer>
 </template>

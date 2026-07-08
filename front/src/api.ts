@@ -70,6 +70,31 @@ export async function useApiPost<Type>(path: string, payload = {}, onErrorMessag
   return useApiRequestWithCsrfToken<Type>(path, "POST", payload, onErrorMessage)
 }
 
+export async function useApiPostForBlob(
+  path: string,
+  payload: unknown = {},
+  onErrorMessage: string = ""
+): Promise<{ data: Blob | undefined; error: unknown }> {
+  try {
+    const response = await fetch(`${getFullBaseApiUrl()}/${path}`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      credentials: "include",
+      headers: getHeaders(true)
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+    const data = await response.blob()
+    return { data, error: undefined }
+  } catch (error) {
+    if (onErrorMessage) {
+      console.error(error)
+    }
+    return { error, data: undefined }
+  }
+}
+
 export async function useApiGet<Type>(
   path: string,
   onErrorMessage: string = ""

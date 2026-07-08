@@ -1,4 +1,4 @@
-import { useApiGet, useApiPost } from "@/api"
+import { useApiGet, useApiPost, useApiPostForBlob } from "@/api"
 import type { DashboardData } from "@/types/dashboard"
 import type { ZonePolygon } from "@/stores/zone"
 
@@ -16,5 +16,15 @@ export async function fetchDashboardForZone(
     "dashboard/in-polygon/",
     geometry,
     "Impossible de charger les données du dashboard pour cette zone"
+  )
+}
+
+export async function exportDashboardPdf(
+  html: string
+): Promise<{ data: Blob | undefined; error: unknown }> {
+  return useApiPostForBlob(
+    "dashboard/export-pdf/",
+    { html },
+    "Impossible de générer le PDF du rapport"
   )
 }
