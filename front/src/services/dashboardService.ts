@@ -25,6 +25,7 @@ export async function exportDashboardPdf(
   return useApiPostForBlob(
     "dashboard/export-pdf/",
     { html },
-    "Impossible de générer le PDF du rapport"
+    "Impossible de générer le PDF du rapport",
+    10_000
   )
 }

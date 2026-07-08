@@ -73,14 +73,18 @@ export async function useApiPost<Type>(path: string, payload = {}, onErrorMessag
 export async function useApiPostForBlob(
   path: string,
   payload: unknown = {},
-  onErrorMessage: string = ""
+  onErrorMessage: string = "",
+  timeoutMs?: number
 ): Promise<{ data: Blob | undefined; error: unknown }> {
+  const controller = new AbortController()
+  const timeoutId = timeoutMs ? setTimeout(() => controller.abort(), timeoutMs) : undefined
   try {
     const response = await fetch(`${getFullBaseApiUrl()}/${path}`, {
       method: "POST",
       body: JSON.stringify(payload),
       credentials: "include",
-      headers: getHeaders(true)
+      headers: getHeaders(true),
+      signal: controller.signal
     })
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
@@ -88,10 +92,14 @@ export async function useApiPostForBlob(
     const data = await response.blob()
     return { data, error: undefined }
   } catch (error) {
+    const isTimeout = error instanceof DOMException && error.name === "AbortError"
+    const reported = isTimeout ? new Error("Request timed out") : error
     if (onErrorMessage) {
-      console.error(error)
+      console.error(reported)
     }
-    return { error, data: undefined }
+    return { error: reported, data: undefined }
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId)
   }
 }
 
