@@ -8,7 +8,7 @@ from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
 from iarbre_data.settings import SRID_DB
-from iarbre_data.models import Tile, Vegestrate
+from iarbre_data.models import BiosphereFunctionalIntegrity, Tile, Vegestrate
 
 logger = logging.getLogger("wfs")
 
@@ -56,6 +56,10 @@ def _count_features(typename, bbox_poly):
     try:
         if "vegestrate" in name:
             return Vegestrate.objects.filter(geometry__bboverlaps=bbox_poly).count()
+        if "biosphere" in name:
+            return BiosphereFunctionalIntegrity.objects.filter(
+                geometry__bboverlaps=bbox_poly
+            ).count()
         return Tile.objects.filter(geometry__bboverlaps=bbox_poly).count()
     except Exception:
         return None
@@ -77,6 +81,10 @@ _tile_qs = Tile.objects.select_related("city").only(
 )
 
 _vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
+
+_biosphere_functional_integrity_qs = BiosphereFunctionalIntegrity.objects.only(
+    "geometry", "indice"
+)
 
 
 class IArbreWFSView(WFSView):
@@ -171,6 +179,13 @@ class IArbreWFSView(WFSView):
                 name="vegestrate",
                 title="Végéstrate",
                 fields=["geometry", "strate", "surface"],
+                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+            ),
+            TileFeatureType(
+                _biosphere_functional_integrity_qs,
+                name="biosphere_functional_integrity",
+                title="Intégrité fonctionnelle de la biosphère",
+                fields=["geometry", "indice"],
                 other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
             ),
         ]
