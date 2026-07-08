@@ -53,8 +53,9 @@ function collectMatchedRules(rules: CSSRuleList, root: HTMLElement, out: string[
     if (type === "CSSStyleRule") {
       const styleRule = rule as CSSStyleRule
       const isVendorOnly = /::-webkit-|::-moz-/.test(styleRule.selectorText)
-      if (!isVendorOnly && selectorMatches(root, styleRule.selectorText)) {
-        out.push(styleRule.cssText)
+      const cleanedSelector = baseSelectorForMatch(styleRule.selectorText)
+      if (!isVendorOnly && cleanedSelector && selectorMatches(root, cleanedSelector)) {
+        out.push(`${cleanedSelector} { ${styleRule.style.cssText} }`)
       }
     } else if (
       type === "CSSFontFaceRule" ||
