@@ -17,7 +17,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.constants import (
+from iarbre_data.utils.palettes import (
     VEGESTRATE_COLOR_MAP,
     VEGESTRATE_ELEVATION_COLOR_MAP,
 )

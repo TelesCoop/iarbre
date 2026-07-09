@@ -202,13 +202,14 @@ def _process_calque(name: str, config: CalqueConfig, ref: dict, union) -> Path:
 
     if config.palette:
         _embed_palette(path, config.palette)
-        _write_rgb(
-            path,
-            RASTERS_DIR / f"{name}_colors.tif",
-            config.nodata,
-            _palette_mapper(config.palette),
-        )
-    elif config.stops:
+        if config.export_colors:
+            _write_rgb(
+                path,
+                RASTERS_DIR / f"{name}_colors.tif",
+                config.nodata,
+                _palette_mapper(config.palette),
+            )
+    elif config.stops and config.export_colors:
         _write_rgb(
             path,
             RASTERS_DIR / f"{name}_colors.tif",
