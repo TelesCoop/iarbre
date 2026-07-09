@@ -52,10 +52,9 @@ class DashboardPdfExportView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if settings.DEBUG:
-            debug_path = Path(settings.BASE_DIR) / "last_dashboard_export.html"
-            debug_path.write_text(html, encoding="utf-8")
-            logger.info("Dashboard PDF export: raw html dumped to %s", debug_path)
+        debug_path = Path(settings.BASE_DIR) / "last_dashboard_export.html"
+        debug_path.write_text(html, encoding="utf-8")
+        logger.warning("Dashboard PDF export: raw html dumped to %s", debug_path)
 
         warning_counter = _WarningCounter()
         weasyprint_logger.addHandler(warning_counter)
@@ -76,7 +75,7 @@ class DashboardPdfExportView(APIView):
             weasyprint_logger.removeHandler(warning_counter)
         elapsed = time.monotonic() - started_at
 
-        logger.info(
+        logger.warning(
             "Dashboard PDF export: html=%d bytes, pdf=%d bytes, %.2fs, %d CSS/rendering warnings",
             len(html),
             len(pdf_bytes),
