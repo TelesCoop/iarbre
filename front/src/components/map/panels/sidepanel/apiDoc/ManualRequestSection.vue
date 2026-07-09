@@ -11,6 +11,17 @@ defineProps<{
 }>()
 
 const open = ref(false)
+const copied = ref(false)
+let copiedTimeout: ReturnType<typeof setTimeout> | undefined
+
+const handleCopy = (value: string) => {
+  copyToClipboard(value)
+  copied.value = true
+  clearTimeout(copiedTimeout)
+  copiedTimeout = setTimeout(() => {
+    copied.value = false
+  }, 1500)
+}
 </script>
 
 <template>
@@ -25,27 +36,46 @@ const open = ref(false)
       <div class="flex items-center justify-between px-2.5 py-2 border-b border-gray-100">
         <span class="text-xs text-gray-400">{{ urlLabel }}</span>
         <button
-          class="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
-          @click="copyToClipboard(url)"
+          class="flex items-center gap-1 text-xs transition-colors"
+          :class="copied ? 'text-green-600' : 'text-gray-500 hover:text-gray-900'"
+          @click="handleCopy(url)"
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="9" y="9" width="13" height="13" rx="2" />
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-          </svg>
-          Copier
+          <Transition name="copy-icon" mode="out-in">
+            <svg
+              v-if="copied"
+              key="check"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            <svg
+              v-else
+              key="copy"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+          </Transition>
+          <span>{{ copied ? "Copié !" : "Copier" }}</span>
         </button>
       </div>
       <button
         type="button"
         class="url-display block w-full text-left px-2.5 py-2 bg-white font-mono text-xs text-primary-500 hover:text-primary-700 cursor-pointer"
-        @click="copyToClipboard(url)"
+        @click="handleCopy(url)"
       >
         {{ url }}
       </button>
@@ -84,5 +114,22 @@ const open = ref(false)
 .url-display {
   word-break: break-all;
   overflow-wrap: anywhere;
+}
+
+.copy-icon-enter-active,
+.copy-icon-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.copy-icon-enter-from {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.copy-icon-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
 }
 </style>

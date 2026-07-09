@@ -147,6 +147,18 @@ const wmsParams: RequestParam[] = [
 
     <div class="flex flex-col bg-white -m-6 p-6 gap-4">
       <div>
+        <h3 class="text-sm font-bold text-primary-500">
+          Obtenez de l'aide
+          <a
+            href="https://erasme.notion.site/R-cup-rer-les-donn-es-d-IArbre-39844e49a3ad807cb418ef62f04b0b5d?pvs=74"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary-500 underline hover:text-primary-700"
+            >ici</a
+          >.
+        </h3>
+      </div>
+      <div>
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WFS</p>
         <AccordionSection :open="expanded === 'wfs'" @toggle="toggle('wfs')">
           <template #header>

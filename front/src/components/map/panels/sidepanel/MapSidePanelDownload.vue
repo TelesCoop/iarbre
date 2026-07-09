@@ -18,7 +18,10 @@ const apiDocVisible = ref(false)
         data-cy="api-doc"
         @click="apiDocVisible = true"
       >
-        Obtenir les données (QGIS, GeoTIFF, WMS, WFS)
+        <span>
+          Obtenir les données
+          <span class="text-xs text-primary-500">(QGIS, GeoTIFF)</span>
+        </span>
         <svg
           class="ml-2"
           fill="none"
