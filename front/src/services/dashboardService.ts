@@ -26,6 +26,6 @@ export async function exportDashboardPdf(
     "dashboard/export-pdf/",
     { html },
     "Impossible de générer le PDF du rapport",
-    10_000
+    60_000
   )
 }

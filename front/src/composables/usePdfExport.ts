@@ -63,6 +63,11 @@ function collectMatchedRules(rules: CSSRuleList, root: HTMLElement, out: string[
       type === "CSSKeyframesRule"
     ) {
       continue
+    } else if (type === "CSSPropertyRule") {
+      const propertyRule = rule as unknown as { name: string; initialValue: string | null }
+      if (propertyRule.initialValue) {
+        out.push(`:root { ${propertyRule.name}: ${propertyRule.initialValue}; }`)
+      }
     } else if (type === "CSSMediaRule") {
       const mediaRule = rule as CSSMediaRule
       if (mediaConditionMatches(mediaRule.media.mediaText)) {
