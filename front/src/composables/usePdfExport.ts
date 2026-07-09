@@ -137,6 +137,28 @@ function triggerBlobDownload(blob: Blob, filename: string) {
   URL.revokeObjectURL(blobUrl)
 }
 
+function serializeWithFrozenSvgs(element: HTMLElement): string {
+  const clone = element.cloneNode(true) as HTMLElement
+  const liveSvgs = element.querySelectorAll("svg")
+  const cloneSvgs = clone.querySelectorAll("svg")
+
+  liveSvgs.forEach((liveSvg, i) => {
+    const cloneSvg = cloneSvgs[i]
+    if (!cloneSvg) return
+    const { width, height } = liveSvg.getBoundingClientRect()
+    if (width <= 0 || height <= 0) return
+    const w = Math.round(width)
+    const h = Math.round(height)
+    cloneSvg.setAttribute("width", String(w))
+    cloneSvg.setAttribute("height", String(h))
+    if (!cloneSvg.hasAttribute("viewBox")) {
+      cloneSvg.setAttribute("viewBox", `0 0 ${w} ${h}`)
+    }
+  })
+
+  return clone.outerHTML
+}
+
 export function usePdfExport() {
   const isExporting = ref(false)
   const toast = useToast()
@@ -145,13 +167,14 @@ export function usePdfExport() {
     isExporting.value = true
     try {
       const css = await collectRelevantCss(element)
+      const body = serializeWithFrozenSvgs(element)
       const html = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
     <style>${css}\n${PDF_PAGE_CSS}</style>
   </head>
-  <body>${element.outerHTML}</body>
+  <body>${body}</body>
 </html>`
 
       const { data, error } = await exportDashboardPdf(html)
