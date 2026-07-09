@@ -24,22 +24,28 @@ describe("MapSidePanelDownload", () => {
   it("should show WFS and raster sections in the dialog", () => {
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("WEB FEATURE SERVICE").should("be.visible")
-    cy.contains("REST - GeoTIFF").should("be.visible")
+    cy.contains("Téléchargement direct des rasters").should("be.visible")
   })
 
-  it("should expand WFS section and show params table and URL", () => {
+  it("should expand WFS section and show the QGIS connection URL", () => {
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("WEB FEATURE SERVICE").click()
-    cy.contains("PARAMÈTRES").should("be.visible").click()
+    cy.contains("CONNEXION QGIS").should("be.visible")
+    cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")
+  })
+
+  it("should expand the manual request section and show params table and URL", () => {
+    cy.get('[data-cy="api-doc"]').click()
+    cy.contains("WEB FEATURE SERVICE").click()
+    cy.contains("CONSTRUIRE LA REQUÊTE MANUELLEMENT").should("be.visible").click()
     cy.contains("TYPENAMES").should("be.visible")
     cy.contains("OUTPUTFORMAT").should("be.visible")
-    cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")
   })
 
   it("should expand raster section and show dataset URLs", () => {
     cy.get('[data-cy="api-doc"]').click()
-    cy.contains("REST - GeoTIFF").click()
-    cy.contains("Plantabilité").should("be.visible")
+    cy.contains("Téléchargement direct des rasters").click()
+    cy.contains("Plantabilité (couleurs)").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
   })
 
