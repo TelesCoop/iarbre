@@ -152,7 +152,7 @@ const wmsParams: RequestParam[] = [
           <template #header>
             <span class="flex-none font-mono font-bold text-xs text-primary-800 w-8">WFS</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">WEB FEATURE SERVICE</p>
+              <p class="text-sm font-semibold text-gray-800">WEB FEATURE SERVICE (QGIS)</p>
               <p class="text-xs text-gray-500">
                 Objets géographiques vecteur, interrogeables et filtrables par commune.
               </p>
@@ -198,7 +198,7 @@ const wmsParams: RequestParam[] = [
           <template #header>
             <span class="flex-none font-mono font-bold text-xs text-primary-800 w-8">WMS</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">WEB MAP SERVICE</p>
+              <p class="text-sm font-semibold text-gray-800">WEB MAP SERVICE (QGIS)</p>
               <p class="text-xs text-gray-500">
                 Tuiles d'image raster, intégrables dans QGIS, ArcGIS ou autre SIG/cartographie.
               </p>
@@ -237,7 +237,7 @@ const wmsParams: RequestParam[] = [
           <template #header>
             <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">TIF</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
+              <p class="text-sm font-semibold text-gray-800">Téléchargement direct des rasters</p>
               <p class="text-xs text-gray-500">
                 Téléchargement direct pour récupérer les calques en entier au format GeoTIFF
                 (EPSG:2154).
