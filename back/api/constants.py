@@ -1,7 +1,5 @@
 from django.db.models import TextChoices
 
-from iarbre_data.utils.calque_config import CALQUE_REGISTRY
-
 DEFAULT_ZOOM_LEVELS = (10, 18)
 
 ZOOM_TO_GRID_SIZE = {10: 75, 11: 50, 12: 50, 13: 20, 14: 10, 15: 10}
@@ -51,12 +49,3 @@ VULNERABILITY_MAX_SCORE = 9
 
 # Rounding precision for calculated indices
 INDICE_ROUNDING_DECIMALS = 1
-
-WMS_LAYERS = {
-    f"iarbre:{name}": {
-        "title": cfg.title,
-        "path": f"rasters/WMS/{cfg.tif_path or name + '.tif'}",
-        "render_fn": cfg.make_render_fn(),
-    }
-    for name, cfg in CALQUE_REGISTRY.items()
-}

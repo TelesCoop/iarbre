@@ -1,18 +1,64 @@
 import json
+import shutil
+import tempfile
+from pathlib import Path
 
-from django.test import Client, TestCase
-
-from api.constants import WMS_LAYERS
+import numpy as np
+import rasterio
+from django.core.cache import cache
+from django.test import Client, TestCase, override_settings
+from rasterio.transform import from_bounds
 
 WMS_URL = "/api/wms/"
 
-_LAYER_NAME = next(iter(WMS_LAYERS))
+_LAYER_STEM = "test_layer"
+_LAYER_NAME = f"iarbre:{_LAYER_STEM}"
 
 
-class WMSCapabilitiesTest(TestCase):
+def _write_test_raster(media_root: str) -> None:
+    """Create ``rasters/WMS/test_layer.tif`` so layer discovery has something to find.
+
+    The raster is in EPSG:4326 and covers the BBOX used by the GetMap tests
+    (lon 4.7-5.2, lat 45.5-46.0).
+    """
+    wms_dir = Path(media_root) / "rasters" / "WMS"
+    wms_dir.mkdir(parents=True, exist_ok=True)
+    width = height = 16
+    transform = from_bounds(4.6, 45.4, 5.3, 46.1, width, height)
+    data = np.arange(width * height, dtype=np.uint8).reshape(height, width)
+    with rasterio.open(
+        wms_dir / f"{_LAYER_STEM}.tif",
+        "w",
+        driver="GTiff",
+        height=height,
+        width=width,
+        count=1,
+        dtype="uint8",
+        crs="EPSG:4326",
+        transform=transform,
+        nodata=0,
+    ) as dst:
+        dst.write(data, 1)
+
+
+class _WMSFixtureMixin:
+    """Point MEDIA_ROOT at a temp dir holding a single test raster."""
+
     def setUp(self):
         self.client = Client()
+        self._media_dir = tempfile.mkdtemp()
+        _write_test_raster(self._media_dir)
+        self._override = override_settings(MEDIA_ROOT=self._media_dir)
+        self._override.enable()
+        cache.clear()
 
+    def tearDown(self):
+        self._override.disable()
+        shutil.rmtree(self._media_dir, ignore_errors=True)
+        cache.clear()
+
+
+class WMSCapabilitiesTest(_WMSFixtureMixin, TestCase):
     def test_get_capabilities_status(self):
         response = self.client.get(
             WMS_URL,
@@ -41,7 +87,7 @@ class WMSCapabilitiesTest(TestCase):
         )
         self.assertIn(b"WMT_MS_Capabilities", response.content)
 
-    def test_get_capabilities_contains_layer_name(self):
+    def test_get_capabilities_contains_discovered_layer(self):
         response = self.client.get(
             WMS_URL,
             {"SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetCapabilities"},
@@ -56,10 +102,7 @@ class WMSCapabilitiesTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class WMSGetLayersTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-
+class WMSGetLayersTest(_WMSFixtureMixin, TestCase):
     def test_get_layers_status(self):
         response = self.client.get(WMS_URL, {"REQUEST": "GetLayers"})
         self.assertEqual(response.status_code, 200)
@@ -70,16 +113,22 @@ class WMSGetLayersTest(TestCase):
         self.assertIsInstance(data, list)
         self.assertGreater(len(data), 0)
 
-    def test_get_layers_contains_known_layer(self):
+    def test_get_layers_contains_discovered_layer(self):
         response = self.client.get(WMS_URL, {"REQUEST": "GetLayers"})
         data = json.loads(response.content)
         names = [entry["name"] for entry in data]
         self.assertIn(_LAYER_NAME, names)
 
+    def test_get_layers_empty_when_no_rasters(self):
+        for tif in (Path(self._media_dir) / "rasters" / "WMS").glob("*.tif"):
+            tif.unlink()
+        response = self.client.get(WMS_URL, {"REQUEST": "GetLayers"})
+        self.assertEqual(json.loads(response.content), [])
 
-class WMSGetMapTest(TestCase):
+
+class WMSGetMapTest(_WMSFixtureMixin, TestCase):
     def setUp(self):
-        self.client = Client()
+        super().setUp()
         self.valid_params = {
             "SERVICE": "WMS",
             "VERSION": "1.3.0",
@@ -91,6 +140,11 @@ class WMSGetMapTest(TestCase):
             "HEIGHT": "256",
             "FORMAT": "image/png",
         }
+
+    def test_valid_getmap_returns_png(self):
+        response = self.client.get(WMS_URL, self.valid_params)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["content-type"], "image/png")
 
     def test_unknown_layer_returns_400(self):
         params = {**self.valid_params, "LAYERS": "iarbre:nonexistent"}

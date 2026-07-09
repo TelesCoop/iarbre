@@ -63,6 +63,7 @@ class CalqueConfig:
     palette: dict[int, str] | None = None
     stops: list[tuple] | None = None
     tif_path: str | None = None
+    export_colors: bool = True
 
     def make_render_fn(self) -> Callable:
         if self.palette:
@@ -119,6 +120,15 @@ CALQUE_REGISTRY: dict[str, CalqueConfig] = {
     ),
     "vegestrate": CalqueConfig(
         title="Végéstrate",
+        model_name="Vegestrate",
+        field="strate",
+        dtype=np.uint8,
+        nodata=0,
+        value_transform=_vegestrate_strate_to_int,
+        palette=VEGESTRATE_PALETTE,
+    ),
+    "vegestrate hauteur": CalqueConfig(
+        title="Végéstrate avec hauteurs",
         model_name="Vegestrate",
         field="strate",
         dtype=np.uint8,
