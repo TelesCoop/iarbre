@@ -123,7 +123,7 @@ const PDF_PAGE_CSS = `
     size: A4;
     margin: 1.5cm;
   }
-  .widget-card, section, .widgets-grid > * {
+  .widget-card {
     break-inside: avoid;
   }
 `

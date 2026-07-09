@@ -1,6 +1,8 @@
 import logging
 import time
+from pathlib import Path
 
+from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
@@ -49,6 +51,11 @@ class DashboardPdfExportView(APIView):
                 {"detail": "'html' field is too large."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if settings.DEBUG:
+            debug_path = Path(settings.BASE_DIR) / "last_dashboard_export.html"
+            debug_path.write_text(html, encoding="utf-8")
+            logger.info("Dashboard PDF export: raw html dumped to %s", debug_path)
 
         warning_counter = _WarningCounter()
         weasyprint_logger.addHandler(warning_counter)
