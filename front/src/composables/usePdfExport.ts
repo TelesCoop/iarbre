@@ -128,6 +128,18 @@ const PDF_PAGE_CSS = `
   }
 `
 
+function flexToGridForWeasyprint(css: string): string {
+  return css.replace(/\{([^{}]*)\}/g, (whole, body: string) => {
+    if (!/display\s*:\s*(?:inline-)?flex/.test(body)) return whole
+    const isColumn = /flex-direction\s*:\s*column/.test(body)
+    let newBody = body.replace(/display\s*:\s*(?:inline-)?flex/g, "display: grid")
+    if (!isColumn) {
+      newBody += " grid-auto-flow: column; grid-auto-columns: max-content;"
+    }
+    return `{${newBody}}`
+  })
+}
+
 function triggerBlobDownload(blob: Blob, filename: string) {
   const blobUrl = URL.createObjectURL(blob)
   const a = document.createElement("a")
@@ -245,7 +257,7 @@ export function usePdfExport() {
   const exportElementToPdf = async (element: HTMLElement, filename = "rapport-iarbre.pdf") => {
     isExporting.value = true
     try {
-      const css = await collectRelevantCss(element)
+      const css = flexToGridForWeasyprint(await collectRelevantCss(element))
       const body = await serializeWithRasterizedSvgs(element)
       const html = `<!doctype html>
 <html>
