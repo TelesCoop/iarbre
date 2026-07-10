@@ -137,24 +137,103 @@ function triggerBlobDownload(blob: Blob, filename: string) {
   URL.revokeObjectURL(blobUrl)
 }
 
-function serializeWithFrozenSvgs(element: HTMLElement): string {
-  const clone = element.cloneNode(true) as HTMLElement
-  const liveSvgs = element.querySelectorAll("svg")
-  const cloneSvgs = clone.querySelectorAll("svg")
+const SVG_STYLE_PROPS = [
+  "fill",
+  "fill-opacity",
+  "stroke",
+  "stroke-width",
+  "stroke-opacity",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-dasharray",
+  "opacity",
+  "color",
+  "font-family",
+  "font-size",
+  "font-weight",
+  "font-style",
+  "text-anchor",
+  "dominant-baseline",
+  "letter-spacing",
+  "visibility"
+]
 
-  liveSvgs.forEach((liveSvg, i) => {
-    const cloneSvg = cloneSvgs[i]
-    if (!cloneSvg) return
-    const { width, height } = liveSvg.getBoundingClientRect()
-    if (width <= 0 || height <= 0) return
-    const w = Math.round(width)
-    const h = Math.round(height)
-    cloneSvg.setAttribute("width", String(w))
-    cloneSvg.setAttribute("height", String(h))
-    if (!cloneSvg.hasAttribute("viewBox")) {
-      cloneSvg.setAttribute("viewBox", `0 0 ${w} ${h}`)
+// Convert SVG to PNG
+function inlineSvgComputedStyles(live: SVGSVGElement, clone: SVGSVGElement) {
+  const liveNodes = [live, ...Array.from(live.querySelectorAll("*"))]
+  const cloneNodes = [clone, ...Array.from(clone.querySelectorAll("*"))]
+  liveNodes.forEach((liveNode, i) => {
+    const cloneNode = cloneNodes[i]
+    if (!cloneNode) return
+    const cs = window.getComputedStyle(liveNode)
+    let inline = ""
+    for (const prop of SVG_STYLE_PROPS) {
+      const val = cs.getPropertyValue(prop)
+      if (val) inline += `${prop}:${val};`
     }
+    if (inline) cloneNode.setAttribute("style", inline)
   })
+}
+
+async function rasterizeSvgToPng(
+  svg: SVGSVGElement,
+  scale = 2
+): Promise<{ src: string; width: number; height: number } | null> {
+  const { width, height } = svg.getBoundingClientRect()
+  const w = Math.round(width)
+  const h = Math.round(height)
+  if (w <= 0 || h <= 0) return null
+
+  const clone = svg.cloneNode(true) as SVGSVGElement
+  inlineSvgComputedStyles(svg, clone)
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+  clone.setAttribute("width", String(w))
+  clone.setAttribute("height", String(h))
+  if (!clone.hasAttribute("viewBox")) {
+    clone.setAttribute("viewBox", `0 0 ${w} ${h}`)
+  }
+
+  const svgString = new XMLSerializer().serializeToString(clone)
+  const svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString)
+
+  const img = new Image()
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve()
+    img.onerror = () => reject(new Error("SVG rasterization failed"))
+    img.src = svgUrl
+  })
+
+  const canvas = document.createElement("canvas")
+  canvas.width = w * scale
+  canvas.height = h * scale
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return null
+  ctx.scale(scale, scale)
+  ctx.drawImage(img, 0, 0, w, h)
+
+  return { src: canvas.toDataURL("image/png"), width: w, height: h }
+}
+
+async function serializeWithRasterizedSvgs(element: HTMLElement): Promise<string> {
+  const clone = element.cloneNode(true) as HTMLElement
+  const liveSvgs = Array.from(element.querySelectorAll("svg"))
+  const cloneSvgs = Array.from(clone.querySelectorAll("svg"))
+
+  for (let i = 0; i < liveSvgs.length; i++) {
+    const cloneSvg = cloneSvgs[i]
+    if (!cloneSvg) continue
+    let raster: Awaited<ReturnType<typeof rasterizeSvgToPng>> = null
+    try {
+      raster = await rasterizeSvgToPng(liveSvgs[i])
+    } catch (e) {
+      console.error(e)
+    }
+    if (!raster) continue
+    const img = document.createElement("img")
+    img.src = raster.src
+    img.setAttribute("style", `width:${raster.width}px;height:${raster.height}px;`)
+    cloneSvg.replaceWith(img)
+  }
 
   return clone.outerHTML
 }
@@ -167,7 +246,7 @@ export function usePdfExport() {
     isExporting.value = true
     try {
       const css = await collectRelevantCss(element)
-      const body = serializeWithFrozenSvgs(element)
+      const body = await serializeWithRasterizedSvgs(element)
       const html = `<!doctype html>
 <html>
   <head>
