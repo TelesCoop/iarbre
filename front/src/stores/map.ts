@@ -94,6 +94,7 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
+  const heightMapZoomHandler = ref<(() => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -276,44 +277,98 @@ export const useMapStore = defineStore("map", () => {
     return [fillLayer, lineLayer]
   }
 
-  const IFB_CLICK_SQUARE_SOURCE = "ifb-click-square-source"
-  const IFB_CLICK_SQUARE_LAYER = "ifb-click-square-layer"
-  const IFB_SQUARE_HALF_SIZE_M = 2
+  const CLICK_MARKER_SOURCE = "ifb-click-square-source"
+  const CLICK_MARKER_CASING_LAYER = "ifb-click-marker-casing-layer"
+  const CLICK_MARKER_LAYER = "ifb-click-square-layer"
   const IFB_CLICK_CIRCLE_SOURCE = "ifb-click-circle-source"
   const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
   const IFB_CIRCLE_RADIUS_M = 500
 
-  const drawClickSquare = (map: Map, lat: number, lng: number, withCircle = true) => {
-    const latOffset = IFB_SQUARE_HALF_SIZE_M / 111320
-    const lngOffset = IFB_SQUARE_HALF_SIZE_M / (111320 * Math.cos((lat * Math.PI) / 180))
-    const square = {
+  const CROSS_HALF_SIZE_PX = 9
+
+  const metersPerPixel = (map: Map, lat: number) =>
+    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / 2 ** map.getZoom()
+
+  const CLICK_MARKER_STYLES = {
+    square: {
+      halfSizeM: () => 2,
+      width: QPV_CASING_WIDTH,
+      casingWidth: 0
+    },
+    cross: {
+      halfSizeM: (map: Map, lat: number) => CROSS_HALF_SIZE_PX * metersPerPixel(map, lat),
+      width: 2,
+      casingWidth: 5
+    }
+  }
+  type ClickMarkerShape = keyof typeof CLICK_MARKER_STYLES
+
+  const drawClickMarker = (
+    map: Map,
+    lat: number,
+    lng: number,
+    shape: ClickMarkerShape,
+    withCircle = true
+  ) => {
+    const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
+    const sizeM = halfSizeM(map, lat)
+    const latOffset = sizeM / 111320
+    const lngOffset = sizeM / (111320 * Math.cos((lat * Math.PI) / 180))
+    const marker = {
       type: "Feature" as const,
-      geometry: {
-        type: "Polygon" as const,
-        coordinates: [
-          [
-            [lng - lngOffset, lat - latOffset],
-            [lng + lngOffset, lat - latOffset],
-            [lng + lngOffset, lat + latOffset],
-            [lng - lngOffset, lat + latOffset],
-            [lng - lngOffset, lat - latOffset]
-          ]
-        ]
-      },
+      geometry:
+        shape === "square"
+          ? {
+              type: "Polygon" as const,
+              coordinates: [
+                [
+                  [lng - lngOffset, lat - latOffset],
+                  [lng + lngOffset, lat - latOffset],
+                  [lng + lngOffset, lat + latOffset],
+                  [lng - lngOffset, lat + latOffset],
+                  [lng - lngOffset, lat - latOffset]
+                ]
+              ]
+            }
+          : {
+              type: "MultiLineString" as const,
+              coordinates: [
+                [
+                  [lng - lngOffset, lat],
+                  [lng + lngOffset, lat]
+                ],
+                [
+                  [lng, lat - latOffset],
+                  [lng, lat + latOffset]
+                ]
+              ]
+            },
       properties: {}
     }
-    const source = map.getSource(IFB_CLICK_SQUARE_SOURCE) as GeoJSONSource | undefined
+    const source = map.getSource(CLICK_MARKER_SOURCE) as GeoJSONSource | undefined
     if (source) {
-      source.setData(square)
+      source.setData(marker)
     } else {
-      map.addSource(IFB_CLICK_SQUARE_SOURCE, { type: "geojson", data: square })
+      map.addSource(CLICK_MARKER_SOURCE, { type: "geojson", data: marker })
       map.addLayer({
-        id: IFB_CLICK_SQUARE_LAYER,
+        id: CLICK_MARKER_CASING_LAYER,
         type: "line",
-        source: IFB_CLICK_SQUARE_SOURCE,
+        source: CLICK_MARKER_SOURCE,
+        layout: { "line-cap": "round" },
+        paint: {
+          "line-color": QPV_BORDER_COLOR,
+          "line-width": casingWidth,
+          "line-opacity": QPV_CASING_OPACITY
+        }
+      })
+      map.addLayer({
+        id: CLICK_MARKER_LAYER,
+        type: "line",
+        source: CLICK_MARKER_SOURCE,
+        layout: { "line-cap": "round" },
         paint: {
           "line-color": QPV_CASING_COLOR,
-          "line-width": QPV_CASING_WIDTH,
+          "line-width": width,
           "line-opacity": QPV_CASING_OPACITY
         }
       })
@@ -348,18 +403,16 @@ export const useMapStore = defineStore("map", () => {
     console.info("cypress: IFB click square drawn")
   }
 
-  const removeClickSquare = (map: Map) => {
-    if (map.getLayer(IFB_CLICK_SQUARE_LAYER)) {
-      map.removeLayer(IFB_CLICK_SQUARE_LAYER)
+  const removeClickMarker = (map: Map) => {
+    for (const layerId of [CLICK_MARKER_CASING_LAYER, CLICK_MARKER_LAYER, IFB_CLICK_CIRCLE_LAYER]) {
+      if (map.getLayer(layerId)) {
+        map.removeLayer(layerId)
+      }
     }
-    if (map.getSource(IFB_CLICK_SQUARE_SOURCE)) {
-      map.removeSource(IFB_CLICK_SQUARE_SOURCE)
-    }
-    if (map.getLayer(IFB_CLICK_CIRCLE_LAYER)) {
-      map.removeLayer(IFB_CLICK_CIRCLE_LAYER)
-    }
-    if (map.getSource(IFB_CLICK_CIRCLE_SOURCE)) {
-      map.removeSource(IFB_CLICK_CIRCLE_SOURCE)
+    for (const sourceId of [CLICK_MARKER_SOURCE, IFB_CLICK_CIRCLE_SOURCE]) {
+      if (map.getSource(sourceId)) {
+        map.removeSource(sourceId)
+      }
     }
     console.info("cypress: IFB click square removed")
   }
@@ -384,7 +437,7 @@ export const useMapStore = defineStore("map", () => {
         ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_night")
         : undefined
     if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-      drawClickSquare(map, lngLat.lat, lngLat.lng)
+      drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
     } else {
       highlightFeature(map, layerId, featureId)
     }
@@ -428,15 +481,27 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", heightMapClickHandler.value)
       heightMapClickHandler.value = null
     }
+    if (heightMapZoomHandler.value) {
+      map.off("zoom", heightMapZoomHandler.value)
+      heightMapZoomHandler.value = null
+    }
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       const handler = async (e: any) => {
         if (selectionMode.value !== SelectionMode.POINT) return
         clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
-        drawClickSquare(map, e.lngLat.lat, e.lngLat.lng, false)
+        drawClickMarker(map, e.lngLat.lat, e.lngLat.lng, "cross", false)
         vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
       }
       map.on("click", handler)
       heightMapClickHandler.value = handler
+
+      const zoomHandler = () => {
+        if (!map.getLayer(CLICK_MARKER_LAYER)) return
+        const { lat, lng } = clickCoordinates.value
+        drawClickMarker(map, lat, lng, "cross", false)
+      }
+      map.on("zoom", zoomHandler)
+      heightMapZoomHandler.value = zoomHandler
       return
     }
     const layerId = getLayerId(datatype, geolevel)
@@ -571,8 +636,8 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
       }
-      if (mapInstance.getLayer(IFB_CLICK_SQUARE_LAYER)) {
-        removeClickSquare(mapInstance)
+      if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
+        removeClickMarker(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
