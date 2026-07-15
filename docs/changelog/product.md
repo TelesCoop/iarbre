@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 🔖 0.35.0 (2026-07-15) : Statistiques de zone et export simplifié
+
+### ✨ feat : Tableau de bord d'une zone sélectionnée
+
+Il est maintenant possible de sélectionner une zone sur la carte avec les outils de traçage puis d'afficher dans le tableau de bord les indicateurs correspondants.
+
+&rarr; PR [#683](https://github.com/TelesCoop/iarbre/pull/683)
+
+### 🛠️ enhance : Nettoyage et ajouts dans les exports
+
+On peut maintenant télécharger le raster de hauteur de vegestrate et les flux WMS + WFS ont été nettoyés pour réduire le nombre d'options au plus pertinentes
+
+&rarr; PR [#694](https://github.com/TelesCoop/iarbre/pull/694)
+&rarr; PR [#698](https://github.com/TelesCoop/iarbre/pull/698)
+
+### 🛠️ enhance : Meilleure explication de comment se connecter à un flux
+
+L'onglet "Obtenir les données" a été retravaillé pour que ce soit plus clair comment se connecter avec QGIS et/ou faire une requête directe.
+
+&rarr; PR [#697](https://github.com/TelesCoop/iarbre/pull/697)
+
 ## 🔖 0.34.0 (2026-06-17) : Ajout des dernières versions vegestrate
 
 ### ✨ feat : Ajout de la hauteur de végétation

@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccordionSection: typeof import('./src/components/map/panels/sidepanel/apiDoc/AccordionSection.vue')['default']
     ApiDocDialog: typeof import('./src/components/map/panels/sidepanel/ApiDocDialog.vue')['default']
     AppAccordion: typeof import('./src/components/shared/AppAccordion.vue')['default']
     AppAccordionPanel: typeof import('./src/components/shared/AppAccordionPanel.vue')['default']
@@ -73,6 +74,7 @@ declare module 'vue' {
     LayerSwitcher: typeof import('./src/components/layerSwitcher/LayerSwitcher.vue')['default']
     LayerSwitcherIcon: typeof import('./src/components/icons/LayerSwitcherIcon.vue')['default']
     LegendIcon: typeof import('./src/components/icons/LegendIcon.vue')['default']
+    ManualRequestSection: typeof import('./src/components/map/panels/sidepanel/apiDoc/ManualRequestSection.vue')['default']
     MapBackgroundSelector: typeof import('./src/components/map/MapBackgroundSelector.vue')['default']
     MapCadastreParcelInfo: typeof import('./src/components/contextData/MapCadastreParcelInfo.vue')['default']
     MapComponent: typeof import('./src/components/map/MapComponent.vue')['default']
@@ -110,6 +112,7 @@ declare module 'vue' {
     PlantabilityLegend: typeof import('./src/components/map/legend/PlantabilityLegend.vue')['default']
     PlantabilityWidget: typeof import('./src/components/dashboard/widgets/PlantabilityWidget.vue')['default']
     PlantVulnerabilityLegend: typeof import('./src/components/map/legend/PlantVulnerabilityLegend.vue')['default']
+    QgisConnectionCard: typeof import('./src/components/map/panels/sidepanel/apiDoc/QgisConnectionCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
@@ -135,5 +138,7 @@ declare module 'vue' {
     VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
+    ZoneDashboardBar: typeof import('./src/components/map/ZoneDashboardBar.vue')['default']
+    ZoneDashboardCard: typeof import('./src/components/map/ZoneDashboardCard.vue')['default']
   }
 }

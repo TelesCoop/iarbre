@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from xml.etree.ElementTree import Element, SubElement, tostring
 
+import numpy as np
 import rasterio
 from django.conf import settings
 from django.core.cache import cache
@@ -13,13 +14,27 @@ from rasterio.warp import Resampling
 from rasterio.windows import from_bounds
 from rest_framework.views import APIView
 
-from api.constants import WMS_LAYERS
-
 logger = logging.getLogger(__name__)
 
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
 _CAPABILITIES_CACHE_TTL = 60 * 60
+_WMS_RASTER_DIR = "rasters/WMS"
+
+
+def _discover_layers() -> dict:
+    """Discover the available WMS layers by globbing ``media/rasters/WMS/*.tif``.
+
+    Each ``<name>.tif`` becomes the layer ``iarbre:<name>``. The layer list is
+    driven by what is on disk, not by a static registry.
+    """
+    wms_root = Path(settings.MEDIA_ROOT) / _WMS_RASTER_DIR
+    if not wms_root.is_dir():
+        return {}
+    return {
+        f"iarbre:{tif.stem}": {"title": tif.stem, "path": tif}
+        for tif in sorted(wms_root.glob("*.tif"))
+    }
 
 
 class IArbreWMSView(APIView):
@@ -57,7 +72,7 @@ class IArbreWMSView(APIView):
         return JsonResponse(
             [
                 {"name": name, "title": meta["title"]}
-                for name, meta in WMS_LAYERS.items()
+                for name, meta in _discover_layers().items()
             ],
             safe=False,
         )
@@ -105,7 +120,7 @@ class IArbreWMSView(APIView):
         for crs in _SUPPORTED_CRS:
             SubElement(root_layer, crs_tag).text = crs
 
-        for name, meta in WMS_LAYERS.items():
+        for name, meta in _discover_layers().items():
             layer = SubElement(root_layer, "Layer")
             layer.set("queryable", "0")
             SubElement(layer, "Name").text = name
@@ -113,7 +128,7 @@ class IArbreWMSView(APIView):
             for crs in _SUPPORTED_CRS:
                 SubElement(layer, crs_tag).text = crs
 
-            raster_path = Path(settings.MEDIA_ROOT) / meta["path"]
+            raster_path = meta["path"]
             if not raster_path.exists():
                 continue
 
@@ -162,10 +177,11 @@ class IArbreWMSView(APIView):
     def _get_map(self, request, version):
         params = request.query_params
         layer_name = params.get("LAYERS", "")
-        layer = WMS_LAYERS.get(layer_name)
+        layers = _discover_layers()
+        layer = layers.get(layer_name)
         if not layer:
             return HttpResponse(
-                f"Unknown layer: {layer_name}. Available: {', '.join(WMS_LAYERS)}",
+                f"Unknown layer: {layer_name}. Available: {', '.join(layers)}",
                 status=400,
                 content_type="text/plain",
             )
@@ -201,7 +217,7 @@ class IArbreWMSView(APIView):
         else:
             west, south, east, north = bbox_vals
 
-        raster_path = Path(settings.MEDIA_ROOT) / layer["path"]
+        raster_path = layer["path"]
         if not raster_path.exists():
             return HttpResponse(
                 "Raster file not found", status=404, content_type="text/plain"
@@ -217,7 +233,6 @@ class IArbreWMSView(APIView):
                 north,
                 width,
                 height,
-                layer["render_fn"],
             )
         except Exception:
             logger.exception("Error generating WMS GetMap for layer %s", layer_name)
@@ -225,9 +240,7 @@ class IArbreWMSView(APIView):
                 "Rendering error", status=500, content_type="text/plain"
             )
 
-    def _render_layer(
-        self, raster_path, crs, west, south, east, north, width, height, render_fn
-    ):
+    def _render_layer(self, raster_path, crs, west, south, east, north, width, height):
         with rasterio.open(raster_path) as src:
             transformer = Transformer.from_crs(crs, src.crs, always_xy=True)
             left, bottom = transformer.transform(west, south)
@@ -242,15 +255,33 @@ class IArbreWMSView(APIView):
                 1,
                 window=window,
                 out_shape=(height, width),
-                resampling=Resampling.bilinear,
+                resampling=Resampling.nearest,
             )
+            nodata = src.nodata
 
-        rgba = render_fn(data)
-        img = Image.fromarray(rgba, mode="RGBA")
+        img = self._grayscale_image(data, nodata)
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
         return HttpResponse(buf.getvalue(), content_type="image/png")
+
+    @staticmethod
+    def _grayscale_image(data: np.ndarray, nodata) -> Image.Image:
+        """Encode raw raster values as a grayscale ("LA") PNG, no color mapping.
+
+        Pixel intensity is the raw band value (clipped to 0-255); nodata and NaN
+        pixels are made fully transparent so the stream carries no color code.
+        """
+        arr = np.asarray(data)
+        transparent = np.zeros(arr.shape, dtype=bool)
+        if np.issubdtype(arr.dtype, np.floating):
+            transparent |= np.isnan(arr)
+        if nodata is not None:
+            transparent |= arr == nodata
+
+        gray = np.clip(np.nan_to_num(arr, nan=0.0), 0, 255).astype(np.uint8)
+        alpha = np.where(transparent, 0, 255).astype(np.uint8)
+        return Image.fromarray(np.dstack([gray, alpha]), mode="LA")
 
     def _empty_image(self, width: int, height: int) -> HttpResponse:
         """Return a transparent PNG of the requested dimensions."""

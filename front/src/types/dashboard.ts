@@ -58,7 +58,7 @@ export interface DashboardBiosphere {
 
 export interface DashboardData {
   city: DashboardCity | null
-  areaHa: number
+  areaKm2: number
   plantability: DashboardPlantability
   vulnerability: DashboardVulnerability
   vegetation: DashboardVegetation
@@ -74,4 +74,4 @@ export interface BubbleItem {
   color: string
 }
 
-export type DashboardScale = "metropole" | "commune"
+export type DashboardScale = "metropole" | "commune" | "zone"

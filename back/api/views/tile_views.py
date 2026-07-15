@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.http import HttpResponse, Http404
-from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Avg, Count, Q
 from django.contrib.postgres.aggregates import ArrayAgg
 
@@ -18,7 +17,6 @@ from iarbre_data.models import (
     BiosphereFunctionalIntegrity,
     Vegestrate,
 )
-from iarbre_data.settings import SRID_DB, SRID_DOWNLOADED_DATA
 from rest_framework.response import Response
 
 from api.serializers.serializers import (
@@ -36,6 +34,7 @@ from api.constants import (
     DataType,
     FrontendDataType,
 )
+from api.utils.polygon import parse_and_validate_polygon
 
 logger = logging.getLogger(__name__)
 
@@ -107,11 +106,6 @@ class TileDetailsView(generics.RetrieveAPIView):
 
 
 class ScoresInPolygonView(APIView):
-    MAX_POLYGON_AREA_M2 = 5_000_000
-    # Accommodates the circle tool (64-segment polygon) plus richer hand-drawn
-    # polygons, while still bounding the cost of the spatial query.
-    MAX_VERTICES = 100
-
     def _validate_datatype(self, datatype):
         if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
             return Response(
@@ -130,52 +124,6 @@ class ScoresInPolygonView(APIView):
             )
 
         return None
-
-    def _validate_polygon_data(self, polygon_geojson):
-        if not polygon_geojson:
-            return Response(
-                {"error": "No polygon data provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return None
-
-    def _process_polygon_geometry(self, polygon_geojson):
-        try:
-            polygon = GEOSGeometry(str(polygon_geojson))
-            if polygon.srid is None or polygon.srid == 0:
-                polygon.srid = SRID_DOWNLOADED_DATA
-            polygon.transform(SRID_DB)
-
-            if polygon.area > self.MAX_POLYGON_AREA_M2:
-                return None, Response(
-                    {
-                        "error": f"Polygon area exceeds maximum allowed size ({self.MAX_POLYGON_AREA_M2 / 1_000_000} km²)"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            num_coords = (
-                len(polygon.coords[0])
-                if polygon.geom_type == "Polygon"
-                else sum(len(ring) for ring in polygon.coords)
-            )
-            if num_coords > self.MAX_VERTICES:
-                return None, Response(
-                    {
-                        "error": f"Polygon complexity exceeds maximum allowed vertices ({self.MAX_VERTICES})"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            return polygon, None
-
-        except Exception:
-            # A malformed client polygon is a client error, not a server fault.
-            logger.exception("Invalid polygon geometry: %s", polygon_geojson)
-            return None, Response(
-                {"error": "Invalid polygon shape"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
     def _get_scores_data(self, datatype, tiles):
         if datatype == FrontendDataType.PLANTABILITY.value:
@@ -317,12 +265,7 @@ class ScoresInPolygonView(APIView):
         if error_response:
             return error_response
 
-        polygon_geojson = request.data
-        error_response = self._validate_polygon_data(polygon_geojson)
-        if error_response:
-            return error_response
-
-        polygon, error_response = self._process_polygon_geometry(polygon_geojson)
+        polygon, error_response = parse_and_validate_polygon(request.data)
         if error_response:
             return error_response
 
