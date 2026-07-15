@@ -26,16 +26,16 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
 
 const ELEVATION_MAX = 40
 export const ELEVATION_BINS = [
-  { min: 0, color: "var(--color-primary-50)" },
-  { min: 1, color: "var(--color-primary-100)" },
-  { min: 2, color: "var(--color-primary-200)" },
-  { min: 4, color: "var(--color-primary-300)" },
-  { min: 7, color: "var(--color-primary-400)" },
-  { min: 10, color: "var(--color-primary-500)" },
-  { min: 15, color: "var(--color-primary-600)" },
-  { min: 20, color: "var(--color-primary-700)" },
-  { min: 26, color: "var(--color-primary-800)" },
-  { min: 33, color: "var(--color-primary-900)" }
+  { min: 0, color: "#ecdeb1" },
+  { min: 1, color: "#e6dcac" },
+  { min: 2, color: "#e1daa6" },
+  { min: 4, color: "#d5d69b" },
+  { min: 7, color: "#c4cf8b" },
+  { min: 10, color: "#b3c97b" },
+  { min: 15, color: "#8bb971" },
+  { min: 20, color: "#63a966" },
+  { min: 26, color: "#348e5c" },
+  { min: 33, color: "#0f6f4f" }
 ]
 
 export const sqrtPos = (value: number) =>
