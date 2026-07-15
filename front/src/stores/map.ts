@@ -94,6 +94,7 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
+  const heightMapZoomHandler = ref<(() => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -283,9 +284,22 @@ export const useMapStore = defineStore("map", () => {
   const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
   const IFB_CIRCLE_RADIUS_M = 500
 
+  const CROSS_HALF_SIZE_PX = 9
+
+  const metersPerPixel = (map: Map, lat: number) =>
+    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / 2 ** map.getZoom()
+
   const CLICK_MARKER_STYLES = {
-    square: { halfSizeM: 2, width: QPV_CASING_WIDTH, casingWidth: 0 },
-    cross: { halfSizeM: 1.5, width: 2, casingWidth: 5 }
+    square: {
+      halfSizeM: () => 2,
+      width: QPV_CASING_WIDTH,
+      casingWidth: 0
+    },
+    cross: {
+      halfSizeM: (map: Map, lat: number) => CROSS_HALF_SIZE_PX * metersPerPixel(map, lat),
+      width: 2,
+      casingWidth: 5
+    }
   }
   type ClickMarkerShape = keyof typeof CLICK_MARKER_STYLES
 
@@ -297,8 +311,9 @@ export const useMapStore = defineStore("map", () => {
     withCircle = true
   ) => {
     const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
-    const latOffset = halfSizeM / 111320
-    const lngOffset = halfSizeM / (111320 * Math.cos((lat * Math.PI) / 180))
+    const sizeM = halfSizeM(map, lat)
+    const latOffset = sizeM / 111320
+    const lngOffset = sizeM / (111320 * Math.cos((lat * Math.PI) / 180))
     const marker = {
       type: "Feature" as const,
       geometry:
@@ -466,6 +481,10 @@ export const useMapStore = defineStore("map", () => {
       map.off("click", heightMapClickHandler.value)
       heightMapClickHandler.value = null
     }
+    if (heightMapZoomHandler.value) {
+      map.off("zoom", heightMapZoomHandler.value)
+      heightMapZoomHandler.value = null
+    }
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       const handler = async (e: any) => {
         if (selectionMode.value !== SelectionMode.POINT) return
@@ -475,6 +494,14 @@ export const useMapStore = defineStore("map", () => {
       }
       map.on("click", handler)
       heightMapClickHandler.value = handler
+
+      const zoomHandler = () => {
+        if (!map.getLayer(CLICK_MARKER_LAYER)) return
+        const { lat, lng } = clickCoordinates.value
+        drawClickMarker(map, lat, lng, "cross", false)
+      }
+      map.on("zoom", zoomHandler)
+      heightMapZoomHandler.value = zoomHandler
       return
     }
     const layerId = getLayerId(datatype, geolevel)
