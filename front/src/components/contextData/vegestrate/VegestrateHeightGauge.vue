@@ -55,7 +55,9 @@ const formattedHeight = computed(() => {
             <span class="text-sm text-gray-500">Cliquez sur un pixel.</span>
           </template>
           <template v-else-if="mapStore.vegetationHeightAtPoint != null">
-            <span class="vegestrate-summary-value">{{ formattedHeight }}</span>
+            <span class="text-4xl font-bold leading-none text-primary-800">{{
+              formattedHeight
+            }}</span>
             <span class="text-xl font-semibold text-primary-800">m</span>
           </template>
           <span v-else class="text-sm text-gray-500">Hors zone</span>

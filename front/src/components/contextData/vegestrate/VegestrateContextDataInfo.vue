@@ -31,7 +31,7 @@ const dominantStrate = computed(() => getStrateShort(props.data.indice))
       </svg>
       <div class="vegestrate-summary-main">
         <span class="vegestrate-summary-label">Strate dominante</span>
-        <span class="vegestrate-summary-value">{{ dominantStrate }}</span>
+        <span class="text-3xl font-bold leading-none text-primary-800">{{ dominantStrate }}</span>
       </div>
       <p class="vegestrate-summary-aside">Classification par hauteur</p>
     </div>

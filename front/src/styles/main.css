@@ -228,10 +228,6 @@
   @apply text-sm text-gray-500;
 }
 
-.vegestrate-summary-value {
-  @apply text-4xl font-bold leading-none text-primary-800;
-}
-
 .vegestrate-summary-aside {
   @apply flex shrink-0 items-center self-stretch border-l border-gray-200 pl-4 text-sm text-gray-400;
   max-width: 6rem;
