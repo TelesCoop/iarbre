@@ -44,7 +44,12 @@ const emptyMessage = computed(() =>
         </h3>
         <VegestrateHeightGauge />
       </section>
-      <VegestrateContextDataInfo v-else-if="currentData" :data="currentData" />
+      <section v-else-if="currentData" class="flex w-full flex-col gap-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Strates végétales
+        </h3>
+        <VegestrateContextDataInfo :data="currentData" />
+      </section>
     </template>
   </ContextDataMainContainer>
 </template>

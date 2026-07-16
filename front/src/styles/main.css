@@ -208,6 +208,59 @@
   @apply bg-white rounded-xl p-4;
 }
 
+.vegestrate-panel {
+  @apply flex w-full flex-col gap-4;
+}
+
+.vegestrate-summary {
+  @apply flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3;
+}
+
+.vegestrate-tree-icon {
+  @apply h-11 w-11 shrink-0 text-primary-800;
+}
+
+.vegestrate-summary-main {
+  @apply flex min-w-0 flex-1 flex-col;
+}
+
+.vegestrate-summary-label {
+  @apply text-sm text-gray-500;
+}
+
+.vegestrate-summary-value {
+  @apply text-4xl font-bold leading-none text-primary-800;
+}
+
+.vegestrate-summary-aside {
+  @apply flex shrink-0 items-center self-stretch border-l border-gray-200 pl-4 text-sm text-gray-400;
+  max-width: 6rem;
+}
+
+.vegestrate-legend-card {
+  @apply flex gap-3 rounded-xl border border-gray-200 bg-white px-4 py-5;
+}
+
+.vegestrate-scale-col {
+  @apply w-12 shrink-0;
+}
+
+.vegestrate-bar {
+  @apply h-60 w-6 shrink-0 rounded-lg;
+}
+
+.vegestrate-categories {
+  @apply flex h-60 flex-1 list-none flex-col justify-between p-0;
+}
+
+.vegestrate-category-label {
+  @apply text-base font-bold text-gray-800;
+}
+
+.vegestrate-category-range {
+  @apply text-sm text-gray-400;
+}
+
 .layer-chip {
   @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full;
   @apply text-xs font-sans font-medium;
@@ -299,7 +352,7 @@
 }
 
 .map-control-panel {
-  @apply bg-white rounded-lg border border-gray-200;
+  @apply bg-white rounded-lg;
   @apply p-3;
 }
 

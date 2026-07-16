@@ -1,11 +1,29 @@
 import type { VegetationIndice } from "@/types/vegetation"
 
-type StrateInfo = { label: string; color: string; height: number }
+type StrateInfo = { label: string; short: string; range: string; color: string; height: number }
 
 const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
-  herbacee: { label: "Strate herbacée", color: "#ecdeb1", height: 0.5 },
-  arbustif: { label: "Strate arbustive < 1.5m", color: "#8bb971", height: 1.5 },
-  arborescent: { label: "Strate arborée > 1.5m", color: "#0f6f4f", height: 4 }
+  herbacee: {
+    label: "Strate herbacée",
+    short: "Herbacée",
+    range: "< 1,5 m",
+    color: "#ecdeb1",
+    height: 0.5
+  },
+  arbustif: {
+    label: "Strate arbustive < 1.5m",
+    short: "Arbustive",
+    range: "1,5 - 5 m",
+    color: "#8bb971",
+    height: 1.5
+  },
+  arborescent: {
+    label: "Strate arborée > 1.5m",
+    short: "Arborée",
+    range: "arbres, > 5 m",
+    color: "#0f6f4f",
+    height: 4
+  }
 }
 
 export const VEGESTRATE_COLOR_MAP = [
@@ -23,6 +41,15 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
   label,
   color
 }))
+
+export const STRATE_CATEGORIES = (Object.values(STRATE_MAP) as StrateInfo[])
+  .slice()
+  .reverse()
+  .map(({ short, range }) => ({ label: short, range }))
+
+export const STRATE_GRADIENT_CSS = `linear-gradient(to top, ${Object.values(STRATE_MAP)
+  .map((s) => s.color)
+  .join(", ")})`
 
 const ELEVATION_MAX = 40
 export const ELEVATION_BINS = [
@@ -58,6 +85,10 @@ export const HEIGHT_CATEGORIES = [
 
 export function getZoneDesc(zone: string): string {
   return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
+}
+
+export function getStrateShort(zone: string): string {
+  return STRATE_MAP[zone as VegetationIndice]?.short ?? "—"
 }
 
 export function getZoneColor(zone: string): string {

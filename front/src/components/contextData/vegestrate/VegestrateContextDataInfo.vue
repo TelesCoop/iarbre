@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { VegetationData } from "@/types/vegetation"
-import { getZoneDesc, getZoneColor } from "@/utils/vegetation"
+import { getStrateShort, STRATE_CATEGORIES, STRATE_GRADIENT_CSS } from "@/utils/vegetation"
 
 interface VegetationContextDataInfoProps {
   data: VegetationData
@@ -9,62 +9,47 @@ interface VegetationContextDataInfoProps {
 
 const props = defineProps<VegetationContextDataInfoProps>()
 
-const strateLabel = computed(() => getZoneDesc(props.data.indice))
-const strateColor = computed(() => getZoneColor(props.data.indice))
-
-const formattedSurface = computed(() => {
-  return props.data.surface.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
-})
+const dominantStrate = computed(() => getStrateShort(props.data.indice))
 </script>
 
 <template>
-  <div class="strate-info">
-    <div class="strate-type">
-      <div class="strate-swatch" :style="{ backgroundColor: strateColor }" :title="strateLabel" />
-      <span class="strate-label">{{ strateLabel }}</span>
+  <div class="strate-info vegestrate-panel">
+    <div class="vegestrate-summary">
+      <svg
+        class="vegestrate-tree-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path
+          d="M12 2.5c-3.4 0-6.1 2.6-6.1 5.9 0 2.9 2.1 5.3 4.9 5.8v6.4h2.4v-6.4c2.8-.5 4.9-2.9 4.9-5.8 0-3.3-2.7-5.9-6.1-5.9Z"
+        />
+      </svg>
+      <div class="vegestrate-summary-main">
+        <span class="vegestrate-summary-label">Strate dominante</span>
+        <span class="vegestrate-summary-value">{{ dominantStrate }}</span>
+      </div>
+      <p class="vegestrate-summary-aside">Classification par hauteur</p>
     </div>
-    <div class="strate-surface">
-      <span class="surface-label">Surface</span>
-      <span class="surface-value">
-        {{ formattedSurface }}
-        <span class="surface-unit">m²</span>
-      </span>
+
+    <div class="vegestrate-legend-card">
+      <div class="vegestrate-scale-col" aria-hidden="true" />
+      <div
+        role="img"
+        aria-label="Échelle des strates végétales, de la strate herbacée à la strate arborée"
+        class="vegestrate-bar"
+        :style="{ background: STRATE_GRADIENT_CSS }"
+      />
+      <ul class="vegestrate-categories">
+        <li v-for="category in STRATE_CATEGORIES" :key="category.label" class="flex flex-col">
+          <span class="vegestrate-category-label">{{ category.label }}</span>
+          <span class="vegestrate-category-range">{{ category.range }}</span>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.strate-info {
-  @apply flex flex-col gap-3;
-}
-
-.strate-type {
-  @apply flex items-center justify-center gap-3 p-3 bg-gray-50 rounded-lg;
-}
-
-.strate-swatch {
-  @apply w-5 h-5 rounded shrink-0;
-}
-
-.strate-label {
-  @apply text-sm font-semibold text-gray-800;
-}
-
-.strate-surface {
-  @apply flex items-center justify-between px-3 py-2 rounded-lg border border-gray-200;
-}
-
-.surface-label {
-  @apply text-sm text-gray-600;
-}
-
-.surface-value {
-  @apply text-sm font-semibold text-gray-800;
-}
-
-.surface-unit {
-  @apply text-xs font-normal text-gray-500 ml-0.5;
-}
-</style>
