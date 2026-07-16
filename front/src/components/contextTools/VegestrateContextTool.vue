@@ -7,7 +7,7 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="context-menu-tools map-control-panel">
+  <div class="map-control-panel">
     <div class="flex items-center gap-1" role="radiogroup" aria-label="Vue végétation">
       <button
         :class="['layer-chip', { active: !mapStore.showVegestrateHeight }]"

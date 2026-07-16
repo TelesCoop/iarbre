@@ -1,26 +1,36 @@
 import type { VegetationIndice } from "@/types/vegetation"
 
-type StrateInfo = { label: string; short: string; range: string; color: string; height: number }
+type StrateInfo = {
+  label: string
+  short: string
+  heightCategory: string
+  range: string
+  color: string
+  height: number
+}
 
 const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
   herbacee: {
-    label: "Strate herbacée",
+    label: "Strate herbacée < 1,5 m",
     short: "Herbacée",
+    heightCategory: "Basse",
     range: "< 1,5 m",
     color: "#ecdeb1",
     height: 0.5
   },
   arbustif: {
-    label: "Strate arbustive < 1.5m",
+    label: "Strate arbustive 1,5 - 5 m",
     short: "Arbustive",
+    heightCategory: "Moyenne",
     range: "1,5 - 5 m",
     color: "#8bb971",
     height: 1.5
   },
   arborescent: {
-    label: "Strate arborée > 1.5m",
+    label: "Strate arborée > 5 m",
     short: "Arborée",
-    range: "arbres, > 5 m",
+    heightCategory: "Haute",
+    range: "> 5 m",
     color: "#0f6f4f",
     height: 4
   }
@@ -42,10 +52,17 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
   color
 }))
 
-export const STRATE_CATEGORIES = (Object.values(STRATE_MAP) as StrateInfo[])
-  .slice()
-  .reverse()
-  .map(({ short, range }) => ({ label: short, range }))
+const STRATES_TALLEST_FIRST = (Object.values(STRATE_MAP) as StrateInfo[]).slice().reverse()
+
+export const STRATE_CATEGORIES = STRATES_TALLEST_FIRST.map(({ short, range }) => ({
+  label: short,
+  range
+}))
+
+export const HEIGHT_CATEGORIES = STRATES_TALLEST_FIRST.map(({ heightCategory, range }) => ({
+  label: heightCategory,
+  range
+}))
 
 export const STRATE_GRADIENT_CSS = `linear-gradient(to top, ${Object.values(STRATE_MAP)
   .map((s) => s.color)
@@ -77,20 +94,6 @@ export const ELEVATION_LABEL_STOPS = [
   { label: "40m", position: 100 }
 ]
 
-export const HEIGHT_CATEGORIES = [
-  { label: "Haute", range: "5 - 15 m" },
-  { label: "Moyenne", range: "1,5 - 5 m" },
-  { label: "Basse", range: "< 1,5 m" }
-]
-
-export function getZoneDesc(zone: string): string {
-  return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
-}
-
 export function getStrateShort(zone: string): string {
   return STRATE_MAP[zone as VegetationIndice]?.short ?? "—"
-}
-
-export function getZoneColor(zone: string): string {
-  return STRATE_MAP[zone as VegetationIndice]?.color ?? "#CCCCCC"
 }
