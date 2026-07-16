@@ -39,7 +39,7 @@ describe("VegestrateHeightGauge", () => {
     cy.window().then(() => {
       useMapStore().vegetationHeightAtPoint = undefined
     })
-    cy.get(".gauge-bar").should("have.class", "gauge-bar--idle")
+    cy.get(".gauge-bar").should("have.class", "opacity-40")
   })
 
   it("gauge bar is not dimmed when height is set", () => {
@@ -47,7 +47,7 @@ describe("VegestrateHeightGauge", () => {
     cy.window().then(() => {
       useMapStore().vegetationHeightAtPoint = 8
     })
-    cy.get(".gauge-bar").should("not.have.class", "gauge-bar--idle")
+    cy.get(".gauge-bar").should("not.have.class", "opacity-40")
   })
 
   it("shows a marker when height is set", () => {
@@ -68,7 +68,18 @@ describe("VegestrateHeightGauge", () => {
 
   it("renders tick labels", () => {
     cy.mount(VegestrateHeightGauge)
-    cy.contains("0m").should("exist")
-    cy.contains("40m").should("exist")
+    cy.contains("0 m").should("exist")
+    cy.contains("40 m").should("exist")
+  })
+
+  it("renders the height categories", () => {
+    cy.mount(VegestrateHeightGauge)
+    cy.contains("Haute").should("exist")
+    cy.contains("Basse").should("exist")
+  })
+
+  it("shows the square root scale note", () => {
+    cy.mount(VegestrateHeightGauge)
+    cy.contains("Échelle racine carrée").should("exist")
   })
 })
