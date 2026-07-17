@@ -52,17 +52,24 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
   color
 }))
 
-const STRATES_TALLEST_FIRST = (Object.values(STRATE_MAP) as StrateInfo[]).slice().reverse()
+const STRATE_ENTRIES_TALLEST_FIRST = (
+  Object.entries(STRATE_MAP) as [VegetationIndice, StrateInfo][]
+)
+  .slice()
+  .reverse()
 
-export const STRATE_CATEGORIES = STRATES_TALLEST_FIRST.map(({ short, range }) => ({
+export const STRATE_CATEGORIES = STRATE_ENTRIES_TALLEST_FIRST.map(([indice, { short, range }]) => ({
+  indice,
   label: short,
   range
 }))
 
-export const HEIGHT_CATEGORIES = STRATES_TALLEST_FIRST.map(({ heightCategory, range }) => ({
-  label: heightCategory,
-  range
-}))
+export const HEIGHT_CATEGORIES = STRATE_ENTRIES_TALLEST_FIRST.map(
+  ([, { heightCategory, range }]) => ({
+    label: heightCategory,
+    range
+  })
+)
 
 export const STRATE_GRADIENT_CSS = `linear-gradient(to top, ${Object.values(STRATE_MAP)
   .map((s) => s.color)

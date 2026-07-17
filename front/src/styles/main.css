@@ -249,6 +249,23 @@
   @apply flex h-60 flex-1 list-none flex-col justify-between p-0;
 }
 
+.vegestrate-category {
+  @apply flex flex-1 flex-col;
+}
+
+button.vegestrate-category {
+  @apply cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-left;
+  @apply transition-colors duration-150 hover:bg-gray-50;
+}
+
+button.vegestrate-category.is-selected {
+  @apply bg-primary-50 ring-2 ring-primary-600;
+}
+
+.vegestrate-category.is-dimmed {
+  @apply opacity-40;
+}
+
 .vegestrate-category-label {
   @apply text-base font-bold text-gray-800;
 }

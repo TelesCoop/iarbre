@@ -21,6 +21,7 @@ const dominantStrate = computed(() => getStrateShort(props.data.indice))
     bar-aria-label="Échelle des strates végétales, de la strate herbacée à la strate arborée"
     :bar-background="STRATE_GRADIENT_CSS"
     :categories="STRATE_CATEGORIES"
+    filterable
   >
     <template #value>
       <span class="text-3xl font-bold leading-none text-primary-800">{{ dominantStrate }}</span>
