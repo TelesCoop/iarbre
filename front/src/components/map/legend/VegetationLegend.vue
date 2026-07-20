@@ -2,14 +2,11 @@
 import { computed } from "vue"
 import { VegetationLegend, ELEVATION_GRADIENT_CSS, ELEVATION_LABEL_STOPS } from "@/utils/vegetation"
 import { useMapStore } from "@/stores/map"
+import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
 
 const mapStore = useMapStore()
 
 const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
-
-const handleStrateClick = (indice: string) => {
-  mapStore.toggleAndApplyFilter(indice)
-}
 </script>
 
 <template>
@@ -45,25 +42,19 @@ const handleStrateClick = (indice: string) => {
     </template>
     <template v-else>
       <div class="strate-list" role="list">
-        <button
+        <FilterableLegendItem
           v-for="item in VegetationLegend"
           :key="item.indice"
-          :aria-label="`${item.label} — cliquez pour filtrer`"
-          :aria-pressed="mapStore.isFiltered(item.indice)"
-          :class="[
-            'strate-item',
-            mapStore.isFiltered(item.indice) ? 'is-selected' : '',
-            mapStore.hasActiveFilters && !mapStore.isFiltered(item.indice) ? 'is-dimmed' : ''
-          ]"
+          :value="item.indice"
+          :label="item.label"
+          class="strate-item"
           :data-strate="item.indice"
           :title="item.label"
           role="listitem"
-          type="button"
-          @click="handleStrateClick(item.indice)"
         >
           <span class="strate-swatch" :style="{ backgroundColor: item.color }"></span>
           <span class="strate-label">{{ item.label }}</span>
-        </button>
+        </FilterableLegendItem>
       </div>
     </template>
   </div>

@@ -1,11 +1,39 @@
 import type { VegetationIndice } from "@/types/vegetation"
 
-type StrateInfo = { label: string; color: string; height: number }
+type StrateInfo = {
+  label: string
+  short: string
+  heightCategory: string
+  range: string
+  color: string
+  height: number
+}
 
 const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
-  herbacee: { label: "Strate herbacée", color: "#C8D96F", height: 0.5 },
-  arbustif: { label: "Strate arbustive < 1.5m", color: "#3A9144", height: 1.5 },
-  arborescent: { label: "Strate arborée > 1.5m", color: "#14452F", height: 4 }
+  herbacee: {
+    label: "Strate herbacée < 1,5 m",
+    short: "Herbacée",
+    heightCategory: "Basse",
+    range: "< 1,5 m",
+    color: "#ecdeb1",
+    height: 0.5
+  },
+  arbustif: {
+    label: "Strate arbustive 1,5 - 5 m",
+    short: "Arbustive",
+    heightCategory: "Moyenne",
+    range: "1,5 - 5 m",
+    color: "#8bb971",
+    height: 1.5
+  },
+  arborescent: {
+    label: "Strate arborée > 5 m",
+    short: "Arborée",
+    heightCategory: "Haute",
+    range: "> 5 m",
+    color: "#0f6f4f",
+    height: 4
+  }
 }
 
 export const VEGESTRATE_COLOR_MAP = [
@@ -24,18 +52,41 @@ export const VegetationLegend = Object.entries(STRATE_MAP).map(([key, { label, c
   color
 }))
 
+const STRATE_ENTRIES_TALLEST_FIRST = (
+  Object.entries(STRATE_MAP) as [VegetationIndice, StrateInfo][]
+)
+  .slice()
+  .reverse()
+
+export const STRATE_CATEGORIES = STRATE_ENTRIES_TALLEST_FIRST.map(([indice, { short, range }]) => ({
+  indice,
+  label: short,
+  range
+}))
+
+export const HEIGHT_CATEGORIES = STRATE_ENTRIES_TALLEST_FIRST.map(
+  ([, { heightCategory, range }]) => ({
+    label: heightCategory,
+    range
+  })
+)
+
+export const STRATE_GRADIENT_CSS = `linear-gradient(to top, ${Object.values(STRATE_MAP)
+  .map((s) => s.color)
+  .join(", ")})`
+
 const ELEVATION_MAX = 40
 export const ELEVATION_BINS = [
-  { min: 0, color: "var(--color-primary-50)" },
-  { min: 1, color: "var(--color-primary-100)" },
-  { min: 2, color: "var(--color-primary-200)" },
-  { min: 4, color: "var(--color-primary-300)" },
-  { min: 7, color: "var(--color-primary-400)" },
-  { min: 10, color: "var(--color-primary-500)" },
-  { min: 15, color: "var(--color-primary-600)" },
-  { min: 20, color: "var(--color-primary-700)" },
-  { min: 26, color: "var(--color-primary-800)" },
-  { min: 33, color: "var(--color-primary-900)" }
+  { min: 0, color: "#ecdeb1" },
+  { min: 1, color: "#e6dcac" },
+  { min: 2, color: "#e1daa6" },
+  { min: 4, color: "#d5d69b" },
+  { min: 7, color: "#c4cf8b" },
+  { min: 10, color: "#b3c97b" },
+  { min: 15, color: "#8bb971" },
+  { min: 20, color: "#63a966" },
+  { min: 26, color: "#348e5c" },
+  { min: 33, color: "#0f6f4f" }
 ]
 
 export const sqrtPos = (value: number) =>
@@ -50,10 +101,6 @@ export const ELEVATION_LABEL_STOPS = [
   { label: "40m", position: 100 }
 ]
 
-export function getZoneDesc(zone: string): string {
-  return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
-}
-
-export function getZoneColor(zone: string): string {
-  return STRATE_MAP[zone as VegetationIndice]?.color ?? "#CCCCCC"
+export function getStrateShort(zone: string): string {
+  return STRATE_MAP[zone as VegetationIndice]?.short ?? "—"
 }

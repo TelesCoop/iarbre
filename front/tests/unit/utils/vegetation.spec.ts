@@ -1,11 +1,5 @@
 import { describe, it, expect } from "vitest"
-import {
-  sqrtPos,
-  getZoneDesc,
-  getZoneColor,
-  ELEVATION_BINS,
-  ELEVATION_LABEL_STOPS
-} from "@/utils/vegetation"
+import { sqrtPos, ELEVATION_BINS, ELEVATION_LABEL_STOPS } from "@/utils/vegetation"
 
 describe("sqrtPos", () => {
   it("returns 0 for 0", () => {
@@ -47,29 +41,5 @@ describe("ELEVATION_LABEL_STOPS", () => {
 
   it("last stop is at position 100", () => {
     expect(ELEVATION_LABEL_STOPS[ELEVATION_LABEL_STOPS.length - 1].position).toBe(100)
-  })
-})
-
-describe("getZoneDesc", () => {
-  it.each([
-    ["herbacee", "Strate herbacée"],
-    ["arbustif", "Strate arbustive < 1.5m"],
-    ["arborescent", "Strate arborée > 1.5m"]
-  ])("%s returns correct label", (zone, label) => {
-    expect(getZoneDesc(zone)).toBe(label)
-  })
-
-  it("returns fallback for unknown zone", () => {
-    expect(getZoneDesc("unknown")).toBe("Description de strate non possible")
-  })
-})
-
-describe("getZoneColor", () => {
-  it("returns a hex color for known strates", () => {
-    expect(getZoneColor("herbacee")).toMatch(/^#[0-9A-Fa-f]{6}$/)
-  })
-
-  it("returns fallback color for unknown zone", () => {
-    expect(getZoneColor("unknown")).toBe("#CCCCCC")
   })
 })

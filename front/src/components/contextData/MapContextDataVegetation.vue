@@ -38,8 +38,18 @@ const emptyMessage = computed(() =>
     :zoom-level="zoomLevel"
   >
     <template #content>
-      <VegestrateHeightGauge v-if="mapStore.showVegestrateHeight" />
-      <VegestrateContextDataInfo v-else-if="currentData" :data="currentData" />
+      <section v-if="mapStore.showVegestrateHeight" class="flex w-full flex-col gap-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Hauteur de végétation
+        </h3>
+        <VegestrateHeightGauge />
+      </section>
+      <section v-else-if="currentData" class="flex w-full flex-col gap-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Strates végétales
+        </h3>
+        <VegestrateContextDataInfo :data="currentData" />
+      </section>
     </template>
   </ContextDataMainContainer>
 </template>

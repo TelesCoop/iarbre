@@ -1,14 +1,8 @@
 <script lang="ts" setup>
 import { BiosphereIntegrityLegend } from "@/utils/biosphere_functional_integrity"
-import { useMapStore } from "@/stores/map"
-
-const mapStore = useMapStore()
+import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
 
 const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
-
-const handleClick = (name: string) => {
-  mapStore.toggleAndApplyFilter(name)
-}
 </script>
 
 <template>
@@ -26,23 +20,19 @@ const handleClick = (name: string) => {
       </div>
       <div class="scale-stack">
         <div class="legend-scale">
-          <button
+          <FilterableLegendItem
             v-for="([name, color], index) in entries"
             :key="name"
-            :aria-label="`${name} — cliquez pour filtrer`"
-            :aria-pressed="mapStore.isFiltered(name)"
+            :value="name"
+            :label="name"
             :class="[
               'biosphere-segment',
               index === 0 ? 'rounded-l-sm' : '',
-              index === entries.length - 1 ? 'rounded-r-sm' : '',
-              mapStore.isFiltered(name) ? 'is-selected' : '',
-              mapStore.hasActiveFilters && !mapStore.isFiltered(name) ? 'is-dimmed' : ''
+              index === entries.length - 1 ? 'rounded-r-sm' : ''
             ]"
             :data-biosphere="name"
             :style="{ backgroundColor: color }"
             :title="name"
-            type="button"
-            @click="handleClick(name)"
           />
         </div>
         <div class="legend-bounds">
