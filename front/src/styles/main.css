@@ -365,7 +365,7 @@ button.vegestrate-category.is-selected {
 }
 
 .map-control-panel {
-  @apply bg-white rounded-lg;
+  @apply bg-white rounded-lg border border-gray-200;
   @apply p-3;
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import IconVegestrate from "@/components/icons/IconVegestrate.vue"
-import { useMapStore } from "@/stores/map"
+import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
 import type { VegetationIndice } from "@/types/vegetation"
 
 interface Category {
@@ -21,14 +21,7 @@ interface Props {
   filterable?: boolean
 }
 
-const props = defineProps<Props>()
-
-const mapStore = useMapStore()
-
-const filterStrate = (indice?: VegetationIndice) => {
-  if (!props.filterable || !indice) return
-  mapStore.toggleAndApplyFilter(indice)
-}
+defineProps<Props>()
 </script>
 
 <template>
@@ -56,32 +49,19 @@ const filterStrate = (indice?: VegetationIndice) => {
       </div>
       <ul class="vegestrate-categories">
         <li v-for="category in categories" :key="category.label" class="flex">
-          <component
-            :is="filterable && category.indice ? 'button' : 'div'"
-            :type="filterable && category.indice ? 'button' : undefined"
-            :aria-pressed="
-              filterable && category.indice ? mapStore.isFiltered(category.indice) : undefined
-            "
-            :aria-label="
-              filterable && category.indice ? `${category.label} — cliquez pour filtrer` : undefined
-            "
-            :class="[
-              'vegestrate-category',
-              filterable && category.indice && mapStore.isFiltered(category.indice)
-                ? 'is-selected'
-                : '',
-              filterable &&
-              category.indice &&
-              mapStore.hasActiveFilters &&
-              !mapStore.isFiltered(category.indice)
-                ? 'is-dimmed'
-                : ''
-            ]"
-            @click="filterStrate(category.indice)"
+          <FilterableLegendItem
+            v-if="filterable && category.indice"
+            :value="category.indice"
+            :label="category.label"
+            class="vegestrate-category"
           >
             <span class="vegestrate-category-label">{{ category.label }}</span>
             <span class="vegestrate-category-range">{{ category.range }}</span>
-          </component>
+          </FilterableLegendItem>
+          <div v-else class="vegestrate-category">
+            <span class="vegestrate-category-label">{{ category.label }}</span>
+            <span class="vegestrate-category-range">{{ category.range }}</span>
+          </div>
         </li>
       </ul>
     </div>
