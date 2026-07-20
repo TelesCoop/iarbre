@@ -11,6 +11,10 @@ interface VegetationContextDataInfoProps {
 const props = defineProps<VegetationContextDataInfoProps>()
 
 const dominantStrate = computed(() => getStrateShort(props.data.indice))
+
+const formattedSurface = computed(() =>
+  props.data.surface.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+)
 </script>
 
 <template>
@@ -25,6 +29,7 @@ const dominantStrate = computed(() => getStrateShort(props.data.indice))
   >
     <template #value>
       <span class="text-3xl font-bold leading-none text-primary-800">{{ dominantStrate }}</span>
+      <span class="mt-1 text-sm text-gray-500">Surface : {{ formattedSurface }} m²</span>
     </template>
   </VegestratePanel>
 </template>
