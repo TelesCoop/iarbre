@@ -38,6 +38,7 @@ import {
   normalizeHeightRanges,
   type HeightRange
 } from "@/utils/vegetation"
+import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -66,6 +67,17 @@ import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
 import { computePolygonAreaM2 } from "@/utils/geo"
 import type { ZonePolygon } from "@/stores/zone"
+
+const isHeightRange = (range: unknown): range is HeightRange => {
+  if (typeof range !== "object" || range === null) return false
+  const { min, max } = range as HeightRange
+  return typeof min === "number" && (max === null || typeof max === "number")
+}
+
+const loadStoredHeightRanges = (): HeightRange[] => {
+  const stored = LocalStorageHandler.getItem("vegestrateHeightRanges")
+  return Array.isArray(stored) ? normalizeHeightRanges(stored.filter(isHeightRange)) : []
+}
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -98,7 +110,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
   const showVegestrateHeight = ref<boolean>(false)
-  const vegestrateHeightRanges = ref<HeightRange[]>([])
+  const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
   const heightMapZoomHandler = ref<(() => void) | null>(null)
@@ -628,7 +640,6 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
-    vegestrateHeightRanges.value = []
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
@@ -701,6 +712,7 @@ export const useMapStore = defineStore("map", () => {
     if (!showVegestrateHeight.value) return
     const normalized = normalizeHeightRanges(ranges)
     vegestrateHeightRanges.value = normalized
+    LocalStorageHandler.setItem("vegestrateHeightRanges", normalized)
     const ramp = buildElevationColorRamp(normalized)
     const layerId = getLayerId(DataType.VEGESTRATE, getGeoLevelFromDataType())
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
