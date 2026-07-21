@@ -1,12 +1,26 @@
 <script lang="ts" setup>
 import { computed } from "vue"
-import { VegetationLegend, ELEVATION_GRADIENT_CSS, ELEVATION_LABEL_STOPS } from "@/utils/vegetation"
+import {
+  VegetationLegend,
+  ELEVATION_GRADIENT_CSS,
+  ELEVATION_LABEL_STOPS,
+  formatHeightRange,
+  heightRangeColor
+} from "@/utils/vegetation"
 import { useMapStore } from "@/stores/map"
 import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
+import LegendItem from "@/components/map/legend/LegendItem.vue"
 
 const mapStore = useMapStore()
 
 const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
+
+const heightRanges = computed(() =>
+  mapStore.vegestrateHeightRanges.map((range) => ({
+    label: formatHeightRange(range),
+    color: heightRangeColor(range)
+  }))
+)
 </script>
 
 <template>
@@ -18,7 +32,18 @@ const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
     </div>
 
     <template v-if="showElevationLegend">
-      <div class="flex flex-col gap-1 w-full select-none">
+      <div v-if="heightRanges.length" class="strate-list" role="list">
+        <div
+          v-for="range in heightRanges"
+          :key="range.label"
+          class="strate-item"
+          role="listitem"
+          :title="range.label"
+        >
+          <LegendItem :label="range.label" :color="range.color" />
+        </div>
+      </div>
+      <div v-else class="flex flex-col gap-1 w-full select-none">
         <div
           class="h-4 rounded-sm border border-gray-300 w-full"
           :style="{ background: ELEVATION_GRADIENT_CSS }"
@@ -40,52 +65,19 @@ const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
         </div>
       </div>
     </template>
-    <template v-else>
-      <div class="strate-list" role="list">
-        <FilterableLegendItem
-          v-for="item in VegetationLegend"
-          :key="item.indice"
-          :value="item.indice"
-          :label="item.label"
-          class="strate-item"
-          :data-strate="item.indice"
-          :title="item.label"
-          role="listitem"
-        >
-          <span class="strate-swatch" :style="{ backgroundColor: item.color }"></span>
-          <span class="strate-label">{{ item.label }}</span>
-        </FilterableLegendItem>
-      </div>
-    </template>
+    <div v-else class="strate-list" role="list">
+      <FilterableLegendItem
+        v-for="item in VegetationLegend"
+        :key="item.indice"
+        :value="item.indice"
+        :label="item.label"
+        class="strate-item"
+        :data-strate="item.indice"
+        :title="item.label"
+        role="listitem"
+      >
+        <LegendItem :label="item.label" :color="item.color" />
+      </FilterableLegendItem>
+    </div>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.strate-list {
-  @apply flex w-full max-w-56 flex-col gap-1;
-}
-
-.strate-item {
-  @apply flex w-full items-center gap-2 cursor-pointer rounded-md px-2 py-1 text-left;
-  @apply border-0 bg-transparent;
-  @apply transition-colors duration-150 hover:bg-gray-50;
-}
-
-.strate-item.is-dimmed {
-  @apply opacity-40;
-}
-
-.strate-swatch {
-  @apply h-4 w-4 shrink-0 rounded-sm border border-gray-300;
-}
-
-.strate-item.is-selected .strate-swatch {
-  @apply ring-2 ring-gray-600;
-}
-
-.strate-label {
-  @apply text-xs text-gray-600 lg:text-sm;
-}
-</style>

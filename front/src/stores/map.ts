@@ -31,7 +31,13 @@ import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/planta
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
+import {
+  VEGESTRATE_COLOR_MAP,
+  VEGESTRATE_HEIGHT_MAP,
+  buildElevationColorRamp,
+  normalizeHeightRanges,
+  type HeightRange
+} from "@/utils/vegetation"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -92,6 +98,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
   const showVegestrateHeight = ref<boolean>(false)
+  const vegestrateHeightRanges = ref<HeightRange[]>([])
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
   const heightMapZoomHandler = ref<(() => void) | null>(null)
@@ -216,10 +223,13 @@ export const useMapStore = defineStore("map", () => {
       return [
         {
           id: layerId,
-          type: "raster",
+          type: "color-relief",
           source: sourceId,
           layout: {},
-          paint: { "raster-opacity": 0.8 }
+          paint: {
+            "color-relief-opacity": 0.8,
+            "color-relief-color": buildElevationColorRamp(vegestrateHeightRanges.value)
+          }
         }
       ]
     }
@@ -564,9 +574,10 @@ export const useMapStore = defineStore("map", () => {
     const sourceId = getSourceId(datatype, geolevel)
 
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=elevation`
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
       map.addSource(sourceId, {
-        type: "raster",
+        type: "raster-dem",
+        encoding: "terrarium",
         tiles: [tileUrl],
         tileSize: 256,
         minzoom: MIN_ZOOM
@@ -617,6 +628,7 @@ export const useMapStore = defineStore("map", () => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
     if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
+    vegestrateHeightRanges.value = []
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
@@ -683,6 +695,19 @@ export const useMapStore = defineStore("map", () => {
   const toggleVegestrateHeight = () => {
     showVegestrateHeight.value = !showVegestrateHeight.value
     refreshDatatype()
+  }
+
+  const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
+    if (!showVegestrateHeight.value) return
+    const normalized = normalizeHeightRanges(ranges)
+    vegestrateHeightRanges.value = normalized
+    const ramp = buildElevationColorRamp(normalized)
+    const layerId = getLayerId(DataType.VEGESTRATE, getGeoLevelFromDataType())
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
+      }
+    })
   }
 
   const refreshLayers = () => {
@@ -1379,6 +1404,8 @@ export const useMapStore = defineStore("map", () => {
     zoomTo,
     showVegestrateHeight,
     toggleVegestrateHeight,
+    vegestrateHeightRanges,
+    setVegestrateHeightRanges,
     vegetationHeightAtPoint
   }
 })
