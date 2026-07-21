@@ -8,7 +8,7 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="map-control-panel flex flex-col gap-3 border-0">
+  <div class="map-control-panel border-0">
     <div class="flex items-center gap-1" role="radiogroup" aria-label="Vue végétation">
       <button
         :class="['layer-chip', { active: !mapStore.showVegestrateHeight }]"
@@ -31,7 +31,10 @@ const mapStore = useMapStore()
         Hauteur
       </button>
     </div>
-
-    <VegestrateHeightRanges v-if="mapStore.showVegestrateHeight" />
   </div>
+
+  <VegestrateHeightRanges
+    v-if="mapStore.showVegestrateHeight"
+    class="map-control-panel w-full border-0"
+  />
 </template>
