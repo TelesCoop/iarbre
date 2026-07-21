@@ -49,7 +49,7 @@ const clamp = (value: number | ""): number | "" => {
 const onMinInput = (row: RangeInput) => {
   row.min = clamp(row.min)
   if (row.min !== "" && (!row.maxEdited || row.max === "")) {
-    row.max = Math.min(row.min + 1, MAX_HEIGHT)
+    row.max = row.min < MAX_HEIGHT ? row.min + 1 : ""
     row.maxEdited = false
   }
   apply()
@@ -84,7 +84,12 @@ watch(
 )
 
 const addRow = () => {
-  rows.value.push({ min: "", max: "", maxEdited: false })
+  const previous = rows.value[rows.value.length - 1]
+  const nextMin =
+    previous && previous.max !== "" && previous.max < MAX_HEIGHT ? previous.max + 1 : ""
+  const row: RangeInput = { min: nextMin, max: "", maxEdited: false }
+  rows.value.push(row)
+  if (row.min !== "") onMinInput(row)
 }
 
 const removeRow = (index: number) => {
