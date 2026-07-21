@@ -95,7 +95,7 @@ describe("normalizeHeightRanges", () => {
 
 describe("formatHeightRange", () => {
   it("formats bounded and open-ended ranges", () => {
-    expect(formatHeightRange({ min: 2, max: 5 })).toBe("2 – 5 m")
+    expect(formatHeightRange({ min: 2, max: 5 })).toBe("2 - 5 m")
     expect(formatHeightRange({ min: 15, max: null })).toBe("> 15 m")
   })
 })

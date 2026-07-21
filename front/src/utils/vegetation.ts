@@ -134,7 +134,7 @@ export function normalizeHeightRanges(ranges: HeightRange[]): HeightRange[] {
 }
 
 export function formatHeightRange({ min, max }: HeightRange): string {
-  return max === null ? `> ${min} m` : `${min} – ${max} m`
+  return max === null ? `> ${min} m` : `${min} - ${max} m`
 }
 
 export function heightRangeColor({ min, max }: HeightRange): string {

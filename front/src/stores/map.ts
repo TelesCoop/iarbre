@@ -1,4 +1,4 @@
-import { computed, ref } from "vue"
+import { computed, markRaw, ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
@@ -1101,13 +1101,18 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = initialDatatype
     controlsAdded.value[mapId] = false
 
-    mapInstancesByIds.value[mapId] = new Map({
-      container: mapId,
-      style: loadMapStyle(MapStyle.OSM),
-      maxZoom: MAX_ZOOM,
-      minZoom: MIN_ZOOM,
-      attributionControl: false
-    })
+    // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
+    // Style expressions read Color.rgb, a non-writable non-configurable property,
+    // and a proxy cannot report the raw value for it (TypeError inside the render loop).
+    mapInstancesByIds.value[mapId] = markRaw(
+      new Map({
+        container: mapId,
+        style: loadMapStyle(MapStyle.OSM),
+        maxZoom: MAX_ZOOM,
+        minZoom: MIN_ZOOM,
+        attributionControl: false
+      })
+    )
 
     const mapInstance = mapInstancesByIds.value[mapId]
 
