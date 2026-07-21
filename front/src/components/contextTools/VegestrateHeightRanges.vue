@@ -2,21 +2,63 @@
 import { computed, ref, watch } from "vue"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapStore } from "@/stores/map"
+import { useToast } from "@/composables/useToast"
 import { normalizeHeightRanges, type HeightRange } from "@/utils/vegetation"
 
-type RangeInput = { min: number | ""; max: number | "" }
+type RangeInput = { min: number | ""; max: number | ""; maxEdited: boolean }
+
+const MIN_HEIGHT = 0
+const MAX_HEIGHT = 40
 
 const mapStore = useMapStore()
+const toast = useToast()
 
 const toRows = (ranges: HeightRange[]): RangeInput[] =>
-  ranges.map(({ min, max }) => ({ min, max: max === null ? "" : max }))
+  ranges.map(({ min, max }) => ({ min, max: max === null ? "" : max, maxEdited: true }))
 
 const rowError = ({ min, max }: RangeInput): string | null => {
   if (min === "" && max === "") return null
   if (min === "") return "Indiquez une hauteur minimale"
-  if (min < 0) return "La hauteur doit être positive"
+  if (min < MIN_HEIGHT) return "La hauteur doit être positive"
   if (max !== "" && max <= min) return "Le maximum doit dépasser le minimum"
   return null
+}
+
+const warnOutOfBounds = (value: number) => {
+  toast.add({
+    severity: "warn",
+    summary: "Hauteur hors limites",
+    detail:
+      value > MAX_HEIGHT
+        ? `La hauteur maximale est de ${MAX_HEIGHT} m`
+        : `La hauteur minimale est de ${MIN_HEIGHT} m`,
+    life: 3000,
+    group: "tr"
+  })
+}
+
+const clamp = (value: number | ""): number | "" => {
+  if (value === "") return ""
+  if (value > MAX_HEIGHT || value < MIN_HEIGHT) {
+    warnOutOfBounds(value)
+    return value > MAX_HEIGHT ? MAX_HEIGHT : MIN_HEIGHT
+  }
+  return value
+}
+
+const onMinInput = (row: RangeInput) => {
+  row.min = clamp(row.min)
+  if (row.min !== "" && (!row.maxEdited || row.max === "")) {
+    row.max = Math.min(row.min + 1, MAX_HEIGHT)
+    row.maxEdited = false
+  }
+  apply()
+}
+
+const onMaxInput = (row: RangeInput) => {
+  row.max = clamp(row.max)
+  row.maxEdited = true
+  apply()
 }
 
 const rows = ref<RangeInput[]>(toRows(mapStore.vegestrateHeightRanges))
@@ -42,7 +84,7 @@ watch(
 )
 
 const addRow = () => {
-  rows.value.push({ min: "", max: "" })
+  rows.value.push({ min: "", max: "", maxEdited: false })
 }
 
 const removeRow = (index: number) => {
@@ -59,7 +101,6 @@ const reset = () => {
 <template>
   <div class="flex flex-col gap-2" data-cy="vegestrate-height-ranges">
     <div class="flex items-center justify-between gap-2">
-      <span class="text-xs font-sans font-medium text-gray-700">Plages de hauteur</span>
       <button
         v-if="rows.length"
         type="button"
@@ -75,25 +116,27 @@ const reset = () => {
         <input
           v-model.number="row.min"
           type="number"
-          min="0"
+          :min="MIN_HEIGHT"
+          :max="MAX_HEIGHT"
           step="1"
           placeholder="min"
           :aria-label="`Hauteur minimale de la plage ${index + 1}`"
           :aria-invalid="Boolean(rowErrors[index])"
           :class="['height-range-input', rowErrors[index] ? 'border-red-400' : '']"
-          @input="apply"
+          @input="onMinInput(row)"
         />
         <span class="height-range-unit">–</span>
         <input
           v-model.number="row.max"
           type="number"
-          min="0"
+          :min="MIN_HEIGHT"
+          :max="MAX_HEIGHT"
           step="1"
           placeholder="∞"
           :aria-label="`Hauteur maximale de la plage ${index + 1}`"
           :aria-invalid="Boolean(rowErrors[index])"
           :class="['height-range-input', rowErrors[index] ? 'border-red-400' : '']"
-          @input="apply"
+          @input="onMaxInput(row)"
         />
         <span class="height-range-unit">m</span>
         <button
