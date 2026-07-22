@@ -60,6 +60,24 @@ class VegetationHeightTileViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["content-type"], "image/png")
 
+    def test_kind_raw_outside_raster_encodes_nodata(self):
+        outside_url = reverse("vegetation-height-tile", kwargs={"z": 1, "x": 0, "y": 0})
+        with self.settings(MEDIA_ROOT=self.tmpdir):
+            response = self.client.get(outside_url, {"kind": "raw"})
+        self.assertEqual(response.status_code, 200)
+
+        img = Image.open(io.BytesIO(response.content))
+        pixels = np.asarray(img).reshape(-1, 4)
+        # Fully transparent pixels would decode to -32768 m and extrude as a crater.
+        self.assertTrue((pixels[:, 3] == 255).all())
+        heights = (
+            pixels[:, 0].astype(float) * 256
+            + pixels[:, 1]
+            + pixels[:, 2].astype(float) / 256
+            - 32768
+        )
+        self.assertTrue((heights == -1).all())
+
     def test_missing_raster_returns_404(self):
         with self.settings(MEDIA_ROOT=tempfile.mkdtemp()):
             response = self.client.get(self.tile_url)

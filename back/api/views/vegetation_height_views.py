@@ -70,7 +70,7 @@ class VegetationHeightTileView(APIView):
                     or top < raster_bounds.bottom
                     or bottom > raster_bounds.top
                 ):
-                    return self._empty_tile()
+                    return self._empty_tile(kind)
 
                 try:
                     window = from_bounds(
@@ -103,11 +103,11 @@ class VegetationHeightTileView(APIView):
 
                 except Exception:
                     logger.exception("Window error for tile %s/%s/%s", z, x, y)
-                    return self._empty_tile()
+                    return self._empty_tile(kind)
 
         except Exception:
             logger.exception("Error generating vegetation tile %s/%s/%s", z, x, y)
-            return self._empty_tile()
+            return self._empty_tile(kind)
 
     @staticmethod
     def _encode_terrarium(data, nodata, rgba_data):
@@ -125,9 +125,14 @@ class VegetationHeightTileView(APIView):
         rgba_data[..., 2] = ((shifted % 1) * 256).astype(np.uint8)
         rgba_data[..., 3] = 255
 
-    def _empty_tile(self):
-        """Return a transparent 256x256 PNG."""
-        img = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    def _empty_tile(self, kind="class"):
+        """Return a 256x256 PNG carrying no data."""
+        if kind == "raw":
+            rgba_data = np.zeros((256, 256, 4), dtype=np.uint8)
+            self._encode_terrarium(np.full((256, 256), NODATA_HEIGHT), None, rgba_data)
+            img = Image.fromarray(rgba_data, mode="RGBA")
+        else:
+            img = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
         buffer.seek(0)
