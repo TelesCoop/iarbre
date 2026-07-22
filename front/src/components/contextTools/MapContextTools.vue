@@ -16,7 +16,11 @@ const show = computed(() => {
 </script>
 
 <template>
-  <div v-if="show" class="flex flex-wrap items-center gap-2" data-cy="map-context-tools">
+  <div
+    v-if="show"
+    class="flex w-full flex-wrap items-center justify-center gap-2"
+    data-cy="map-context-tools"
+  >
     <VulnerabilityContextTool
       v-if="
         [DataType.VULNERABILITY, DataType.PLANTABILITY_VULNERABILITY].includes(

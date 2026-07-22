@@ -1,3 +1,4 @@
+import type { ExpressionSpecification } from "maplibre-gl"
 import type { VegetationIndice } from "@/types/vegetation"
 
 type StrateInfo = {
@@ -100,6 +101,98 @@ export const ELEVATION_LABEL_STOPS = [
   { label: "20m", position: sqrtPos(20) },
   { label: "40m", position: 100 }
 ]
+
+export type HeightRange = { min: number; max: number | null }
+
+const TRANSPARENT = "rgba(0,0,0,0)"
+const RAMP_EPSILON = 0.01
+const RAMP_MIN_HEIGHT = -1
+const RANGE_PADDING = 0.5
+const RAMP_MAX_HEIGHT = 1000
+
+type RampStop = [number, string]
+
+export function elevationColorAt(height: number): string {
+  return ELEVATION_BINS.reduce(
+    (color, bin) => (height >= bin.min ? bin.color : color),
+    ELEVATION_BINS[0].color
+  )
+}
+
+export function normalizeHeightRanges(ranges: HeightRange[]): HeightRange[] {
+  const valid = ranges
+    .filter(({ min, max }) => min >= 0 && (max === null || max > min))
+    .sort((a, b) => a.min - b.min)
+
+  return valid.reduce<HeightRange[]>((merged, range) => {
+    const previous = merged[merged.length - 1]
+    if (!previous) return [{ ...range }]
+    if (previous.max === null) return merged
+    if (range.min > previous.max) return [...merged, { ...range }]
+    previous.max = range.max === null ? null : Math.max(previous.max, range.max)
+    return merged
+  }, [])
+}
+
+export function formatHeightRange({ min, max }: HeightRange): string {
+  return max === null ? `> ${min} m` : `${min} - ${max} m`
+}
+
+export function heightRangeColor({ min, max }: HeightRange): string {
+  return elevationColorAt(max === null ? min : (min + max) / 2)
+}
+
+const continuousStops = (): RampStop[] =>
+  ELEVATION_BINS.flatMap((bin, index) => {
+    const next = ELEVATION_BINS[index + 1]
+    return [
+      [bin.min, bin.color],
+      [next ? next.min - RAMP_EPSILON : RAMP_MAX_HEIGHT, bin.color]
+    ] as RampStop[]
+  })
+
+type RangeBounds = { lower: number; upper: number | null }
+
+const resolveBounds = (ranges: HeightRange[]): RangeBounds[] =>
+  ranges.reduce<RangeBounds[]>((bounds, { min, max }) => {
+    const previous = bounds[bounds.length - 1]
+    const lower = Math.max(min - RANGE_PADDING, 0, previous ? (previous.upper ?? 0) : 0)
+    return [...bounds, { lower, upper: max === null ? null : max + RANGE_PADDING }]
+  }, [])
+
+const rangeStops = (ranges: HeightRange[]): RampStop[] => {
+  const bounds = resolveBounds(ranges)
+  return bounds.flatMap(({ lower, upper }, index) => {
+    const color = heightRangeColor(ranges[index])
+    const stops: RampStop[] = []
+    if (lower > 0 && lower !== bounds[index - 1]?.upper) {
+      stops.push([lower - RAMP_EPSILON, TRANSPARENT])
+    }
+    stops.push([lower, color])
+    if (upper === null) {
+      stops.push([RAMP_MAX_HEIGHT, color])
+    } else {
+      stops.push([upper - RAMP_EPSILON, color])
+      if (bounds[index + 1]?.lower !== upper) stops.push([upper, TRANSPARENT])
+    }
+    return stops
+  })
+}
+
+export function buildElevationColorRamp(ranges: HeightRange[] = []): ExpressionSpecification {
+  const normalized = normalizeHeightRanges(ranges)
+  const stops: RampStop[] = [
+    [RAMP_MIN_HEIGHT, TRANSPARENT],
+    [-RAMP_EPSILON, TRANSPARENT],
+    ...(normalized.length ? rangeStops(normalized) : continuousStops())
+  ]
+  return [
+    "interpolate",
+    ["linear"],
+    ["elevation"],
+    ...stops.flat()
+  ] as unknown as ExpressionSpecification
+}
 
 export function getStrateShort(zone: string): string {
   return STRATE_MAP[zone as VegetationIndice]?.short ?? "—"

@@ -63,28 +63,3 @@ VEGESTRATE_COLOR_MAP: dict[int, tuple[int, int, int, int]] = {
     2: (58, 145, 68, 255),
     3: (20, 69, 47, 255),
 }
-
-
-def _build_elevation_color_map() -> dict[int, tuple[int, int, int, int]]:
-    _bins = [
-        (0, 1, (236, 222, 177, 255)),
-        (1, 2, (230, 220, 172, 255)),
-        (2, 4, (225, 218, 166, 255)),
-        (4, 7, (213, 214, 155, 255)),
-        (7, 10, (196, 207, 139, 255)),
-        (10, 15, (179, 201, 123, 255)),
-        (15, 20, (139, 185, 113, 255)),
-        (20, 26, (99, 169, 102, 255)),
-        (26, 33, (52, 142, 92, 255)),
-        (33, 41, (15, 111, 79, 255)),
-    ]
-    result = {}
-    for start, end, color in _bins:
-        for v in range(start, end):
-            result[v] = color
-    return result
-
-
-VEGESTRATE_ELEVATION_COLOR_MAP: dict[
-    int, tuple[int, int, int, int]
-] = _build_elevation_color_map()

@@ -647,6 +647,32 @@ button.vegestrate-category.is-selected {
   @apply text-xs text-gray-600 lg:text-sm;
 }
 
+.strate-list {
+  @apply flex w-full max-w-56 flex-col gap-1;
+}
+
+.strate-item {
+  @apply flex w-full items-center gap-2 cursor-pointer rounded-md px-2 py-1 text-left;
+  @apply border-0 bg-transparent;
+  @apply transition-colors duration-150 hover:bg-gray-50;
+}
+
+.strate-item.is-dimmed {
+  @apply opacity-40;
+}
+
+.strate-swatch {
+  @apply h-4 w-4 shrink-0 rounded-sm border border-gray-300;
+}
+
+.strate-item.is-selected .strate-swatch {
+  @apply ring-2 ring-gray-600;
+}
+
+.strate-label {
+  @apply text-xs text-gray-600 lg:text-sm;
+}
+
 @media print {
   .sidebar,
   .mobile-bottom-bar,

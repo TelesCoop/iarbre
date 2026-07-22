@@ -17,12 +17,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from iarbre_data.utils.palettes import (
-    VEGESTRATE_COLOR_MAP,
-    VEGESTRATE_ELEVATION_COLOR_MAP,
-)
+from iarbre_data.utils.palettes import VEGESTRATE_COLOR_MAP
 
 logger = logging.getLogger(__name__)
+
+# Height given to nodata pixels in the DEM-encoded tiles, rendered transparent
+# by the front-end color ramp (any value below 0).
+NODATA_HEIGHT = -1.0
 
 
 class VegetationHeightTileView(APIView):
@@ -86,14 +87,12 @@ class VegetationHeightTileView(APIView):
                     h, w = data.shape
                     rgba_data = np.zeros((h, w, 4), dtype=np.uint8)
 
-                    color_map = (
-                        VEGESTRATE_ELEVATION_COLOR_MAP
-                        if kind == "elevation"
-                        else VEGESTRATE_COLOR_MAP
-                    )
-                    for value, color in color_map.items():
-                        mask = data == value
-                        rgba_data[mask] = color
+                    if kind == "raw":
+                        self._encode_terrarium(data, src.nodata, rgba_data)
+                    else:
+                        for value, color in VEGESTRATE_COLOR_MAP.items():
+                            mask = data == value
+                            rgba_data[mask] = color
                     img = Image.fromarray(rgba_data, mode="RGBA")
 
                     buffer = io.BytesIO()
@@ -109,6 +108,22 @@ class VegetationHeightTileView(APIView):
         except Exception:
             logger.exception("Error generating vegetation tile %s/%s/%s", z, x, y)
             return self._empty_tile()
+
+    @staticmethod
+    def _encode_terrarium(data, nodata, rgba_data):
+        """Encode heights in-place into `rgba_data` as terrarium RGB.
+
+        Decoded client-side as `R * 256 + G + B / 256 - 32768`, so the front-end
+        can classify heights itself instead of receiving pre-colored pixels.
+        """
+        heights = data.astype(np.float64)
+        if nodata is not None:
+            heights[data == nodata] = NODATA_HEIGHT
+        shifted = heights + 32768.0
+        rgba_data[..., 0] = (shifted // 256).astype(np.uint8)
+        rgba_data[..., 1] = (shifted % 256).astype(np.uint8)
+        rgba_data[..., 2] = ((shifted % 1) * 256).astype(np.uint8)
+        rgba_data[..., 3] = 255
 
     def _empty_tile(self):
         """Return a transparent 256x256 PNG."""

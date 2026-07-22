@@ -2,6 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import IconMap from "@/components/icons/IconMap.vue"
 import IconBuilding from "@/components/icons/IconBuilding.vue"
+import VegestrateHeightRanges from "@/components/contextTools/VegestrateHeightRanges.vue"
 
 const mapStore = useMapStore()
 </script>
@@ -31,4 +32,9 @@ const mapStore = useMapStore()
       </button>
     </div>
   </div>
+
+  <VegestrateHeightRanges
+    v-if="mapStore.showVegestrateHeight"
+    class="map-control-panel w-full border-0"
+  />
 </template>
