@@ -34,6 +34,7 @@ import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import {
   VEGESTRATE_COLOR_MAP,
   VEGESTRATE_HEIGHT_MAP,
+  VEGESTRATE_TERRAIN_EXAGGERATION,
   buildElevationColorRamp,
   normalizeHeightRanges,
   type HeightRange
@@ -171,6 +172,9 @@ export const useMapStore = defineStore("map", () => {
     return DataTypeToGeolevel[selectedDataType.value!]
   }
 
+  const isVegestrateHeightMode = (datatype: DataType) =>
+    datatype === DataType.VEGESTRATE && showVegestrateHeight.value
+
   /**
    * Deep-clone the raw maplibre style JSON for a given MapStyle, inject the
    * backend base URL where needed and apply centralized source attributions.
@@ -231,7 +235,7 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+    if (isVegestrateHeightMode(datatype)) {
       return [
         {
           id: layerId,
@@ -507,7 +511,7 @@ export const useMapStore = defineStore("map", () => {
       map.off("zoom", heightMapZoomHandler.value)
       heightMapZoomHandler.value = null
     }
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+    if (isVegestrateHeightMode(datatype)) {
       const handler = async (e: any) => {
         if (selectionMode.value !== SelectionMode.POINT) return
         clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
@@ -585,7 +589,7 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+    if (isVegestrateHeightMode(datatype)) {
       const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
       map.addSource(sourceId, {
         type: "raster-dem",
@@ -664,6 +668,7 @@ export const useMapStore = defineStore("map", () => {
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
+        clearTerrain(mapInstance)
         const layerId = getLayerId(previousDataType, previousGeoLevel)
         if (mapInstance.getLayer(layerId)) {
           mapInstance.removeLayer(layerId)
@@ -743,6 +748,7 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
+      clearTerrain(mapInstance)
       // Clear overlay layers before style change
       if (mapInstance.getLayer("qpv-border")) {
         removeQPVLayer(mapInstance)
@@ -777,13 +783,27 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const applyVegestrateTerrain = (mapInstance: Map, datatype: DataType) => {
+    if (!isVegestrateHeightMode(datatype) || !use3D.value) return
+    const sourceId = getSourceId(datatype, DataTypeToGeolevel[datatype])
+    if (!mapInstance.getSource(sourceId)) return
+    mapInstance.setTerrain({ source: sourceId, exaggeration: VEGESTRATE_TERRAIN_EXAGGERATION })
+    console.info("cypress: vegestrate terrain enabled")
+  }
+
+  const clearTerrain = (mapInstance: Map) => {
+    if (!mapInstance.getTerrain()) return
+    mapInstance.setTerrain(null)
+    console.info("cypress: vegestrate terrain disabled")
+  }
+
   const initTiles = (mapInstance: Map) => {
     const currentGeoLevel = getGeoLevelFromDataType()
     setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
     setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
+    applyVegestrateTerrain(mapInstance, selectedDataType.value!)
   }
 
-  // TODO: display loading during the async execution
   const addQPVLayer = async (mapInstance: Map) => {
     if (!mapInstance.getSource("qpv-source")) {
       const data = await getQPVData()
@@ -1113,9 +1133,6 @@ export const useMapStore = defineStore("map", () => {
     selectedDataType.value = initialDatatype
     controlsAdded.value[mapId] = false
 
-    // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
-    // Style expressions read Color.rgb, a non-writable non-configurable property,
-    // and a proxy cannot report the raw value for it (TypeError inside the render loop).
     mapInstancesByIds.value[mapId] = markRaw(
       new Map({
         container: mapId,
@@ -1132,9 +1149,6 @@ export const useMapStore = defineStore("map", () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
       shapeDrawing.initDraw(mapInstance)
-      // The backend score is only queried once the shape is finished (and on
-      // subsequent edits of that finished shape). While the shape is still being
-      // drawn, only the client-side area is refreshed — no request is fired.
       shapeDrawing.onShapeFinished(() => {
         markShapeFinished()
         recomputeLiveArea()
@@ -1146,8 +1160,6 @@ export const useMapStore = defineStore("map", () => {
           requestScoreIfWithinLimit()
         }
       })
-      // Idempotent registration (mirrors setupClickEventOnTile): remove any prior
-      // listener before re-adding so re-initialisation never stacks handlers.
       mapInstance.off("click", handleEditingMapClick)
       mapInstance.on("click", handleEditingMapClick)
       mapInstance.once("render", () => {
@@ -1179,13 +1191,10 @@ export const useMapStore = defineStore("map", () => {
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
-    // Clear contextual data when changing mode
     contextData.removeData()
 
-    // Use Terra Draw to change mode
     shapeDrawing.setMode(mode)
 
-    // In POINT mode (simple click), disable drawing
     if (mode === SelectionMode.POINT) {
       shapeDrawing.stopDrawing()
     }
@@ -1194,26 +1203,21 @@ export const useMapStore = defineStore("map", () => {
   const MIN_LOADING_DURATION_MS = 500
 
   const performCalculation = async () => {
-    // Activate loading state
     isCalculating.value = true
     contextData.error.value = false
     const loadingStartTime = Date.now()
 
     try {
-      // Retrieve aggregated scores in shape via backend API
       const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
 
       if (scores) {
-        // Set aggregated scores directly in context
         contextData.data.value = scores
       }
     } catch (e) {
-      // Surface the failure instead of silently leaving an empty panel.
       console.error("Error retrieving scores in shape:", e)
       contextData.data.value = null
       contextData.error.value = true
     } finally {
-      // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
       if (loadingDuration < MIN_LOADING_DURATION_MS) {
         await new Promise((resolve) =>
@@ -1224,7 +1228,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Debounce calculation to avoid multiple rapid calls
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
@@ -1243,8 +1246,6 @@ export const useMapStore = defineStore("map", () => {
     return { type: "Polygon", coordinates: [ring as [number, number][]] }
   }
 
-  // Retry path differs by mode: a shape error re-runs the polygon calculation,
-  // a tile error replays the last tile request.
   const retryContextData = () => {
     if (isShapeMode.value) {
       performCalculation()
@@ -1267,8 +1268,6 @@ export const useMapStore = defineStore("map", () => {
     () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
   )
 
-  // Query the backend only for selections within the allowed size, so oversized
-  // shapes never reach the server. A too-large shape clears any stale result.
   const requestScoreIfWithinLimit = () => {
     if (isAreaTooLarge.value) {
       contextData.removeData()
@@ -1277,8 +1276,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Shared reset for both shape-session entry points (start from POINT vs. restart
-  // from EDITING). Kept as distinct public methods so call sites read by intent.
   const resetToDrawingState = (mode: SelectionMode) => {
     shapeEditing.value = false
     liveArea.value = null
@@ -1293,13 +1290,8 @@ export const useMapStore = defineStore("map", () => {
     shapeEditing.value = true
   }
 
-  // Distance (screen px) a click must clear the current shape by before it counts
-  // as a "new zone" rather than an attempt to edit the shape.
   const REDRAW_MARGIN_PX = 24
 
-  // While editing, a click clearly away from the finished shape starts a fresh shape
-  // of the same type (discarding the previous one). Clicks on/near the shape are left
-  // to Terra Draw for vertex/feature editing, so a near-miss never destroys the shape.
   const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
     if (drawingState.value !== "editing") return
     const map = mapInstancesByIds.value["default"]
@@ -1336,6 +1328,13 @@ export const useMapStore = defineStore("map", () => {
       }
     })
     refreshLayers()
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      if (use3D.value) {
+        applyVegestrateTerrain(mapInstance, selectedDataType.value!)
+      } else {
+        clearTerrain(mapInstance)
+      }
+    })
   }
 
   const zoomTo = (targetZoom: number) => {
