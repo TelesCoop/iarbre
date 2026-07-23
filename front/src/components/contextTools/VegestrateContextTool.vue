@@ -2,12 +2,13 @@
 import { useMapStore } from "@/stores/map"
 import IconMap from "@/components/icons/IconMap.vue"
 import IconBuilding from "@/components/icons/IconBuilding.vue"
+import VegestrateHeightRanges from "@/components/contextTools/VegestrateHeightRanges.vue"
 
 const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="context-menu-tools map-control-panel">
+  <div class="map-control-panel border-0">
     <div class="flex items-center gap-1" role="radiogroup" aria-label="Vue végétation">
       <button
         :class="['layer-chip', { active: !mapStore.showVegestrateHeight }]"
@@ -31,4 +32,9 @@ const mapStore = useMapStore()
       </button>
     </div>
   </div>
+
+  <VegestrateHeightRanges
+    v-if="mapStore.showVegestrateHeight"
+    class="map-control-panel w-full border-0"
+  />
 </template>
