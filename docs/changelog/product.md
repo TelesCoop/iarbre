@@ -1,5 +1,21 @@
 # Journal des changements
 
+## 🔖 0.36.0 (2026-07-23) : Améliorations pour vegestrate
+
+### ✨ feat : Choix des filtres de hauteur sur vegestrate
+
+On enrichit la vue "hauteur" en permettant de définir des seuils pour choisir soit même des caractéristique par strate, exclure des tranches de végétations.
+
+&rarr; PR [#707](https://github.com/TelesCoop/iarbre/pull/707)
+
+### 🛠️ enhance : Améliorations visuelles pour vegestrate
+
+- On a maintenant une croix pour le pointeur pour la hauteur.
+- Les couleurs et la jauge de légende ont été revues pour plus de clarté
+
+&rarr; PR [#704](https://github.com/TelesCoop/iarbre/pull/704)
+&rarr; PR [#703](https://github.com/TelesCoop/iarbre/pull/703)
+
 ## 🔖 0.35.0 (2026-07-15) : Statistiques de zone et export simplifié
 
 ### ✨ feat : Tableau de bord d'une zone sélectionnée
