@@ -88,6 +88,7 @@ export const useMapStore = defineStore("map", () => {
 
   const {
     clearAllFilters,
+    setFilteredValues,
     applyFilters,
     hasActiveFilters,
     isFiltered,
@@ -822,8 +823,15 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const initMap = (mapId: string, initialDatatype: DataType) => {
+  const initMap = (
+    mapId: string,
+    initialDatatype: DataType,
+    initialFilters: (number | string)[] = []
+  ) => {
     selectedDataType.value = initialDatatype
+    if (initialFilters.length > 0) {
+      setFilteredValues(initialFilters)
+    }
     controlsAdded.value[mapId] = false
 
     mapInstancesByIds.value[mapId] = new Map({
@@ -839,6 +847,9 @@ export const useMapStore = defineStore("map", () => {
     const onMapReady = async () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
+      if (initialFilters.length > 0) {
+        applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+      }
       shapeDrawing.initDraw(mapInstance)
       // Configure automatic calculation when a shape is finished
       shapeDrawing.onShapeFinished(() => {

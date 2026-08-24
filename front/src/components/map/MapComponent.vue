@@ -8,6 +8,11 @@ const props = defineProps({
   mapId: {
     required: true,
     type: String
+  },
+  initialFilters: {
+    required: false,
+    type: Array as PropType<(number | string)[]>,
+    default: () => []
   }
 })
 
@@ -24,7 +29,7 @@ const mapStore = useMapStore()
 const appStore = useAppStore()
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType!)
+  mapStore.initMap(props.mapId, model.value.dataType!, props.initialFilters)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({
@@ -101,6 +106,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       <MapCoordinates />
     </div>
     <MapFiltersStatus />
+    <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
 </template>
