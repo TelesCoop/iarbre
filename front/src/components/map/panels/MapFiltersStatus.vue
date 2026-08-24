@@ -24,7 +24,7 @@ const handleResetFilters = () => {
 <template>
   <div
     v-if="isVisible"
-    class="map-control-panel flex justify-center items-center gap-2 mb-2"
+    class="map-control-panel flex justify-center items-center gap-2"
     data-cy="map-filters-status"
     role="status"
     aria-live="polite"

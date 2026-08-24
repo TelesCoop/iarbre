@@ -101,12 +101,12 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <!-- Legend - top left -->
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLegend />
+    <MapFiltersStatus />
+    <MapCopyLinkButton />
     <div class="legend-info-row">
       <MapResolution />
       <MapCoordinates />
     </div>
-    <MapFiltersStatus />
-    <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
 </template>

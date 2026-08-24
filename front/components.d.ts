@@ -81,6 +81,7 @@ declare module 'vue' {
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
     MapControlButton: typeof import('./src/components/map/controls/MapControlButton.vue')['default']
     MapCoordinates: typeof import('./src/components/map/MapCoordinates.vue')['default']
+    MapCopyLinkButton: typeof import('./src/components/map/MapCopyLinkButton.vue')['default']
     MapFiltersStatus: typeof import('./src/components/map/panels/MapFiltersStatus.vue')['default']
     MapGeocoder: typeof import('./src/components/map/MapGeocoder.vue')['default']
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
