@@ -45,5 +45,6 @@ watch(
     <p v-if="attributionHTML" class="legend-attribution">
       Source : <span v-html="attributionHTML" />
     </p>
+    <MapCopyLinkButton />
   </div>
 </template>

@@ -111,8 +111,6 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       data-cy="mobile-layer-switcher"
     />
     <MapLegend />
-    <MapFiltersStatus />
-    <MapCopyLinkButton />
     <div class="legend-info-row">
       <MapResolution />
       <MapCoordinates />
