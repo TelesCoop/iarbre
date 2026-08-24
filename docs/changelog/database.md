@@ -6,6 +6,30 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-06-16T06:35_postgres_backup.dump
+
+**Changements :** :
+
+- Ré-ajout de tous les médias qui étaient manquants.
+
+## 2026-06-15T14:08_postgres_backup.dump
+
+**Changements :** :
+
+- Ajout de la version vegestrate avec le post-processing V3 qui a été désigné comme données la plus pertinente lors des évaluations.
+
+## 2026-05-25T19:12_postgres_backup.dump
+
+**Changements :** :
+
+- Ajout de tous les rasters correspondants aux calques afin de permettre le téléchargement direct et les streams WMS.
+- Ajout d'une table pré-calculée des méta facteurs d'occupation des sols pour la plantabilité afin de les afficher en direct dans le dashboard.
+
+## 2026-05-19T14:08_postgres_backup.dump
+
+**Changements :** :
+Les données DB TOPO étaient manquantes dans la DB. Elles sont rétablies.
+
 ## 2026-04-21T09:58_postgres_backup.dump
 
 **Changements :** :

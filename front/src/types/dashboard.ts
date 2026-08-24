@@ -15,6 +15,7 @@ export interface DashboardPlantability {
   averageNormalizedIndice: number
   distribution: Record<string, number>
   distributionByDivision: DashboardPlantabilityDivision[]
+  metaFactors: Record<string, number>
 }
 
 export interface DashboardVulnerability {
@@ -29,10 +30,10 @@ export interface DashboardVulnerability {
 }
 
 export interface DashboardVegetation {
-  totalHa: number
-  treesSurfaceHa: number
-  bushesSurfaceHa: number
-  grassSurfaceHa: number
+  totalM2: number
+  treesSurfaceM2: number
+  bushesSurfaceM2: number
+  grassSurfaceM2: number
 }
 
 export interface DashboardLcz {
@@ -46,13 +47,24 @@ export interface DashboardLcz {
   waterRate: number
 }
 
+export interface DashboardBuildings {
+  averageBuildingFootprintM2: number
+}
+
+export interface DashboardBiosphere {
+  averageIndice: number
+  distribution: Record<string, number>
+}
+
 export interface DashboardData {
   city: DashboardCity | null
-  areaHa: number
+  areaKm2: number
   plantability: DashboardPlantability
   vulnerability: DashboardVulnerability
   vegetation: DashboardVegetation
   lcz: DashboardLcz
+  buildings: DashboardBuildings
+  biosphere: DashboardBiosphere
 }
 
 export interface BubbleItem {
@@ -62,4 +74,4 @@ export interface BubbleItem {
   color: string
 }
 
-export type DashboardScale = "metropole" | "commune"
+export type DashboardScale = "metropole" | "commune" | "zone"

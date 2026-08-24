@@ -18,6 +18,7 @@ class DashboardPlantabilitySerializer(serializers.Serializer):
     averageNormalizedIndice = serializers.FloatField()
     distribution = serializers.DictField()
     distributionByDivision = DashboardPlantabilityDivisionSerializer(many=True)
+    metaFactors = serializers.DictField(child=serializers.FloatField())
 
 
 class DashboardVulnerabilitySerializer(serializers.Serializer):
@@ -32,10 +33,10 @@ class DashboardVulnerabilitySerializer(serializers.Serializer):
 
 
 class DashboardVegetationSerializer(serializers.Serializer):
-    totalHa = serializers.FloatField()
-    treesSurfaceHa = serializers.FloatField()
-    bushesSurfaceHa = serializers.FloatField()
-    grassSurfaceHa = serializers.FloatField()
+    totalM2 = serializers.FloatField()
+    treesSurfaceM2 = serializers.FloatField()
+    bushesSurfaceM2 = serializers.FloatField()
+    grassSurfaceM2 = serializers.FloatField()
 
 
 class DashboardLczSerializer(serializers.Serializer):
@@ -49,10 +50,21 @@ class DashboardLczSerializer(serializers.Serializer):
     waterRate = serializers.FloatField()
 
 
+class DashboardBuildingsSerializer(serializers.Serializer):
+    averageBuildingFootprintM2 = serializers.FloatField()
+
+
+class DashboardBiosphereSerializer(serializers.Serializer):
+    averageIndice = serializers.FloatField()
+    distribution = serializers.DictField()
+
+
 class DashboardSerializer(serializers.Serializer):
     city = DashboardCitySerializer(allow_null=True)
-    areaHa = serializers.FloatField()
+    areaKm2 = serializers.FloatField()
     plantability = DashboardPlantabilitySerializer()
     vulnerability = DashboardVulnerabilitySerializer()
     vegetation = DashboardVegetationSerializer()
     lcz = DashboardLczSerializer()
+    buildings = DashboardBuildingsSerializer()
+    biosphere = DashboardBiosphereSerializer()

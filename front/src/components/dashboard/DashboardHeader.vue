@@ -8,10 +8,16 @@ import type { DashboardScale } from "@/types/dashboard"
 
 const store = useDashboardStore()
 
-const scaleOptions: { label: string; value: DashboardScale }[] = [
-  { label: "Métropole", value: "metropole" },
-  { label: "Commune", value: "commune" }
-]
+const scaleOptions = computed<{ label: string; value: DashboardScale }[]>(() => {
+  const options: { label: string; value: DashboardScale }[] = [
+    { label: "Métropole", value: "metropole" },
+    { label: "Commune", value: "commune" }
+  ]
+  if (store.hasZone) {
+    options.push({ label: "Zone personnalisée", value: "zone" })
+  }
+  return options
+})
 
 const cityOptions = computed(() => store.cities.map((c) => ({ label: c.name, value: c.code })))
 
@@ -25,11 +31,15 @@ const handleCityChange = (value: string | number) => {
 
 const areaDisplay = computed(() => {
   if (!store.dashboardData) return null
-  const ha = store.dashboardData.areaHa
-  return ha >= 100 ? `${(ha / 100).toFixed(1)} km²` : `${ha} ha`
+  const km2 = store.dashboardData.areaKm2
+  if (km2 >= 1) return `${km2.toFixed(1)} km²`
+  return `${Math.round(km2 * 1_000_000).toLocaleString("fr-FR")} m²`
 })
 
 const currentLabel = computed(() => {
+  if (store.selectedScale === "zone") {
+    return "Zone personnalisée"
+  }
   if (store.selectedScale === "commune" && store.selectedCity) {
     return store.selectedCity.name
   }
@@ -94,8 +104,7 @@ const currentLabel = computed(() => {
 @reference "@/styles/main.css";
 
 .dashboard-header {
-  @apply relative mb-6 md:mb-8;
-  z-index: 10;
+  @apply relative mb-6 md:mb-8 z-20;
 }
 
 .header-top {
@@ -107,7 +116,7 @@ const currentLabel = computed(() => {
 }
 
 .header-title {
-  @apply text-xl md:text-2xl font-bold text-gray-900;
+  @apply text-xl md:text-3xl font-bold text-gray-900;
 }
 
 .header-badges {

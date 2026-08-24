@@ -1,10 +1,11 @@
-import { computed, ref } from "vue"
+import { computed, markRaw, ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
+  type GeoJSONSource,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -13,7 +14,8 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
-  TERRA_DRAW_POLYGON_LAYER
+  TERRA_DRAW_POLYGON_LAYER,
+  MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
 import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
@@ -21,14 +23,22 @@ import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
+import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import { VEGESTRATE_COLOR_MAP, VEGESTRATE_HEIGHT_MAP } from "@/utils/vegetation"
+import {
+  VEGESTRATE_COLOR_MAP,
+  VEGESTRATE_HEIGHT_MAP,
+  buildElevationColorRamp,
+  normalizeHeightRanges,
+  type HeightRange
+} from "@/utils/vegetation"
+import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -55,6 +65,19 @@ import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
+import { computePolygonAreaM2 } from "@/utils/geo"
+import type { ZonePolygon } from "@/stores/zone"
+
+const isHeightRange = (range: unknown): range is HeightRange => {
+  if (typeof range !== "object" || range === null) return false
+  const { min, max } = range as HeightRange
+  return typeof min === "number" && (max === null || typeof max === "number")
+}
+
+const loadStoredHeightRanges = (): HeightRange[] => {
+  const stored = LocalStorageHandler.getItem("vegestrateHeightRanges")
+  return Array.isArray(stored) ? normalizeHeightRanges(stored.filter(isHeightRange)) : []
+}
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -74,7 +97,8 @@ export const useMapStore = defineStore("map", () => {
     surface: number | null
   } | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
-  const isToolbarVisible = ref<boolean>(false)
+  const shapeEditing = ref<boolean>(false)
+  const liveArea = ref<number | null>(null)
   const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
@@ -85,6 +109,11 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+  const showVegestrateHeight = ref<boolean>(false)
+  const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
+  const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
+  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
+  const heightMapZoomHandler = ref<(() => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -203,6 +232,21 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      return [
+        {
+          id: layerId,
+          type: "color-relief",
+          source: sourceId,
+          layout: {},
+          paint: {
+            "color-relief-opacity": 0.8,
+            "color-relief-color": buildElevationColorRamp(vegestrateHeightRanges.value)
+          }
+        }
+      ]
+    }
+
     const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
 
     if (use3D.value) {
@@ -256,7 +300,233 @@ export const useMapStore = defineStore("map", () => {
     return [fillLayer, lineLayer]
   }
 
+  const CLICK_MARKER_SOURCE = "ifb-click-square-source"
+  const CLICK_MARKER_CASING_LAYER = "ifb-click-marker-casing-layer"
+  const CLICK_MARKER_LAYER = "ifb-click-square-layer"
+  const IFB_CLICK_CIRCLE_SOURCE = "ifb-click-circle-source"
+  const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
+  const IFB_CIRCLE_RADIUS_M = 500
+
+  const CROSS_HALF_SIZE_PX = 9
+
+  const metersPerPixel = (map: Map, lat: number) =>
+    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / 2 ** map.getZoom()
+
+  const CLICK_MARKER_STYLES = {
+    square: {
+      halfSizeM: () => 2,
+      width: QPV_CASING_WIDTH,
+      casingWidth: 0
+    },
+    cross: {
+      halfSizeM: (map: Map, lat: number) => CROSS_HALF_SIZE_PX * metersPerPixel(map, lat),
+      width: 2,
+      casingWidth: 5
+    }
+  }
+  type ClickMarkerShape = keyof typeof CLICK_MARKER_STYLES
+
+  const drawClickMarker = (
+    map: Map,
+    lat: number,
+    lng: number,
+    shape: ClickMarkerShape,
+    withCircle = true
+  ) => {
+    const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
+    const sizeM = halfSizeM(map, lat)
+    const latOffset = sizeM / 111320
+    const lngOffset = sizeM / (111320 * Math.cos((lat * Math.PI) / 180))
+    const marker = {
+      type: "Feature" as const,
+      geometry:
+        shape === "square"
+          ? {
+              type: "Polygon" as const,
+              coordinates: [
+                [
+                  [lng - lngOffset, lat - latOffset],
+                  [lng + lngOffset, lat - latOffset],
+                  [lng + lngOffset, lat + latOffset],
+                  [lng - lngOffset, lat + latOffset],
+                  [lng - lngOffset, lat - latOffset]
+                ]
+              ]
+            }
+          : {
+              type: "MultiLineString" as const,
+              coordinates: [
+                [
+                  [lng - lngOffset, lat],
+                  [lng + lngOffset, lat]
+                ],
+                [
+                  [lng, lat - latOffset],
+                  [lng, lat + latOffset]
+                ]
+              ]
+            },
+      properties: {}
+    }
+    const source = map.getSource(CLICK_MARKER_SOURCE) as GeoJSONSource | undefined
+    if (source) {
+      source.setData(marker)
+    } else {
+      map.addSource(CLICK_MARKER_SOURCE, { type: "geojson", data: marker })
+      map.addLayer({
+        id: CLICK_MARKER_CASING_LAYER,
+        type: "line",
+        source: CLICK_MARKER_SOURCE,
+        layout: { "line-cap": "round" },
+        paint: {
+          "line-color": QPV_BORDER_COLOR,
+          "line-width": casingWidth,
+          "line-opacity": QPV_CASING_OPACITY
+        }
+      })
+      map.addLayer({
+        id: CLICK_MARKER_LAYER,
+        type: "line",
+        source: CLICK_MARKER_SOURCE,
+        layout: { "line-cap": "round" },
+        paint: {
+          "line-color": QPV_CASING_COLOR,
+          "line-width": width,
+          "line-opacity": QPV_CASING_OPACITY
+        }
+      })
+    }
+
+    if (!withCircle) return
+
+    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
+    const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const steps = 64
+    const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
+      const angle = (i * 2 * Math.PI) / steps
+      return [lng + lngRadiusDeg * Math.cos(angle), lat + latRadiusDeg * Math.sin(angle)]
+    })
+    const circle = {
+      type: "Feature" as const,
+      geometry: { type: "Polygon" as const, coordinates: [circleCoords] },
+      properties: {}
+    }
+    const circleSource = map.getSource(IFB_CLICK_CIRCLE_SOURCE) as GeoJSONSource | undefined
+    if (circleSource) {
+      circleSource.setData(circle)
+    } else {
+      map.addSource(IFB_CLICK_CIRCLE_SOURCE, { type: "geojson", data: circle })
+      map.addLayer({
+        id: IFB_CLICK_CIRCLE_LAYER,
+        type: "line",
+        source: IFB_CLICK_CIRCLE_SOURCE,
+        paint: { "line-color": "#FFFFFF", "line-width": 2 }
+      })
+    }
+    console.info("cypress: IFB click square drawn")
+  }
+
+  const removeClickMarker = (map: Map) => {
+    for (const layerId of [CLICK_MARKER_CASING_LAYER, CLICK_MARKER_LAYER, IFB_CLICK_CIRCLE_LAYER]) {
+      if (map.getLayer(layerId)) {
+        map.removeLayer(layerId)
+      }
+    }
+    for (const sourceId of [CLICK_MARKER_SOURCE, IFB_CLICK_CIRCLE_SOURCE]) {
+      if (map.getSource(sourceId)) {
+        map.removeSource(sourceId)
+      }
+    }
+    console.info("cypress: IFB click square removed")
+  }
+
+  const applyTileSelection = (
+    map: Map,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    features: any[],
+    lngLat: { lng: number; lat: number }
+  ) => {
+    const layerId = getLayerId(datatype, geolevel)
+    const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
+    const score = extractFeatureProperty(features, datatype, geolevel, "indice")
+    const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
+    const vulnScoreDay =
+      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
+        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_day")
+        : undefined
+    const vulnScoreNight =
+      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
+        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_night")
+        : undefined
+    if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
+    } else {
+      highlightFeature(map, layerId, featureId)
+    }
+    // Highlight cell in the legend that correspond to clicked tile
+    if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
+      const properties = features[0].properties
+      if (
+        properties &&
+        properties.indice !== undefined &&
+        properties.vulnerability_indice_day !== undefined
+      ) {
+        selectedLegendCell.value = getBivariateCoordinates(
+          properties.indice,
+          properties.vulnerability_indice_day
+        )
+      }
+    } else {
+      selectedLegendCell.value = null
+    }
+
+    clickCoordinates.value = { lat: lngLat.lat, lng: lngLat.lng }
+
+    // Conditionally load context data based on geolevel, datatype, and zoom
+    if (
+      geolevel === GeoLevel.TILE &&
+      datatype === DataType.PLANTABILITY &&
+      map.getZoom() < PLANTABILITY_DETAIL_ZOOM
+    ) {
+      contextData.setData(featureId, score, sourceValues)
+    } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
+      contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
+    } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+      contextData.setData(featureId, score, undefined, undefined, undefined, lngLat.lat, lngLat.lng)
+    } else {
+      contextData.setData(featureId)
+    }
+  }
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    if (heightMapClickHandler.value) {
+      map.off("click", heightMapClickHandler.value)
+      heightMapClickHandler.value = null
+    }
+    if (heightMapZoomHandler.value) {
+      map.off("zoom", heightMapZoomHandler.value)
+      heightMapZoomHandler.value = null
+    }
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const handler = async (e: any) => {
+        if (selectionMode.value !== SelectionMode.POINT) return
+        clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
+        drawClickMarker(map, e.lngLat.lat, e.lngLat.lng, "cross", false)
+        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
+      }
+      map.on("click", handler)
+      heightMapClickHandler.value = handler
+
+      const zoomHandler = () => {
+        if (!map.getLayer(CLICK_MARKER_LAYER)) return
+        const { lat, lng } = clickCoordinates.value
+        drawClickMarker(map, lat, lng, "cross", false)
+      }
+      map.on("zoom", zoomHandler)
+      heightMapZoomHandler.value = zoomHandler
+      return
+    }
     const layerId = getLayerId(datatype, geolevel)
     if (mapEventsListener.value[layerId]) {
       map.off("click", layerId, mapEventsListener.value[layerId])
@@ -267,56 +537,33 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
-
-      // Normal point mode (simple click to select a tile)
-      const featureId = extractFeatureProperty(e.features!, datatype, geolevel, "id")
-      const score = extractFeatureProperty(e.features!, datatype, geolevel, "indice")
-      const sourceValues = extractFeatureProperty(e.features!, datatype, geolevel, "source_values")
-      const vulnScoreDay =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_day")
-          : undefined
-      const vulnScoreNight =
-        geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-          ? extractFeatureProperty(e.features!, datatype, geolevel, "vulnerability_indice_night")
-          : undefined
-      highlightFeature(map, layerId, featureId)
-      // Highlight cell in the legend that correspond to clicked tile
-      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        const properties = e.features![0].properties
-        if (
-          properties &&
-          properties.indice !== undefined &&
-          properties.vulnerability_indice_day !== undefined
-        ) {
-          const coords = getBivariateCoordinates(
-            properties.indice,
-            properties.vulnerability_indice_day
-          )
-          selectedLegendCell.value = coords
-        }
-      } else {
-        selectedLegendCell.value = null
-      }
-
-      // Store click coordinates
-      clickCoordinates.value = {
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng
-      }
-      // Conditionally load context data based on geolevel, datatype, and zoom
-      if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY && map.getZoom() < 17) {
-        contextData.setData(featureId, score, sourceValues)
-      } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-        contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
-      } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-        contextData.setData(featureId, score)
-      } else {
-        contextData.setData(featureId)
-      }
+      applyTileSelection(map, datatype, geolevel, e.features!, {
+        lng: e.lngLat.lng,
+        lat: e.lngLat.lat
+      })
     }
     map.on("click", layerId, clickHandler)
     mapEventsListener.value[layerId] = clickHandler
+  }
+
+  /**
+   * Re-query the tile under the currently selected coordinates and recompute the
+   * context data for the current zoom (land-use detail when zoomed in, score
+   * distribution when zoomed out). Called after a programmatic zoom.
+   */
+  const recalculateAtSelection = () => {
+    const map = mapInstancesByIds.value["default"]
+    if (!map || !contextData.data.value) return
+    const datatype = selectedDataType.value
+    if (!datatype) return
+    const geolevel = getGeoLevelFromDataType()
+    const layerId = getLayerId(datatype, geolevel)
+    if (!map.getLayer(layerId)) return
+    const { lng, lat } = clickCoordinates.value
+    const features = map.queryRenderedFeatures(map.project([lng, lat]), { layers: [layerId] })
+    if (features.length) {
+      applyTileSelection(map, datatype, geolevel, features, { lng, lat })
+    }
   }
 
   const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
@@ -338,6 +585,19 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
+
+    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
+      map.addSource(sourceId, {
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [tileUrl],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     // Vector source for other data types
     const tileDataType =
       datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
@@ -380,9 +640,11 @@ export const useMapStore = defineStore("map", () => {
   const changeDataType = (datatype: DataType) => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
+    if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
+    vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
 
     // Update all map instances with the new layer
@@ -397,6 +659,9 @@ export const useMapStore = defineStore("map", () => {
       }
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
+      }
+      if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
+        removeClickMarker(mapInstance)
       }
       // remove existing layers and sources
       if (previousDataType !== null) {
@@ -437,6 +702,25 @@ export const useMapStore = defineStore("map", () => {
 
   const refreshDatatype = () => {
     changeDataType(selectedDataType.value)
+  }
+
+  const toggleVegestrateHeight = () => {
+    showVegestrateHeight.value = !showVegestrateHeight.value
+    refreshDatatype()
+  }
+
+  const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
+    if (!showVegestrateHeight.value) return
+    const normalized = normalizeHeightRanges(ranges)
+    vegestrateHeightRanges.value = normalized
+    LocalStorageHandler.setItem("vegestrateHeightRanges", normalized)
+    const ramp = buildElevationColorRamp(normalized)
+    const layerId = getLayerId(DataType.VEGESTRATE, getGeoLevelFromDataType())
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
+      }
+    })
   }
 
   const refreshLayers = () => {
@@ -633,6 +917,9 @@ export const useMapStore = defineStore("map", () => {
   const removeBoundaryLayers = (mapInstance: Map) => {
     if (mapInstance.getLayer("city-boundary")) {
       mapInstance.removeLayer("city-boundary")
+    }
+    if (mapInstance.getLayer("city-boundary-border-casing")) {
+      mapInstance.removeLayer("city-boundary-border-casing")
     }
     if (mapInstance.getSource("city-boundary-source")) {
       mapInstance.removeSource("city-boundary-source")
@@ -834,13 +1121,18 @@ export const useMapStore = defineStore("map", () => {
     }
     controlsAdded.value[mapId] = false
 
-    mapInstancesByIds.value[mapId] = new Map({
-      container: mapId,
-      style: loadMapStyle(MapStyle.OSM),
-      maxZoom: MAX_ZOOM,
-      minZoom: MIN_ZOOM,
-      attributionControl: false
-    })
+    // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
+    // Style expressions read Color.rgb, a non-writable non-configurable property,
+    // and a proxy cannot report the raw value for it (TypeError inside the render loop).
+    mapInstancesByIds.value[mapId] = markRaw(
+      new Map({
+        container: mapId,
+        style: loadMapStyle(MapStyle.OSM),
+        maxZoom: MAX_ZOOM,
+        minZoom: MIN_ZOOM,
+        attributionControl: false
+      })
+    )
 
     const mapInstance = mapInstancesByIds.value[mapId]
 
@@ -851,10 +1143,24 @@ export const useMapStore = defineStore("map", () => {
         applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
       }
       shapeDrawing.initDraw(mapInstance)
-      // Configure automatic calculation when a shape is finished
+      // The backend score is only queried once the shape is finished (and on
+      // subsequent edits of that finished shape). While the shape is still being
+      // drawn, only the client-side area is refreshed — no request is fired.
       shapeDrawing.onShapeFinished(() => {
-        finishShapeSelection()
+        markShapeFinished()
+        recomputeLiveArea()
+        requestScoreIfWithinLimit()
       })
+      shapeDrawing.onShapeChanged(() => {
+        recomputeLiveArea()
+        if (shapeEditing.value) {
+          requestScoreIfWithinLimit()
+        }
+      })
+      // Idempotent registration (mirrors setupClickEventOnTile): remove any prior
+      // listener before re-adding so re-initialisation never stacks handlers.
+      mapInstance.off("click", handleEditingMapClick)
+      mapInstance.on("click", handleEditingMapClick)
       mapInstance.once("render", () => {
         console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
         console.info(
@@ -901,6 +1207,7 @@ export const useMapStore = defineStore("map", () => {
   const performCalculation = async () => {
     // Activate loading state
     isCalculating.value = true
+    contextData.error.value = false
     const loadingStartTime = Date.now()
 
     try {
@@ -911,6 +1218,11 @@ export const useMapStore = defineStore("map", () => {
         // Set aggregated scores directly in context
         contextData.data.value = scores
       }
+    } catch (e) {
+      // Surface the failure instead of silently leaving an empty panel.
+      console.error("Error retrieving scores in shape:", e)
+      contextData.data.value = null
+      contextData.error.value = true
     } finally {
       // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
@@ -928,12 +1240,100 @@ export const useMapStore = defineStore("map", () => {
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
 
-  const toggleToolbar = () => {
-    isToolbarVisible.value = !isToolbarVisible.value
-    // When closing toolbar, return to POINT mode
-    if (!isToolbarVisible.value) {
-      changeSelectionMode(SelectionMode.POINT)
+  const hasShapeContextData = computed(
+    () =>
+      isShapeMode.value &&
+      !isCalculating.value &&
+      !contextData.error.value &&
+      contextData.data.value != null
+  )
+
+  const getDrawnPolygon = (): ZonePolygon | null => {
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    if (!ring || ring.length < 3) return null
+    return { type: "Polygon", coordinates: [ring as [number, number][]] }
+  }
+
+  // Retry path differs by mode: a shape error re-runs the polygon calculation,
+  // a tile error replays the last tile request.
+  const retryContextData = () => {
+    if (isShapeMode.value) {
+      performCalculation()
+    } else {
+      contextData.retry()
     }
+  }
+
+  const drawingState = computed<"point" | "drawing" | "editing">(() => {
+    if (selectionMode.value === SelectionMode.POINT) return "point"
+    return shapeEditing.value ? "editing" : "drawing"
+  })
+
+  const recomputeLiveArea = () => {
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    liveArea.value = ring ? computePolygonAreaM2(ring) : null
+  }
+
+  const isAreaTooLarge = computed(
+    () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
+  )
+
+  // Query the backend only for selections within the allowed size, so oversized
+  // shapes never reach the server. A too-large shape clears any stale result.
+  const requestScoreIfWithinLimit = () => {
+    if (isAreaTooLarge.value) {
+      contextData.removeData()
+    } else {
+      finishShapeSelection()
+    }
+  }
+
+  // Shared reset for both shape-session entry points (start from POINT vs. restart
+  // from EDITING). Kept as distinct public methods so call sites read by intent.
+  const resetToDrawingState = (mode: SelectionMode) => {
+    shapeEditing.value = false
+    liveArea.value = null
+    changeSelectionMode(mode)
+  }
+
+  const enterShapeMode = (mode: SelectionMode) => resetToDrawingState(mode)
+
+  const startNewShape = (mode: SelectionMode) => resetToDrawingState(mode)
+
+  const markShapeFinished = () => {
+    shapeEditing.value = true
+  }
+
+  // Distance (screen px) a click must clear the current shape by before it counts
+  // as a "new zone" rather than an attempt to edit the shape.
+  const REDRAW_MARGIN_PX = 24
+
+  // While editing, a click clearly away from the finished shape starts a fresh shape
+  // of the same type (discarding the previous one). Clicks on/near the shape are left
+  // to Terra Draw for vertex/feature editing, so a near-miss never destroys the shape.
+  const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
+    if (drawingState.value !== "editing") return
+    const map = mapInstancesByIds.value["default"]
+    const ring = shapeDrawing.getCurrentShapeCoordinates()
+    if (!map || !ring) return
+
+    const screen = ring.map((coord) => map.project(coord as [number, number]))
+    const xs = screen.map((p) => p.x)
+    const ys = screen.map((p) => p.y)
+    const outside =
+      e.point.x < Math.min(...xs) - REDRAW_MARGIN_PX ||
+      e.point.x > Math.max(...xs) + REDRAW_MARGIN_PX ||
+      e.point.y < Math.min(...ys) - REDRAW_MARGIN_PX ||
+      e.point.y > Math.max(...ys) + REDRAW_MARGIN_PX
+
+    if (outside) startNewShape(selectionMode.value)
+  }
+
+  const exitShapeMode = () => {
+    shapeEditing.value = false
+    liveArea.value = null
+    shapeDrawing.clearDrawing()
+    changeSelectionMode(SelectionMode.POINT)
   }
 
   const toggle3D = () => {
@@ -947,6 +1347,17 @@ export const useMapStore = defineStore("map", () => {
       }
     })
     refreshLayers()
+  }
+
+  const zoomTo = (targetZoom: number) => {
+    const mapInstance = mapInstancesByIds.value["default"]
+    if (!mapInstance) return
+    mapInstance.easeTo({
+      center: [clickCoordinates.value.lng, clickCoordinates.value.lat],
+      zoom: targetZoom,
+      duration: 600
+    })
+    mapInstance.once("idle", recalculateAtSelection)
   }
 
   return {
@@ -964,8 +1375,17 @@ export const useMapStore = defineStore("map", () => {
     selectedLegendCell,
     selectionMode,
     isShapeMode,
-    isToolbarVisible,
-    toggleToolbar,
+    hasShapeContextData,
+    getDrawnPolygon,
+    shapeEditing,
+    liveArea,
+    isAreaTooLarge,
+    drawingState,
+    enterShapeMode,
+    startNewShape,
+    markShapeFinished,
+    handleEditingMapClick,
+    exitShapeMode,
     changeSelectionMode,
     finishShapeSelection,
     isCalculating,
@@ -976,13 +1396,18 @@ export const useMapStore = defineStore("map", () => {
       setMode: shapeDrawing.setMode,
       clearDrawing: shapeDrawing.clearDrawing,
       getSelectedFeatures: shapeDrawing.getSelectedFeatures,
-      onShapeFinished: shapeDrawing.onShapeFinished
+      onShapeFinished: shapeDrawing.onShapeFinished,
+      onShapeChanged: shapeDrawing.onShapeChanged,
+      getCurrentShapeCoordinates: shapeDrawing.getCurrentShapeCoordinates,
+      finishCurrentPolygon: shapeDrawing.finishCurrentPolygon
     },
     contextData: {
       data: contextData.data,
+      error: contextData.error,
       setData: contextData.setData,
       setMultipleData: contextData.setMultipleData,
       removeData: contextData.removeData,
+      retry: retryContextData,
       toggleContextData: contextData.toggleContextData
     },
     clearAllFilters,
@@ -1003,6 +1428,12 @@ export const useMapStore = defineStore("map", () => {
     selectedCadastreParcel,
     clearCadastreSelection,
     use3D,
-    toggle3D
+    toggle3D,
+    zoomTo,
+    showVegestrateHeight,
+    toggleVegestrateHeight,
+    vegestrateHeightRanges,
+    setVegestrateHeightRanges,
+    vegetationHeightAtPoint
   }
 })

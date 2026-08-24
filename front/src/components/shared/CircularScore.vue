@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue"
 import * as d3 from "d3"
+import ContextDataCompactScore from "@/components/contextData/shared/ContextDataCompactScore.vue"
 import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
 import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
@@ -46,10 +47,14 @@ const arcColor = computed(() => {
     case "climate":
       return "text-primary-600"
     case "biosphereIntegrity": {
-      const idx = BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP.indexOf(
-        Math.min(Math.floor(props.percentage / 5) * 5, 90)
-      )
-      return String(BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP[idx !== -1 ? idx + 1 : 0])
+      const map = BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+      let color = String(map[0])
+      for (let i = 1; i < map.length - 1; i += 2) {
+        if (props.percentage >= (map[i] as number)) {
+          color = String(map[i + 1])
+        }
+      }
+      return color
     }
     default:
       return "#9CA3AF"
@@ -170,7 +175,7 @@ watch([targetAngle, arcColor], () => render(true))
   <section :aria-labelledby="`score-section-${label}`" class="text-center">
     <h3 :id="`score-section-${label}`" class="sr-only">Score de {{ label }} {{ name }}</h3>
 
-    <div class="relative inline-flex items-center justify-center" :class="sizeClasses">
+    <div class="relative hidden lg:inline-flex items-center justify-center" :class="sizeClasses">
       <svg
         ref="svgRef"
         :viewBox="`0 0 ${SVG_SIZE} ${SVG_SIZE}`"
@@ -194,6 +199,10 @@ watch([targetAngle, arcColor], () => render(true))
           {{ scoreDisplay }}
         </span>
       </div>
+    </div>
+
+    <div class="lg:hidden">
+      <ContextDataCompactScore :color="arcColor" :label="name || label" :value="scoreDisplay" />
     </div>
   </section>
 </template>

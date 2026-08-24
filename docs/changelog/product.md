@@ -1,5 +1,125 @@
 # Journal des changements
 
+## 🔖 0.36.0 (2026-07-23) : Améliorations pour vegestrate
+
+### ✨ feat : Choix des filtres de hauteur sur vegestrate
+
+On enrichit la vue "hauteur" en permettant de définir des seuils pour choisir soit même des caractéristique par strate, exclure des tranches de végétations.
+
+&rarr; PR [#707](https://github.com/TelesCoop/iarbre/pull/707)
+
+### 🛠️ enhance : Améliorations visuelles pour vegestrate
+
+- On a maintenant une croix pour le pointeur pour la hauteur.
+- Les couleurs et la jauge de légende ont été revues pour plus de clarté
+
+&rarr; PR [#704](https://github.com/TelesCoop/iarbre/pull/704)
+&rarr; PR [#703](https://github.com/TelesCoop/iarbre/pull/703)
+
+## 🔖 0.35.0 (2026-07-15) : Statistiques de zone et export simplifié
+
+### ✨ feat : Tableau de bord d'une zone sélectionnée
+
+Il est maintenant possible de sélectionner une zone sur la carte avec les outils de traçage puis d'afficher dans le tableau de bord les indicateurs correspondants.
+
+&rarr; PR [#683](https://github.com/TelesCoop/iarbre/pull/683)
+
+### 🛠️ enhance : Nettoyage et ajouts dans les exports
+
+On peut maintenant télécharger le raster de hauteur de vegestrate et les flux WMS + WFS ont été nettoyés pour réduire le nombre d'options au plus pertinentes
+
+&rarr; PR [#694](https://github.com/TelesCoop/iarbre/pull/694)
+&rarr; PR [#698](https://github.com/TelesCoop/iarbre/pull/698)
+
+### 🛠️ enhance : Meilleure explication de comment se connecter à un flux
+
+L'onglet "Obtenir les données" a été retravaillé pour que ce soit plus clair comment se connecter avec QGIS et/ou faire une requête directe.
+
+&rarr; PR [#697](https://github.com/TelesCoop/iarbre/pull/697)
+
+## 🔖 0.34.0 (2026-06-17) : Ajout des dernières versions vegestrate
+
+### ✨ feat : Ajout de la hauteur de végétation
+
+Dans le panneau de l'inventaire du végétal stratifié on peut afficher un raster et interragir avec lui pour connaître la hauteur de végétation à chaque pixel.
+
+&rarr; PR [#682](https://github.com/TelesCoop/iarbre/pull/682)
+
+### 🛠️ enhance : Vegestate avec postprocess validé
+
+Des ateliers ont permis de valider une version du post-process de vegestrate qui se trouve maintenant sur la plateforme.
+
+&rarr; PR [#676](https://github.com/TelesCoop/iarbre/pull/676)
+
+## 🔖 0.33.0 (2026-06-03) : Améliorations de l'UI de la carte
+
+### 🛠️ enhance : Changements dans l'UI des boutons sur la carte
+
+Changement du style et corrections de la disposition de certains éléments.
+
+&rarr; Commit [3962f61](https://github.com/TelesCoop/iarbre/commit/3962f61251caf42a3fa08c6da4a10e1d5a08cdc6)
+
+### 🐛 fix: GET du raster de vegestrate
+
+Le nom du fichier n'était plus le bon.
+
+&rarr; Commit [8a52714](https://github.com/TelesCoop/iarbre/commit/8a52714c9d77d983a5bc87162cc91ca10017318c)
+
+## 🔖 0.32.0 (2026-06-03) : Correctifs mineurs d'UI
+
+### 🛠️ enhance : Changements dans l'UI du panel
+
+Les visualisations des scores entre les différents calques ont été rendues plus homogène et claires.
+
+&rarr; PR[#661](https://github.com/TelesCoop/iarbre/pull/661)
+
+### 🛠️ enhance : Légères améliorations dans le tableau de bord
+
+Corrections de taille de typo, longueur de lignes et tailles relatives des graphiques.
+
+&rarr; Commit [a6b7f7d](https://github.com/TelesCoop/iarbre/commit/a6b7f7dc257eaf4d4f0ed985bc237dd5caf81c3b)
+
+## 🔖 0.31.0 (2026-05-27) : Tableau de bord narratif et améliorations des services WMF/WMS
+
+### ✨ feat : Tableau de bord narratif
+
+Le tableau de bord permet de résumer les indicateurs de la cartographie et de les croiser sur un territoire sélectionné. C'était précédement une collection en grille, ce qui rendait difficile l'inteprétation. Nous avons re-travaillé les graphiques et essayé de rendre ce tableau de bord plus narratif afin de mieux comprendre rapidement les grands enjeux avant de se plonger dans la cartographie.
+
+&rarr; PR[#651](https://github.com/TelesCoop/iarbre/pull/651)
+
+### 🛠️ enhance : Sortir le site vitrine du mono repo
+
+Le site vitrine alourdissait le mono-repo avec la synchronisation de son contenu. De plus il fallait une mise en production pour le mettre à jour.
+Il a maintenant son [repo](https://github.com/TelesCoop/iarbre-website) dédié. Il y a une légère refonte au passage pour clarifier la proposition
+de valeur.
+
+&rarr; PR[#629](https://github.com/TelesCoop/iarbre/pull/629)
+
+### ✨ feat : Ajout d'un service WMS
+
+Un endpoint permet maintenant de se connecter à un flux WMS, depuis QGIS par exemple. Les explications pour se connecter sont dispo en bas à gauche
+de la cartographie `Obtenir les données`. L'API REST pour récupérer les rasters (GeoTIFF) en entier a aussi été complété. On peut maintenant récupérer tous les calques colorisées ou en version "brute" c'est à dire en niveau de gris avec les classes.
+
+&rarr; PR[#613](https://github.com/TelesCoop/iarbre/pull/613)
+
+### 🛠️ enhance : Ajout d'un supervisor dédié pour les flux
+
+Des process se chargent uniquement de partager les flux WFS/WMS et ne peuvent donc plus bloquer la navigation sur la cartographie.
+
+&rarr; PR[#656](https://github.com/TelesCoop/iarbre/pull/656)
+
+### 🛠️ enhance : Améliorations UI/UX sur les boutons de cadastres, QPV et communes
+
+&rarr; PR[#646](https://github.com/TelesCoop/iarbre/pull/646)
+
+## 🔖 0.30.0 (2026-05-06) : Interactivité du calque de biodiversité
+
+### ✨ feat : Obtenir des détails du score de biodiversité
+
+La palette de couleur a été retravaillé ainsi que la légende mais surtout maintenant on peut cliquer sur le calque pour obtenir l'occupation des sols dans un rayon de 1kms et donc une explicabilité du score.
+
+&rarr; PR[#636](https://github.com/TelesCoop/iarbre/pull/636)
+
 ## 🔖 0.29.0 (2026-04-29) : Ajout de documentation métier et améliorations de l'UX
 
 ### ✨ feat : Ajout de lien vers la documentation métier

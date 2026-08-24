@@ -121,20 +121,19 @@ watch(
 
 .map-view-wrapper {
   @apply flex;
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100vh - var(--feedback-banner-height, 0px));
+  height: calc(100dvh - var(--feedback-banner-height, 0px));
   margin-left: 0;
 }
 
 @media (min-width: 1024px) {
   .map-view-wrapper {
-    margin-left: 64px;
+    margin-left: 4.5rem;
   }
 }
 
 .map-container {
   @apply flex-1;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
 }
 </style>

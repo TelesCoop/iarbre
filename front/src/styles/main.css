@@ -4,6 +4,49 @@
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
 
+/*
+ * Centralized z-index scale (low → high). All map overlays share one tier (they
+ * live in different corners and never overlap each other); the mobile result
+ * sheet sits above them so it covers the map; control dropdowns sit above the
+ * sheet. Higher app tiers are listed for reference.
+ */
+:root {
+  --z-map-overlay: 30;
+  --z-map-sheet: 40;
+  --z-map-floating: 50;
+  --z-popover: 100;
+  --z-dropdown: 1000;
+  --z-toast: 9999;
+  --z-overlay-top: 10000;
+}
+
+/*
+ * Centralized map-overlay layout anchors. Mobile-first values; the 1024px
+ * override below tightens them for desktop. Every map overlay positions itself
+ * from these tokens instead of hard-coded offsets, so the corners stay in sync.
+ *
+ * The bottom anchor lines overlays up with the maplibre control group's visual
+ * bottom edge: maplibre offsets the group by --map-ctrl-offset and adds a 10px
+ * group margin, so --map-overlay-bottom = offset + margin keeps the draw trigger
+ * and the bottom-left stack flush with the zoom controls at every breakpoint.
+ */
+:root {
+  --map-edge-gap: 0.5rem; /* breathing room from the map edges */
+  --map-ctrl-group-margin: 10px; /* maplibre's default .maplibregl-ctrl margin */
+  --map-ctrl-offset: 120px; /* maplibre bottom-right bottom offset */
+  --map-ctrl-edge: 8px; /* maplibre bottom-right right offset */
+  --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
+  --map-cadastre-bottom: 72px; /* parcel info, above the bottom controls */
+  --map-trigger-right: 68px; /* draw trigger sits left of the maplibre controls */
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --map-ctrl-offset: 8px; /* → --map-overlay-bottom resolves to 18px */
+    --map-cadastre-bottom: 16px;
+  }
+}
+
 /* Define theme variables */
 @theme {
   /* Primary colors */
@@ -17,6 +60,14 @@
   --color-primary-700: #34522a;
   --color-primary-800: #2b4822;
   --color-primary-900: #002814;
+  /* Gold accent palette (aligned with iarbre.fr identity) */
+  --color-gold-50: #faf3e1;
+  --color-gold-100: #f5e8c2;
+  --color-gold-200: #eedaa3;
+  --color-gold-300: #e6cf8a;
+  --color-gold-500: #c4ab66;
+  --color-gold-700: #82703b;
+  --color-gold-900: #40371a;
   /* Scale colors */
   --color-scale-0: #c4c4c4;
   --color-scale-1: #d1a99d;
@@ -157,6 +208,102 @@
   @apply bg-white rounded-xl p-4;
 }
 
+.vegestrate-panel {
+  @apply flex w-full flex-col gap-4;
+}
+
+.vegestrate-summary {
+  @apply flex items-center gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3;
+}
+
+.vegestrate-tree-icon {
+  @apply h-11 w-11 shrink-0 text-primary-800;
+}
+
+.vegestrate-summary-main {
+  @apply flex min-w-0 flex-1 flex-col;
+}
+
+.vegestrate-summary-label {
+  @apply text-sm text-gray-500;
+}
+
+.vegestrate-summary-aside {
+  @apply flex shrink-0 items-center self-stretch border-l border-gray-200 pl-4 text-sm text-gray-400;
+  max-width: 6rem;
+}
+
+.vegestrate-legend-card {
+  @apply flex gap-3 rounded-xl border border-gray-200 bg-white px-4 py-5;
+}
+
+.vegestrate-scale-col {
+  @apply w-12 shrink-0;
+}
+
+.vegestrate-bar {
+  @apply h-60 w-6 shrink-0 rounded-lg;
+}
+
+.vegestrate-categories {
+  @apply flex h-60 flex-1 list-none flex-col justify-between p-0;
+}
+
+.vegestrate-category {
+  @apply flex flex-1 flex-col;
+}
+
+button.vegestrate-category {
+  @apply cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-left;
+  @apply transition-colors duration-150 hover:bg-gray-50;
+}
+
+button.vegestrate-category.is-selected {
+  @apply bg-primary-50 ring-2 ring-primary-600;
+}
+
+.vegestrate-category.is-dimmed {
+  @apply opacity-40;
+}
+
+.vegestrate-category-label {
+  @apply text-base font-bold text-gray-800;
+}
+
+.vegestrate-category-range {
+  @apply text-sm text-gray-400;
+}
+
+.layer-chip {
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full;
+  @apply text-xs font-sans font-medium;
+  @apply border border-gray-200 bg-white text-gray-700;
+  @apply cursor-pointer transition-colors duration-150;
+}
+
+.layer-chip__icon {
+  @apply text-primary-500 shrink-0;
+}
+
+.layer-chip:hover {
+  @apply bg-gray-50 text-gray-900 border-gray-300;
+}
+
+.layer-chip.active {
+  background-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  @apply text-white;
+}
+
+.layer-chip.active .layer-chip__icon {
+  @apply text-white;
+}
+
+.layer-chip.active:hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+}
+
 .map-tool-container {
   @apply flex flex-col items-center gap-2 md:gap-4;
   @apply bg-white z-50;
@@ -212,13 +359,6 @@
   @apply cursor-pointer;
 }
 
-.vulnerability-table-row {
-  @apply grid grid-cols-12 gap-2 md:gap-4 p-2 md:p-4;
-  @apply hover:bg-primary-100;
-  @apply transition-all duration-200 items-center;
-  @apply border-l-2 border-transparent;
-}
-
 /* Map Control Styles */
 .map-control {
   @apply bg-white rounded-lg border border-gray-200;
@@ -243,11 +383,11 @@
 }
 
 .map-control-btn-sm {
-  @apply w-10 h-10;
+  @apply w-9 h-9 lg:w-10 lg:h-10;
 }
 
 .map-control-btn-md {
-  @apply px-3 py-2 h-10;
+  @apply px-2 py-1.5 h-9 lg:px-3 lg:py-2 lg:h-10;
 }
 
 .map-control-btn-active {
@@ -255,8 +395,23 @@
   @apply hover:bg-primary-600 hover:border-primary-600 hover:text-white;
 }
 
+.map-control-btn-disabled {
+  @apply opacity-40 cursor-not-allowed;
+  @apply hover:bg-white hover:border-gray-200;
+}
+
+/* Keep the disabled icon untinted even on hover, otherwise the shared
+   `.map-control-btn:hover img` white filter would render it white on the
+   white (non-highlighted) disabled background. */
+.map-control-btn-disabled img,
+.map-control-btn-disabled svg,
+.map-control-btn-disabled:hover img,
+.map-control-btn-disabled:hover svg {
+  filter: none;
+}
+
 .map-control-icon-btn {
-  @apply w-10 h-10 p-0;
+  @apply w-9 h-9 lg:w-10 lg:h-10 p-0;
   @apply bg-white rounded-lg border border-gray-200;
   @apply flex items-center justify-center;
   @apply cursor-pointer transition-colors duration-200;
@@ -391,4 +546,148 @@
 
 .driver-popover-arrow-side-bottom {
   @apply border-b-white;
+}
+
+/* ========================================
+   Dashboard widget shared styles
+   ======================================== */
+
+.widget-body {
+  @apply flex-1 w-full min-h-[200px];
+}
+
+.widget-empty {
+  @apply flex-1 flex items-center justify-center;
+}
+
+.empty-text {
+  @apply text-sm text-gray-400;
+}
+
+.chart-tooltip {
+  @apply absolute pointer-events-none flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shadow-md;
+  @apply bg-white border border-gray-100 text-xs whitespace-nowrap -translate-x-1/2 z-10;
+}
+
+.tooltip-dot {
+  @apply w-2 h-2 rounded-full shrink-0;
+}
+
+.tooltip-label {
+  @apply text-gray-600 font-medium;
+}
+
+.tooltip-value {
+  @apply text-gray-800 font-bold tabular-nums;
+}
+
+.tooltip-sep {
+  @apply text-gray-300;
+}
+
+.tooltip-level {
+  @apply text-gray-400;
+}
+
+/* ========================================
+   Legend component shared styles
+   ======================================== */
+
+.legend-panel {
+  @apply flex flex-col justify-center items-center;
+  @apply gap-1 py-1.5 px-2;
+  @apply bg-white border border-gray-200 rounded-lg;
+  @apply text-xs text-gray-700 font-sans;
+  @apply lg:gap-2 lg:py-2 lg:px-3 lg:text-sm;
+}
+
+.legend-attribution {
+  @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
+}
+
+.legend-header {
+  @apply flex items-center justify-center w-full;
+}
+
+.legend-title {
+  @apply text-xs font-semibold text-gray-600 uppercase tracking-wider leading-tight;
+  @apply lg:text-sm;
+}
+
+.legend-content {
+  @apply flex items-center justify-center gap-2 lg:gap-3;
+}
+
+.legend-scale {
+  @apply flex items-center rounded overflow-hidden;
+}
+
+.legend-label {
+  @apply hidden lg:flex items-center gap-1.5 text-gray-600;
+}
+
+.legend-axis-indicator {
+  @apply font-semibold text-sm text-gray-500 leading-none;
+  @apply uppercase;
+}
+
+.legend-axis-text {
+  @apply text-xs font-medium leading-tight;
+}
+
+.legend-item {
+  @apply flex items-center gap-2 cursor-pointer select-none transition-opacity duration-150;
+}
+
+.legend-swatch {
+  @apply w-4 h-4 border border-gray-300 rounded-sm flex-shrink-0;
+}
+
+.legend-item-label {
+  @apply text-xs text-gray-600 lg:text-sm;
+}
+
+.strate-list {
+  @apply flex w-full max-w-56 flex-col gap-1;
+}
+
+.strate-item {
+  @apply flex w-full items-center gap-2 cursor-pointer rounded-md px-2 py-1 text-left;
+  @apply border-0 bg-transparent;
+  @apply transition-colors duration-150 hover:bg-gray-50;
+}
+
+.strate-item.is-dimmed {
+  @apply opacity-40;
+}
+
+.strate-swatch {
+  @apply h-4 w-4 shrink-0 rounded-sm border border-gray-300;
+}
+
+.strate-item.is-selected .strate-swatch {
+  @apply ring-2 ring-gray-600;
+}
+
+.strate-label {
+  @apply text-xs text-gray-600 lg:text-sm;
+}
+
+@media print {
+  .sidebar,
+  .mobile-bottom-bar,
+  .back-to-map,
+  .header-controls {
+    display: none !important;
+  }
+
+  .dashboard-view-wrapper {
+    margin-left: 0 !important;
+  }
+
+  .dashboard-content {
+    padding: 1.5rem !important;
+    background: white !important;
+    overflow: visible !important;
+  }
 }

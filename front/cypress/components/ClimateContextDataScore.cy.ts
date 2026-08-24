@@ -56,7 +56,9 @@ describe("ClimateContextDataScore.vue", () => {
       }
     })
 
-    cy.get(".map-context-card").should("have.attr", "style").and("include", "background-color")
+    cy.get('[data-cy="climate-context-data-score"] .score-header-swatch')
+      .should("have.attr", "style")
+      .and("include", "background-color")
   })
 
   it("handles missing lczIndex gracefully", () => {
@@ -71,7 +73,7 @@ describe("ClimateContextDataScore.vue", () => {
       }
     })
 
-    cy.get(".map-context-card").should("exist")
+    cy.get('[data-cy="climate-context-data-score"]').should("exist")
   })
 
   it("displays full label text", () => {
@@ -81,7 +83,10 @@ describe("ClimateContextDataScore.vue", () => {
       }
     })
 
-    cy.get(".map-context-card").should("contain", "Zone climatique locale :")
-    cy.get(".map-context-card").should("contain", mockClimateData.lczDescription)
+    cy.get('[data-cy="climate-context-data-score"]').should("contain", "Zone climatique locale")
+    cy.get('[data-cy="climate-context-data-score"]').should(
+      "contain",
+      mockClimateData.lczDescription
+    )
   })
 })

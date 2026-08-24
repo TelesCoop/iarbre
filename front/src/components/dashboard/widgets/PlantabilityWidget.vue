@@ -4,10 +4,16 @@ import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import DashboardArcScore from "@/components/dashboard/shared/DashboardArcScore.vue"
 import type { DashboardPlantability } from "@/types/dashboard"
-import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
+import {
+  META_FACTOR_COLORS,
+  PLANTABILITY_COLOR_MAP,
+  PlantabilityScoreThreshold
+} from "@/utils/plantability"
+import { getContrastTextHex } from "@/utils/color"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
-const PLANTABILITY_MAX_SCORE = 10
+const PLANTABILITY_MAX_SCORE = PlantabilityScoreThreshold.VERY_FAVORED
+const META_FACTOR_MAX = 55
 
 interface Props {
   data: DashboardPlantability
@@ -45,13 +51,30 @@ const bars = computed(() => {
   return entries.map((e) => ({ ...e, pct: total > 0 ? e.value / total : 0 }))
 })
 
+const metaFactorBars = computed(() => {
+  const mf = props.data.metaFactors
+  if (!mf) return []
+  return Object.entries(mf).map(([label, value]) => {
+    const color = META_FACTOR_COLORS[label] ?? "#C4C4C4"
+    return {
+      label,
+      value,
+      color,
+      textColor: getContrastTextHex(color),
+      display: `${value.toFixed(1)}%`
+    }
+  })
+})
+
 const { svgRef } = useD3Chart(
   ({ svg, width, height }: D3ChartContext, animate: boolean) => {
-    const barH = Math.min(height * 0.5, 32)
-    const chartTotalH = barH + 14 + 10
+    const pctH = 16
+    const barH = Math.min(height * 0.45, 30)
+    const labelH = 16
+    const chartTotalH = pctH + barH + labelH
     const offsetY = Math.max((height - chartTotalH) / 2, 0)
-    const barY = 0
-    const labelY = barY + barH + 14
+    const barY = pctH
+    const labelY = barY + barH + labelH - 2
     const gap = 1.5
 
     const g = svg.append("g").attr("transform", `translate(0,${offsetY})`)
@@ -91,6 +114,22 @@ const { svgRef } = useD3Chart(
         .attr("width", (d) => (d as (typeof segments)[0]).w)
     }
 
+    g.selectAll(".seg-pct")
+      .data(segments.filter((s) => s.pct >= 0.06))
+      .join("text")
+      .attr("class", "seg-pct")
+      .attr("x", (d) => d.x + d.w / 2)
+      .attr("y", barY - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "0.5625rem")
+      .style("fill", "var(--color-gray-500)")
+      .attr("opacity", animate ? 0 : 1)
+      .text((d) => `${(d.pct * 100).toFixed(0)}%`)
+
+    if (animate) {
+      g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
+    }
+
     g.selectAll(".seg-label")
       .data(segments.filter((s) => s.pct >= 0.06))
       .join("text")
@@ -98,27 +137,9 @@ const { svgRef } = useD3Chart(
       .attr("x", (d) => d.x + d.w / 2)
       .attr("y", labelY)
       .attr("text-anchor", "middle")
-      .attr("font-size", "9px")
-      .attr("fill", "#9CA3AF")
+      .attr("font-size", "0.5625rem")
+      .style("fill", "var(--color-gray-400)")
       .text((d) => d.label)
-
-    g.selectAll(".seg-pct")
-      .data(segments.filter((s) => s.pct >= 0.06))
-      .join("text")
-      .attr("class", "seg-pct")
-      .attr("x", (d) => d.x + d.w / 2)
-      .attr("y", barY + barH / 2)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("font-size", "9px")
-      .attr("font-weight", "600")
-      .attr("fill", "#fff")
-      .attr("opacity", animate ? 0 : 1)
-      .text((d) => `${(d.pct * 100).toFixed(0)}%`)
-
-    if (animate) {
-      g.selectAll(".seg-pct").transition().delay(700).duration(300).attr("opacity", 1)
-    }
   },
   [bars]
 )
@@ -127,14 +148,34 @@ const { svgRef } = useD3Chart(
 <template>
   <DashboardWidgetCard subtitle="Indice moyen de plantabilité" title="Plantabilité">
     <div class="widget-body">
-      <DashboardArcScore
-        :color="arcColor"
-        :max-value="PLANTABILITY_MAX_SCORE"
-        :value="score"
-        label="plantabilité"
-      />
-      <div class="chart-container">
-        <svg ref="svgRef" width="100%" height="100%" />
+      <div class="score-col">
+        <DashboardArcScore
+          :color="arcColor"
+          :max-value="PLANTABILITY_MAX_SCORE"
+          :size="150"
+          :value="score"
+          label="plantabilité"
+        />
+        <svg ref="svgRef" class="distribution-chart" />
+      </div>
+      <div class="meta-factors">
+        <p class="widget-subtitle">Méta facteurs d'occupation des sols :</p>
+        <div v-for="bar in metaFactorBars" :key="bar.label" class="bar-item">
+          <span class="bar-label">{{ bar.label }}</span>
+          <div class="bar-track">
+            <div
+              class="bar-fill"
+              :style="{
+                width: `${Math.min((bar.value / META_FACTOR_MAX) * 100, 100)}%`,
+                backgroundColor: bar.color
+              }"
+            >
+              <span class="bar-inner-value" :style="{ color: bar.textColor }">{{
+                bar.display
+              }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </DashboardWidgetCard>
@@ -144,11 +185,49 @@ const { svgRef } = useD3Chart(
 @reference "@/styles/main.css";
 
 .widget-body {
-  @apply flex-1 flex flex-col items-center justify-center gap-4 w-full;
+  @apply flex flex-col gap-4 flex-1 w-full;
 }
 
-.chart-container {
-  @apply flex-1 w-full;
-  min-height: 40px;
+.score-col {
+  @apply flex flex-row items-center gap-4 shrink-0 w-full;
+}
+
+.distribution-chart {
+  @apply flex-1 h-20;
+}
+
+.meta-factors {
+  @apply flex flex-col gap-1.5;
+}
+
+.widget-subtitle {
+  @apply text-sm text-gray-800 mt-0.5;
+}
+
+.bar-item {
+  @apply flex flex-col gap-0.5;
+}
+
+.bar-label {
+  @apply text-[0.625rem] text-gray-500 uppercase tracking-wide;
+}
+
+.bar-track {
+  @apply w-full h-6 bg-gray-100 rounded-md overflow-hidden;
+}
+
+.bar-fill {
+  @apply h-full rounded-md flex items-center px-2;
+  animation: barGrow 700ms ease-out both;
+}
+
+.bar-inner-value {
+  @apply text-[0.625rem] font-bold whitespace-nowrap;
+}
+
+@keyframes barGrow {
+  from {
+    width: 0 !important;
+  }
 }
 </style>

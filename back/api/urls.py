@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView, ScoresInPolygonView
-from .views.dashboard_views import DashboardView
+from .views.dashboard_views import DashboardView, DashboardPolygonView
 from .views import (
     CityView,
     IrisView,
@@ -14,7 +14,11 @@ from .views import (
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
+    IArbreWMSView,
     OrthophotoTileView,
+    BiosphereLandCoverAtPointView,
+    VegetationHeightTileView,
+    VegetationHeightAtPointView,
 )
 
 router = routers.DefaultRouter()
@@ -27,11 +31,21 @@ urlpatterns = [
         TileView.as_view(),
         name="retrieve-tile",
     ),
-    # Specific URL should be BEFORE general URL with <id>
+    # Specific URLs BEFORE general catch-alls with path parameters
     path(
         "tiles/<datatype>/in-polygon/",
         ScoresInPolygonView.as_view(),
         name="scores-in-polygon",
+    ),
+    path(
+        "tiles/vegetation-height/value/",
+        VegetationHeightAtPointView.as_view(),
+        name="vegetation-height-at-point",
+    ),
+    path(
+        "tiles/vegetation-height/<int:z>/<int:x>/<int:y>.png",
+        VegetationHeightTileView.as_view(),
+        name="vegetation-height-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",
@@ -46,14 +60,25 @@ urlpatterns = [
         RasterDownloadView.as_view(),
         name="download-raster",
     ),
+    path(
+        "dashboard/in-polygon/",
+        DashboardPolygonView.as_view(),
+        name="dashboard-in-polygon",
+    ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
     path("wfs/", IArbreWFSView.as_view()),
+    path("wms/", IArbreWMSView.as_view()),
     path(
         "orthophoto/<int:z>/<int:x>/<int:y>.png",
         OrthophotoTileView.as_view(),
         name="orthophoto-tile",
+    ),
+    path(
+        "biosphere/land-cover-at-point/",
+        BiosphereLandCoverAtPointView.as_view(),
+        name="biosphere-land-cover-at-point",
     ),
 ]

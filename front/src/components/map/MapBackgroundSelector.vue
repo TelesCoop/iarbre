@@ -180,7 +180,7 @@ onBeforeUnmount(() => {
   @apply font-sans text-xs text-gray-700;
   bottom: calc(100% + 0.5rem);
   left: 0;
-  z-index: 40;
+  z-index: var(--z-map-floating);
   padding: 0.5rem 0.75rem;
   min-width: 14rem;
   max-width: 20rem;
@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
 }
 
 .bg-selector-toggle-preview {
-  @apply w-12 h-12 rounded flex items-center justify-center;
+  @apply w-10 h-10 lg:w-12 lg:h-12 rounded flex items-center justify-center;
   @apply bg-gray-100;
   overflow: hidden;
   flex-shrink: 0;

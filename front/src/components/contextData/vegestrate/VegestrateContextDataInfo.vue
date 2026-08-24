@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { VegetationData } from "@/types/vegetation"
-import { getZoneDesc, getZoneColor } from "@/utils/vegetation"
+import { getStrateShort, STRATE_CATEGORIES, STRATE_GRADIENT_CSS } from "@/utils/vegetation"
+import VegestratePanel from "@/components/contextData/vegestrate/VegestratePanel.vue"
 
 interface VegetationContextDataInfoProps {
   data: VegetationData
@@ -9,32 +10,26 @@ interface VegetationContextDataInfoProps {
 
 const props = defineProps<VegetationContextDataInfoProps>()
 
-const strateLabel = computed(() => getZoneDesc(props.data.indice))
-const strateColor = computed(() => getZoneColor(props.data.indice))
+const dominantStrate = computed(() => getStrateShort(props.data.indice))
 
-const formattedSurface = computed(() => {
-  return props.data.surface.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
-})
+const formattedSurface = computed(() =>
+  props.data.surface.toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+)
 </script>
 
 <template>
-  <div class="space-y-4">
-    <!-- Strate Type -->
-    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg">
-      <div class="flex items-center gap-3 mb-2">
-        <div
-          class="w-6 h-6 rounded"
-          :style="{ backgroundColor: strateColor }"
-          :title="strateLabel"
-        />
-        <span class="text-lg font-semibold text-gray-800">{{ strateLabel }}</span>
-      </div>
-    </div>
-
-    <!-- Surface -->
-    <div class="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg">
-      <span class="text-sm font-medium text-gray-700">Surface</span>
-      <span class="text-lg font-semibold text-gray-900">{{ formattedSurface }} m²</span>
-    </div>
-  </div>
+  <VegestratePanel
+    class="strate-info"
+    summary-label="Strate dominante"
+    aside-note="Classification par hauteur"
+    bar-aria-label="Échelle des strates végétales, de la strate herbacée à la strate arborée"
+    :bar-background="STRATE_GRADIENT_CSS"
+    :categories="STRATE_CATEGORIES"
+    filterable
+  >
+    <template #value>
+      <span class="text-3xl font-bold leading-none text-primary-800">{{ dominantStrate }}</span>
+      <span class="mt-1 text-sm text-gray-500">Surface : {{ formattedSurface }} m²</span>
+    </template>
+  </VegestratePanel>
 </template>

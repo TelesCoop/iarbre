@@ -27,8 +27,10 @@ export const getTileDetails = async (
       | ClimateData
       | PlantabilityVulnerabilityData
   } catch (error) {
+    // Surface the failure to the caller so the UI can show an error state
+    // instead of silently rendering an empty panel.
     console.error("Error retrieving tile details:", error)
-    return null
+    throw error
   }
 }
 

@@ -41,8 +41,8 @@ class UtilsDatabaseTestCase(TestCase):
         insee_code_city = None
         cities = select_city(insee_code_city=insee_code_city)
         self.assertEqual(len(cities), 10)
-        CityFactory.create(code=69381)
-        CityFactory.create(code=69382)
-        insee_code_city = "69381,69382"
+        CityFactory.create(code=13001)
+        CityFactory.create(code=13002)
+        insee_code_city = "13001,13002"
         cities = select_city(insee_code_city=insee_code_city)
         self.assertEqual(len(cities), 2)

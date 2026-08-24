@@ -1,4 +1,5 @@
 backend_application_port: 8032 # must be unique for each project on the same server
+gisserver_application_port: 8034
 frontend_application_port: 3002 # must be unique for each project on the same server
 environment_suffix: "_preprod"
 project_slug: "{{ base_project_slug }}{{ environment_suffix }}"
@@ -7,9 +8,6 @@ main_hostname: "preprod-carte.iarbre.fr"
 public_hostnames:
   - "{{ main_hostname }}"
 
-showcase_hostname: "preprod-showcase.iarbre.fr"
-showcase_redirect_hostnames: []
-hugo_build_flags: "--buildDrafts --buildFuture --buildExpired"
 use_password: true
 
 # hostnames mentioned here are redirected to the main hostname
@@ -22,7 +20,6 @@ backend_media_path: "{{ project_dir }}/backend/back/media"
 
 frontend_branch: dev
 backend_branch: dev
-showcase_branch: dev
 docs_branch: dev
 
 environment_name: production

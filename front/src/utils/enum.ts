@@ -66,7 +66,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
   [DataType.VEGESTRATE]:
     '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
-    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois — Licence CC BY-NC-SA 4.0</a>'
+    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois</a>'
 }
 
 export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
@@ -87,7 +87,7 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
     "https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d",
   [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
-    "https://erasme.notion.site/Comment-territorialiser-une-limite-plan-taire-35144e49a3ad805681b3f55275b608c4"
+    "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57"
 }
 
 export enum VulnerabilityCategory {
@@ -97,9 +97,9 @@ export enum VulnerabilityCategory {
 }
 
 export const VulnerabilityCategoryToIcon: Record<VulnerabilityCategory, string> = {
-  [VulnerabilityCategory.EXPOSITION]: "🌡️",
-  [VulnerabilityCategory.CAPACITY_TO_FACE]: "🏥",
-  [VulnerabilityCategory.SENSIBILITY]: "👥"
+  [VulnerabilityCategory.EXPOSITION]: "heat",
+  [VulnerabilityCategory.CAPACITY_TO_FACE]: "capacity",
+  [VulnerabilityCategory.SENSIBILITY]: "people"
 }
 
 export const VulnerabilityCategoryToDescription: Record<VulnerabilityCategory, string> = {

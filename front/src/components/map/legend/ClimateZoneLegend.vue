@@ -10,32 +10,49 @@ const mapStore = useMapStore()
 
 const zones = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G"]
 
+// LCZ are split in two families: built types (1-9) and land-cover types (A-G)
+const builtZones = zones.filter((zone) => /^\d$/.test(zone))
+const naturalZones = zones.filter((zone) => !/^\d$/.test(zone))
+
+const zoneGroups = [
+  { label: "Bâti", zones: builtZones },
+  { label: "Naturel", zones: naturalZones }
+]
+
 const handleZoneClick = (zone: string) => {
   mapStore.toggleAndApplyFilter(zone)
 }
 </script>
 
 <template>
-  <div class="climate-legend" data-cy="climate-zones-legend">
+  <div class="flex flex-col items-center gap-1 lg:gap-2 font-sans" data-cy="climate-zones-legend">
     <div class="legend-header">
       <span class="legend-title">Zone climatique locale</span>
     </div>
-    <div class="legend-scale">
-      <div v-for="(zone, index) in zones" :key="index" class="flex items-center">
-        <ClimateZoneScoreLabel
-          :zone="zone"
-          size="compact"
-          :is-first="index === 0"
-          :is-last="index === zones.length - 1"
-          @click="handleZoneClick(zone)"
-        />
+
+    <div class="zone-groups">
+      <div v-for="group in zoneGroups" :key="group.label" class="zone-group">
+        <span class="zone-group-label">{{ group.label }}</span>
+        <div class="legend-scale">
+          <ClimateZoneScoreLabel
+            v-for="(zone, index) in group.zones"
+            :key="zone"
+            :is-first="index === 0"
+            :is-last="index === group.zones.length - 1"
+            :zone="zone"
+            size="compact"
+            @click="handleZoneClick(zone)"
+          />
+        </div>
       </div>
     </div>
+
     <ExpandToggle :is-expanded="isExpanded" @toggle="isExpanded = !isExpanded" />
-    <div v-if="isExpanded" class="legend-details">
-      <div v-for="(zone, index) in zones" :key="'vertical-' + index" class="legend-detail-item">
+
+    <div v-if="isExpanded" class="zone-details">
+      <div v-for="zone in zones" :key="`detail-${zone}`" class="zone-detail-row">
         <ClimateZoneScoreLabel :zone="zone" size="detailed" @click="handleZoneClick(zone)" />
-        <span class="detail-text">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
+        <span class="zone-detail-text">LCZ {{ zone }} : {{ getZoneDesc(zone) }}</span>
       </div>
     </div>
   </div>
@@ -44,31 +61,28 @@ const handleZoneClick = (zone: string) => {
 <style scoped>
 @reference "@/styles/main.css";
 
-.climate-legend {
-  @apply flex flex-col items-center gap-2 font-sans;
+.zone-groups {
+  @apply flex flex-col items-center gap-2;
+  @apply sm:flex-row sm:items-end sm:gap-3;
 }
 
-.legend-header {
-  @apply flex items-center justify-center;
+.zone-group {
+  @apply flex flex-col items-center gap-1;
 }
 
-.legend-title {
-  @apply text-xs font-medium text-gray-500 uppercase tracking-wide;
+.zone-group-label {
+  @apply text-2xs font-semibold uppercase tracking-wide text-gray-600 lg:text-xs;
 }
 
-.legend-scale {
-  @apply flex items-center justify-center p-2 rounded overflow-hidden;
+.zone-details {
+  @apply mt-2 flex w-full flex-col items-start gap-2 border-t border-gray-200 pt-2;
 }
 
-.legend-details {
-  @apply flex flex-col items-start gap-2 mt-2 pt-2 border-t border-gray-200 w-full;
-}
-
-.legend-detail-item {
+.zone-detail-row {
   @apply flex items-center gap-2;
 }
 
-.detail-text {
-  @apply text-sm text-gray-800;
+.zone-detail-text {
+  @apply text-xs text-gray-600 lg:text-sm;
 }
 </style>

@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, computed, type PropType } from "vue"
+import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
 import { type MapParams } from "@/types/map"
+import ZoneDashboardCard from "@/components/map/ZoneDashboardCard.vue"
 
 const props = defineProps({
   mapId: {
@@ -28,6 +29,16 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 const appStore = useAppStore()
 
+// Mirror the search bar's height and width onto CSS vars so the shape toolbar's
+// card can sit just below it and match its width — without hard-coding either.
+const topRightControlsEl = ref<HTMLElement | null>(null)
+const setTopRightSize = (el: HTMLElement | null) => {
+  const root = document.documentElement.style
+  root.setProperty("--top-right-controls-height", `${el?.offsetHeight ?? 0}px`)
+  root.setProperty("--top-right-controls-width", `${el?.offsetWidth ?? 0}px`)
+}
+let topRightObserver: ResizeObserver | null = null
+
 onMounted(() => {
   mapStore.initMap(props.mapId, model.value.dataType!, props.initialFilters)
   const mapInstance = mapStore.getMapInstance(props.mapId)
@@ -49,6 +60,17 @@ onMounted(() => {
 
   mapInstance.on("moveend", updateParams)
   updateParams()
+
+  if (topRightControlsEl.value) {
+    topRightObserver = new ResizeObserver(() => setTopRightSize(topRightControlsEl.value))
+    topRightObserver.observe(topRightControlsEl.value)
+    setTopRightSize(topRightControlsEl.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  topRightObserver?.disconnect()
+  setTopRightSize(null)
 })
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -59,28 +81,18 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <div :id="mapId" class="relative w-full h-full" data-cy="map-component"></div>
   </div>
 
-  <!-- Top-right controls stack -->
-  <div class="top-right-controls">
+  <div ref="topRightControlsEl" class="top-right-controls">
     <MapGeocoder />
   </div>
 
-  <!-- Drawing controls positioned to the left of maplibre controls -->
-  <div class="drawing-controls-container">
-    <DrawingModeToggle />
-  </div>
-  <div v-if="mapStore.isToolbarVisible" class="selection-toolbar-container">
-    <SelectionModeToolbar />
-  </div>
+  <ShapeToolbar />
+  <ShapeLiveChip />
+  <ZoneDashboardCard />
 
-  <!-- Drawing controls - only visible in shape mode -->
-  <DrawingControls />
-
-  <!-- Cadastre parcel info - bottom center -->
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
   </div>
 
-  <!-- Bottom-left stack: background selector + layer toggles (desktop only) -->
   <div
     :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]"
     data-cy="bottom-left-controls"
@@ -89,17 +101,15 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapLayerToggles v-if="appStore.isDesktop" />
   </div>
 
-  <!-- Mobile top bar: layer switcher -->
-  <div v-if="appStore.isMobileOrTablet" class="mobile-top-bar">
+  <!-- Stacking these in one flex column keeps the gaps between items equal. -->
+  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLayerSwitcher
+      v-if="appStore.isMobileOrTablet"
       :show-context-tools="false"
+      :show-methodology="false"
       :with-border="false"
       data-cy="mobile-layer-switcher"
     />
-  </div>
-
-  <!-- Legend - top left -->
-  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLegend />
     <MapFiltersStatus />
     <MapCopyLinkButton />
@@ -115,7 +125,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 @reference "@/styles/main.css";
 
 .top-right-controls {
-  @apply absolute right-2 top-2 flex flex-col gap-2 z-50;
+  @apply absolute flex flex-col gap-2;
+  z-index: var(--z-map-overlay);
+  top: var(--map-edge-gap);
+  right: var(--map-edge-gap);
   width: calc(50% - 1rem);
 }
 
@@ -133,17 +146,12 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 }
 
-.mobile-top-bar {
-  @apply absolute top-2 left-2 z-40 flex flex-col gap-2;
-  @apply lg:hidden;
-  width: calc(50% - 1rem);
-}
-
 .legend-container {
-  @apply absolute flex flex-col items-start pointer-events-none z-30 gap-2;
+  @apply absolute flex flex-col items-start pointer-events-none gap-2;
   @apply transition-all duration-300 ease-out;
-  top: 48px;
-  left: 0.5rem;
+  z-index: var(--z-map-overlay);
+  top: var(--map-edge-gap);
+  left: var(--map-edge-gap);
   width: calc(50% - 1rem);
 }
 
@@ -165,16 +173,17 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   }
 
   .legend-container.sidepanel-visible {
-    left: calc(var(--width-sidepanel) + 0.5rem);
+    left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
 }
 
 .cadastre-info-container {
-  @apply absolute z-30 pointer-events-none;
+  @apply absolute pointer-events-none;
   @apply transition-all duration-300 ease-out;
+  z-index: var(--z-map-overlay);
   left: 50%;
   transform: translateX(-50%);
-  bottom: 72px;
+  bottom: var(--map-cadastre-bottom);
 }
 
 .cadastre-info-container > * {
@@ -182,29 +191,22 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 @media (min-width: 1024px) {
-  .cadastre-info-container {
-    bottom: 16px;
-  }
-
   .cadastre-info-container.sidepanel-visible {
     left: calc(50% + var(--width-sidepanel) / 2);
   }
 }
 
 .bottom-left-controls {
-  @apply absolute z-30 flex flex-col items-start gap-2;
+  @apply absolute flex flex-col items-start gap-2;
   @apply transition-all duration-300 ease-out;
-  left: 0.5rem;
-  bottom: 130px;
+  z-index: var(--z-map-overlay);
+  left: var(--map-edge-gap);
+  bottom: var(--map-overlay-bottom);
 }
 
 @media (min-width: 1024px) {
-  .bottom-left-controls {
-    bottom: 0.5rem;
-  }
-
   .bottom-left-controls.sidepanel-visible {
-    left: calc(var(--width-sidepanel) + 0.5rem);
+    left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
 }
 
@@ -212,30 +214,5 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   @apply flex flex-row items-center gap-2 pointer-events-auto w-full;
   min-width: 0;
   overflow: hidden;
-}
-
-/* Drawing controls - aligned with maplibre 3D button */
-.drawing-controls-container {
-  @apply absolute z-30;
-  bottom: 130px;
-  right: 68px;
-}
-
-.selection-toolbar-container {
-  @apply absolute z-30;
-  bottom: 180px;
-  right: 68px;
-}
-
-@media (min-width: 1024px) {
-  .drawing-controls-container {
-    bottom: 18px;
-    right: 68px;
-  }
-
-  .selection-toolbar-container {
-    bottom: 18px;
-    right: 116px;
-  }
 }
 </style>

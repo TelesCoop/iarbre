@@ -4,7 +4,7 @@ _2025 Emile Balembois — Licence CC BY-NC-SA 4.0_
 
 ## Origine des données
 
-Les données sont issues d’une collaboration entre l’Ecoles des Mines de Saint-Etienne (UMR 5600 - Environnement Villes et Sociétés département Génie de l’environnement pour les organisations) et le service Climat et Résilience de la Métropole de Lyon. Cette collaboration a notamment consisté à la réalisation du stage de Duli Rashid au sein du service Climat et Résilience et à la publication [d’un rapport](https://millenaire3.grandlyon.com/ressources/2025/l-integrite-de-la-biosphere-un-regard-complementaire-sur-la-biodiversite-applique-a-l-echelle-de-la-metropole-de-lyon). L’analyse et les données ont été conçues et produites par Emile Balembois (Ecole des Mines de Saint-Etienne – Environnement Villes et Sociétés) sous la supervision d’Antoine Giret (Ecole des Mines de Saint-Etienne – Environnement Villes et Sociétés).
+Les données sont issues d’une collaboration entre l’Ecoles des Mines de Saint-Etienne (UMR 5600 - Environnement Villes et Sociétés département Génie de l’environnement pour les organisations) et le service Climat et Résilience de la Métropole de Lyon. Cette collaboration a notamment consisté à la réalisation du stage de Duli Rashid au sein du service Climat et Résilience et à la publication [d’un rapport](https://millenaire3.grandlyon.com/ressources/2025/l-integrite-de-la-biosphere-un-regard-complementaire-sur-la-biodiversite-applique-a-l-echelle-de-la-metropole-de-lyon). L’analyse et les données ont été conçues et produites par Emile Balembois (Ecole des Mines de Saint-Etienne - Environnement Villes et Sociétés) sous la supervision d’Antoine Giret (Ecole des Mines de Saint-Etienne - Environnement Villes et Sociétés).
 
 Ces données ont été produites suite à un calcul à partir de 2 bases de données de couverture des sols en open source fournie pour la métropole de Lyon : [Cosia](https://geoservices.ign.fr/cosia) (donnée 2023 produite par l’IGN) et [CarHab](https://geoservices.ign.fr/habitats-carhab) (donnée produite par l’IGN et l’université Jean Monnet).
 
@@ -14,7 +14,7 @@ Les téléchargements des données et calculs ont été réalisés en décembre 
 
 ### Principe de l’indicateur
 
-Cet indicateur est [hérité d’études scientifiques sur le cadre des limites planétaires](https://www.nature.com/articles/s41586-023-06083-8) qui définissent une proportion minimale d’espaces naturels nécessaires dans les espaces modifiés par l’Homme – tels que la métropole de Lyon - pour maintenir une biodiversité fonctionnelle. L’enjeu est de maintenir les fonctions écologiques suivantes :
+Cet indicateur est [hérité d’études scientifiques sur le cadre des limites planétaires](https://www.nature.com/articles/s41586-023-06083-8) qui définissent une proportion minimale d’espaces naturels nécessaires dans les espaces modifiés par l’Homme, tels que la métropole de Lyon, pour maintenir une biodiversité fonctionnelle. L’enjeu est de maintenir les fonctions écologiques suivantes :
 
 - Pollinisation
 - Impact positif sur la santé des habitants
