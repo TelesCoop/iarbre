@@ -173,12 +173,17 @@ export const useMapStore = defineStore("map", () => {
 
   /**
    * Deep-clone the raw maplibre style JSON for a given MapStyle, inject the
-   * backend base URL where needed and apply centralized source attributions.
+   * backend base URL and the Carto basemap key where needed and apply
+   * centralized source attributions. When no Carto key is configured, the
+   * `?key=` parameter is dropped so the keyless basemaps are used.
    * Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
    * https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
    */
   const loadMapStyle = (style: MapStyle): maplibregl.StyleSpecification => {
-    const rawStyle = JSON.stringify(mapStyles[style]).replace("{API_BASE_URL}", getFullBaseApiUrl())
+    const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
+    const rawStyle = JSON.stringify(mapStyles[style])
+      .replace("{API_BASE_URL}", getFullBaseApiUrl())
+      .replace(/\?key=\{CARTO_API_KEY\}/g, cartoApiKey ? `?key=${cartoApiKey}` : "")
     return applyMapStyleAttributions(JSON.parse(rawStyle)) as maplibregl.StyleSpecification
   }
   const navControl = ref(
