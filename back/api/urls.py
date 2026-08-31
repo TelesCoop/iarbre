@@ -6,6 +6,7 @@ from .views.dashboard_views import (
     DashboardView,
     DashboardPolygonView,
     DashboardExportScopeView,
+    DashboardExportPdfView,
 )
 from .views import (
     CityView,
@@ -73,6 +74,11 @@ urlpatterns = [
         "dashboard/export-scope/<str:token>/",
         DashboardExportScopeView.as_view(),
         name="dashboard-export-scope",
+    ),
+    path(
+        "dashboard/export-pdf/",
+        DashboardExportPdfView.as_view(),
+        name="dashboard-export-pdf",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),

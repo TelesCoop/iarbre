@@ -1,8 +1,10 @@
+from unittest import mock
 from django.test import SimpleTestCase
 from rest_framework.test import APISimpleTestCase
 from django.urls import reverse
 
 from api.utils.pdf_export import store_export_scope, get_export_scope
+from api.utils import pdf_renderer
 
 
 class ExportScopeStoreTest(SimpleTestCase):
@@ -27,3 +29,27 @@ class ExportScopeViewTest(APISimpleTestCase):
     def test_unknown_token_returns_404(self):
         url = reverse("dashboard-export-scope", args=["nope"])
         self.assertEqual(self.client.get(url).status_code, 404)
+
+
+class ExportPdfViewTest(APISimpleTestCase):
+    def test_returns_pdf(self):
+        url = reverse("dashboard-export-pdf")
+        with mock.patch(
+            "api.views.dashboard_views.render_dashboard_pdf",
+            return_value=b"%PDF-1.7 fake",
+        ):
+            response = self.client.post(
+                url, {"scale": "commune", "city_code": "69123"}, format="json"
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.getvalue().startswith(b"%PDF"))
+
+    def test_timeout_returns_504(self):
+        url = reverse("dashboard-export-pdf")
+        with mock.patch(
+            "api.views.dashboard_views.render_dashboard_pdf",
+            side_effect=pdf_renderer.PdfExportTimeout("slow"),
+        ):
+            response = self.client.post(url, {"scale": "metropole"}, format="json")
+        self.assertEqual(response.status_code, 504)
