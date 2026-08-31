@@ -7,8 +7,11 @@ from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from api.utils.pdf_export import get_export_scope
 
 from api.constants import INDICE_ROUNDING_DECIMALS
 from api.serializers.dashboard_serializer import DashboardSerializer
@@ -394,3 +397,11 @@ class DashboardPolygonView(APIView):
         serializer = DashboardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class DashboardExportScopeView(APIView):
+    def get(self, request, token, *args, **kwargs):
+        scope = get_export_scope(token)
+        if scope is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(scope)
