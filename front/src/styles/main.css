@@ -677,7 +677,8 @@ button.vegestrate-category.is-selected {
   .sidebar,
   .mobile-bottom-bar,
   .back-to-map,
-  .header-controls {
+  .header-controls,
+  .chart-tooltip {
     display: none !important;
   }
 
@@ -686,8 +687,25 @@ button.vegestrate-category.is-selected {
   }
 
   .dashboard-content {
-    padding: 1.5rem !important;
+    padding: 0 !important;
     background: white !important;
     overflow: visible !important;
   }
+
+  .narrative-section {
+    break-inside: avoid;
+  }
+
+  .narrative-section:not(:first-of-type) {
+    break-before: page;
+  }
+
+  .widget-card {
+    break-inside: avoid;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
 }
