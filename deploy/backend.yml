@@ -18,6 +18,10 @@
     - import_tasks: telescoop-deploy/tasks/install-python-venv.yml
       vars:
         requirements: "{{ django_path }}/requirements.txt"
+    - name: Install Playwright Chromium
+      ansible.builtin.command:
+        cmd: "{{ venv.path }}/bin/playwright install --with-deps chromium"
+      become: true
     - name: Install and setup database for prod and preprod only
       block:
         - import_tasks: telescoop-deploy/tasks/install-database.yml
