@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, watch, type Ref, type WatchSource } from "vue"
 import * as d3 from "d3"
+import { isPrintMode } from "@/utils/printMode"
 
 export interface D3ChartContext {
   svg: d3.Selection<SVGSVGElement, unknown, null, undefined>
@@ -23,11 +24,11 @@ export function useD3Chart(
     const { width, height } = rect
     if (width <= 0 || height <= 0) return
 
-    renderFn({ svg, width, height }, animate)
+    renderFn({ svg, width, height }, animate && !isPrintMode())
   }
 
   onMounted(() => {
-    render(true)
+    render(!isPrintMode())
     if (svgRef.value?.parentElement) {
       resizeObserver = new ResizeObserver(() => render(false))
       resizeObserver.observe(svgRef.value.parentElement)
@@ -36,7 +37,7 @@ export function useD3Chart(
 
   onUnmounted(() => resizeObserver?.disconnect())
 
-  watch(watchSources, () => render(true))
+  watch(watchSources, () => render(!isPrintMode()))
 
   return { svgRef }
 }
