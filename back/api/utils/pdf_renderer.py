@@ -27,11 +27,9 @@ def get_browser():
     return _browser
 
 
-def render_dashboard_pdf(token: str) -> bytes:
+def render_dashboard_pdf(token: str, frontend_url: str) -> bytes:
     timeout_ms = settings.PDF_EXPORT_TIMEOUT_S * 1000
-    url = (
-        f"{settings.PDF_EXPORT_FRONTEND_URL}/dashboard" f"?print=1&export_token={token}"
-    )
+    url = f"{frontend_url}/dashboard?print=1&export_token={token}"
     context = get_browser().new_context()
     try:
         page = context.new_page()

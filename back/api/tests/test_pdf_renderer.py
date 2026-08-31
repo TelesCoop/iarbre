@@ -3,9 +3,7 @@ from django.test import SimpleTestCase, override_settings
 from api.utils import pdf_renderer
 
 
-@override_settings(
-    PDF_EXPORT_FRONTEND_URL="http://frontend:4173", PDF_EXPORT_TIMEOUT_S=5
-)
+@override_settings(PDF_EXPORT_TIMEOUT_S=5)
 class RenderDashboardPdfTest(SimpleTestCase):
     def test_navigates_to_print_url_and_returns_pdf(self):
         page = mock.MagicMock()
@@ -16,10 +14,11 @@ class RenderDashboardPdfTest(SimpleTestCase):
         browser.new_context.return_value = context
 
         with mock.patch.object(pdf_renderer, "get_browser", return_value=browser):
-            result = pdf_renderer.render_dashboard_pdf("tok123")
+            result = pdf_renderer.render_dashboard_pdf("tok123", "http://frontend:4173")
 
         self.assertEqual(result, b"%PDF-1.7 fake")
         url = page.goto.call_args.args[0]
+        self.assertIn("http://frontend:4173/dashboard", url)
         self.assertIn("print=1", url)
         self.assertIn("export_token=tok123", url)
         self.assertIn("timeout", page.goto.call_args.kwargs)
@@ -38,4 +37,4 @@ class RenderDashboardPdfTest(SimpleTestCase):
 
         with mock.patch.object(pdf_renderer, "get_browser", return_value=browser):
             with self.assertRaises(pdf_renderer.PdfExportTimeout):
-                pdf_renderer.render_dashboard_pdf("tok123")
+                pdf_renderer.render_dashboard_pdf("tok123", "http://frontend:4173")

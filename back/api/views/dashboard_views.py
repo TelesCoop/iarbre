@@ -12,6 +12,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.conf import settings
+
 from api.utils.pdf_export import get_export_scope, store_export_scope
 from api.utils.pdf_renderer import PdfExportTimeout, render_dashboard_pdf
 
@@ -412,8 +414,12 @@ class DashboardExportScopeView(APIView):
 class DashboardExportPdfView(APIView):
     def post(self, request, *args, **kwargs):
         token = store_export_scope(request.data)
+        frontend_url = (
+            settings.PDF_EXPORT_FRONTEND_URL
+            or request.build_absolute_uri("/").rstrip("/")
+        )
         try:
-            pdf_bytes = render_dashboard_pdf(token)
+            pdf_bytes = render_dashboard_pdf(token, frontend_url)
         except PdfExportTimeout:
             return Response(
                 {"detail": "PDF generation timed out"},

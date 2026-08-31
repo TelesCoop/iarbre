@@ -1,5 +1,5 @@
 from unittest import mock
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from rest_framework.test import APISimpleTestCase
 from django.urls import reverse
 
@@ -32,18 +32,20 @@ class ExportScopeViewTest(APISimpleTestCase):
 
 
 class ExportPdfViewTest(APISimpleTestCase):
+    @override_settings(PDF_EXPORT_FRONTEND_URL="")
     def test_returns_pdf(self):
         url = reverse("dashboard-export-pdf")
         with mock.patch(
             "api.views.dashboard_views.render_dashboard_pdf",
             return_value=b"%PDF-1.7 fake",
-        ):
+        ) as mock_render:
             response = self.client.post(
                 url, {"scale": "commune", "city_code": "69123"}, format="json"
             )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.getvalue().startswith(b"%PDF"))
+        self.assertEqual(mock_render.call_args.args[1], "http://testserver")
 
     def test_timeout_returns_504(self):
         url = reverse("dashboard-export-pdf")
