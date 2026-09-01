@@ -414,10 +414,9 @@ class DashboardExportScopeView(APIView):
 class DashboardExportPdfView(APIView):
     def post(self, request, *args, **kwargs):
         token = store_export_scope(request.data)
-        frontend_url = (
-            settings.PDF_EXPORT_FRONTEND_URL
-            or request.build_absolute_uri("/").rstrip("/")
-        )
+        frontend_url = settings.PDF_EXPORT_FRONTEND_URL or request.build_absolute_uri(
+            "/"
+        ).rstrip("/")
         try:
             pdf_bytes = render_dashboard_pdf(token, frontend_url)
         except PdfExportTimeout:
