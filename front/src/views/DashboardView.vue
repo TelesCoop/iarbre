@@ -59,7 +59,7 @@ onMounted(() => {
   <div class="dashboard-view-wrapper" :class="{ 'print-mode': printMode }">
     <SidebarComponent v-if="!printMode" />
     <main class="dashboard-content scrollbar">
-      <DashboardHeader />
+      <DashboardHeader :print-mode="printMode" />
       <DashboardNarrative :print-mode="printMode" />
     </main>
   </div>
