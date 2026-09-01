@@ -14,31 +14,45 @@ defineProps<Props>()
 </script>
 
 <template>
-  <section class="flex flex-col gap-5 narrative-section">
-    <div class="flex flex-col gap-1.5 pb-4 border-b border-gray-200">
-      <div class="flex items-baseline gap-2">
-        <span class="text-xs font-mono font-semibold text-gray-400 tabular-nums shrink-0">{{
-          sectionNumber
-        }}</span>
-        <span class="text-primary-400 text-xs shrink-0">↘</span>
-        <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+  <section
+    class="flex flex-col gap-5 print:grid print:h-[208mm] print:w-[297mm] print:break-before-page print:grid-cols-[42%_1fr] print:grid-rows-[auto_1fr_auto] print:gap-x-10 print:gap-y-0 print:overflow-hidden print:px-[18mm] print:pt-[16mm] print:pb-[12mm]"
+  >
+    <div class="flex flex-col gap-1.5 pb-4 border-b border-gray-200 print:contents">
+      <div class="flex flex-col gap-1.5 print:col-span-2 print:pb-6">
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs font-mono font-semibold text-gray-400 tabular-nums shrink-0">{{
+            sectionNumber
+          }}</span>
+          <span class="text-primary-400 text-xs shrink-0">↘</span>
+          <h2 class="text-xl font-bold text-gray-900">{{ title }}</h2>
+        </div>
+        <p class="text-sm text-gray-500 italic">{{ question }}</p>
       </div>
-      <p class="text-sm text-gray-500 italic">{{ question }}</p>
-      <p v-if="finding" class="text-3xl font-bold text-primary-600 tabular-nums mt-1 leading-tight">
-        {{ finding }}
-      </p>
-      <p
-        v-if="interpretation"
-        class="text-base font-semibold text-gray-800 leading-relaxed max-w-[68.75%]"
-      >
-        {{ interpretation }}
-      </p>
-      <p v-if="description" class="text-sm text-gray-600 leading-relaxed">{{ description }}</p>
+      <div class="flex flex-col gap-1.5 print:min-h-0 print:gap-3">
+        <p
+          v-if="finding"
+          class="text-3xl font-bold text-primary-600 tabular-nums mt-1 leading-tight"
+        >
+          {{ finding }}
+        </p>
+        <p
+          v-if="interpretation"
+          class="text-base font-semibold text-gray-800 leading-relaxed max-w-[68.75%] print:max-w-full"
+        >
+          {{ interpretation }}
+        </p>
+        <p v-if="description" class="text-sm text-gray-600 leading-relaxed">{{ description }}</p>
+      </div>
     </div>
-    <div class="widgets-grid">
+    <div
+      class="grid grid-cols-1 gap-6 md:grid-cols-2 md:[&>*:only-child]:col-span-2 print:min-h-0 print:grid-cols-1 print:content-center"
+    >
       <slot />
     </div>
-    <p v-if="source" class="text-xs text-gray-600 italic border-t border-gray-100 pt-3">
+    <p
+      v-if="source"
+      class="text-xs text-gray-600 italic border-t border-gray-100 pt-3 print:col-span-2 print:self-end print:border-0"
+    >
       {{ source }}
       <br />
       <a
@@ -52,21 +66,3 @@ defineProps<Props>()
     </p>
   </section>
 </template>
-
-<style scoped>
-.widgets-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
-
-.widgets-grid > :deep(:only-child) {
-  grid-column: 1 / -1;
-}
-
-@media (max-width: 767px) {
-  .widgets-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
