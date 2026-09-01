@@ -143,7 +143,6 @@ declare module 'vue' {
     VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
-    ZoneDashboardBar: typeof import('./src/components/map/ZoneDashboardBar.vue')['default']
     ZoneDashboardCard: typeof import('./src/components/map/ZoneDashboardCard.vue')['default']
   }
 }
