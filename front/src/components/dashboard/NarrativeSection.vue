@@ -14,7 +14,7 @@ defineProps<Props>()
 </script>
 
 <template>
-  <section class="flex flex-col gap-5">
+  <section class="flex flex-col gap-5 narrative-section">
     <div class="flex flex-col gap-1.5 pb-4 border-b border-gray-200">
       <div class="flex items-baseline gap-2">
         <span class="text-xs font-mono font-semibold text-gray-400 tabular-nums shrink-0">{{

@@ -11,6 +11,8 @@ import BuildingCharacteristicsWidget from "@/components/dashboard/widgets/Buildi
 import { useDashboardStore } from "@/stores/dashboard"
 import DashboardFooter from "@/components/dashboard/DashboardFooter.vue"
 
+const props = defineProps<{ printMode?: boolean }>()
+
 const store = useDashboardStore()
 
 const hasData = computed(() => store.dashboardData !== null && !store.loading)
@@ -162,6 +164,6 @@ const riskInterpretation = computed(() => {
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>
 
-    <DashboardFooter />
+    <DashboardFooter v-if="!props.printMode" />
   </div>
 </template>

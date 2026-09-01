@@ -1,14 +1,53 @@
 <script lang="ts" setup>
-import { onMounted } from "vue"
+import { onMounted, computed, nextTick } from "vue"
+import { useRoute } from "vue-router"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import DashboardHeader from "@/components/dashboard/DashboardHeader.vue"
 import DashboardNarrative from "@/components/dashboard/DashboardNarrative.vue"
 import { useDashboardStore } from "@/stores/dashboard"
+import { setPrintMode } from "@/utils/printMode"
+import { fetchExportScope } from "@/services/pdfExportService"
+import type { ZonePolygon } from "@/stores/zone"
 
 const store = useDashboardStore()
+const route = useRoute()
+const printMode = computed(() => route.query.print === "1")
+
+async function initPrintScope() {
+  setPrintMode(true)
+  const token = route.query.export_token as string | undefined
+  let scope: {
+    scale: "metropole" | "commune" | "zone"
+    cityCode?: string | null
+    geometry?: ZonePolygon | null
+  } = { scale: "metropole" }
+
+  if (token) {
+    const stored = await fetchExportScope(token)
+    if (stored) {
+      scope = {
+        scale: (stored.scale as typeof scope.scale) ?? "metropole",
+        cityCode: (stored.city_code as string) ?? null,
+        geometry: (stored.geometry as ZonePolygon) ?? null
+      }
+    }
+  } else if (route.query.city_code) {
+    scope = { scale: "commune", cityCode: route.query.city_code as string }
+  }
+
+  await store.setScopeExplicit(scope)
+  await nextTick()
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      ;(window as unknown as { __DASHBOARD_READY__: boolean }).__DASHBOARD_READY__ = true
+    })
+  )
+}
 
 onMounted(() => {
-  if (store.hasZone) {
+  if (printMode.value) {
+    initPrintScope()
+  } else if (store.hasZone) {
     store.setScale("zone")
   } else {
     store.fetchDashboardData()
@@ -17,11 +56,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dashboard-view-wrapper">
-    <SidebarComponent />
+  <div class="dashboard-view-wrapper" :class="{ 'print-mode': printMode }">
+    <SidebarComponent v-if="!printMode" />
     <main class="dashboard-content scrollbar">
       <DashboardHeader />
-      <DashboardNarrative />
+      <DashboardNarrative :print-mode="printMode" />
     </main>
   </div>
 </template>
