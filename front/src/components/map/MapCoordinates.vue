@@ -2,6 +2,7 @@
 import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { copyToClipboard } from "@/utils/clipboard"
+import IconCheck from "@/components/icons/IconCheck.vue"
 
 const mapStore = useMapStore()
 const isCopied = ref(false)
@@ -29,16 +30,7 @@ const handleCopyCoordinates = async () => {
     type="button"
     @click="handleCopyCoordinates"
   >
-    <svg
-      v-if="isCopied"
-      class="coordinates-icon copied-icon"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2.5"
-      viewBox="0 0 24 24"
-    >
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
+    <IconCheck v-if="isCopied" class="coordinates-icon copied-icon" />
     <svg
       v-else
       class="coordinates-icon"

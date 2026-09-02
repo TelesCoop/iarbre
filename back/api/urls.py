@@ -2,7 +2,12 @@ from django.urls import path, include
 from rest_framework import routers
 
 from .views.tile_views import TileDetailsView, ScoresInPolygonView
-from .views.dashboard_views import DashboardView, DashboardPolygonView
+from .views.dashboard_views import (
+    DashboardView,
+    DashboardPolygonView,
+    DashboardExportScopeView,
+    DashboardExportPdfView,
+)
 from .views import (
     CityView,
     IrisView,
@@ -64,6 +69,16 @@ urlpatterns = [
         "dashboard/in-polygon/",
         DashboardPolygonView.as_view(),
         name="dashboard-in-polygon",
+    ),
+    path(
+        "dashboard/export-scope/<str:token>/",
+        DashboardExportScopeView.as_view(),
+        name="dashboard-export-scope",
+    ),
+    path(
+        "dashboard/export-pdf/",
+        DashboardExportPdfView.as_view(),
+        name="dashboard-export-pdf",
     ),
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
     path("", include(router.urls)),

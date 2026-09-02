@@ -1,5 +1,24 @@
 # Journal des changements
 
+## 🔖 0.37.0 (2026-09-02) : Dashboard d'export et bouton de partage
+
+### 🛠️ enhance : Refonte de la mise en page de l'export de dashboard
+
+La mise en page a été revue grâce au recours à Playwright, l'ajout d'une page de couverture et d'un rappel des statistiques à la fin.
+
+&rarr; PR [#728](https://github.com/TelesCoop/iarbre/pull/728)
+&rarr; PR [#730](https://github.com/TelesCoop/iarbre/pull/730)
+
+### ✨ feat : Bouton de partage
+
+Les filtres sont maintenant dans l'url et un bouton permet de copier cet URL pour partager facilement et rapidement une vue.
+
+&rarr; PR [#726](https://github.com/TelesCoop/iarbre/pull/726)
+
+### 🧹 chore: Montées de version
+
+Un grand nombre de montées de version pour des packages de front pour augmenter la sécurité.
+
 ## 🔖 0.36.0 (2026-07-23) : Améliorations pour vegestrate
 
 ### ✨ feat : Choix des filtres de hauteur sur vegestrate

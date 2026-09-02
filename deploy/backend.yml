@@ -18,6 +18,16 @@
     - import_tasks: telescoop-deploy/tasks/install-python-venv.yml
       vars:
         requirements: "{{ django_path }}/requirements.txt"
+    - name: Install Playwright system dependencies
+      ansible.builtin.command:
+        cmd: "{{ venv.path }}/bin/playwright install-deps chromium"
+      become: true
+
+    - name: Install Playwright Chromium for the app user
+      ansible.builtin.command:
+        cmd: "{{ venv.path }}/bin/playwright install chromium"
+      become: true
+      become_user: "{{ main_user }}"
     - name: Install and setup database for prod and preprod only
       block:
         - import_tasks: telescoop-deploy/tasks/install-database.yml
@@ -81,13 +91,19 @@
           shell:
             cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media {{ db_recover_target }} {{ media_recover_target }}"
 
-        - name: Run migrations with conflict handling
-          shell: |
-            {{ project_slug }}-ctl migrate || {
-              echo "Migration failed, trying fake-initial"
-              {{ project_slug }}-ctl migrate --fake-initial
-              {{ project_slug }}-ctl migrate
-            }
+        - name: Check the restored database has its migration history
+          community.postgresql.postgresql_query:
+            db: "{{ database_name }}"
+            query: "SELECT count(*) AS applied FROM django_migrations"
+          become: true
+          become_user: postgres
+          register: restored_migrations
+          failed_when: >
+            (restored_migrations.query_result | default([{'applied': 0}]))[0].applied | int == 0
+
+        - name: Run migrations on the restored database
+          ansible.builtin.command:
+            cmd: "{{ project_slug }}-ctl migrate"
           become: true
 
         - name: Remove test fixtures (Villard-de-Lans) from restored database

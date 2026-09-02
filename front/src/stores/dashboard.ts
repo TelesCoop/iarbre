@@ -3,6 +3,7 @@ import { ref, computed } from "vue"
 import type { DashboardData, DashboardScale } from "@/types/dashboard"
 import { fetchDashboard, fetchDashboardForZone } from "@/services/dashboardService"
 import { useZoneStore } from "@/stores/zone"
+import type { ZonePolygon } from "@/stores/zone"
 
 interface CityOption {
   code: string
@@ -87,6 +88,25 @@ export const useDashboardStore = defineStore("dashboard", () => {
     fetchDashboardData()
   }
 
+  const currentScope = computed(() => ({
+    scale: selectedScale.value,
+    cityCode: selectedCityCode.value,
+    geometry: zoneStore.drawnGeometry
+  }))
+
+  async function setScopeExplicit(scope: {
+    scale: DashboardScale
+    cityCode?: string | null
+    geometry?: ZonePolygon | null
+  }) {
+    selectedScale.value = scope.scale
+    selectedCityCode.value = scope.cityCode ?? null
+    if (scope.geometry) {
+      zoneStore.setZone(scope.geometry)
+    }
+    await fetchDashboardData()
+  }
+
   return {
     selectedScale,
     selectedCityCode,
@@ -96,8 +116,10 @@ export const useDashboardStore = defineStore("dashboard", () => {
     error,
     selectedCity,
     hasZone,
+    currentScope,
     fetchDashboardData,
     setScale,
-    setCity
+    setCity,
+    setScopeExplicit
   }
 })

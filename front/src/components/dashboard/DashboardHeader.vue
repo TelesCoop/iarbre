@@ -6,7 +6,32 @@ import AppBadge from "@/components/shared/AppBadge.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 import type { DashboardScale } from "@/types/dashboard"
 
+const props = defineProps<{ printMode?: boolean }>()
+
 const store = useDashboardStore()
+
+const COVER_SECTIONS = [
+  {
+    number: "01",
+    title: "Potentiel de végétalisation",
+    question: "Où peut-on planter dès aujourd'hui ?"
+  },
+  {
+    number: "02",
+    title: "Végétation et biodiversité",
+    question: "Quelle est la place du vivant ?"
+  },
+  {
+    number: "03",
+    title: "Contraintes du territoire",
+    question: "Qu'est-ce qui freine l'aménagement ?"
+  },
+  { number: "04", title: "Risques et vulnérabilités", question: "Quelle exposition à la chaleur ?" }
+]
+
+const dateLabel = computed(() =>
+  new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+)
 
 const scaleOptions = computed<{ label: string; value: DashboardScale }[]>(() => {
   const options: { label: string; value: DashboardScale }[] = [
@@ -48,7 +73,39 @@ const currentLabel = computed(() => {
 </script>
 
 <template>
-  <header class="dashboard-header">
+  <header
+    v-if="props.printMode"
+    class="flex flex-col h-[208mm] w-[297mm] overflow-hidden px-[18mm] pt-[16mm] pb-[12mm]"
+  >
+    <img alt="IA·rbre" class="h-8 w-auto self-start" src="/images/logo-iarbre.png" />
+    <div class="mt-auto flex flex-col items-start gap-2">
+      <h1 class="max-w-[60%] text-6xl font-bold leading-none text-primary-700">
+        {{ currentLabel }}
+      </h1>
+      <p class="mt-2 text-sm text-gray-500">Tableau de bord territorial · {{ dateLabel }}</p>
+      <span
+        v-if="areaDisplay"
+        class="rounded-full border border-gray-300 px-4 py-2 text-xs font-semibold text-gray-700"
+      >
+        {{ areaDisplay }} de territoire analysé
+      </span>
+    </div>
+    <div class="mt-12 grid grid-cols-4 gap-6">
+      <div
+        v-for="section in COVER_SECTIONS"
+        :key="section.number"
+        class="flex flex-col gap-1 border-t-2 border-primary-500 pt-3"
+      >
+        <span class="text-[0.625rem] font-semibold tracking-widest text-primary-500">{{
+          section.number
+        }}</span>
+        <p class="text-sm font-bold text-gray-900">{{ section.title }}</p>
+        <p class="text-[0.6875rem] text-gray-500">{{ section.question }}</p>
+      </div>
+    </div>
+  </header>
+
+  <header v-else class="dashboard-header">
     <div class="header-top">
       <div>
         <h1 class="header-title">{{ currentLabel }}</h1>

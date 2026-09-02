@@ -355,6 +355,9 @@ LOGGING = {
     },
 }
 
+PDF_EXPORT_FRONTEND_URL = config.getstr("pdf_export.frontend_url", "")
+PDF_EXPORT_TIMEOUT_S = config.getint("pdf_export.timeout_s", 5)
+
 CACHES = {
     "default": {
         "BACKEND": "django_prometheus.cache.backends.filebased.FileBasedCache",

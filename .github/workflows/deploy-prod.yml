@@ -6,6 +6,12 @@ on:
       - dev
       - main
 
+# Serialize deploys per branch. cancel-in-progress must stay false: killing a run
+# mid pg_restore cause a lot of issues...
+concurrency:
+  group: deploy-prod-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy-prod:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)

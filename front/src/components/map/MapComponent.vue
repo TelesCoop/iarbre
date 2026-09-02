@@ -9,6 +9,11 @@ const props = defineProps({
   mapId: {
     required: true,
     type: String
+  },
+  initialFilters: {
+    required: false,
+    type: Array as PropType<(number | string)[]>,
+    default: () => []
   }
 })
 
@@ -35,7 +40,7 @@ const setTopRightSize = (el: HTMLElement | null) => {
 let topRightObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType!)
+  mapStore.initMap(props.mapId, model.value.dataType!, props.initialFilters)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({
@@ -110,6 +115,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       <MapResolution />
       <MapCoordinates />
     </div>
+    <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
 </template>

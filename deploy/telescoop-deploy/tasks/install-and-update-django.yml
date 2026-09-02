@@ -49,13 +49,9 @@
     name: "{{ project_slug }}-backend-gisserver"
     state: present
 
-- name: Run migrations with conflict handling
-  shell: |
-    {{ project_slug }}-ctl migrate || {
-      echo "Migration failed, trying fake-initial"
-      {{ project_slug }}-ctl migrate --fake-initial
-      {{ project_slug }}-ctl migrate
-    }
+- name: Run migrations on the existing database
+  ansible.builtin.command:
+    cmd: "{{ project_slug }}-ctl migrate"
   become: true
   when: dedicated_database == true and (clonecode.changed or force_update is defined)
 

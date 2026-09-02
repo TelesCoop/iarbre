@@ -1,8 +1,46 @@
 <script lang="ts" setup>
+import { ref } from "vue"
 import AppButton from "@/components/shared/AppButton.vue"
+import { useDashboardStore } from "@/stores/dashboard"
+import { useToast } from "@/composables/useToast"
+import { exportDashboardPdf } from "@/services/pdfExportService"
 
-const exportToPdf = () => {
-  window.print()
+const store = useDashboardStore()
+const toast = useToast()
+const loading = ref(false)
+
+const exportToPdf = async () => {
+  if (loading.value) return
+  loading.value = true
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 6000)
+  toast.add({
+    severity: "info",
+    summary: "Génération du rapport en cours...",
+    group: "br",
+    life: 0
+  })
+  try {
+    const blob = await exportDashboardPdf(store.currentScope, controller.signal)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "rapport.pdf"
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.removeAll()
+    toast.add({ severity: "success", summary: "Rapport généré", group: "br" })
+  } catch {
+    toast.removeAll()
+    toast.add({
+      severity: "error",
+      summary: "La génération du rapport a échoué",
+      group: "br"
+    })
+  } finally {
+    clearTimeout(timer)
+    loading.value = false
+  }
 }
 </script>
 
@@ -16,7 +54,7 @@ const exportToPdf = () => {
         Téléchargez ce tableau de bord au format PDF pour le partager ou le consulter hors ligne.
       </p>
     </div>
-    <AppButton variant="primary" size="lg" @click="exportToPdf">
+    <AppButton variant="primary" size="lg" :disabled="loading" @click="exportToPdf">
       <template #icon-left>
         <svg
           viewBox="0 0 24 24"

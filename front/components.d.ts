@@ -61,9 +61,10 @@ declare module 'vue' {
     HeatWidget: typeof import('./src/components/dashboard/widgets/HeatWidget.vue')['default']
     IconBoundary: typeof import('./src/components/icons/IconBoundary.vue')['default']
     IconBuilding: typeof import('./src/components/icons/IconBuilding.vue')['default']
+    IconCheck: typeof import('./src/components/icons/IconCheck.vue')['default']
     IconChevron: typeof import('./src/components/icons/IconChevron.vue')['default']
     IconClose: typeof import('./src/components/icons/IconClose.vue')['default']
-    IconCopy: typeof import('./src/components/shared/icons/IconCopy.vue')['default']
+    IconCopy: typeof import('./src/components/icons/IconCopy.vue')['default']
     IconFilter: typeof import('./src/components/icons/IconFilter.vue')['default']
     IconIarbreLogo: typeof import('./src/components/icons/IconIarbreLogo.vue')['default']
     IconInfo: typeof import('./src/components/icons/IconInfo.vue')['default']
@@ -91,6 +92,7 @@ declare module 'vue' {
     MapContextTools: typeof import('./src/components/contextTools/MapContextTools.vue')['default']
     MapControlButton: typeof import('./src/components/map/controls/MapControlButton.vue')['default']
     MapCoordinates: typeof import('./src/components/map/MapCoordinates.vue')['default']
+    MapCopyLinkButton: typeof import('./src/components/map/MapCopyLinkButton.vue')['default']
     MapFiltersStatus: typeof import('./src/components/map/panels/MapFiltersStatus.vue')['default']
     MapGeocoder: typeof import('./src/components/map/MapGeocoder.vue')['default']
     MapLayerSwitcher: typeof import('./src/components/layerSwitcher/MapLayerSwitcher.vue')['default']
@@ -143,7 +145,6 @@ declare module 'vue' {
     VulnerabilityMainContextDataScore: typeof import('./src/components/contextData/vulnerability/VulnerabilityMainContextDataScore.vue')['default']
     VulnerabilityScoreLabel: typeof import('./src/components/map/score/VulnerabilityScoreLabel.vue')['default']
     WelcomeMessage: typeof import('./src/components/WelcomeMessage.vue')['default']
-    ZoneDashboardBar: typeof import('./src/components/map/ZoneDashboardBar.vue')['default']
     ZoneDashboardCard: typeof import('./src/components/map/ZoneDashboardCard.vue')['default']
   }
 }

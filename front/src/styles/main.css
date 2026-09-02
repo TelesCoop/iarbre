@@ -676,18 +676,23 @@ button.vegestrate-category.is-selected {
 @media print {
   .sidebar,
   .mobile-bottom-bar,
-  .back-to-map,
-  .header-controls {
+  .chart-tooltip {
     display: none !important;
   }
 
   .dashboard-view-wrapper {
     margin-left: 0 !important;
+    height: auto !important;
   }
 
   .dashboard-content {
-    padding: 1.5rem !important;
+    padding: 0 !important;
     background: white !important;
     overflow: visible !important;
   }
+}
+
+@page {
+  size: A4 landscape;
+  margin: 0;
 }
