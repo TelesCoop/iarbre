@@ -15,7 +15,7 @@ defineProps<Props>()
 
 <template>
   <section
-    class="flex flex-col gap-5 print:grid print:h-[208mm] print:w-[297mm] print:break-before-page print:grid-cols-[42%_1fr] print:grid-rows-[auto_1fr_auto] print:gap-x-10 print:gap-y-0 print:overflow-hidden print:px-[18mm] print:pt-[16mm] print:pb-[12mm]"
+    class="flex flex-col gap-5 narrative-section print:grid print:h-[208mm] print:w-[297mm] print:break-before-page print:grid-cols-[42%_1fr] print:grid-rows-[auto_1fr_auto] print:gap-x-10 print:gap-y-0 print:overflow-hidden print:px-[18mm] print:pt-[16mm] print:pb-[12mm]"
   >
     <div class="flex flex-col gap-1.5 pb-4 border-b border-gray-200 print:contents">
       <div class="flex flex-col gap-1.5 print:col-span-2 print:pb-6">
