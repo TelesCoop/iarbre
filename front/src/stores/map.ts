@@ -117,6 +117,7 @@ export const useMapStore = defineStore("map", () => {
 
   const {
     clearAllFilters,
+    setFilteredValues,
     applyFilters,
     hasActiveFilters,
     isFiltered,
@@ -1114,8 +1115,15 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const initMap = (mapId: string, initialDatatype: DataType) => {
+  const initMap = (
+    mapId: string,
+    initialDatatype: DataType,
+    initialFilters: (number | string)[] = []
+  ) => {
     selectedDataType.value = initialDatatype
+    if (initialFilters.length > 0) {
+      setFilteredValues(initialFilters)
+    }
     controlsAdded.value[mapId] = false
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
@@ -1136,6 +1144,9 @@ export const useMapStore = defineStore("map", () => {
     const onMapReady = async () => {
       setupControls(mapInstance)
       initTiles(mapInstance)
+      if (initialFilters.length > 0) {
+        applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+      }
       shapeDrawing.initDraw(mapInstance)
       // The backend score is only queried once the shape is finished (and on
       // subsequent edits of that finished shape). While the shape is still being
