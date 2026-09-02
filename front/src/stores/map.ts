@@ -39,7 +39,15 @@ import {
   type HeightRange
 } from "@/utils/vegetation"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
-import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  extractFeatureProperty,
+  getLayerId,
+  getSourceId,
+  showSelectionWall3D,
+  clearSelectionWall3D,
+  showSelectionOutline2D,
+  clearSelectionOutline2D
+} from "@/utils/map"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -109,6 +117,13 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+  // The last tile/zone the user clicked, so its highlight can be redrawn
+  // whenever the map switches between 2D and 3D (see applySelectionHighlight).
+  const selectedFeatureInfo = ref<{
+    datatype: DataType
+    geometry: any
+    properties: Record<string, any>
+  } | null>(null)
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
@@ -445,6 +460,26 @@ export const useMapStore = defineStore("map", () => {
     console.info("cypress: IFB click square removed")
   }
 
+  // Single entry point for (re)drawing whatever is in selectedFeatureInfo in
+  // whichever mode (2D outline / 3D wall) currently matches use3D — used both
+  // right after a click and when reapplying the highlight post-toggle. The
+  // actual drawing lives in utils/map.ts; this just supplies the store state
+  // (which tile, which mode, and the height expression for that datatype).
+  const applySelectionHighlight = (map: Map) => {
+    clearSelectionWall3D(map)
+    clearSelectionOutline2D(map)
+    const selection = selectedFeatureInfo.value
+    if (!selection) return
+    if (use3D.value) {
+      const heightExpression = EXTRUSION_HEIGHT_MAP.value[
+        selection.datatype
+      ] as DataDrivenPropertyValueSpecification<number>
+      showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
+    } else {
+      showSelectionOutline2D(map, selection.geometry)
+    }
+  }
+
   const applyTileSelection = (
     map: Map,
     datatype: DataType,
@@ -452,7 +487,6 @@ export const useMapStore = defineStore("map", () => {
     features: any[],
     lngLat: { lng: number; lat: number }
   ) => {
-    const layerId = getLayerId(datatype, geolevel)
     const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
     const score = extractFeatureProperty(features, datatype, geolevel, "indice")
     const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
@@ -466,8 +500,16 @@ export const useMapStore = defineStore("map", () => {
         : undefined
     if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
       drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
+      selectedFeatureInfo.value = null
+      clearSelectionWall3D(map)
+      clearSelectionOutline2D(map)
     } else {
-      highlightFeature(map, layerId, featureId)
+      selectedFeatureInfo.value = {
+        datatype,
+        geometry: features[0].geometry,
+        properties: features[0].properties ?? {}
+      }
+      applySelectionHighlight(map)
     }
     // Highlight cell in the legend that correspond to clicked tile
     if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
@@ -651,6 +693,7 @@ export const useMapStore = defineStore("map", () => {
     contextData.removeData()
     vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
+    selectedFeatureInfo.value = null
 
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -668,6 +711,8 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
         removeClickMarker(mapInstance)
       }
+      clearSelectionWall3D(mapInstance)
+      clearSelectionOutline2D(mapInstance)
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
@@ -1341,6 +1386,14 @@ export const useMapStore = defineStore("map", () => {
     changeSelectionMode(SelectionMode.POINT)
   }
 
+  // Redraws the current selection's highlight after a 2D/3D toggle, since
+  // refreshLayers() rebuilds the tile layers from scratch.
+  const reapplySelectionHighlight = () => {
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      applySelectionHighlight(mapInstancesByIds.value[mapId])
+    })
+  }
+
   const toggle3D = () => {
     use3D.value = !use3D.value
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -1352,6 +1405,7 @@ export const useMapStore = defineStore("map", () => {
       }
     })
     refreshLayers()
+    reapplySelectionHighlight()
   }
 
   const zoomTo = (targetZoom: number) => {
