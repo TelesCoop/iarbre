@@ -115,6 +115,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       <MapResolution />
       <MapCoordinates />
     </div>
+    <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
 </template>

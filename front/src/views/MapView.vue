@@ -24,8 +24,6 @@ if (route.name === "mapWithUrlParams") {
   }
 }
 
-// Filter values are numeric only for PLANTABILITY, other data types filter on
-// string keys (climate zone codes, vegetation strata, biosphere categories, etc.)
 const parseFilters = (
   raw: string | string[] | undefined,
   dataType: DataType | null
@@ -42,8 +40,6 @@ const initialFilters = parseFilters(
   mapParams.value.dataType
 )
 
-// Tracks the last known map position/dataType so filter-only changes can
-// rewrite the URL without needing a map move to know the current params.
 const lastKnownParams = ref<MapParams>({ ...mapParams.value })
 
 const buildFiltersQuery = () => {
