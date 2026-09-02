@@ -62,4 +62,12 @@ withDefaults(defineProps<Props>(), {
 .widget-content {
   @apply flex-1 flex flex-col items-center justify-center;
 }
+
+@media print {
+  .widget-card {
+    @apply border-0 p-0 shadow-none;
+    min-height: 0;
+    break-inside: avoid;
+  }
+}
 </style>

@@ -50,7 +50,7 @@ onBeforeUnmount(() => {
     v-if="!dismissed"
     ref="bannerEl"
     :style="{ paddingLeft }"
-    class="flex items-center justify-center gap-4 px-4 py-2 bg-primary-200 text-primary-900 text-sm transition-[padding] duration-300 ease-out"
+    class="flex items-center justify-center gap-4 px-4 py-2 bg-primary-200 text-primary-900 text-sm transition-[padding] duration-300 ease-out print:hidden"
   >
     <span class="flex-1 text-center">
       Partagez votre avis sur IA·rbre et aidez-nous à améliorer l'outil !

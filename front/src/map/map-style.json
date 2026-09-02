@@ -74,9 +74,9 @@
       "osm": {
         "tileSize": 256,
         "tiles": [
-          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}"
         ],
         "type": "raster"
       }
@@ -107,9 +107,9 @@
       "osm": {
         "tileSize": 256,
         "tiles": [
-          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}"
         ],
         "type": "raster"
       }
@@ -128,9 +128,9 @@
       "osm": {
         "tileSize": 256,
         "tiles": [
-          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}",
+          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key={CARTO_API_KEY}"
         ],
         "type": "raster"
       }

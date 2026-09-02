@@ -4,11 +4,18 @@ from django.contrib.gis.db.models.functions import Area
 from django.db.models import Avg, Case, Count, FloatField, QuerySet, Sum, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from django.conf import settings
+
+from api.utils.pdf_export import get_export_scope, store_export_scope
+from api.utils.pdf_renderer import PdfExportTimeout, render_dashboard_pdf
 
 from api.constants import INDICE_ROUNDING_DECIMALS
 from api.serializers.dashboard_serializer import DashboardSerializer
@@ -394,3 +401,29 @@ class DashboardPolygonView(APIView):
         serializer = DashboardSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+
+class DashboardExportScopeView(APIView):
+    def get(self, request, token, *args, **kwargs):
+        scope = get_export_scope(token)
+        if scope is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(scope)
+
+
+class DashboardExportPdfView(APIView):
+    def post(self, request, *args, **kwargs):
+        token = store_export_scope(request.data)
+        frontend_url = settings.PDF_EXPORT_FRONTEND_URL or request.build_absolute_uri(
+            "/"
+        ).rstrip("/")
+        try:
+            pdf_bytes = render_dashboard_pdf(token, frontend_url)
+        except PdfExportTimeout:
+            return Response(
+                {"detail": "PDF generation timed out"},
+                status=status.HTTP_504_GATEWAY_TIMEOUT,
+            )
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="rapport.pdf"'
+        return response

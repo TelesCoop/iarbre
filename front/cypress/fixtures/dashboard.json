@@ -1,0 +1,87 @@
+{
+  "areaKm2": 534.2,
+  "biosphere": {
+    "averageIndice": 3.8,
+    "distribution": {
+      "1": 6,
+      "2": 14,
+      "3": 26,
+      "4": 20,
+      "5": 9
+    }
+  },
+  "buildings": {
+    "averageBuildingFootprintM2": 187.6
+  },
+  "city": null,
+  "lcz": {
+    "averageBuildingHeight": 12.3,
+    "averageBuildingSurfaceRate": 28.5,
+    "buildingRate": 24.9,
+    "impermeableSurfaceRate": 41.2,
+    "permeableSoilRate": 22.7,
+    "totalVegetationRate": 33.1,
+    "treeCoverRate": 18.4,
+    "waterRate": 3.2
+  },
+  "plantability": {
+    "averageNormalizedIndice": 5.4,
+    "distribution": {
+      "0": 5,
+      "1": 8,
+      "10": 3,
+      "2": 12,
+      "3": 18,
+      "4": 22,
+      "5": 30,
+      "6": 24,
+      "7": 16,
+      "8": 10,
+      "9": 6
+    },
+    "distributionByDivision": [
+      {
+        "averageNormalizedIndice": 5.1,
+        "code": "69123",
+        "distribution": {
+          "3": 10,
+          "5": 20,
+          "7": 8
+        },
+        "name": "Lyon"
+      },
+      {
+        "averageNormalizedIndice": 4.7,
+        "code": "69266",
+        "distribution": {
+          "2": 12,
+          "4": 18,
+          "6": 6
+        },
+        "name": "Villeurbanne"
+      }
+    ],
+    "metaFactors": {
+      "B\u00e2ti": 0.42,
+      "Eau": 0.09,
+      "Espaces verts": 0.31,
+      "Voirie": 0.18
+    }
+  },
+  "vegetation": {
+    "bushesSurfaceM2": 900000,
+    "grassSurfaceM2": 1800000,
+    "totalM2": 4200000,
+    "treesSurfaceM2": 1500000
+  },
+  "vulnerability": {
+    "averageDay": 5.2,
+    "averageNight": 4.6,
+    "capafDay": 1.4,
+    "capafNight": 1.3,
+    "expoDay": 2.1,
+    "expoNight": 1.8,
+    "sensibilityDay": 1.7,
+    "sensibilityNight": 1.5
+  }
+}
