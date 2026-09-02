@@ -676,14 +676,13 @@ button.vegestrate-category.is-selected {
 @media print {
   .sidebar,
   .mobile-bottom-bar,
-  .back-to-map,
-  .header-controls,
   .chart-tooltip {
     display: none !important;
   }
 
   .dashboard-view-wrapper {
     margin-left: 0 !important;
+    height: auto !important;
   }
 
   .dashboard-content {
@@ -691,21 +690,9 @@ button.vegestrate-category.is-selected {
     background: white !important;
     overflow: visible !important;
   }
-
-  .narrative-section {
-    break-inside: avoid;
-  }
-
-  .narrative-section:not(:first-of-type) {
-    break-before: page;
-  }
-
-  .widget-card {
-    break-inside: avoid;
-  }
 }
 
 @page {
-  size: A4;
-  margin: 12mm;
+  size: A4 landscape;
+  margin: 0;
 }

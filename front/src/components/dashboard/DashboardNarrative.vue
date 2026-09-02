@@ -79,6 +79,47 @@ const riskFinding = computed(() => {
   return `${day}/9 de jour · ${night}/9 de nuit`
 })
 
+const summaryCards = computed(() => {
+  const data = store.dashboardData
+  if (!data) return []
+  const km2 = (m2: number) => (m2 / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+  const oneDecimal = (value: number) => value.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
+  return [
+    {
+      label: "01 Plantabilité",
+      value: oneDecimal(data.plantability.averageNormalizedIndice),
+      unit: "/10",
+      description: "Indice moyen de plantabilité en pleine terre"
+    },
+    {
+      label: "02 Végétation",
+      value: oneDecimal(data.vegetation.totalM2 / 1_000_000),
+      unit: "km²",
+      description: `Végétation inventoriée, dont ${km2(data.vegetation.treesSurfaceM2)} km² de strate haute`
+    },
+    {
+      label: "03 Contraintes",
+      value: oneDecimal((data.lcz.buildingRate ?? 0) + (data.lcz.impermeableSurfaceRate ?? 0)),
+      unit: "%",
+      description: "De surfaces minérales imperméables"
+    },
+    {
+      label: "04 Vulnérabilité",
+      value: oneDecimal(data.vulnerability.averageDay),
+      unit: "/9",
+      description: `Vulnérabilité à la chaleur de jour, ${oneDecimal(data.vulnerability.averageNight)}/9 de nuit`
+    }
+  ]
+})
+
+const summarySources = [
+  { label: "Plantabilité · 35 facteurs d'occupation du sol", origin: "IA·rbre" },
+  { label: "Inventaire de végétation · modèle FlairHub", origin: "IGN · LIDAR THD" },
+  { label: "Perméabilité des sols · Zones Climatiques Locales", origin: "CEREMA 2023" },
+  { label: "Caractéristiques du bâti", origin: "BD Topo" },
+  { label: "Vulnérabilité à la chaleur", origin: "Institut Paris Région" }
+]
+
 const riskInterpretation = computed(() => {
   if (!store.dashboardData) return ""
   const v = store.dashboardData.vulnerability
@@ -100,7 +141,7 @@ const riskInterpretation = computed(() => {
     <p class="text-sm text-red-500">{{ store.error }}</p>
   </div>
 
-  <div v-else-if="hasData" class="flex flex-col gap-10">
+  <div v-else-if="hasData" class="flex flex-col gap-10 print:gap-0">
     <NarrativeSection
       section-number="01"
       title="Potentiel de végétalisation"
@@ -114,7 +155,7 @@ const riskInterpretation = computed(() => {
       <PlantabilityWidget :data="store.dashboardData!.plantability" />
     </NarrativeSection>
 
-    <hr class="border-gray-400" />
+    <hr class="border-gray-400 print:hidden" />
 
     <NarrativeSection
       section-number="02"
@@ -130,7 +171,7 @@ const riskInterpretation = computed(() => {
       <BiosphereWidget :data="store.dashboardData!.biosphere" />
     </NarrativeSection>
 
-    <hr class="border-gray-400" />
+    <hr class="border-gray-400 print:hidden" />
 
     <NarrativeSection
       section-number="03"
@@ -149,7 +190,7 @@ const riskInterpretation = computed(() => {
       <SurfaceTypeWidget :data="store.dashboardData!.lcz" />
     </NarrativeSection>
 
-    <hr class="border-gray-400" />
+    <hr class="border-gray-400 print:hidden" />
 
     <NarrativeSection
       section-number="04"
@@ -163,6 +204,52 @@ const riskInterpretation = computed(() => {
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>
+
+    <section
+      v-if="props.printMode"
+      class="flex h-[208mm] w-[297mm] break-before-page flex-col overflow-hidden px-[18mm] pt-[16mm] pb-[12mm]"
+    >
+      <h2 class="text-xl font-bold text-gray-900">Synthèse du territoire</h2>
+      <p class="text-sm italic text-gray-500">Les quatre indicateurs clés en une lecture.</p>
+
+      <div class="mt-8 grid grid-cols-4 gap-6">
+        <div
+          v-for="card in summaryCards"
+          :key="card.label"
+          class="flex flex-col gap-2 rounded-xl border border-gray-200 p-5"
+        >
+          <span class="text-[0.625rem] font-semibold uppercase tracking-widest text-primary-500">{{
+            card.label
+          }}</span>
+          <p class="text-4xl font-bold leading-none text-primary-600 tabular-nums">
+            {{ card.value
+            }}<span class="ml-0.5 text-base font-semibold text-primary-400">{{ card.unit }}</span>
+          </p>
+          <p class="text-xs leading-snug text-gray-500">{{ card.description }}</p>
+        </div>
+      </div>
+
+      <div class="mt-auto grid grid-cols-2 gap-12 border-t border-gray-200 pt-8">
+        <div>
+          <h3 class="mb-3 text-sm font-bold text-gray-900">Ce que disent les données</h3>
+          <p class="text-sm leading-relaxed text-gray-600">
+            {{ plantabilityInterpretation }} {{ vegetationInterpretation }}
+          </p>
+        </div>
+        <div>
+          <h3 class="mb-3 text-sm font-bold text-gray-900">Sources</h3>
+          <div
+            v-for="source in summarySources"
+            :key="source.label"
+            class="flex items-baseline gap-2 py-1.5"
+          >
+            <span class="shrink-0 text-xs text-gray-600">{{ source.label }}</span>
+            <span class="flex-1 border-b border-dotted border-gray-300" />
+            <span class="shrink-0 text-xs font-semibold text-gray-700">{{ source.origin }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <DashboardFooter v-if="!props.printMode" />
   </div>
