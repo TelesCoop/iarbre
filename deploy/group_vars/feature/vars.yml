@@ -1,6 +1,8 @@
 # Generate a deterministic 3-digit number from the branch name
 branch_hash: "{{ branch_slug | hash('md5') }}"
-unique_number: "{{ (branch_hash | int(0, 16) % 900) + 100 }}"
+# 'ipave' and 'vege-3d' both hash to 468 and run on the same host, so the loser
+# of the port race never starts.
+unique_number: "{{ 469 if branch_slug == 'ipave' else (branch_hash | int(0, 16) % 900) + 100 }}"
 
 backend_application_port: "8{{ unique_number }}" # deterministic port based on branch name
 frontend_application_port: "3{{ unique_number }}" # deterministic port based on branch name
