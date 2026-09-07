@@ -667,7 +667,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply bg-primary-500;
   @apply mt-auto;
   gap: 1rem;
-  padding: 1.5rem 0;
+  padding: 1.5rem 0 5rem;
   flex-shrink: 0;
 }
 
