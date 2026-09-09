@@ -6,6 +6,7 @@ import {
   Map,
   NavigationControl,
   type GeoJSONSource,
+  type StyleSpecification,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
@@ -180,12 +181,12 @@ export const useMapStore = defineStore("map", () => {
    * Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
    * https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
    */
-  const loadMapStyle = (style: MapStyle): maplibregl.StyleSpecification => {
+  const loadMapStyle = (style: MapStyle): StyleSpecification => {
     const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
     const rawStyle = JSON.stringify(mapStyles[style])
       .replace("{API_BASE_URL}", getFullBaseApiUrl())
       .replace(/\?key=\{CARTO_API_KEY\}/g, cartoApiKey ? `?key=${cartoApiKey}` : "")
-    return applyMapStyleAttributions(JSON.parse(rawStyle)) as maplibregl.StyleSpecification
+    return applyMapStyleAttributions(JSON.parse(rawStyle)) as StyleSpecification
   }
   const navControl = ref(
     new NavigationControl({
