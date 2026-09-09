@@ -1,5 +1,18 @@
 # Journal des changements
 
+## 🔖 0.38.0 (2026-09-09) : Matomo et résolutions de bugs
+
+### ✨ feat : Matomo
+
+Pour mieux comprendre et suivre les usages nous avons remplacé le compteur de visite Plausible par Matomo qui nous permeterra par exemple de savoir si les personnes reviennent et le temps passé pour chaque visite et où.
+
+&rarr; PR [#746](https://github.com/TelesCoop/iarbre/pull/746)
+
+### 🐛 fix: petits bugs liés à l'affichage du 3D et multi-threading dans le backend
+
+&rarr; PR [#745](https://github.com/TelesCoop/iarbre/pull/745)
+&rarr; PR [#739](https://github.com/TelesCoop/iarbre/pull/739)
+
 ## 🔖 0.37.0 (2026-09-02) : Dashboard d'export et bouton de partage
 
 ### 🛠️ enhance : Refonte de la mise en page de l'export de dashboard
