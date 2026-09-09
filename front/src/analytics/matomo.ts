@@ -24,16 +24,16 @@ export function setupAnalytics() {
       requireConsent: true
     })
 
-    window.tarteaucitron.services.matomo = {
-      key: "matomo",
+    window.tarteaucitron.services.matomoCustom = {
+      key: "matomoCustom",
       type: "analytic",
       name: "Matomo",
       needConsent: true,
       cookies: [],
-      js: () => matomo.push(["setConsentGiven"]),
-      fallback: () => matomo.push(["forgetConsentGiven"])
+      js: () => matomo.ready.then(() => matomo.push(["setConsentGiven"])),
+      fallback: () => matomo.ready.then(() => matomo.push(["forgetConsentGiven"]))
     }
-    window.tarteaucitron.job = ["matomo"]
+    window.tarteaucitron.job = ["matomoCustom"]
 
     window.tarteaucitron.init({
       privacyUrl: "/mentions-legales",
