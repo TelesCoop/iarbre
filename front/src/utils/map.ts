@@ -28,9 +28,6 @@ export const buildSelectionWallPolygons = (
       const lngPerMeter = 1 / (METERS_PER_DEGREE_LAT * Math.cos((latRef * Math.PI) / 180))
       const latPerMeter = 1 / METERS_PER_DEGREE_LAT
 
-      // Edge vector in an approximate local meter frame, then its perpendicular,
-      // so the quad's width reads as a constant physical thickness regardless
-      // of latitude or edge orientation.
       const dx = (lng2 - lng1) / lngPerMeter
       const dy = (lat2 - lat1) / latPerMeter
       const length = Math.hypot(dx, dy)
@@ -55,16 +52,8 @@ export const buildSelectionWallPolygons = (
 
 const SELECTION_WALL_SOURCE = "ifb-selection-wall-source"
 const SELECTION_WALL_LAYER = "ifb-selection-wall-layer"
-// Half-width of the wall, in meters, on either side of the tile's edge.
-// The quad straddles the edge, so only the outer half is actually visible
-// (the inner half is buried inside the tile itself) — kept fairly wide so
-// that visible half still reads clearly.
 const SELECTION_WALL_HALF_WIDTH_M = 1
 
-// Draws the white "casing" wall around a selected 3D tile: a fill-extrusion
-// layer built from buildSelectionWallPolygons, using the same height
-// expression as the real tile layer so it tops out at the same height, and
-// carrying the tile's own properties so that expression can read them.
 export const showSelectionWall3D = (
   map: Map,
   geometry: any,

@@ -117,8 +117,6 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
-  // The last tile/zone the user clicked, so its highlight can be redrawn
-  // whenever the map switches between 2D and 3D (see applySelectionHighlight).
   const selectedFeatureInfo = ref<{
     datatype: DataType
     geometry: any
@@ -460,11 +458,6 @@ export const useMapStore = defineStore("map", () => {
     console.info("cypress: IFB click square removed")
   }
 
-  // Single entry point for (re)drawing whatever is in selectedFeatureInfo in
-  // whichever mode (2D outline / 3D wall) currently matches use3D — used both
-  // right after a click and when reapplying the highlight post-toggle. The
-  // actual drawing lives in utils/map.ts; this just supplies the store state
-  // (which tile, which mode, and the height expression for that datatype).
   const applySelectionHighlight = (map: Map) => {
     clearSelectionWall3D(map)
     clearSelectionOutline2D(map)
@@ -1193,9 +1186,6 @@ export const useMapStore = defineStore("map", () => {
         applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
       }
       shapeDrawing.initDraw(mapInstance)
-      // The backend score is only queried once the shape is finished (and on
-      // subsequent edits of that finished shape). While the shape is still being
-      // drawn, only the client-side area is refreshed — no request is fired.
       shapeDrawing.onShapeFinished(() => {
         markShapeFinished()
         recomputeLiveArea()
@@ -1240,13 +1230,10 @@ export const useMapStore = defineStore("map", () => {
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
-    // Clear contextual data when changing mode
     contextData.removeData()
 
-    // Use Terra Draw to change mode
     shapeDrawing.setMode(mode)
 
-    // In POINT mode (simple click), disable drawing
     if (mode === SelectionMode.POINT) {
       shapeDrawing.stopDrawing()
     }
@@ -1255,26 +1242,21 @@ export const useMapStore = defineStore("map", () => {
   const MIN_LOADING_DURATION_MS = 500
 
   const performCalculation = async () => {
-    // Activate loading state
     isCalculating.value = true
     contextData.error.value = false
     const loadingStartTime = Date.now()
 
     try {
-      // Retrieve aggregated scores in shape via backend API
       const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
 
       if (scores) {
-        // Set aggregated scores directly in context
         contextData.data.value = scores
       }
     } catch (e) {
-      // Surface the failure instead of silently leaving an empty panel.
       console.error("Error retrieving scores in shape:", e)
       contextData.data.value = null
       contextData.error.value = true
     } finally {
-      // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
       if (loadingDuration < MIN_LOADING_DURATION_MS) {
         await new Promise((resolve) =>
@@ -1285,7 +1267,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Debounce calculation to avoid multiple rapid calls
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
@@ -1304,8 +1285,6 @@ export const useMapStore = defineStore("map", () => {
     return { type: "Polygon", coordinates: [ring as [number, number][]] }
   }
 
-  // Retry path differs by mode: a shape error re-runs the polygon calculation,
-  // a tile error replays the last tile request.
   const retryContextData = () => {
     if (isShapeMode.value) {
       performCalculation()
@@ -1328,8 +1307,6 @@ export const useMapStore = defineStore("map", () => {
     () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
   )
 
-  // Query the backend only for selections within the allowed size, so oversized
-  // shapes never reach the server. A too-large shape clears any stale result.
   const requestScoreIfWithinLimit = () => {
     if (isAreaTooLarge.value) {
       contextData.removeData()
@@ -1338,8 +1315,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Shared reset for both shape-session entry points (start from POINT vs. restart
-  // from EDITING). Kept as distinct public methods so call sites read by intent.
   const resetToDrawingState = (mode: SelectionMode) => {
     shapeEditing.value = false
     liveArea.value = null
@@ -1354,13 +1329,8 @@ export const useMapStore = defineStore("map", () => {
     shapeEditing.value = true
   }
 
-  // Distance (screen px) a click must clear the current shape by before it counts
-  // as a "new zone" rather than an attempt to edit the shape.
   const REDRAW_MARGIN_PX = 24
 
-  // While editing, a click clearly away from the finished shape starts a fresh shape
-  // of the same type (discarding the previous one). Clicks on/near the shape are left
-  // to Terra Draw for vertex/feature editing, so a near-miss never destroys the shape.
   const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
     if (drawingState.value !== "editing") return
     const map = mapInstancesByIds.value["default"]
@@ -1386,8 +1356,6 @@ export const useMapStore = defineStore("map", () => {
     changeSelectionMode(SelectionMode.POINT)
   }
 
-  // Redraws the current selection's highlight after a 2D/3D toggle, since
-  // refreshLayers() rebuilds the tile layers from scratch.
   const reapplySelectionHighlight = () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       applySelectionHighlight(mapInstancesByIds.value[mapId])
