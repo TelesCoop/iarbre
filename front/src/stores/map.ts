@@ -46,7 +46,8 @@ import {
   showSelectionWall3D,
   clearSelectionWall3D,
   showSelectionOutline2D,
-  clearSelectionOutline2D
+  clearSelectionOutline2D,
+  METERS_PER_DEGREE_LAT
 } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -303,19 +304,7 @@ export const useMapStore = defineStore("map", () => {
       }
     }
 
-    const lineLayer: AddLayerObject = {
-      id: `${layerId}-border`,
-      type: "line",
-      source: sourceId,
-      "source-layer": sourceLayer,
-      layout: {},
-      paint: {
-        "line-color": "#00000000",
-        "line-width": 0
-      }
-    }
-
-    return [fillLayer, lineLayer]
+    return [fillLayer]
   }
 
   const CLICK_MARKER_SOURCE = "ifb-click-square-source"
@@ -353,8 +342,8 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
     const sizeM = halfSizeM(map, lat)
-    const latOffset = sizeM / 111320
-    const lngOffset = sizeM / (111320 * Math.cos((lat * Math.PI) / 180))
+    const latOffset = sizeM / METERS_PER_DEGREE_LAT
+    const lngOffset = sizeM / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
     const marker = {
       type: "Feature" as const,
       geometry:
@@ -417,8 +406,9 @@ export const useMapStore = defineStore("map", () => {
 
     if (!withCircle) return
 
-    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
-    const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / METERS_PER_DEGREE_LAT
+    const lngRadiusDeg =
+      IFB_CIRCLE_RADIUS_M / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
     const steps = 64
     const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
       const angle = (i * 2 * Math.PI) / steps
@@ -494,8 +484,7 @@ export const useMapStore = defineStore("map", () => {
     if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
       drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
       selectedFeatureInfo.value = null
-      clearSelectionWall3D(map)
-      clearSelectionOutline2D(map)
+      applySelectionHighlight(map)
     } else {
       selectedFeatureInfo.value = {
         datatype,
@@ -712,9 +701,6 @@ export const useMapStore = defineStore("map", () => {
         if (mapInstance.getLayer(layerId)) {
           mapInstance.removeLayer(layerId)
         }
-        if (mapInstance.getLayer(`${layerId}-border`)) {
-          mapInstance.removeLayer(`${layerId}-border`)
-        }
         const sourceId = getSourceId(previousDataType, previousGeoLevel)
         if (mapInstance.getSource(sourceId)) {
           mapInstance.removeSource(sourceId)
@@ -774,9 +760,6 @@ export const useMapStore = defineStore("map", () => {
       const layerId = getLayerId(currentDataType, currentGeoLevel)
       if (mapInstance.getLayer(layerId)) {
         mapInstance.removeLayer(layerId)
-      }
-      if (mapInstance.getLayer(`${layerId}-border`)) {
-        mapInstance.removeLayer(`${layerId}-border`)
       }
       setupTile(mapInstance, currentDataType, currentGeoLevel)
     })

@@ -1,16 +1,16 @@
 import { DataType, GeoLevel } from "@/utils/enum"
-import { Map, type GeoJSONSource, type DataDrivenPropertyValueSpecification } from "maplibre-gl"
+import { Map, type DataDrivenPropertyValueSpecification } from "maplibre-gl"
 
 // fill-extrusion has no stroke/outline paint property. To fake one, turn each
 // edge of the polygon into a thin quad straddling that edge, then render all
 // the quads as their own white fill-extrusion layer at the tile's height: a
 // ring of thin vertical walls around the tile, with no flat top to read as a cap.
+export const METERS_PER_DEGREE_LAT = 111320
+
 export const buildSelectionWallPolygons = (
   geometry: { type: string; coordinates: any },
   halfWidthMeters: number
 ): number[][][][] => {
-  const METERS_PER_DEGREE_LAT = 111320
-
   const rings: number[][][] =
     geometry.type === "Polygon"
       ? geometry.coordinates
@@ -73,29 +73,19 @@ export const showSelectionWall3D = (
     )
   }
 
-  const source = map.getSource(SELECTION_WALL_SOURCE) as GeoJSONSource | undefined
-  if (source) {
-    source.setData(wallCollection)
-  } else {
-    map.addSource(SELECTION_WALL_SOURCE, { type: "geojson", data: wallCollection })
-  }
-
-  if (!map.getLayer(SELECTION_WALL_LAYER)) {
-    map.addLayer({
-      id: SELECTION_WALL_LAYER,
-      type: "fill-extrusion",
-      source: SELECTION_WALL_SOURCE,
-      paint: {
-        "fill-extrusion-color": "#FFFFFF",
-        "fill-extrusion-height": heightExpression,
-        "fill-extrusion-base": 0,
-        "fill-extrusion-opacity": 1,
-        "fill-extrusion-vertical-gradient": false
-      }
-    })
-  } else {
-    map.setPaintProperty(SELECTION_WALL_LAYER, "fill-extrusion-height", heightExpression)
-  }
+  map.addSource(SELECTION_WALL_SOURCE, { type: "geojson", data: wallCollection })
+  map.addLayer({
+    id: SELECTION_WALL_LAYER,
+    type: "fill-extrusion",
+    source: SELECTION_WALL_SOURCE,
+    paint: {
+      "fill-extrusion-color": "#FFFFFF",
+      "fill-extrusion-height": heightExpression,
+      "fill-extrusion-base": 0,
+      "fill-extrusion-opacity": 1,
+      "fill-extrusion-vertical-gradient": false
+    }
+  })
 }
 
 export const clearSelectionWall3D = (map: Map) => {
@@ -116,25 +106,17 @@ export const showSelectionOutline2D = (map: Map, geometry: any) => {
   if (!geometry) return
 
   const outline = { type: "Feature" as const, geometry, properties: {} }
-  const source = map.getSource(SELECTION_OUTLINE_SOURCE) as GeoJSONSource | undefined
 
-  if (source) {
-    source.setData(outline)
-  } else {
-    map.addSource(SELECTION_OUTLINE_SOURCE, { type: "geojson", data: outline })
-  }
-
-  if (!map.getLayer(SELECTION_OUTLINE_LAYER)) {
-    map.addLayer({
-      id: SELECTION_OUTLINE_LAYER,
-      type: "line",
-      source: SELECTION_OUTLINE_SOURCE,
-      paint: {
-        "line-color": "#FFFFFF",
-        "line-width": 4
-      }
-    })
-  }
+  map.addSource(SELECTION_OUTLINE_SOURCE, { type: "geojson", data: outline })
+  map.addLayer({
+    id: SELECTION_OUTLINE_LAYER,
+    type: "line",
+    source: SELECTION_OUTLINE_SOURCE,
+    paint: {
+      "line-color": "#FFFFFF",
+      "line-width": 4
+    }
+  })
 }
 
 export const clearSelectionOutline2D = (map: Map) => {
