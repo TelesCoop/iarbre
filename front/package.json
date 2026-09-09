@@ -65,7 +65,7 @@
     "vite": "^8.1.2",
     "vite-plugin-istanbul": "^9.0.1",
     "vite-plugin-vue-devtools": "^8.1.5",
-    "vitest": "^4.1.9",
+    "vitest": "^4.1.11",
     "vue-tsc": "^2.0.21"
   },
   "lavamoat": {
