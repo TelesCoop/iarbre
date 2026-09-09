@@ -40,7 +40,16 @@ import {
   type HeightRange
 } from "@/utils/vegetation"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
-import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  extractFeatureProperty,
+  getLayerId,
+  getSourceId,
+  showSelectionWall3D,
+  clearSelectionWall3D,
+  showSelectionOutline2D,
+  clearSelectionOutline2D,
+  METERS_PER_DEGREE_LAT
+} from "@/utils/map"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -110,6 +119,11 @@ export const useMapStore = defineStore("map", () => {
 
   const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
   const use3D = ref<boolean>(false)
+  const selectedFeatureInfo = ref<{
+    datatype: DataType
+    geometry: any
+    properties: Record<string, any>
+  } | null>(null)
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
@@ -291,19 +305,7 @@ export const useMapStore = defineStore("map", () => {
       }
     }
 
-    const lineLayer: AddLayerObject = {
-      id: `${layerId}-border`,
-      type: "line",
-      source: sourceId,
-      "source-layer": sourceLayer,
-      layout: {},
-      paint: {
-        "line-color": "#00000000",
-        "line-width": 0
-      }
-    }
-
-    return [fillLayer, lineLayer]
+    return [fillLayer]
   }
 
   const CLICK_MARKER_SOURCE = "ifb-click-square-source"
@@ -341,8 +343,8 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
     const sizeM = halfSizeM(map, lat)
-    const latOffset = sizeM / 111320
-    const lngOffset = sizeM / (111320 * Math.cos((lat * Math.PI) / 180))
+    const latOffset = sizeM / METERS_PER_DEGREE_LAT
+    const lngOffset = sizeM / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
     const marker = {
       type: "Feature" as const,
       geometry:
@@ -405,8 +407,9 @@ export const useMapStore = defineStore("map", () => {
 
     if (!withCircle) return
 
-    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / 111320
-    const lngRadiusDeg = IFB_CIRCLE_RADIUS_M / (111320 * Math.cos((lat * Math.PI) / 180))
+    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / METERS_PER_DEGREE_LAT
+    const lngRadiusDeg =
+      IFB_CIRCLE_RADIUS_M / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
     const steps = 64
     const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
       const angle = (i * 2 * Math.PI) / steps
@@ -446,6 +449,21 @@ export const useMapStore = defineStore("map", () => {
     console.info("cypress: IFB click square removed")
   }
 
+  const applySelectionHighlight = (map: Map) => {
+    clearSelectionWall3D(map)
+    clearSelectionOutline2D(map)
+    const selection = selectedFeatureInfo.value
+    if (!selection) return
+    if (use3D.value) {
+      const heightExpression = EXTRUSION_HEIGHT_MAP.value[
+        selection.datatype
+      ] as DataDrivenPropertyValueSpecification<number>
+      showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
+    } else {
+      showSelectionOutline2D(map, selection.geometry)
+    }
+  }
+
   const applyTileSelection = (
     map: Map,
     datatype: DataType,
@@ -453,7 +471,6 @@ export const useMapStore = defineStore("map", () => {
     features: any[],
     lngLat: { lng: number; lat: number }
   ) => {
-    const layerId = getLayerId(datatype, geolevel)
     const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
     const score = extractFeatureProperty(features, datatype, geolevel, "indice")
     const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
@@ -467,8 +484,15 @@ export const useMapStore = defineStore("map", () => {
         : undefined
     if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
       drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
+      selectedFeatureInfo.value = null
+      applySelectionHighlight(map)
     } else {
-      highlightFeature(map, layerId, featureId)
+      selectedFeatureInfo.value = {
+        datatype,
+        geometry: features[0].geometry,
+        properties: features[0].properties ?? {}
+      }
+      applySelectionHighlight(map)
     }
     // Highlight cell in the legend that correspond to clicked tile
     if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
@@ -652,6 +676,7 @@ export const useMapStore = defineStore("map", () => {
     contextData.removeData()
     vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
+    selectedFeatureInfo.value = null
 
     // Update all map instances with the new layer
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -669,14 +694,13 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
         removeClickMarker(mapInstance)
       }
+      clearSelectionWall3D(mapInstance)
+      clearSelectionOutline2D(mapInstance)
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
         if (mapInstance.getLayer(layerId)) {
           mapInstance.removeLayer(layerId)
-        }
-        if (mapInstance.getLayer(`${layerId}-border`)) {
-          mapInstance.removeLayer(`${layerId}-border`)
         }
         const sourceId = getSourceId(previousDataType, previousGeoLevel)
         if (mapInstance.getSource(sourceId)) {
@@ -737,9 +761,6 @@ export const useMapStore = defineStore("map", () => {
       const layerId = getLayerId(currentDataType, currentGeoLevel)
       if (mapInstance.getLayer(layerId)) {
         mapInstance.removeLayer(layerId)
-      }
-      if (mapInstance.getLayer(`${layerId}-border`)) {
-        mapInstance.removeLayer(`${layerId}-border`)
       }
       setupTile(mapInstance, currentDataType, currentGeoLevel)
     })
@@ -1149,9 +1170,6 @@ export const useMapStore = defineStore("map", () => {
         applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
       }
       shapeDrawing.initDraw(mapInstance)
-      // The backend score is only queried once the shape is finished (and on
-      // subsequent edits of that finished shape). While the shape is still being
-      // drawn, only the client-side area is refreshed — no request is fired.
       shapeDrawing.onShapeFinished(() => {
         markShapeFinished()
         recomputeLiveArea()
@@ -1196,13 +1214,10 @@ export const useMapStore = defineStore("map", () => {
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
-    // Clear contextual data when changing mode
     contextData.removeData()
 
-    // Use Terra Draw to change mode
     shapeDrawing.setMode(mode)
 
-    // In POINT mode (simple click), disable drawing
     if (mode === SelectionMode.POINT) {
       shapeDrawing.stopDrawing()
     }
@@ -1211,26 +1226,21 @@ export const useMapStore = defineStore("map", () => {
   const MIN_LOADING_DURATION_MS = 500
 
   const performCalculation = async () => {
-    // Activate loading state
     isCalculating.value = true
     contextData.error.value = false
     const loadingStartTime = Date.now()
 
     try {
-      // Retrieve aggregated scores in shape via backend API
       const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
 
       if (scores) {
-        // Set aggregated scores directly in context
         contextData.data.value = scores
       }
     } catch (e) {
-      // Surface the failure instead of silently leaving an empty panel.
       console.error("Error retrieving scores in shape:", e)
       contextData.data.value = null
       contextData.error.value = true
     } finally {
-      // Ensure minimum loading duration of 0.5 seconds
       const loadingDuration = Date.now() - loadingStartTime
       if (loadingDuration < MIN_LOADING_DURATION_MS) {
         await new Promise((resolve) =>
@@ -1241,7 +1251,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Debounce calculation to avoid multiple rapid calls
   const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
 
   const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
@@ -1260,8 +1269,6 @@ export const useMapStore = defineStore("map", () => {
     return { type: "Polygon", coordinates: [ring as [number, number][]] }
   }
 
-  // Retry path differs by mode: a shape error re-runs the polygon calculation,
-  // a tile error replays the last tile request.
   const retryContextData = () => {
     if (isShapeMode.value) {
       performCalculation()
@@ -1284,8 +1291,6 @@ export const useMapStore = defineStore("map", () => {
     () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
   )
 
-  // Query the backend only for selections within the allowed size, so oversized
-  // shapes never reach the server. A too-large shape clears any stale result.
   const requestScoreIfWithinLimit = () => {
     if (isAreaTooLarge.value) {
       contextData.removeData()
@@ -1294,8 +1299,6 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  // Shared reset for both shape-session entry points (start from POINT vs. restart
-  // from EDITING). Kept as distinct public methods so call sites read by intent.
   const resetToDrawingState = (mode: SelectionMode) => {
     shapeEditing.value = false
     liveArea.value = null
@@ -1310,13 +1313,8 @@ export const useMapStore = defineStore("map", () => {
     shapeEditing.value = true
   }
 
-  // Distance (screen px) a click must clear the current shape by before it counts
-  // as a "new zone" rather than an attempt to edit the shape.
   const REDRAW_MARGIN_PX = 24
 
-  // While editing, a click clearly away from the finished shape starts a fresh shape
-  // of the same type (discarding the previous one). Clicks on/near the shape are left
-  // to Terra Draw for vertex/feature editing, so a near-miss never destroys the shape.
   const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
     if (drawingState.value !== "editing") return
     const map = mapInstancesByIds.value["default"]
@@ -1342,6 +1340,12 @@ export const useMapStore = defineStore("map", () => {
     changeSelectionMode(SelectionMode.POINT)
   }
 
+  const reapplySelectionHighlight = () => {
+    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
+      applySelectionHighlight(mapInstancesByIds.value[mapId])
+    })
+  }
+
   const toggle3D = () => {
     use3D.value = !use3D.value
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
@@ -1353,6 +1357,7 @@ export const useMapStore = defineStore("map", () => {
       }
     })
     refreshLayers()
+    reapplySelectionHighlight()
   }
 
   const zoomTo = (targetZoom: number) => {
