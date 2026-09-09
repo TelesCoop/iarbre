@@ -77,6 +77,7 @@ export const STRATE_GRADIENT_CSS = `linear-gradient(to top, ${Object.values(STRA
   .join(", ")})`
 
 const ELEVATION_MAX = 40
+export const VEGESTRATE_TERRAIN_EXAGGERATION = 2
 export const ELEVATION_BINS = [
   { min: 0, color: "#ecdeb1" },
   { min: 1, color: "#e6dcac" },
