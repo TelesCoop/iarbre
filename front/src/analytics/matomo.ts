@@ -20,6 +20,8 @@ export function setupAnalytics() {
     const matomo = initMatomo({
       host: "https://analytics.tlscp.fr",
       siteId: 4,
+      trackerScriptUrl: "https://analytics.tlscp.fr/js/index.php",
+      trackerUrl: "https://analytics.tlscp.fr/js/index.php",
       trackRouter: true,
       requireConsent: true
     })
