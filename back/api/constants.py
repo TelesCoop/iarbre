@@ -89,48 +89,6 @@ def _build_elevation_color_map():
 
 VEGESTRATE_ELEVATION_COLOR_MAP = _build_elevation_color_map()
 
-_VEGESTRATE_LAYER_TITLES = {
-    (2018, "02", False, None, "class"): (
-        "iarbre:vegestrate_2018_raw",
-        "Végéstrate 2018 - 20cm - brut",
-    ),
-    (2018, "02", True, 3, "class"): (
-        "iarbre:vegestrate_2018_ppv3",
-        "Végéstrate 2018 - 20cm - post-traitement v3",
-    ),
-    (2023, "02", False, None, "class"): (
-        "iarbre:vegestrate_2023_raw",
-        "Végéstrate 2023 - 20cm - brut",
-    ),
-    (2023, "02", True, 1, "class"): (
-        "iarbre:vegestrate_2023_ppv1",
-        "Végéstrate 2023 - 20cm - post-traitement v1",
-    ),
-    (2023, "02", True, 2, "class"): (
-        "iarbre:vegestrate_2023_ppv2",
-        "Végéstrate 2023 - 20cm - post-traitement v2",
-    ),
-    (2023, "02", True, 3, "class"): (
-        "iarbre:vegestrate_2023_ppv3",
-        "Végéstrate 2023 - 20cm - post-traitement v3",
-    ),
-    (2023, "02", True, 3, "elevation"): (
-        "iarbre:vegestrate_2023_ppv3_elevation",
-        "Végéstrate 2023 - 20cm - post-traitement v3 - hauteur (nDSM avec filtrage médian)",
-    ),
-}
-
-WMS_LAYERS = {
-    layer_name: {
-        "title": title,
-        "path": f"rasters/vegestrate/{VEGESTRATE_FILES[key]}",
-        "color_map": VEGESTRATE_ELEVATION_COLOR_MAP
-        if key[4] == "elevation"
-        else VEGESTRATE_COLOR_MAP,
-    }
-    for key, (layer_name, title) in _VEGESTRATE_LAYER_TITLES.items()
-}
-
 # Score ranges for different data types
 PLANTABILITY_MAX_SCORE = 10
 VULNERABILITY_MAX_SCORE = 9

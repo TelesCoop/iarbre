@@ -19,9 +19,11 @@ from .views import (
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
-    IArbreWMSView,
     OrthophotoTileView,
     VegetationTileView,
+    VegetationHeightTileView,
+    VegetationHeightAtPointView,
+    BiosphereLandCoverAtPointView,
     WMSView,
 )
 
@@ -89,11 +91,15 @@ urlpatterns = [
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
     path("wfs/", IArbreWFSView.as_view()),
-    path("wms/", IArbreWMSView.as_view()),
+    path("wms/", WMSView.as_view(), name="wms"),
     path(
         "orthophoto/<int:z>/<int:x>/<int:y>.png",
         OrthophotoTileView.as_view(),
         name="orthophoto-tile",
     ),
-    path("wms/", WMSView.as_view(), name="wms"),
+    path(
+        "biosphere/land-cover-at-point/",
+        BiosphereLandCoverAtPointView.as_view(),
+        name="biosphere-land-cover-at-point",
+    ),
 ]

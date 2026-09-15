@@ -32,8 +32,25 @@ import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/planta
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import { VEGESTRATE_HEIGHT_MAP, VegestrateMode, VegestrateModeToParams } from "@/utils/vegetation"
-import { extractFeatureProperty, getLayerId, getSourceId, highlightFeature } from "@/utils/map"
+import {
+  VEGESTRATE_HEIGHT_MAP,
+  VegestrateMode,
+  VegestrateModeToParams,
+  buildElevationColorRamp,
+  normalizeHeightRanges,
+  type HeightRange
+} from "@/utils/vegetation"
+import {
+  extractFeatureProperty,
+  getLayerId,
+  getSourceId,
+  METERS_PER_DEGREE_LAT,
+  showSelectionWall3D,
+  clearSelectionWall3D,
+  showSelectionOutline2D,
+  clearSelectionOutline2D
+} from "@/utils/map"
+import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -111,8 +128,6 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
-  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
-  const heightMapZoomHandler = ref<(() => void) | null>(null)
 
   const vegestrateMode = ref<VegestrateMode>(VegestrateMode.POSTPROCESS_V1_2023_02)
 
@@ -180,12 +195,12 @@ export const useMapStore = defineStore("map", () => {
    * Reference: https://maplibre.org/maplibre-gl-js/docs/examples/map-tiles/
    * https://www.reddit.com/r/QGIS/comments/q0su5b/comment/hfabj8f/
    */
-  const loadMapStyle = (style: MapStyle): maplibregl.StyleSpecification => {
+  const loadMapStyle = (style: MapStyle): StyleSpecification => {
     const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
     const rawStyle = JSON.stringify(mapStyles[style])
       .replace("{API_BASE_URL}", getFullBaseApiUrl())
       .replace(/\?key=\{CARTO_API_KEY\}/g, cartoApiKey ? `?key=${cartoApiKey}` : "")
-    return applyMapStyleAttributions(JSON.parse(rawStyle)) as maplibregl.StyleSpecification
+    return applyMapStyleAttributions(JSON.parse(rawStyle)) as StyleSpecification
   }
   const navControl = ref(
     new NavigationControl({
@@ -1422,6 +1437,12 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     use3D,
     toggle3D,
-    vegestrateMode
+    vegestrateMode,
+    showVegestrateHeight,
+    toggleVegestrateHeight,
+    vegestrateHeightRanges,
+    setVegestrateHeightRanges,
+    vegetationHeightAtPoint,
+    zoomTo
   }
 })
