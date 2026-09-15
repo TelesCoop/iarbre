@@ -39,27 +39,27 @@ const OCCUPATION_THRESHOLDS = {
 const META_CATEGORY_CONFIG = {
   [PlantabilityMetaCategory.RESEAUX_INFRASTRUCTURES]: {
     label: "Réseaux & infrastructures",
-    icon: "🔌"
+    icon: "network"
   },
   [PlantabilityMetaCategory.INFRASTRUCTURE_TRANSPORT]: {
     label: "Transport & mobilité",
-    icon: "🚇"
+    icon: "transport"
   },
   [PlantabilityMetaCategory.BATIMENTS]: {
     label: "Bâtiments",
-    icon: "🏢"
+    icon: "building"
   },
   [PlantabilityMetaCategory.ESPACES_VERTS]: {
     label: "Espaces verts",
-    icon: "🌳"
+    icon: "tree"
   },
   [PlantabilityMetaCategory.AMENAGEMENTS_URBAINS]: {
     label: "Aménagements urbains",
-    icon: "🏛️"
+    icon: "road"
   },
   [PlantabilityMetaCategory.PLANS_EAU]: {
     label: "Plans d'eau",
-    icon: "💧"
+    icon: "water"
   }
 }
 
@@ -93,7 +93,7 @@ export function usePlantabilityData(data: Ref<PlantabilityData>) {
         key,
         label: key,
         value: createFactorLabel(plantabilityLandKey, value!),
-        icon: PLANTABILITY_EMOJIS[plantabilityLandKey] || "❓",
+        icon: PLANTABILITY_EMOJIS[plantabilityLandKey] || "generic",
         impact: PLANTABILITY_FACTORS_IMPACT[plantabilityLandKey] || null,
         occupationLevel: getOccupationLevel(value!)
       }
@@ -114,7 +114,7 @@ export function usePlantabilityData(data: Ref<PlantabilityData>) {
 
     return Array.from(factorsByCategory.entries())
       .map(([category, categoryFactors]) => {
-        const config = META_CATEGORY_CONFIG[category] || { label: category, icon: "📊" }
+        const config = META_CATEGORY_CONFIG[category] || { label: category, icon: "generic" }
         const hasPositiveImpact = categoryFactors.some(
           (f) => f.impact === PlantabilityImpact.POSITIVE
         )

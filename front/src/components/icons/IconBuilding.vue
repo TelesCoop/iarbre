@@ -19,16 +19,10 @@ withDefaults(defineProps<Props>(), {
     stroke-linecap="round"
     stroke-linejoin="round"
   >
-    <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-    <path d="M9 22v-4h6v4" />
-    <path d="M8 6h.01" />
-    <path d="M16 6h.01" />
-    <path d="M12 6h.01" />
-    <path d="M12 10h.01" />
-    <path d="M12 14h.01" />
-    <path d="M16 10h.01" />
-    <path d="M16 14h.01" />
-    <path d="M8 10h.01" />
-    <path d="M8 14h.01" />
+    <path d="M2 21h20" />
+    <rect x="3.5" y="10" width="6" height="11" />
+    <rect x="12.5" y="4" width="8" height="17" />
+    <path d="M15.5 21v-3.5h2V21" />
+    <path d="M5.5 13.5h.01M5.5 16.5h.01" />
   </svg>
 </template>

@@ -19,11 +19,7 @@ withDefaults(defineProps<Props>(), {
     stroke-linecap="round"
     stroke-linejoin="round"
   >
-    <rect x="2" y="11" width="20" height="11" />
-    <path d="M6 11V7" />
-    <path d="M18 11V7" />
-    <path d="M6 7h12" />
-    <path d="M12 2l8 5H4l8-5z" />
-    <rect x="9" y="15" width="6" height="7" />
+    <path d="M4 8 9 4 15 6 20 10 17 18 8 17 Z" />
+    <circle cx="12" cy="11" r="1.5" fill="currentColor" stroke="none" />
   </svg>
 </template>

@@ -56,6 +56,7 @@ class PlantabilityCount(models.Model):
     """Count of tiles with plantability indice in the range PLANTABILITY_NORMALIZED."""
 
     plantability_counts = models.JSONField(default=default_plantability_counts)
+    meta_factors_avg = models.JSONField(null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -272,6 +273,7 @@ class Vegestrate(models.Model):
         max_length=20, choices=StrateChoices.choices, null=True, blank=True
     )
     surface = models.FloatField(null=True)
+    mean_height = models.FloatField(null=True, blank=True)
 
     class Meta:
         indexes = [

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from "vue"
 import type { City, Iris } from "@/types/division"
+import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
 
 interface DivisionDataProps {
   cities?: City[]
@@ -33,7 +34,7 @@ const getScoreClass = (value: number | null) => {
     <!-- Communes Section -->
     <div v-if="hasCities" class="section">
       <div class="section-header">
-        <span class="section-icon">🏛️</span>
+        <span class="section-icon"><ContextDataIcon name="building" :size="14" /></span>
         <span class="section-title">Communes</span>
       </div>
       <table class="data-table">
@@ -64,7 +65,7 @@ const getScoreClass = (value: number | null) => {
     <!-- IRIS Section -->
     <div v-if="hasIris" class="section">
       <div class="section-header">
-        <span class="section-icon">📍</span>
+        <span class="section-icon"><ContextDataIcon name="generic" :size="14" /></span>
         <span class="section-title">IRIS</span>
       </div>
       <table class="data-table">
@@ -115,7 +116,7 @@ const getScoreClass = (value: number | null) => {
 }
 
 .section-icon {
-  @apply text-sm;
+  @apply flex h-5 w-5 items-center justify-center text-primary-600;
 }
 
 .section-title {

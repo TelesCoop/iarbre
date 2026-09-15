@@ -4,6 +4,7 @@ import {
   PlantabilityMetaCategory,
   PlantabilityScore
 } from "@/types/plantability"
+import { metaFactorColors } from "@/theme/iArbre"
 
 export enum PlantabilityScoreThreshold {
   IMPOSSIBLE = 0,
@@ -16,6 +17,11 @@ export enum PlantabilityScoreThreshold {
 
 export const PLANTABILITY_SCORES = Object.values(PlantabilityScoreThreshold) as number[]
 export const PLANTABILITY_SCORES_STR = PLANTABILITY_SCORES.map(String)
+
+// Land-use occupation detail (top 5) is only available from this zoom level;
+// below it the tile feature carries the aggregated score distribution.
+export const PLANTABILITY_DETAIL_ZOOM = 17
+export const PLANTABILITY_DISTRIBUTION_ZOOM = 15
 
 export function getPlantabilityScore(id: number): string {
   if (id < PlantabilityScoreThreshold.VERY_CONSTRAINED) return PlantabilityScore.IMPOSSIBLE
@@ -53,42 +59,42 @@ export const PLANTABILITY_COLOR_MAP = [
 ]
 
 export const PLANTABILITY_EMOJIS: Record<PlantabilityLandUseKeys, string> = {
-  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]: "🔧",
-  [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]: "🪵",
-  [PlantabilityLandUseKeys.ARBRES]: "🌳",
-  [PlantabilityLandUseKeys.AERODROME]: "✈️",
-  [PlantabilityLandUseKeys.PARKINGS]: "🅿️",
-  [PlantabilityLandUseKeys.SIGNALISATION_TRICOLORE]: "🚦",
-  [PlantabilityLandUseKeys.STATION_VELOV]: "🚲",
-  [PlantabilityLandUseKeys.ARRETS_TRANSPORT]: "🚌",
-  [PlantabilityLandUseKeys.PROXIMITE_FACADE]: "🏢",
-  [PlantabilityLandUseKeys.BATIMENTS]: "🏗️",
-  [PlantabilityLandUseKeys.FRICHES]: "🌾",
-  [PlantabilityLandUseKeys.ASSAINISSEMENT]: "🚰",
-  [PlantabilityLandUseKeys.PARCS_JARDINS]: "🌻",
-  [PlantabilityLandUseKeys.GIRATOIRES]: "🔄",
-  [PlantabilityLandUseKeys.ESPACES_JEUX_PIETONNIER]: "🛝",
-  [PlantabilityLandUseKeys.FRICHE_NATURELLE]: "🌿",
-  [PlantabilityLandUseKeys.RESEAU_FIBRE]: "🌐",
-  [PlantabilityLandUseKeys.MARCHES_FORAINS]: "🏪",
-  [PlantabilityLandUseKeys.PISTES_CYCLABLE]: "🚴",
-  [PlantabilityLandUseKeys.PLAN_EAU]: "💧",
-  [PlantabilityLandUseKeys.PONTS]: "🌉",
-  [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: "🔥",
-  [PlantabilityLandUseKeys.VOIES_FERREES]: "🚂",
-  [PlantabilityLandUseKeys.STRATE_ARBOREE]: "🌲",
-  [PlantabilityLandUseKeys.STRATE_BASSE_PELOUSE]: "🌱",
-  [PlantabilityLandUseKeys.ESPACES_AGRICOLES]: "🚜",
-  [PlantabilityLandUseKeys.FORETS]: "🌲",
-  [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: "🏙️",
-  [PlantabilityLandUseKeys.TRACE_METRO]: "🚇",
-  [PlantabilityLandUseKeys.TRACE_TRAMWAY]: "🚊",
-  [PlantabilityLandUseKeys.TRACE_BUS]: "🚍",
-  [PlantabilityLandUseKeys.RSX_GAZ]: "⛽",
-  [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: "⚡",
-  [PlantabilityLandUseKeys.RSX_AERIENS_ERDF]: "🔌",
-  [PlantabilityLandUseKeys.PMR]: "♿",
-  [PlantabilityLandUseKeys.AUTO_PARTAGE]: "🚗"
+  [PlantabilityLandUseKeys.RESEAUX_INFRASTRUCTURES]: "network",
+  [PlantabilityLandUseKeys.SOUCHES_EMPLACEMENTS_LIBRES]: "tree",
+  [PlantabilityLandUseKeys.ARBRES]: "tree",
+  [PlantabilityLandUseKeys.AERODROME]: "transport",
+  [PlantabilityLandUseKeys.PARKINGS]: "transport",
+  [PlantabilityLandUseKeys.SIGNALISATION_TRICOLORE]: "transport",
+  [PlantabilityLandUseKeys.STATION_VELOV]: "transport",
+  [PlantabilityLandUseKeys.ARRETS_TRANSPORT]: "transport",
+  [PlantabilityLandUseKeys.PROXIMITE_FACADE]: "building",
+  [PlantabilityLandUseKeys.BATIMENTS]: "building",
+  [PlantabilityLandUseKeys.FRICHES]: "vegetation",
+  [PlantabilityLandUseKeys.ASSAINISSEMENT]: "network",
+  [PlantabilityLandUseKeys.PARCS_JARDINS]: "vegetation",
+  [PlantabilityLandUseKeys.GIRATOIRES]: "road",
+  [PlantabilityLandUseKeys.ESPACES_JEUX_PIETONNIER]: "vegetation",
+  [PlantabilityLandUseKeys.FRICHE_NATURELLE]: "vegetation",
+  [PlantabilityLandUseKeys.RESEAU_FIBRE]: "network",
+  [PlantabilityLandUseKeys.MARCHES_FORAINS]: "building",
+  [PlantabilityLandUseKeys.PISTES_CYCLABLE]: "transport",
+  [PlantabilityLandUseKeys.PLAN_EAU]: "water",
+  [PlantabilityLandUseKeys.PONTS]: "road",
+  [PlantabilityLandUseKeys.RESEAU_CHALEUR_URBAIN]: "heat",
+  [PlantabilityLandUseKeys.VOIES_FERREES]: "transport",
+  [PlantabilityLandUseKeys.STRATE_ARBOREE]: "tree",
+  [PlantabilityLandUseKeys.STRATE_BASSE_PELOUSE]: "vegetation",
+  [PlantabilityLandUseKeys.ESPACES_AGRICOLES]: "vegetation",
+  [PlantabilityLandUseKeys.FORETS]: "tree",
+  [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: "building",
+  [PlantabilityLandUseKeys.TRACE_METRO]: "transport",
+  [PlantabilityLandUseKeys.TRACE_TRAMWAY]: "transport",
+  [PlantabilityLandUseKeys.TRACE_BUS]: "transport",
+  [PlantabilityLandUseKeys.RSX_GAZ]: "network",
+  [PlantabilityLandUseKeys.RSX_SOUTERRAINS_ERDF]: "network",
+  [PlantabilityLandUseKeys.RSX_AERIENS_ERDF]: "network",
+  [PlantabilityLandUseKeys.PMR]: "transport",
+  [PlantabilityLandUseKeys.AUTO_PARTAGE]: "transport"
 }
 
 export const PLANTABILITY_FACTORS_IMPACT: Record<PlantabilityLandUseKeys, PlantabilityImpact> = {
@@ -186,6 +192,8 @@ export const PLANTABILITY_FACTORS_META_CATEGORIES = {
   [PlantabilityLandUseKeys.PLAN_EAU]: PlantabilityMetaCategory.PLANS_EAU,
   [PlantabilityLandUseKeys.ESPACES_ARTIFICIALISES]: PlantabilityMetaCategory.PLANS_EAU
 }
+
+export const META_FACTOR_COLORS = metaFactorColors
 
 export const ZoomToGridSize: Record<number, number> = {
   10: 100,

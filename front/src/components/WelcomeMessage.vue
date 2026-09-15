@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from "vue"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { useTutorial } from "@/composables/useTutorial"
 import { useAppStore } from "@/stores/app"
+import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
 
 interface welcomeProps {
   modelValue?: boolean
@@ -79,7 +80,7 @@ const openFeedback = () => {
           data-cy="welcome-map-tutorial"
           @click="startTutorial"
         >
-          <span class="text-2xl">🗺️</span>
+          <span class="welcome-icon"><ContextDataIcon name="generic" :size="20" /></span>
           <div>
             <h4 class="font-medium">Cliquez ici pour découvrir IA·rbre pas à pas</h4>
             <div class="space-y-1 mt-2">
@@ -95,7 +96,7 @@ const openFeedback = () => {
           data-cy="welcome-feedback-tutorial"
           @click="openFeedback"
         >
-          <span class="text-2xl">💬</span>
+          <span class="welcome-icon"><ContextDataIcon name="people" :size="20" /></span>
           <div>
             <h4 class="font-medium">Donnez votre avis</h4>
             <p class="text-sm">
@@ -110,7 +111,7 @@ const openFeedback = () => {
           rel="noopener noreferrer"
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
         >
-          <span class="text-2xl">📖</span>
+          <span class="welcome-icon"><ContextDataIcon name="generic" :size="20" /></span>
           <div>
             <h4 class="font-medium">Consulter la documentation</h4>
             <p class="text-sm">
@@ -126,7 +127,7 @@ const openFeedback = () => {
           rel="noopener noreferrer"
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
         >
-          <span class="text-2xl">🔧</span>
+          <span class="welcome-icon"><ContextDataIcon name="tool" :size="20" /></span>
           <div>
             <h4 class="font-medium">Documentation technique</h4>
             <p class="text-sm">Accédez à la documentation technique de l'API et des données.</p>
@@ -138,7 +139,7 @@ const openFeedback = () => {
           target="_blank"
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
         >
-          <span class="text-2xl">✉️</span>
+          <span class="welcome-icon"><ContextDataIcon name="network" :size="20" /></span>
           <div>
             <h4 class="font-medium">En savoir plus</h4>
             <p class="text-sm">
@@ -154,7 +155,7 @@ const openFeedback = () => {
           rel="noopener noreferrer"
           class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
         >
-          <span class="text-2xl">⚖️</span>
+          <span class="welcome-icon"><ContextDataIcon name="capacity" :size="20" /></span>
           <div>
             <h4 class="font-medium">Mentions légales</h4>
             <p class="text-sm">
@@ -170,3 +171,12 @@ const openFeedback = () => {
     </template>
   </AppDialog>
 </template>
+
+<style scoped>
+@reference "@/styles/main.css";
+
+.welcome-icon {
+  @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-primary-600;
+  @apply border border-gray-100;
+}
+</style>

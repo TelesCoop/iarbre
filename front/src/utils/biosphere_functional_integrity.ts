@@ -1,68 +1,48 @@
-export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
-  "#ffffffff",
-  0,
-  "#a50f15",
-  5,
-  "#de2d26",
-  10,
-  "#fb6a4a",
-  15,
-  "#fca483",
-  20,
-  "#fecab1",
-  25,
-  "#f7fcfd",
-  30,
-  "#e5efe5",
-  35,
-  "#d4e2dd",
-  40,
-  "#c2d5cd",
-  45,
-  "#b0c7bc",
-  50,
-  "#9fbaac",
-  55,
-  "#8dad9c",
-  60,
-  "#7ca08c",
-  65,
-  "#6a937c",
-  70,
-  "#58866c",
-  75,
-  "#356b4b",
-  80,
-  "#235e3b",
-  85,
-  "#12512b",
-  90,
-  "#00441b"
-]
+export enum BiosphereIntegrityColor {
+  CRITICAL = "#d73026",
+  LOW = "#BF5A16",
+  MID = "#A6CC4A",
+  GOOD = "#55B250",
+  HIGH = "#025400"
+}
 
 export enum BiosphereIntegrityLegendName {
-  LOW = "Biodiversité disfonctionnelle",
-  MID = "Biodiversité fonctionnelle",
-  HIGH = "Biodiversité très fonctionnelle"
+  CRITICAL = "Entre 0% et 12%",
+  LOW = "Entre 12% et 25%",
+  MID = "Entre 25% et 50%",
+  GOOD = "Entre 50% et 75%",
+  HIGH = "Entre 75% et 100%"
 }
 
-export enum BiosphereIntegrityColor {
-  LOW = "#a50f15",
-  MID = "#f7fcfd",
-  HIGH = "#00441b"
-}
+export const BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP = [
+  "#d4d4d4",
+  0,
+  BiosphereIntegrityColor.CRITICAL,
+  12,
+  BiosphereIntegrityColor.LOW,
+  25,
+  BiosphereIntegrityColor.MID,
+  50,
+  BiosphereIntegrityColor.GOOD,
+  75,
+  BiosphereIntegrityColor.HIGH
+]
 
 export const BiosphereIntegrityLegend: Record<
   BiosphereIntegrityLegendName,
   BiosphereIntegrityColor
 > = {
+  [BiosphereIntegrityLegendName.CRITICAL]: BiosphereIntegrityColor.CRITICAL,
   [BiosphereIntegrityLegendName.LOW]: BiosphereIntegrityColor.LOW,
   [BiosphereIntegrityLegendName.MID]: BiosphereIntegrityColor.MID,
+  [BiosphereIntegrityLegendName.GOOD]: BiosphereIntegrityColor.GOOD,
   [BiosphereIntegrityLegendName.HIGH]: BiosphereIntegrityColor.HIGH
 }
 
 export const BIOSPHERE_INTEGRITY_RANGES: Record<BiosphereIntegrityLegendName, [number, number]> = {
-  [BiosphereIntegrityLegendName.LOW]: [0, 25],
+  [BiosphereIntegrityLegendName.CRITICAL]: [0, 12],
+  [BiosphereIntegrityLegendName.LOW]: [12, 25],
   [BiosphereIntegrityLegendName.MID]: [25, 50],
-  [BiosphereIntegrityLegendName.HIGH]: [50, 100]
+  [BiosphereIntegrityLegendName.GOOD]: [50, 75],
+  [BiosphereIntegrityLegendName.HIGH]: [75, 100]
 }

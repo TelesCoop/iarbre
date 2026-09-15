@@ -1,21 +1,27 @@
+import logging
+import os
+import random
+import itertools
+
+import numpy as np
+from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from django.core.management.base import BaseCommand
+from rasterio.crs import CRS
+from rasterio.transform import from_bounds
 from shapely.geometry.polygon import Polygon
+
+import rasterio
+
+from api.utils.mvt_generator import MVTGenerator
+from iarbre_data.management.commands.c01_insert_cities_and_iris import (
+    Command as InsertIrisCommand,
+)
 from iarbre_data.models import City, Tile, Lcz, Vulnerability, Data
 from iarbre_data.utils.database import select_city
-from api.utils.mvt_generator import MVTGenerator
-
 from iarbre_data.utils.utils_populate import (
     create_tiles_for_city,
     HexTileShape,
-)
-from django.contrib.gis.geos import GEOSGeometry
-
-import numpy as np
-import logging
-import random
-import itertools
-from iarbre_data.management.commands.c01_insert_cities_and_iris import (
-    Command as InsertIrisCommand,
 )
 
 CITY_CODE = "38250"
@@ -286,6 +292,34 @@ class Command(BaseCommand):
         self._generate_mvt(Vulnerability, vulnerabilities, zoom_levels)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
+    def _create_test_raster(self):
+        raster_path = os.path.join(
+            settings.MEDIA_ROOT, "rasters/WMS", "vegestrate_02_2023_elevation.tif"
+        )
+        if os.path.exists(raster_path):
+            self.stdout.write("Vegetation test raster already exists")
+            return
+        os.makedirs(os.path.dirname(raster_path), exist_ok=True)
+        # Small raster covering Villard-de-Lans area (EPSG:4326)
+        west, east, south, north = 5.52, 5.58, 45.04, 45.10
+        size = 10
+        transform = from_bounds(west, south, east, north, size, size)
+        data = np.full((1, size, size), 12, dtype=np.uint8)
+        with rasterio.open(
+            raster_path,
+            "w",
+            driver="GTiff",
+            height=size,
+            width=size,
+            count=1,
+            dtype=np.uint8,
+            crs=CRS.from_epsg(4326),
+            transform=transform,
+            nodata=255,
+        ) as dst:
+            dst.write(data)
+        self.stdout.write(self.style.SUCCESS("> Vegetation test raster created"))
+
     def _generate_qpv_data(self):
         qpv_data = Data.objects.filter(
             geometry__intersects=GEOSGeometry(self.city.geometry.wkt), factor="QPV"
@@ -336,4 +370,5 @@ class Command(BaseCommand):
         self.generate_vulnerability_mvt_tiles(zoom_levels=zoom_levels)
 
         self._generate_qpv_data()
+        self._create_test_raster()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))

@@ -1,6 +1,11 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
 import { ref } from "vue"
+import { getFullBaseApiUrl } from "@/api"
+import AccordionSection from "./apiDoc/AccordionSection.vue"
+import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
+import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
+import type { RequestParam } from "./apiDoc/types"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
@@ -11,19 +16,12 @@ const toggle = (service: "wms" | "raster") => {
   expanded.value = expanded.value === service ? null : service
 }
 
-const copyToClipboard = (text: string) => {
-  navigator.clipboard.writeText(text)
-}
-
 const origin = window.location.origin
 const wmsBase = `${origin}/api/wms/`
 
-interface Param {
-  key: string
-  value: string
-  desc: string
-  fixed?: boolean
-}
+const defaultTypename = "iarbre:plantability"
+
+const wfsFullUrl = `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=${defaultTypename}&OUTPUTFORMAT=geojson`
 
 const wmsParams: Param[] = [
   { key: "SERVICE", value: "WMS", desc: "Type de service", fixed: true },
@@ -78,6 +76,51 @@ const datasets = [
     label: "Végéstrate 2023 - post-traité v3 - hauteur (nDSM avec filtrage médian)",
     url: `${origin}/api/rasters/vegestrate/?year=2023&resolution=02&postprocess=true&version=3&kind=elevation`
   }
+  setTimeout(() => {
+    if (downloadStatus.value[url] === "success") downloadStatus.value[url] = "idle"
+  }, 2000)
+}
+
+const rasterDatasets: RasterDataset[] = [
+  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
+  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
+  { label: "Végéstrate", url: rasterUrl("vegestrate") },
+  { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
+  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
+  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
+  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
+  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz") }
+]
+
+const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultTypename}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
+
+const wmsParams: RequestParam[] = [
+  { key: "SERVICE", value: "WMS", desc: "Type de service", fixed: true },
+  { key: "VERSION", value: "1.3.0", desc: "Version du protocole", fixed: true },
+  {
+    key: "REQUEST",
+    value: "GetMap",
+    desc: "Type de requete (GetMap ou GetCapabilities)",
+    fixed: true
+  },
+  {
+    key: "LAYERS",
+    value: defaultTypename,
+    desc: "Couche à afficher — voir GetLayers pour la liste complète"
+  },
+  {
+    key: "BBOX",
+    value: "45.5,4.7,46.0,5.2",
+    desc: "Emprise (lat_min,lon_min,lat_max,lon_max en EPSG:4326 pour WMS 1.3.0)"
+  },
+  {
+    key: "CRS",
+    value: "EPSG:4326",
+    desc: "Systeme de coordonnees - EPSG:4326, EPSG:3857, EPSG:2154"
+  },
+  { key: "WIDTH", value: "800", desc: "Largeur de l'image en pixels" },
+  { key: "HEIGHT", value: "600", desc: "Hauteur de l'image en pixels" },
+  { key: "FORMAT", value: "image/png", desc: "Format de sortie", fixed: true }
 ]
 </script>
 
@@ -215,42 +258,47 @@ const datasets = [
                 <p class="text-xs text-primary-800">Collez l'URL de base : {{ wmsBase }}</p>
               </div>
             </div>
-          </Transition>
-        </div>
+            <div class="flex gap-1 shrink-0">
+              <span
+                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
+                >PNG</span
+              >
+            </div>
+          </template>
+
+          <QgisConnectionCard
+            :base-url="wmsBase"
+            :steps="[
+              `Onglet &quot;Couche&quot; → &quot;Ajouter une couche&quot; → &quot;WMS/WMTS&quot;`,
+              `Collez l'URL ci-dessous, puis cliquez sur &quot;Connexion&quot;`
+            ]"
+          />
+
+          <ManualRequestSection
+            url-label="URL GetMap (exemple)"
+            :url="wmsFullUrl"
+            :params="wmsParams"
+          />
+        </AccordionSection>
       </div>
 
       <div>
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT RASTER</p>
-        <div class="border border-gray-200 rounded-md overflow-hidden">
-          <button
-            :class="[
-              'flex w-full items-center gap-2 px-2.5 py-2 bg-gray-100 text-left transition-colors duration-200 hover:bg-gray-200',
-              expanded === 'raster' ? 'rounded-t-md border-b-0' : 'rounded-md'
-            ]"
-            @click="toggle('raster')"
-          >
+        <AccordionSection
+          :open="expanded === 'raster'"
+          body-class="px-3 py-3 space-y-2"
+          @toggle="toggle('raster')"
+        >
+          <template #header>
             <span class="flex-none font-mono font-bold text-xs text-gray-600 w-8">TIF</span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">REST - GeoTIFF</p>
+              <p class="text-sm font-semibold text-gray-800">Téléchargement direct des rasters</p>
               <p class="text-xs text-gray-500">
-                Téléchargement du raster complet au format GeoTIFF (EPSG:2154).
+                Téléchargement direct pour récupérer les calques en entier au format GeoTIFF
+                (EPSG:2154).
               </p>
             </div>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-gray-400 shrink-0 transition-transform duration-200"
-              :class="expanded === 'raster' ? 'rotate-180' : ''"
-            >
-              <path d="M2 4L6 8L10 4" />
-            </svg>
-          </button>
+          </template>
 
           <Transition name="accordion">
             <div v-if="expanded === 'raster'" class="border-t border-gray-100 px-3 py-3 space-y-2">
@@ -283,26 +331,12 @@ const datasets = [
                 </div>
               </div>
             </div>
-          </Transition>
-        </div>
+            <p v-if="downloadStatus[dataset.url] === 'error'" class="text-2xs text-red-600">
+              Le téléchargement a échoué. Vérifiez votre connexion ou réessayez.
+            </p>
+          </div>
+        </AccordionSection>
       </div>
     </div>
   </AppDialog>
 </template>
-
-<style scoped>
-.accordion-enter-active,
-.accordion-leave-active {
-  transition:
-    max-height 0.2s ease,
-    opacity 0.2s ease;
-  max-height: 800px;
-  overflow: hidden;
-}
-
-.accordion-enter-from,
-.accordion-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-</style>

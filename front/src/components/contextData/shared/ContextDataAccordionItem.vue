@@ -1,18 +1,15 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
+import ContextDataFactorRow from "@/components/contextData/shared/ContextDataFactorRow.vue"
 import VulnerabilityContextDataScoreBadge from "@/components/contextData/vulnerability/VulnerabilityContextDataScoreBadge.vue"
-import VulnerabilityContextDataScore from "@/components/contextData/vulnerability/VulnerabilityContextDataScore.vue"
-import type {
-  ContextDataFactorGroup,
-  ContextDataColorScheme,
-  ContextDataVulnerabilityFactor
-} from "@/types/contextData"
+import type { ContextDataFactorGroup, ContextDataColorScheme } from "@/types/contextData"
 import type { VulnerabilityCategory } from "@/utils/enum"
 import { VulnerabilityMode } from "@/utils/vulnerability"
 
 interface ContextDataAccordionItemProps {
   group: ContextDataFactorGroup
   colorScheme?: ContextDataColorScheme
+  variant?: "cards" | "diagnostic"
   getCategoryScore?: (category: VulnerabilityCategory, mode: VulnerabilityMode) => number | null
   getScoreColor?: (score: number, factorId: string) => string
   getScoreLabel?: (score: number, factorId: string) => string
@@ -20,6 +17,7 @@ interface ContextDataAccordionItemProps {
 
 const props = withDefaults(defineProps<ContextDataAccordionItemProps>(), {
   colorScheme: "plantability",
+  variant: "cards",
   getCategoryScore: undefined,
   getScoreColor: undefined,
   getScoreLabel: undefined
@@ -36,35 +34,69 @@ const vulnerabilityCategory = computed(() => {
 
 const isExpanded = ref(false)
 
+const sectionClasses = computed(() => [
+  "data-section",
+  `data-section--${props.variant}`,
+  `data-section--${props.colorScheme}`
+])
+
+const factorCountLabel = computed(() => {
+  const count = props.group.factors.length
+  return `${count} indicateur${count > 1 ? "s" : ""}`
+})
+
+const impactLabel = computed(() => {
+  if (props.group.hasNegativeImpact) return "Contrainte"
+  if (props.group.hasPositiveImpact) return "Favorable"
+  return null
+})
+
+const impactToneClass = computed(() => {
+  if (props.group.hasNegativeImpact) return "section-tone--negative"
+  if (props.group.hasPositiveImpact) return "section-tone--positive"
+  return "section-tone--neutral"
+})
+
 const toggle = () => {
   isExpanded.value = !isExpanded.value
-}
-
-const isVulnerabilityFactor = (factor: any) => {
-  return (
-    props.colorScheme === "vulnerability" &&
-    (factor.dayScore !== undefined || factor.nightScore !== undefined)
-  )
 }
 </script>
 
 <template>
-  <div :data-cy="`category-${group?.category}`" class="accordion-item">
-    <button :aria-expanded="isExpanded" class="accordion-header" type="button" @click="toggle">
-      <span class="header-icon">{{ group.icon }}</span>
-      <span class="header-label">{{ group.label }}</span>
-      <VulnerabilityContextDataScoreBadge
+  <div :data-cy="`category-${group?.category}`" :class="sectionClasses" role="listitem">
+    <button
+      :aria-expanded="isExpanded"
+      class="section-header accordion-header"
+      type="button"
+      @click="toggle"
+    >
+      <span class="section-leading">
+        <span class="section-copy">
+          <span class="section-title">{{ group.label }}</span>
+          <span class="section-meta">{{ factorCountLabel }}</span>
+        </span>
+      </span>
+      <span
+        v-if="variant === 'diagnostic' && impactLabel"
+        :class="['section-tone', impactToneClass]"
+      >
+        {{ impactLabel }}
+      </span>
+      <span
         v-if="isVulnerabilityGroup && vulnerabilityCategory && getCategoryScore"
-        :category="vulnerabilityCategory"
-        :get-category-score="getCategoryScore"
-      />
+        class="section-score-badges"
+      >
+        <VulnerabilityContextDataScoreBadge
+          :category="vulnerabilityCategory"
+          :get-category-score="getCategoryScore"
+        />
+      </span>
       <svg
-        :class="{ rotated: isExpanded }"
-        class="chevron-icon"
+        :class="['section-chevron', { collapsed: !isExpanded }]"
         fill="none"
-        height="12"
+        height="10"
         viewBox="0 0 12 12"
-        width="12"
+        width="10"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -72,135 +104,157 @@ const isVulnerabilityFactor = (factor: any) => {
           stroke="currentColor"
           stroke-linecap="round"
           stroke-linejoin="round"
-          stroke-width="2"
+          stroke-width="1.5"
         />
       </svg>
     </button>
-    <table v-show="isExpanded" class="accordion-table">
-      <tbody>
-        <tr
-          v-for="(factor, index) in group.factors"
-          :key="factor.key"
-          :class="{ 'row-border': index < group.factors.length - 1 }"
-          :data-cy="`factor-${factor.key}`"
-        >
-          <td class="cell-icon">
-            <span v-if="factor.icon">{{ factor.icon }}</span>
-          </td>
-          <td class="cell-label">{{ factor.label }}</td>
-          <td v-if="isVulnerabilityFactor(factor)" class="cell-vulnerability">
-            <div class="vulnerability-scores">
-              <span class="score-icon">☀️</span>
-              <VulnerabilityContextDataScore
-                :factor-id="(factor as ContextDataVulnerabilityFactor).factorId || factor.key"
-                :get-score-color="getScoreColor!"
-                :get-score-label="getScoreLabel!"
-                :score="(factor as ContextDataVulnerabilityFactor).dayScore ?? null"
-              />
-              <span class="score-icon">🌙</span>
-              <VulnerabilityContextDataScore
-                :factor-id="(factor as ContextDataVulnerabilityFactor).factorId || factor.key"
-                :get-score-color="getScoreColor!"
-                :get-score-label="getScoreLabel!"
-                :score="(factor as ContextDataVulnerabilityFactor).nightScore ?? null"
-              />
-            </div>
-          </td>
-          <td
-            v-else
-            :class="[
-              'cell-value',
-              factor.impact === 'positive' ? 'impact-positive' : '',
-              factor.impact === 'negative' ? 'impact-negative' : ''
-            ]"
-          >
-            {{ factor.value }}
-            <span v-if="factor.unit" class="value-unit">{{ factor.unit }}</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div v-show="isExpanded" class="section-body">
+      <div class="section-body-inner">
+        <div v-if="variant === 'diagnostic'" class="factor-list vulnerability-list">
+          <div class="vulnerability-heading" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span>Jour</span>
+            <span>Nuit</span>
+          </div>
+          <ContextDataFactorRow
+            v-for="factor in group.factors"
+            :key="factor.key"
+            :factor="factor"
+            variant="vulnerability"
+            :get-score-color="getScoreColor"
+            :get-score-label="getScoreLabel"
+          />
+        </div>
+
+        <div v-else class="factor-list">
+          <ContextDataFactorRow
+            v-for="factor in group.factors"
+            :key="factor.key"
+            :factor="factor"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 @reference "@/styles/main.css";
 
-.accordion-item {
-  @apply mb-3;
+/* ── Section container ── */
+
+.data-section {
+  @apply rounded-xl border border-gray-200 bg-white;
 }
 
-.accordion-header {
-  @apply flex items-center gap-2 w-full px-2.5 py-2 bg-gray-100 border border-gray-200 border-b-0 rounded-t-md;
-  @apply cursor-pointer transition-colors duration-200 hover:bg-gray-200;
+.data-section--cards {
+  @apply bg-white;
+}
+
+.data-section--diagnostic {
+  @apply bg-white;
+}
+
+/* ── Section header ── */
+
+.section-header {
+  @apply grid items-center gap-3 w-full px-4 py-3;
+  @apply cursor-pointer transition-colors duration-200 hover:bg-gray-50;
   @apply text-left;
+  @apply bg-white rounded-xl;
+  grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
-.accordion-header[aria-expanded="false"] {
-  @apply rounded-b-md border-b;
+.section-header[aria-expanded="true"] {
+  @apply rounded-b-none;
 }
 
-.chevron-icon {
-  @apply flex-shrink-0 text-gray-400 transition-transform duration-200;
+.data-section--cards .section-header {
+  @apply min-h-16;
 }
 
-.chevron-icon.rotated {
-  transform: rotate(180deg);
+.data-section--diagnostic .section-header {
+  @apply bg-white;
 }
 
-.header-icon {
-  @apply text-sm;
+.section-leading {
+  @apply flex items-center gap-3 min-w-0 flex-1;
 }
 
-.header-label {
-  @apply flex-1 text-sm font-semibold text-gray-800;
+.section-icon {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-base leading-none;
+  @apply text-primary-500 border border-gray-100;
 }
 
-.accordion-table {
-  @apply w-full bg-white border border-gray-200 rounded-b-md overflow-hidden;
+.section-copy {
+  @apply flex min-w-0 flex-col;
 }
 
-.row-border {
-  @apply border-b border-gray-100;
+.section-title {
+  @apply truncate text-sm font-semibold text-gray-900 normal-case;
 }
 
-.accordion-table td {
-  @apply py-1.5 px-2 align-middle;
+.section-meta {
+  @apply text-xs font-normal text-gray-500 mt-0.5;
 }
 
-.cell-icon {
-  @apply w-6 text-center text-xs;
+.section-tone {
+  @apply hidden xs:inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium;
+  @apply whitespace-nowrap;
 }
 
-.cell-label {
-  @apply text-sm text-gray-700;
+.section-tone--positive {
+  @apply border-primary-200 bg-primary-100 text-primary-700;
 }
 
-.cell-vulnerability {
-  @apply text-right;
+.section-tone--negative {
+  @apply border-orange-200 bg-orange-100 text-orange-700;
 }
 
-.vulnerability-scores {
-  @apply flex items-center justify-end gap-1;
+.section-tone--neutral {
+  @apply border-gray-200 bg-gray-100 text-gray-700;
 }
 
-.score-icon {
-  @apply text-xs;
+.section-score-badges {
+  @apply flex items-center gap-1;
 }
 
-.cell-value {
-  @apply text-right text-sm font-semibold whitespace-nowrap text-gray-800;
+.section-chevron {
+  @apply text-gray-400;
 }
 
-.cell-value.impact-positive {
-  @apply text-green-600;
+.section-chevron.collapsed {
+  transform: rotate(-90deg);
 }
 
-.cell-value.impact-negative {
-  @apply text-orange-600;
+/* ── Animated body ── */
+
+.section-body-inner {
+  @apply overflow-visible;
 }
 
-.value-unit {
-  @apply text-xs font-normal text-gray-500 ml-0.5;
+.data-section--cards .section-body-inner {
+  @apply bg-white px-4 pb-4 rounded-b-xl;
+}
+
+.data-section--diagnostic .section-body-inner {
+  @apply bg-white px-4 pb-4 rounded-b-xl;
+}
+
+/* ── Factor list ── */
+
+.factor-list {
+  @apply flex flex-col gap-3;
+}
+
+.vulnerability-heading {
+  @apply grid items-center gap-x-2 text-xs;
+  grid-template-columns: 0.5rem minmax(0, 1fr) 2.5rem 2.5rem;
+}
+
+.vulnerability-heading {
+  @apply text-center text-xs font-medium text-gray-400;
 }
 </style>

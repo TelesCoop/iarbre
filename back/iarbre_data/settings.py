@@ -278,8 +278,8 @@ DECAP_CMS_AUTH = {
     "SCOPE": "repo,user",
 }
 
-# For macOS users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
-if sys.platform == "darwin":
+# For macOS/Windows users, we need to set the GDAL_LIBRARY_PATH and GEOS_LIBRARY_PATH to the path of the libraries
+if sys.platform in ("darwin", "win32"):
     GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
     GEOS_LIBRARY_PATH = os.environ.get("GEOS_LIBRARY_PATH")
 
@@ -343,12 +343,20 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
+        "vegetation": {
+            "handlers": ["file_all", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
     },
     "root": {
         "handlers": ["console", "file_errors"],
         "level": "WARNING",
     },
 }
+
+PDF_EXPORT_FRONTEND_URL = config.getstr("pdf_export.frontend_url", "")
+PDF_EXPORT_TIMEOUT_S = config.getint("pdf_export.timeout_s", 5)
 
 CACHES = {
     "default": {

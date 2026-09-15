@@ -3,9 +3,11 @@ import { type PlantabilityData, PlantabilityImpact } from "@/types/plantability"
 import { usePlantabilityData } from "@/composables/usePlantabilityData"
 import { toRef, computed } from "vue"
 import ContextDataListContainer from "@/components/contextData/shared/ContextDataListContainer.vue"
+import ContextDataZoomHint from "@/components/contextData/shared/ContextDataZoomHint.vue"
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 import PlantabilityDistributionChart from "./PlantabilityDistributionChart.vue"
+import { PLANTABILITY_DETAIL_ZOOM, PLANTABILITY_DISTRIBUTION_ZOOM } from "@/utils/plantability"
 
 interface PlantabilityFactorsProps {
   data: PlantabilityData
@@ -88,15 +90,22 @@ const distributionEntries = computed(() => {
         :groups="genericFactorGroups"
         aria-label="Liste des paramètres de plantabilité par catégorie"
         color-scheme="plantability"
+        variant="cards"
+      />
+      <ContextDataZoomHint
+        :target-zoom="PLANTABILITY_DISTRIBUTION_ZOOM"
+        direction="out"
+        message="Dézoomez pour voir la distribution des scores de plantabilité sur la zone."
       />
     </template>
 
     <template v-else>
       <div v-if="distributionEntries.length > 0">
         <PlantabilityDistributionChart :entries="distributionEntries" />
-        <EmptyMessage
-          data-cy="empty-message"
-          message="Zoomez plus pour obtenir l'occupation des sols."
+        <ContextDataZoomHint
+          :target-zoom="PLANTABILITY_DETAIL_ZOOM"
+          direction="in"
+          message="Zoomez davantage sur la carte pour révéler le détail de l'occupation des sols."
         />
       </div>
       <EmptyMessage
@@ -107,5 +116,3 @@ const distributionEntries = computed(() => {
     </template>
   </div>
 </template>
-
-<style scoped></style>

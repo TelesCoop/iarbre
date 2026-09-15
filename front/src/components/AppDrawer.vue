@@ -128,10 +128,10 @@ onUnmounted(() => {
         v-if="drawerVisible"
         ref="drawerRef"
         :class="['app-drawer', positionClasses]"
-        :style="drawerStyle"
-        role="dialog"
-        aria-modal="true"
         :data-cy="dataCy"
+        :style="drawerStyle"
+        aria-modal="true"
+        role="dialog"
       >
         <div class="drawer-header">
           <slot name="header">
@@ -141,26 +141,13 @@ onUnmounted(() => {
             </div>
           </slot>
           <button
-            type="button"
-            class="drawer-close"
             aria-label="Fermer"
+            class="drawer-close"
             data-cy="drawer-close"
+            type="button"
             @click="close"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M1 1L13 13M1 13L13 1"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
+            Fermer
           </button>
         </div>
 
@@ -173,73 +160,53 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+@reference "@/styles/main.css";
+
 .drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 999;
+  @apply fixed inset-0 bg-black/40 z-[999];
 }
 
 .app-drawer {
-  background: white;
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  @apply flex flex-col overflow-hidden bg-white;
 }
 
 .drawer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-  flex-shrink: 0;
+  @apply flex items-center justify-between shrink-0;
+  @apply py-4 px-5;
+  @apply border-b border-gray-200;
 }
 
 .drawer-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border: none;
-  background: transparent;
-  color: #6b7280;
-  cursor: pointer;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
+  @apply inline-flex items-center justify-center;
+  @apply min-h-11 py-2 px-4;
+  @apply bg-transparent border border-gray-200 rounded-lg;
+  @apply text-sm font-medium font-sans text-gray-800;
+  @apply cursor-pointer transition-all duration-200;
 }
 
 .drawer-close:hover {
-  background-color: #f3f4f6;
-  color: #1f2937;
+  @apply bg-gray-100 border-gray-300;
 }
 
 .drawer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  overflow-y: auto;
-  flex: 1;
+  @apply flex flex-col flex-1 gap-4;
+  @apply py-4 px-5;
+  @apply overflow-y-auto;
 }
 
 .drawer-fade-enter-active,
 .drawer-fade-leave-active {
-  transition: opacity 0.2s ease;
+  @apply transition-opacity duration-200;
 }
 
 .drawer-fade-enter-from,
 .drawer-fade-leave-to {
-  opacity: 0;
+  @apply opacity-0;
 }
 
 .drawer-slide-enter-active,
 .drawer-slide-leave-active {
-  transition: transform 0.3s ease;
+  @apply transition-transform duration-300;
 }
 
 .drawer-slide-enter-from,

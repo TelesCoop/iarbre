@@ -38,11 +38,9 @@ describe("MapSidePanelDownload", () => {
 
   it("should expand raster section and show dataset URLs", () => {
     cy.get('[data-cy="api-doc"]').click()
-    cy.contains("REST - GeoTIFF").click()
-    cy.contains("Plantabilité").should("be.visible")
+    cy.contains("Téléchargement direct des rasters").click()
+    cy.contains("Plantabilité (couleurs)").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/plantability`).should("be.visible")
-    cy.contains(`${window.location.origin}/api/rasters/vegestrate`).should("be.visible")
   })
 
   it("should close the dialog when close button is clicked", () => {

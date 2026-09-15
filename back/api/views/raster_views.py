@@ -1,6 +1,7 @@
-import os
-from django.http import FileResponse, Http404
+from pathlib import Path
+
 from django.conf import settings
+from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
 from api.constants import VEGESTRATE_FILES
@@ -53,16 +54,27 @@ class RasterDownloadView(APIView):
 
         raster_path = os.path.join(settings.MEDIA_ROOT, relative_path)
 
-        if not os.path.exists(raster_path):
-            raise Http404(
-                "Raster file not found. Please send an email to contact@telescoop.fr"
-            )
+        relative_path, filename = self.file_map[file_key]
+        full_path = Path(settings.MEDIA_ROOT) / relative_path
+
+        if not full_path.exists():
+            raise Http404(f"File not found: {filename}.")
 
         response = FileResponse(
-            open(raster_path, "rb"),
-            content_type="image/tiff",
+            full_path.open("rb"),
+            content_type=self.download_content_type,
             as_attachment=True,
             filename=filename,
         )
         response["Cache-Control"] = "public, max-age=3600"
         return response
+
+
+class RasterDownloadView(FileDownloadView):
+    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``."""
+
+    file_map = RASTER_MAP
+    download_content_type = "image/tiff"
+
+    def get(self, request, raster_type: str):
+        return super().get(request, raster_type)

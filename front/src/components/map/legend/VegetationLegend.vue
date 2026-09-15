@@ -7,6 +7,8 @@ import {
   ELEVATION_LABEL_STOPS
 } from "@/utils/vegetation"
 import { useMapStore } from "@/stores/map"
+import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
+import LegendItem from "@/components/map/legend/LegendItem.vue"
 
 const mapStore = useMapStore()
 

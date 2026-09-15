@@ -2,7 +2,6 @@
 import { Drawer, useAppStore } from "@/stores/app"
 import { computed } from "vue"
 import AppDrawer from "@/components/AppDrawer.vue"
-import IconMap from "@/components/icons/IconMap.vue"
 
 const appStore = useAppStore()
 
@@ -20,9 +19,6 @@ const drawerVisible = computed({
     class="map-drawer"
     data-cy="map-scores-drawer"
   >
-    <template #icon>
-      <IconMap :size="20" />
-    </template>
     <div class="mb-4">
       <MapContextData hide-close-button full-height />
     </div>

@@ -34,11 +34,11 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
   >
     <div class="panel-content">
       <div v-if="data" class="data-layout">
-        <div class="score-section">
+        <div v-if="$slots.score" class="score-section">
           <slot :data="data" name="score" />
         </div>
 
-        <div :class="['content-section', colorScheme !== 'plantability' && 'overflow-y-scroll']">
+        <div class="content-section">
           <slot :data="data" :full-height="fullHeight" name="content" />
           <div v-if="$slots.legend" class="legend-section">
             <slot :data="data" name="legend" />
@@ -63,21 +63,20 @@ const ariaLabelledBy = computed(() => `${props.colorScheme}-title`)
 }
 
 .data-layout {
-  @apply flex flex-row flex-wrap items-center gap-4 min-h-0 flex-1;
-}
-
-@media (min-width: 1024px) {
-  .data-layout {
-    @apply flex-col;
-  }
+  @apply flex flex-col items-center gap-3 min-h-0 flex-1 w-full;
 }
 
 .score-section {
-  @apply flex justify-center gap-8 pr-4 lg:pr-0 lg:pb-3 border-r lg:border-r-0 lg:border-b border-gray-100;
+  @apply flex shrink-0 flex-wrap items-center justify-center gap-4 lg:gap-8;
+  @apply w-full pb-3 border-b border-gray-100;
 }
 
 .content-section {
-  @apply flex-1 min-h-0 flex flex-col;
+  @apply flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto;
   @apply w-full;
+}
+
+.legend-section {
+  @apply w-full pt-3 border-t border-gray-100;
 }
 </style>

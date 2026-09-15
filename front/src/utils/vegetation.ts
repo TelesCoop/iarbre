@@ -1,3 +1,4 @@
+import type { ExpressionSpecification } from "maplibre-gl"
 import type { VegetationIndice } from "@/types/vegetation"
 
 export enum VegestrateMode {
@@ -78,9 +79,30 @@ export const VegestrateModeToLabel: Record<VegestrateMode, string> = {
 type StrateInfo = { label: string; color: string; height: number }
 
 const STRATE_MAP: Record<VegetationIndice, StrateInfo> = {
-  herbacee: { label: "Strate herbacée", color: "#C8D96F", height: 0.5 },
-  arbustif: { label: "Strate arbustive < 1.5m", color: "#3A9144", height: 1.5 },
-  arborescent: { label: "Strate arborée > 1.5m", color: "#14452F", height: 4 }
+  herbacee: {
+    label: "Strate herbacée < 1,5 m",
+    short: "Herbacée",
+    heightCategory: "Basse",
+    range: "< 1,5 m",
+    color: "#ecdeb1",
+    height: 0.5
+  },
+  arbustif: {
+    label: "Strate arbustive 1,5 - 5 m",
+    short: "Arbustive",
+    heightCategory: "Moyenne",
+    range: "1,5 - 5 m",
+    color: "#8bb971",
+    height: 1.5
+  },
+  arborescent: {
+    label: "Strate arborée > 5 m",
+    short: "Arborée",
+    heightCategory: "Haute",
+    range: "> 5 m",
+    color: "#0f6f4f",
+    height: 4
+  }
 }
 
 export const VEGESTRATE_COLOR_MAP = [
@@ -131,6 +153,6 @@ export function getZoneDesc(zone: string): string {
   return STRATE_MAP[zone as VegetationIndice]?.label ?? "Description de strate non possible"
 }
 
-export function getZoneColor(zone: string): string {
-  return STRATE_MAP[zone as VegetationIndice]?.color ?? "#CCCCCC"
+export function getStrateShort(zone: string): string {
+  return STRATE_MAP[zone as VegetationIndice]?.short ?? "—"
 }

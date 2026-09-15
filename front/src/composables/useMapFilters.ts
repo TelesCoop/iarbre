@@ -29,6 +29,10 @@ export function useMapFilters() {
     filteredValues.value = []
   }
 
+  const setFilteredValues = (values: (number | string)[]) => {
+    filteredValues.value = values
+  }
+
   const applyFilters = (
     mapInstancesByIds: Ref<Record<string, Map>>,
     selectedDataType: Ref<DataType>,
@@ -93,6 +97,7 @@ export function useMapFilters() {
     filteredValues,
     toggleFilter,
     clearAllFilters,
+    setFilteredValues,
     applyFilters,
     hasActiveFilters,
     activeFiltersCount,

@@ -1,15 +1,19 @@
+import json
+from unittest.mock import MagicMock, patch
+
+import geopandas as gpd
 from django.test import TestCase
+
 from iarbre_data.data_config import DATA_FILES, URL_FILES
-from iarbre_data.models import Data
-from iarbre_data.utils.data_processing import apply_actions
 from iarbre_data.management.commands.c03_import_data import (
     download_from_url,
-    read_data,
     process_data,
+    read_data,
     save_geometries,
 )
+from iarbre_data.models import Data
 from iarbre_data.settings import SRID_DB
-import geopandas as gpd
+from iarbre_data.utils.data_processing import apply_actions
 
 
 class C03DataTestCase(TestCase):
@@ -39,7 +43,22 @@ class C03DataTestCase(TestCase):
         cls.df = read_data(cls.data_config)
         cls.datas = process_data(cls.df, cls.data_config)
 
-    def test_download_from_url(self):
+    @patch("iarbre_data.utils.download.requests.get")
+    def test_download_from_url(self, mock_get):
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [4.8, 45.7]},
+                    "properties": {},
+                }
+            ],
+        }
+        mock_response = MagicMock()
+        mock_response.content = json.dumps(geojson).encode()
+        mock_get.return_value = mock_response
+
         for idx, dic in enumerate(URL_FILES):
             if dic["name"] == "Plan eau":
                 idc = idx

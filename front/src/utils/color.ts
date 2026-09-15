@@ -10,7 +10,9 @@ export const terraDrawStyles = {
   pointColor: primaryColors[500] as `#${string}`,
   pointWidth: 3,
   pointOutlineColor: "#ffffff" as `#${string}`,
-  pointOutlineWidth: 2
+  pointOutlineWidth: 2,
+  // Used when a drawn area exceeds the allowed size (live feedback).
+  errorColor: "#b91c1c" as `#${string}`
 }
 
 function getElementBackgroundColor(element: HTMLElement): string {
