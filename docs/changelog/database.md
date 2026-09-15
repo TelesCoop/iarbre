@@ -6,6 +6,13 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-09-15T06:35_postgres_backup.dump
+
+**Changements :** :
+
+- Ajout d'un champs `mean_height` dans Vegestrate et qui a été peuplé à l'aide du raster de Canopy Height Model.
+- Ajout des rasters d'inventaire du végétal vegestrate 2015 et 2018. Le code pour vegestrate 2015 est la release : https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-vegestrate-2015
+
 ## 2026-06-16T06:35_postgres_backup.dump
 
 **Changements :** :
