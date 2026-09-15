@@ -44,6 +44,7 @@ class FrontendDataType(TextChoices):
 
 
 VEGESTRATE_FILES = {
+    (2015, "08", True, 3, "elevation"): "../WMS/vegestrate_08_2015_elevation.tif",
     (2018, "02", False, None, "class"): "raw_fullmetropole_ir_02_2018.tif",
     (2018, "02", True, 3, "class"): "postprocessv3_fullmetropole_ir_02_2018.tif",
     (2023, "02", False, None, "class"): "raw_lyon_metropole_ir_02_2023.tif",

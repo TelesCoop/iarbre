@@ -2,6 +2,7 @@ import type { ExpressionSpecification } from "maplibre-gl"
 import type { VegetationIndice } from "@/types/vegetation"
 
 export enum VegestrateMode {
+  POSTPROCESS_V3_2015_ELEVATION_08 = "postprocess_v3_2015_elevation_08",
   RAW_2018_02 = "raw_2018_02",
   POSTPROCESS_V3_2018_02 = "postprocess_v3_2018_02",
   RAW_2023_02 = "raw_2023_02",
@@ -15,6 +16,13 @@ export const VegestrateModeToParams: Record<
   VegestrateMode,
   { year: number; resolution: string; postprocess: boolean; version: number | null; kind: string }
 > = {
+  [VegestrateMode.POSTPROCESS_V3_2015_ELEVATION_08]: {
+    year: 2015,
+    resolution: "08",
+    postprocess: true,
+    version: 3,
+    kind: "elevation"
+  },
   [VegestrateMode.RAW_2018_02]: {
     year: 2018,
     resolution: "02",
@@ -67,6 +75,7 @@ export const VegestrateModeToParams: Record<
 }
 
 export const VegestrateModeToLabel: Record<VegestrateMode, string> = {
+  [VegestrateMode.POSTPROCESS_V3_2015_ELEVATION_08]: "2015 - 80cms - post-traitement v3 - hauteur",
   [VegestrateMode.RAW_2018_02]: "2018 - 20cms - brut",
   [VegestrateMode.POSTPROCESS_V3_2018_02]: "2018 - 20cms - post-traitement v3",
   [VegestrateMode.RAW_2023_02]: "2023 - 20cms - brut",
