@@ -1,40 +1,29 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import IconMap from "@/components/icons/IconMap.vue"
-import IconBuilding from "@/components/icons/IconBuilding.vue"
-import VegestrateHeightRanges from "@/components/contextTools/VegestrateHeightRanges.vue"
+import { VegestrateMode, VegestrateModeToLabel } from "@/utils/vegetation"
+import AppSelect from "@/components/shared/AppSelect.vue"
 
 const mapStore = useMapStore()
+
+const options = Object.values(VegestrateMode).map((mode) => ({
+  label: VegestrateModeToLabel[mode],
+  value: mode
+}))
+
+const onModeChange = (value: string | number) => {
+  mapStore.vegestrateMode = value as VegestrateMode
+  mapStore.refreshDatatype()
+}
 </script>
 
 <template>
-  <div class="map-control-panel border-0">
-    <div class="flex items-center gap-1" role="radiogroup" aria-label="Vue végétation">
-      <button
-        :class="['layer-chip', { active: !mapStore.showVegestrateHeight }]"
-        :aria-checked="!mapStore.showVegestrateHeight"
-        role="radio"
-        type="button"
-        @click="mapStore.showVegestrateHeight && mapStore.toggleVegestrateHeight()"
-      >
-        <IconMap class="layer-chip__icon" :size="14" />
-        Strates
-      </button>
-      <button
-        :class="['layer-chip', { active: mapStore.showVegestrateHeight }]"
-        :aria-checked="mapStore.showVegestrateHeight"
-        role="radio"
-        type="button"
-        @click="!mapStore.showVegestrateHeight && mapStore.toggleVegestrateHeight()"
-      >
-        <IconBuilding class="layer-chip__icon" :size="14" />
-        Hauteur
-      </button>
-    </div>
+  <div class="context-menu-tools map-control-panel">
+    <AppSelect
+      :model-value="mapStore.vegestrateMode"
+      :options="options"
+      option-label="label"
+      option-value="value"
+      @update:model-value="onModeChange"
+    />
   </div>
-
-  <VegestrateHeightRanges
-    v-if="mapStore.showVegestrateHeight"
-    class="map-control-panel w-full border-0"
-  />
 </template>

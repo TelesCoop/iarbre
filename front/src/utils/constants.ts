@@ -16,7 +16,7 @@ export const DEFAULT_MAP_CENTER = {
 }
 
 export const DEFAULT_MAP_PARAMS: MapParams = {
-  dataType: DataType.PLANTABILITY,
+  dataType: DataType.VEGESTRATE,
   lng: DEFAULT_MAP_CENTER.lng,
   lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14

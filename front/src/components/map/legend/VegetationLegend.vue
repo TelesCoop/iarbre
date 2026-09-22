@@ -2,10 +2,9 @@
 import { computed } from "vue"
 import {
   VegetationLegend,
+  isElevationMode,
   ELEVATION_GRADIENT_CSS,
-  ELEVATION_LABEL_STOPS,
-  formatHeightRange,
-  heightRangeColor
+  ELEVATION_LABEL_STOPS
 } from "@/utils/vegetation"
 import { useMapStore } from "@/stores/map"
 import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
@@ -13,37 +12,20 @@ import LegendItem from "@/components/map/legend/LegendItem.vue"
 
 const mapStore = useMapStore()
 
-const showElevationLegend = computed(() => mapStore.showVegestrateHeight)
+const showElevationLegend = computed(() => isElevationMode(mapStore.vegestrateMode))
 
-const heightRanges = computed(() =>
-  mapStore.vegestrateHeightRanges.map((range) => ({
-    label: formatHeightRange(range),
-    color: heightRangeColor(range)
-  }))
-)
+const handleStrateClick = (indice: string) => {
+  mapStore.toggleAndApplyFilter(indice)
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-1 lg:gap-2 font-sans" data-cy="vegetation-legend">
-    <div class="legend-header">
-      <span class="legend-title">{{
-        showElevationLegend ? "Hauteur de végétation" : "Strate végétale"
-      }}</span>
-    </div>
-
+  <div
+    class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1"
+    data-cy="biosphere-integrity-legend"
+  >
     <template v-if="showElevationLegend">
-      <div v-if="heightRanges.length" class="strate-list" role="list">
-        <div
-          v-for="range in heightRanges"
-          :key="range.label"
-          class="strate-item"
-          role="listitem"
-          :title="range.label"
-        >
-          <LegendItem :label="range.label" :color="range.color" />
-        </div>
-      </div>
-      <div v-else class="flex flex-col gap-1 w-full select-none">
+      <div class="flex flex-col gap-1 w-full select-none">
         <div
           class="h-4 rounded-sm border border-gray-300 w-full"
           :style="{ background: ELEVATION_GRADIENT_CSS }"
@@ -65,19 +47,21 @@ const heightRanges = computed(() =>
         </div>
       </div>
     </template>
-    <div v-else class="strate-list" role="list">
-      <FilterableLegendItem
+    <template v-else>
+      <div
         v-for="item in VegetationLegend"
         :key="item.indice"
-        :value="item.indice"
-        :label="item.label"
-        class="strate-item"
-        :data-strate="item.indice"
-        :title="item.label"
-        role="listitem"
+        class="flex items-center gap-2 cursor-pointer select-none transition-opacity duration-150"
+        :class="{ 'opacity-40': mapStore.hasActiveFilters && !mapStore.isFiltered(item.indice) }"
+        @click="handleStrateClick(item.indice)"
       >
-        <LegendItem :label="item.label" :color="item.color" />
-      </FilterableLegendItem>
-    </div>
+        <div
+          class="w-4 h-4 border border-gray-300 rounded-sm"
+          :class="{ 'ring-2 ring-offset-1 ring-gray-600': mapStore.isFiltered(item.indice) }"
+          :style="{ backgroundColor: item.color }"
+        ></div>
+        <span class="text-sm text-primary-900">{{ item.label }}</span>
+      </div>
+    </template>
   </div>
 </template>

@@ -33,23 +33,24 @@ import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_func
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import {
-  VEGESTRATE_COLOR_MAP,
   VEGESTRATE_HEIGHT_MAP,
+  VegestrateMode,
+  VegestrateModeToParams,
   buildElevationColorRamp,
   normalizeHeightRanges,
   type HeightRange
 } from "@/utils/vegetation"
-import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
   getLayerId,
   getSourceId,
+  METERS_PER_DEGREE_LAT,
   showSelectionWall3D,
   clearSelectionWall3D,
   showSelectionOutline2D,
-  clearSelectionOutline2D,
-  METERS_PER_DEGREE_LAT
+  clearSelectionOutline2D
 } from "@/utils/map"
+import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -127,8 +128,8 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
-  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
-  const heightMapZoomHandler = ref<(() => void) | null>(null)
+
+  const vegestrateMode = ref<VegestrateMode>(VegestrateMode.POSTPROCESS_V1_2023_02)
 
   const {
     clearAllFilters,
@@ -153,13 +154,12 @@ export const useMapStore = defineStore("map", () => {
         ...VULNERABILITY_COLOR_MAP
       ],
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
+      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
         "step",
         ["get", "indice"],
         ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
-      ],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
-      [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
+      ]
     }
   })
 
@@ -252,19 +252,18 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      return [
-        {
-          id: layerId,
-          type: "color-relief",
-          source: sourceId,
-          layout: {},
-          paint: {
-            "color-relief-opacity": 0.8,
-            "color-relief-color": buildElevationColorRamp(vegestrateHeightRanges.value)
-          }
+    if (datatype === DataType.VEGESTRATE) {
+      // Raster layer for vegetation
+      const rasterLayer: AddLayerObject = {
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        layout: {},
+        paint: {
+          "raster-opacity": 0.4
         }
-      ]
+      }
+      return [rasterLayer]
     }
 
     const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
@@ -530,31 +529,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (heightMapClickHandler.value) {
-      map.off("click", heightMapClickHandler.value)
-      heightMapClickHandler.value = null
-    }
-    if (heightMapZoomHandler.value) {
-      map.off("zoom", heightMapZoomHandler.value)
-      heightMapZoomHandler.value = null
-    }
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      const handler = async (e: any) => {
-        if (selectionMode.value !== SelectionMode.POINT) return
-        clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
-        drawClickMarker(map, e.lngLat.lat, e.lngLat.lng, "cross", false)
-        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
-      }
-      map.on("click", handler)
-      heightMapClickHandler.value = handler
-
-      const zoomHandler = () => {
-        if (!map.getLayer(CLICK_MARKER_LAYER)) return
-        const { lat, lng } = clickCoordinates.value
-        drawClickMarker(map, lat, lng, "cross", false)
-      }
-      map.on("zoom", zoomHandler)
-      heightMapZoomHandler.value = zoomHandler
+    // Skip click events for raster layers (vegetation)
+    if (datatype === DataType.VEGESTRATE) {
       return
     }
     const layerId = getLayerId(datatype, geolevel)
@@ -616,27 +592,35 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
+    if (datatype === DataType.VEGESTRATE) {
+      // Raster source for vegetation
+      const { year, resolution, postprocess, version, kind } =
+        VegestrateModeToParams[vegestrateMode.value]
+      const params = new URLSearchParams({
+        year: String(year),
+        resolution,
+        postprocess: String(postprocess),
+        version: version !== null ? String(version) : "",
+        kind
+      })
+      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png?${params}`
       map.addSource(sourceId, {
-        type: "raster-dem",
-        encoding: "terrarium",
+        type: "raster",
         tiles: [tileUrl],
         tileSize: 256,
         minzoom: MIN_ZOOM
       })
-      return
+    } else {
+      // Vector source for other data types
+      const tileDataType =
+        datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
+      const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
+      map.addSource(sourceId, {
+        type: "vector",
+        tiles: [tileUrl],
+        minzoom: MIN_ZOOM
+      })
     }
-
-    // Vector source for other data types
-    const tileDataType =
-      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
   }
 
   const getMapId = (map: Map): string => {
@@ -702,11 +686,18 @@ export const useMapStore = defineStore("map", () => {
         if (mapInstance.getLayer(layerId)) {
           mapInstance.removeLayer(layerId)
         }
+        if (mapInstance.getLayer(`${layerId}-border`)) {
+          mapInstance.removeLayer(`${layerId}-border`)
+        }
+        if (previousDataType !== DataType.VEGESTRATE && mapInstance.getLayer(`${layerId}-border`)) {
+          mapInstance.removeLayer(`${layerId}-border`)
+        }
         const sourceId = getSourceId(previousDataType, previousGeoLevel)
         if (mapInstance.getSource(sourceId)) {
           mapInstance.removeSource(sourceId)
         }
       }
+      mapInstance.setMaxZoom(datatype === DataType.VEGESTRATE ? MAX_ZOOM + 2 : MAX_ZOOM)
       removeControls(mapInstance)
       initTiles(mapInstance)
       if (showQPVLayer.value) {
@@ -761,6 +752,12 @@ export const useMapStore = defineStore("map", () => {
       const layerId = getLayerId(currentDataType, currentGeoLevel)
       if (mapInstance.getLayer(layerId)) {
         mapInstance.removeLayer(layerId)
+      }
+      if (currentDataType !== DataType.VEGESTRATE && mapInstance.getLayer(`${layerId}-border`)) {
+        mapInstance.removeLayer(`${layerId}-border`)
+      }
+      if (mapInstance.getLayer(`${layerId}-border`)) {
+        mapInstance.removeLayer(`${layerId}-border`)
       }
       setupTile(mapInstance, currentDataType, currentGeoLevel)
     })
@@ -1440,11 +1437,12 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     use3D,
     toggle3D,
-    zoomTo,
+    vegestrateMode,
     showVegestrateHeight,
     toggleVegestrateHeight,
     vegestrateHeightRanges,
     setVegestrateHeightRanges,
-    vegetationHeightAtPoint
+    vegetationHeightAtPoint,
+    zoomTo
   }
 })

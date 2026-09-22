@@ -37,7 +37,7 @@ def _discover_layers() -> dict:
     }
 
 
-class IArbreWMSView(APIView):
+class WMSView(APIView):
     """OGC WMS 1.1.1 / 1.3.0 endpoint serving raster layers.
 
     Supported requests:

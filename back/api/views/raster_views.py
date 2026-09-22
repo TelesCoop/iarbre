@@ -4,6 +4,8 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
+from api.constants import VEGESTRATE_FILES
+
 
 def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
     """Build a ``(path, filename)`` tuple, defaulting filename to basename."""
@@ -55,10 +57,43 @@ class FileDownloadView(APIView):
 
 
 class RasterDownloadView(FileDownloadView):
-    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``."""
+    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``.
+
+    For ``raster_type=vegestrate`` with a ``year`` query parameter, serves a
+    specific archived export instead of the default file:
+
+        GET /api/rasters/vegestrate/?year=2023&resolution=02&postprocess=true&version=3
+    """
 
     file_map = RASTER_MAP
     download_content_type = "image/tiff"
 
     def get(self, request, raster_type: str):
+        if raster_type == "vegestrate" and "year" in request.query_params:
+            return self._get_vegestrate_archive(request)
         return super().get(request, raster_type)
+
+    def _get_vegestrate_archive(self, request):
+        year = int(request.query_params.get("year", 2023))
+        resolution = request.query_params.get("resolution", "02")
+        postprocess = request.query_params.get("postprocess", "true").lower() == "true"
+        version_param = request.query_params.get("version", "")
+        version = int(version_param) if version_param and postprocess else None
+        kind = request.query_params.get("kind", "class")
+
+        filename = VEGESTRATE_FILES.get((year, resolution, postprocess, version, kind))
+        if not filename:
+            raise Http404("No raster file for the requested parameters")
+
+        full_path = Path(settings.MEDIA_ROOT) / "rasters/vegestrate" / filename
+        if not full_path.exists():
+            raise Http404(f"File not found: {filename}.")
+
+        response = FileResponse(
+            full_path.open("rb"),
+            content_type=self.download_content_type,
+            as_attachment=True,
+            filename=filename,
+        )
+        response["Cache-Control"] = "public, max-age=3600"
+        return response

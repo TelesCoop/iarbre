@@ -1,6 +1,94 @@
 import type { ExpressionSpecification } from "maplibre-gl"
 import type { VegetationIndice } from "@/types/vegetation"
 
+export enum VegestrateMode {
+  POSTPROCESS_V3_2015_ELEVATION_08 = "postprocess_v3_2015_elevation_08",
+  RAW_2018_02 = "raw_2018_02",
+  POSTPROCESS_V3_2018_02 = "postprocess_v3_2018_02",
+  RAW_2023_02 = "raw_2023_02",
+  POSTPROCESS_V1_2023_02 = "postprocess_v1_2023_02",
+  POSTPROCESS_V2_2023_02 = "postprocess_v2_2023_02",
+  POSTPROCESS_V3_2023_02 = "postprocess_v3_2023_02",
+  POSTPROCESS_V3_2023_ELEVATION_02 = "postprocess_v3_2023_elevation_02"
+}
+
+export const VegestrateModeToParams: Record<
+  VegestrateMode,
+  { year: number; resolution: string; postprocess: boolean; version: number | null; kind: string }
+> = {
+  [VegestrateMode.POSTPROCESS_V3_2015_ELEVATION_08]: {
+    year: 2015,
+    resolution: "08",
+    postprocess: true,
+    version: 3,
+    kind: "elevation"
+  },
+  [VegestrateMode.RAW_2018_02]: {
+    year: 2018,
+    resolution: "02",
+    postprocess: false,
+    version: null,
+    kind: "class"
+  },
+  [VegestrateMode.POSTPROCESS_V3_2018_02]: {
+    year: 2018,
+    resolution: "02",
+    postprocess: true,
+    version: 3,
+    kind: "class"
+  },
+  [VegestrateMode.RAW_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: false,
+    version: null,
+    kind: "class"
+  },
+  [VegestrateMode.POSTPROCESS_V1_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 1,
+    kind: "class"
+  },
+  [VegestrateMode.POSTPROCESS_V2_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 2,
+    kind: "class"
+  },
+  [VegestrateMode.POSTPROCESS_V3_2023_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 3,
+    kind: "class"
+  },
+  [VegestrateMode.POSTPROCESS_V3_2023_ELEVATION_02]: {
+    year: 2023,
+    resolution: "02",
+    postprocess: true,
+    version: 3,
+    kind: "elevation"
+  }
+}
+
+export const VegestrateModeToLabel: Record<VegestrateMode, string> = {
+  [VegestrateMode.POSTPROCESS_V3_2015_ELEVATION_08]: "2015 - 80cms - post-traitement v3 - hauteur",
+  [VegestrateMode.RAW_2018_02]: "2018 - 20cms - brut",
+  [VegestrateMode.POSTPROCESS_V3_2018_02]: "2018 - 20cms - post-traitement v3",
+  [VegestrateMode.RAW_2023_02]: "2023 - 20cms - brut",
+  [VegestrateMode.POSTPROCESS_V1_2023_02]: "2023 - 20cms - post-traitement v1",
+  [VegestrateMode.POSTPROCESS_V2_2023_02]: "2023 - 20cms - post-traitement v2",
+  [VegestrateMode.POSTPROCESS_V3_2023_02]: "2023 - 20cms - post-traitement v3",
+  [VegestrateMode.POSTPROCESS_V3_2023_ELEVATION_02]: "2023 - 20cms - post-traitement v3 - hauteur"
+}
+
+export function isElevationMode(mode: VegestrateMode): boolean {
+  return VegestrateModeToParams[mode].kind === "elevation"
+}
+
 type StrateInfo = {
   label: string
   short: string
