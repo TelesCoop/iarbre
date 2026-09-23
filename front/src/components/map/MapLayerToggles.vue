@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import IconBuilding from "@/components/icons/IconBuilding.vue"
 import IconMap from "@/components/icons/IconMap.vue"
 import IconBoundary from "@/components/icons/IconBoundary.vue"
+import IconPanoramax from "@/components/icons/IconPanoramax.vue"
 
 const mapStore = useMapStore()
 </script>
@@ -35,6 +36,15 @@ const mapStore = useMapStore()
     >
       <IconBoundary class="layer-chip__icon" :size="14" />
       Communes
+    </button>
+    <button
+      :class="['layer-chip', { active: mapStore.showPanoramaxLayer }]"
+      data-cy="panoramax-toggle"
+      type="button"
+      @click="mapStore.togglePanoramaxLayer()"
+    >
+      <IconPanoramax class="layer-chip__icon" :size="14" />
+      Panoramax
     </button>
   </div>
 </template>

@@ -49,3 +49,17 @@ Cypress.Commands.add("mapCheckCadastreLayer", (shouldExist: boolean) => {
     : "cypress: cadastre data removed"
   cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
 })
+
+Cypress.Commands.add("mapCheckPanoramaxLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist
+    ? "cypress: panoramax data loaded"
+    : "cypress: panoramax data removed"
+  cy.get("@consoleInfo").should((spy: any) => {
+    const messages: string[] = spy.args
+      .map((args: unknown[]) => args[0])
+      .filter((message: unknown): message is string =>
+        typeof message === "string" ? message.startsWith("cypress: panoramax data") : false
+      )
+    expect(messages[messages.length - 1]).to.equal(expectedMessage)
+  })
+})

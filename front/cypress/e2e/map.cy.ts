@@ -200,6 +200,42 @@ describe("Map - Desktop", () => {
     cy.mapCheckCadastreLayer(false)
     cy.getBySel("cadastre-parcel-info").should("not.exist")
   })
+
+  it("adds panoramax layer when toggled, off by default", () => {
+    cy.getBySel("panoramax-credit").should("not.exist")
+    cy.getBySel("panoramax-viewer").should("not.exist")
+
+    cy.getBySel("panoramax-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPanoramaxLayer(true)
+    cy.getBySel("panoramax-credit").should("be.visible")
+    cy.getBySel("panoramax-viewer").should("not.exist")
+
+    cy.getBySel("panoramax-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPanoramaxLayer(false)
+    cy.getBySel("panoramax-credit").should("not.exist")
+  })
+
+  it("zooms in to the picture level when panoramax is activated", () => {
+    cy.url().should("include", "/13/")
+
+    cy.getBySel("panoramax-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPanoramaxLayer(true)
+
+    cy.url().should("include", "/17/")
+  })
+
+  it("maintains panoramax layer when switching data layers and basemap styles", () => {
+    cy.getBySel("panoramax-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPanoramaxLayer(true)
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.mapCheckPanoramaxLayer(true)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
+    cy.mapCheckPanoramaxLayer(true)
+  })
 })
 
 describe("Map - Mobile", () => {
