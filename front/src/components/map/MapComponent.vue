@@ -93,7 +93,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapCadastreParcelInfo />
   </div>
 
-  <div :class="['panoramax-viewer-container', { 'sidepanel-visible': isSidePanelVisible }]">
+  <div class="panoramax-viewer-container">
     <MapPanoramaxViewer />
   </div>
 

@@ -89,8 +89,7 @@ import {
   PANORAMAX_SOURCE_MAX_ZOOM,
   PANORAMAX_SEQUENCES_MIN_ZOOM,
   PANORAMAX_PICTURES_MIN_ZOOM,
-  PANORAMAX_ACTIVATION_ZOOM,
-  PANORAMAX_ATTRIBUTION
+  PANORAMAX_ACTIVATION_ZOOM
 } from "@/utils/panoramax"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
@@ -129,7 +128,6 @@ export const useMapStore = defineStore("map", () => {
   } | null>(null)
   const showPanoramaxLayer = ref<boolean>(false)
   const selectedPanoramaxPicture = ref<PanoramaxPicture | null>(null)
-  const panoramaxPictureLoading = ref<boolean>(false)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const shapeEditing = ref<boolean>(false)
   const liveArea = ref<number | null>(null)
@@ -1003,13 +1001,39 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const cadastreClickHandlers = ref<Record<string, (e: any) => void>>({})
-  const cadastreMouseEnterHandlers = ref<Record<string, () => void>>({})
-  const cadastreMouseLeaveHandlers = ref<Record<string, () => void>>({})
+  type LayerInteractions = Record<string, (e: any) => void>
+
+  const layerInteractions = ref<Record<string, LayerInteractions>>({})
+
+  const interactionKey = (mapInstance: Map, layerId: string) =>
+    `${getMapId(mapInstance)}:${layerId}`
+
+  const unregisterLayerInteractions = (mapInstance: Map, layerId: string) => {
+    const key = interactionKey(mapInstance, layerId)
+    const handlers = layerInteractions.value[key]
+    if (!handlers) return
+
+    for (const [eventType, handler] of Object.entries(handlers)) {
+      mapInstance.off(eventType as any, layerId, handler)
+    }
+    delete layerInteractions.value[key]
+  }
+
+  const registerLayerInteractions = (
+    mapInstance: Map,
+    layerId: string,
+    handlers: LayerInteractions
+  ) => {
+    unregisterLayerInteractions(mapInstance, layerId)
+
+    for (const [eventType, handler] of Object.entries(handlers)) {
+      mapInstance.on(eventType as any, layerId, handler)
+    }
+    layerInteractions.value[interactionKey(mapInstance, layerId)] = handlers
+  }
 
   const addCadastreLayer = (mapInstance: Map) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const mapId = getMapId(mapInstance)
 
     if (!mapInstance.getSource("cadastre-source")) {
       mapInstance.addSource("cadastre-source", {
@@ -1100,13 +1124,11 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.getCanvas().style.cursor = ""
     }
 
-    mapInstance.on("click", "cadastre-fill", clickHandler)
-    mapInstance.on("mouseenter", "cadastre-fill", mouseEnterHandler)
-    mapInstance.on("mouseleave", "cadastre-fill", mouseLeaveHandler)
-
-    cadastreClickHandlers.value[mapId] = clickHandler
-    cadastreMouseEnterHandlers.value[mapId] = mouseEnterHandler
-    cadastreMouseLeaveHandlers.value[mapId] = mouseLeaveHandler
+    registerLayerInteractions(mapInstance, "cadastre-fill", {
+      click: clickHandler,
+      mouseenter: mouseEnterHandler,
+      mouseleave: mouseLeaveHandler
+    })
 
     mapInstance.once("render", () => {
       console.info("cypress: cadastre data loaded")
@@ -1127,22 +1149,9 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const removeCadastreLayer = (mapInstance: Map) => {
-    const mapId = getMapId(mapInstance)
-
     selectedCadastreParcel.value = null
 
-    if (cadastreClickHandlers.value[mapId]) {
-      mapInstance.off("click", "cadastre-fill", cadastreClickHandlers.value[mapId])
-      delete cadastreClickHandlers.value[mapId]
-    }
-    if (cadastreMouseEnterHandlers.value[mapId]) {
-      mapInstance.off("mouseenter", "cadastre-fill", cadastreMouseEnterHandlers.value[mapId])
-      delete cadastreMouseEnterHandlers.value[mapId]
-    }
-    if (cadastreMouseLeaveHandlers.value[mapId]) {
-      mapInstance.off("mouseleave", "cadastre-fill", cadastreMouseLeaveHandlers.value[mapId])
-      delete cadastreMouseLeaveHandlers.value[mapId]
-    }
+    unregisterLayerInteractions(mapInstance, "cadastre-fill")
 
     if (mapInstance.getLayer("cadastre-fill")) {
       mapInstance.removeLayer("cadastre-fill")
@@ -1172,10 +1181,6 @@ export const useMapStore = defineStore("map", () => {
       }
     }
   }
-
-  const panoramaxClickHandlers = ref<Record<string, (e: any) => void>>({})
-  const panoramaxMouseEnterHandlers = ref<Record<string, () => void>>({})
-  const panoramaxMouseLeaveHandlers = ref<Record<string, () => void>>({})
 
   let pendingPanoramaxPictureId: string | null = null
 
@@ -1218,15 +1223,12 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const addPanoramaxLayer = (mapInstance: Map) => {
-    const mapId = getMapId(mapInstance)
-
     if (!mapInstance.getSource(PANORAMAX_SOURCE_ID)) {
       mapInstance.addSource(PANORAMAX_SOURCE_ID, {
         type: "vector",
         tiles: [`${PANORAMAX_API}/map/{z}/{x}/{y}.mvt`],
         minzoom: PANORAMAX_SEQUENCES_MIN_ZOOM,
-        maxzoom: PANORAMAX_SOURCE_MAX_ZOOM,
-        attribution: PANORAMAX_ATTRIBUTION
+        maxzoom: PANORAMAX_SOURCE_MAX_ZOOM
       })
     }
 
@@ -1286,7 +1288,6 @@ export const useMapStore = defineStore("map", () => {
       if (!pictureId) return
 
       pendingPanoramaxPictureId = pictureId
-      panoramaxPictureLoading.value = true
       highlightPanoramaxPicture(mapInstance, pictureId)
 
       try {
@@ -1298,10 +1299,6 @@ export const useMapStore = defineStore("map", () => {
         console.error("Panoramax: could not load picture", pictureId, error)
         selectedPanoramaxPicture.value = null
         highlightPanoramaxPicture(mapInstance, null)
-      } finally {
-        if (pendingPanoramaxPictureId === pictureId) {
-          panoramaxPictureLoading.value = false
-        }
       }
     }
 
@@ -1312,13 +1309,11 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.getCanvas().style.cursor = ""
     }
 
-    mapInstance.on("click", PANORAMAX_PICTURES_LAYER, clickHandler)
-    mapInstance.on("mouseenter", PANORAMAX_PICTURES_LAYER, mouseEnterHandler)
-    mapInstance.on("mouseleave", PANORAMAX_PICTURES_LAYER, mouseLeaveHandler)
-
-    panoramaxClickHandlers.value[mapId] = clickHandler
-    panoramaxMouseEnterHandlers.value[mapId] = mouseEnterHandler
-    panoramaxMouseLeaveHandlers.value[mapId] = mouseLeaveHandler
+    registerLayerInteractions(mapInstance, PANORAMAX_PICTURES_LAYER, {
+      click: clickHandler,
+      mouseenter: mouseEnterHandler,
+      mouseleave: mouseLeaveHandler
+    })
 
     mapInstance.once("render", () => {
       console.info("cypress: panoramax data loaded")
@@ -1327,8 +1322,6 @@ export const useMapStore = defineStore("map", () => {
 
   const clearPanoramaxSelection = () => {
     pendingPanoramaxPictureId = null
-    panoramaxPictureLoading.value = false
-    if (!selectedPanoramaxPicture.value) return
     selectedPanoramaxPicture.value = null
 
     for (const mapId of Object.keys(mapInstancesByIds.value)) {
@@ -1337,32 +1330,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const removePanoramaxLayer = (mapInstance: Map) => {
-    const mapId = getMapId(mapInstance)
-
-    pendingPanoramaxPictureId = null
-    panoramaxPictureLoading.value = false
-    selectedPanoramaxPicture.value = null
-
-    if (panoramaxClickHandlers.value[mapId]) {
-      mapInstance.off("click", PANORAMAX_PICTURES_LAYER, panoramaxClickHandlers.value[mapId])
-      delete panoramaxClickHandlers.value[mapId]
-    }
-    if (panoramaxMouseEnterHandlers.value[mapId]) {
-      mapInstance.off(
-        "mouseenter",
-        PANORAMAX_PICTURES_LAYER,
-        panoramaxMouseEnterHandlers.value[mapId]
-      )
-      delete panoramaxMouseEnterHandlers.value[mapId]
-    }
-    if (panoramaxMouseLeaveHandlers.value[mapId]) {
-      mapInstance.off(
-        "mouseleave",
-        PANORAMAX_PICTURES_LAYER,
-        panoramaxMouseLeaveHandlers.value[mapId]
-      )
-      delete panoramaxMouseLeaveHandlers.value[mapId]
-    }
+    unregisterLayerInteractions(mapInstance, PANORAMAX_PICTURES_LAYER)
 
     mapInstance.getCanvas().style.cursor = ""
 
@@ -1383,6 +1351,8 @@ export const useMapStore = defineStore("map", () => {
 
   const togglePanoramaxLayer = () => {
     showPanoramaxLayer.value = !showPanoramaxLayer.value
+
+    if (!showPanoramaxLayer.value) clearPanoramaxSelection()
 
     for (const mapId of Object.keys(mapInstancesByIds.value)) {
       const mapInstance = mapInstancesByIds.value[mapId]
@@ -1582,6 +1552,14 @@ export const useMapStore = defineStore("map", () => {
     const ring = shapeDrawing.getCurrentShapeCoordinates()
     if (!map || !ring) return
 
+    if (
+      map.getLayer(PANORAMAX_PICTURES_LAYER) &&
+      map.queryRenderedFeatures([e.point.x, e.point.y], { layers: [PANORAMAX_PICTURES_LAYER] })
+        .length > 0
+    ) {
+      return
+    }
+
     const screen = ring.map((coord) => map.project(coord as [number, number]))
     const xs = screen.map((p) => p.x)
     const ys = screen.map((p) => p.y)
@@ -1702,7 +1680,6 @@ export const useMapStore = defineStore("map", () => {
     showPanoramaxLayer,
     togglePanoramaxLayer,
     selectedPanoramaxPicture,
-    panoramaxPictureLoading,
     clearPanoramaxSelection,
     use3D,
     toggle3D,

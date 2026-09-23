@@ -23,6 +23,8 @@ const metaParts = computed(() =>
 
 const pictureUrl = computed(() => (picture.value ? buildPanoramaxPictureUrl(picture.value) : null))
 
+const isFlat = computed(() => picture.value?.type === "flat")
+
 // The sd derivate is ~0.4 MB against ~3 MB for hd, which decides whether a click opens.
 const panoramaUrl = computed(
   () => picture.value?.assets?.sd ?? picture.value?.assets?.hd ?? picture.value?.assets?.thumb
@@ -55,8 +57,10 @@ watch(
 
     try {
       await viewer.setPanorama(panorama)
-    } catch {
+    } catch (error) {
+      console.error("Panoramax: could not display picture", error)
       destroyViewer()
+      mapStore.clearPanoramaxSelection()
     }
   },
   { immediate: true, flush: "post" }
@@ -74,7 +78,9 @@ onBeforeUnmount(destroyViewer)
     <div class="flex items-center justify-between gap-3 px-3 pt-3">
       <div class="flex items-center gap-2 min-w-0">
         <IconPanoramax class="text-primary-500 shrink-0" :size="16" aria-hidden="true" />
-        <span class="text-sm font-medium font-sans truncate">Vue immersive</span>
+        <span class="text-sm font-medium font-sans truncate">{{
+          isFlat ? "Vue de rue" : "Vue immersive"
+        }}</span>
       </div>
       <MapControlButton
         aria-label="Fermer"
@@ -87,7 +93,14 @@ onBeforeUnmount(destroyViewer)
       </MapControlButton>
     </div>
 
-    <div ref="canvasEl" class="mt-2 h-60 bg-gray-900" data-cy="panoramax-canvas"></div>
+    <img
+      v-if="isFlat"
+      alt="Photo de rue Panoramax"
+      class="mt-2 h-60 w-full object-contain bg-gray-900"
+      data-cy="panoramax-flat-image"
+      :src="panoramaUrl"
+    />
+    <div v-else ref="canvasEl" class="mt-2 h-60 bg-gray-900" data-cy="panoramax-canvas"></div>
 
     <div
       class="flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 text-xs font-sans text-gray-500 border-t border-gray-100"

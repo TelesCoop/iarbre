@@ -2,7 +2,6 @@ import type { PanoramaxPicture } from "maplibre-gl-panoramax"
 
 export const PANORAMAX_API = "https://api.panoramax.xyz/api"
 export const PANORAMAX_HOME_URL = "https://panoramax.fr"
-export const PANORAMAX_ATTRIBUTION = `© <a href="${PANORAMAX_HOME_URL}" target="_blank" rel="noopener">Panoramax</a>`
 
 export const PANORAMAX_SOURCE_ID = "panoramax-source"
 export const PANORAMAX_SEQUENCES_LAYER = "panoramax-sequences"
