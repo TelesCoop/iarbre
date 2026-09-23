@@ -77,7 +77,7 @@ onBeforeUnmount(destroyViewer)
   >
     <div class="flex items-center justify-between gap-3 px-3 pt-3">
       <div class="flex items-center gap-2 min-w-0">
-        <IconPanoramax class="text-primary-500 shrink-0" :size="16" aria-hidden="true" />
+        <IconPanoramax class="shrink-0" :size="16" aria-hidden="true" />
         <span class="text-sm font-medium font-sans truncate">{{
           isFlat ? "Vue de rue" : "Vue immersive"
         }}</span>
