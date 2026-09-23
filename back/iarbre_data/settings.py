@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "api",
     "plantability",
     "vegetation",
+    "heat",
     "storages",
     "django_extensions",
     "telescoop_backup",
