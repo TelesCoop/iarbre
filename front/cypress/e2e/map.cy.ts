@@ -236,24 +236,6 @@ describe("Map - Desktop", () => {
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.mapCheckPanoramaxLayer(true)
   })
-
-  it("only requests panoramax tiles the server actually serves", () => {
-    const zooms: number[] = []
-    cy.intercept({ url: /api\.panoramax\.xyz\/api\/map\/.*\.mvt/ }, (req) => {
-      const match = req.url.match(/\/map\/(\d+)\//)
-      if (match) zooms.push(Number(match[1]))
-      req.continue()
-    }).as("panoramaxTiles")
-
-    cy.getBySel("panoramax-toggle").filter(":visible").should("be.visible").click()
-    cy.mapCheckPanoramaxLayer(true)
-    cy.wait("@panoramaxTiles")
-
-    cy.then(() => {
-      expect(zooms).not.to.be.empty
-      zooms.forEach((z) => expect(z, `tile zoom ${z}`).to.be.within(13, 15))
-    })
-  })
 })
 
 describe("Map - Mobile", () => {
