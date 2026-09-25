@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,7 +34,7 @@ jobs:
       - run: pip install -r back/requirements.txt
 
       - name: Cache Node.js dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -56,7 +56,7 @@ jobs:
     needs: setup
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -86,7 +86,7 @@ jobs:
           EOF
 
       - name: Restore Node.js cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -136,7 +136,7 @@ jobs:
     needs: [setup]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

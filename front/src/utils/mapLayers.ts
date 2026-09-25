@@ -44,3 +44,18 @@ export const CADASTRE_SELECTED_BORDER_WIDTH = 3
 export const CADASTRE_SELECTED_BORDER_OPACITY = 1
 export const CADASTRE_SELECTED_FILL_OPACITY = 0.3
 export const CADASTRE_DEFAULT_FILL_OPACITY = 0.05
+
+// ---------------------------------------------------------------------------
+// Panoramax
+// ---------------------------------------------------------------------------
+
+export const PANORAMAX_SEQUENCE_COLOR = "#FF6F00"
+export const PANORAMAX_SEQUENCE_OPACITY = 0.75
+
+export const PANORAMAX_PICTURE_360_COLOR = "#2962FF"
+export const PANORAMAX_PICTURE_FLAT_COLOR = "#FF6F00"
+export const PANORAMAX_PICTURE_STROKE_COLOR = "#FFFFFF"
+export const PANORAMAX_PICTURE_STROKE_WIDTH = 1.2
+export const PANORAMAX_PICTURE_OPACITY = 0.9
+export const PANORAMAX_SELECTED_PICTURE_COLOR = getCssVar("--color-primary-900")
+export const PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH = 3

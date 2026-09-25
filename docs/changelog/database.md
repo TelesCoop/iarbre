@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-09-21T09:43_postgres_backup.dump
+
+**Changements :** :
+
+- Corrections de migrations non appliquées
+
 ## 2026-09-15T06:35_postgres_backup.dump
 
 **Changements :** :

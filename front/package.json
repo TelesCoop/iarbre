@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@certible/use-matomo": "^1.2.1",
+    "@photo-sphere-viewer/core": "^5.15.1",
     "@tailwindcss/vite": "^4.3.2",
     "@vue/test-utils": "^2.4.6",
     "@vueuse/core": "^14.0.0",
@@ -25,6 +26,7 @@
     "driver.js": "^1.4.0",
     "jsdom": "^26.1.0",
     "maplibre-gl": "^6.8.0",
+    "maplibre-gl-panoramax": "^0.4.0",
     "pinia": "^3.0.0",
     "polished": "^4.3.1",
     "strip-ansi": "^7.1.0",
