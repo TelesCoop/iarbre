@@ -19,11 +19,13 @@ from .views import (
     MetadataView,
     RasterDownloadView,
     IArbreWFSView,
-    IArbreWMSView,
     OrthophotoTileView,
-    BiosphereLandCoverAtPointView,
+    VegetationTileView,
+    HeatTileView,
     VegetationHeightTileView,
     VegetationHeightAtPointView,
+    BiosphereLandCoverAtPointView,
+    WMSView,
 )
 
 router = routers.DefaultRouter()
@@ -57,11 +59,21 @@ urlpatterns = [
         TileDetailsView.as_view(),
         name="retrieve-tile-details",
     ),
+    path(
+        "tiles/vegetation/<int:z>/<int:x>/<int:y>.png",
+        VegetationTileView.as_view(),
+        name="retrieve-vegetation-tile",
+    ),
+    path(
+        "tiles/heat/<int:z>/<int:x>/<int:y>.png",
+        HeatTileView.as_view(),
+        name="retrieve-heat-tile",
+    ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
     path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
-        "rasters/<str:raster_type>/",
+        "rasters/<str:file_key>/",
         RasterDownloadView.as_view(),
         name="download-raster",
     ),
@@ -85,7 +97,7 @@ urlpatterns = [
     path("health-check/", HealthCheckView.as_view(), name="health-check"),
     path("metadata/", MetadataView.as_view()),
     path("wfs/", IArbreWFSView.as_view()),
-    path("wms/", IArbreWMSView.as_view()),
+    path("wms/", WMSView.as_view(), name="wms"),
     path(
         "orthophoto/<int:z>/<int:x>/<int:y>.png",
         OrthophotoTileView.as_view(),

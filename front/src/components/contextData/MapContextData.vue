@@ -5,7 +5,6 @@ import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
-import type { VegetationData } from "@/types/vegetation"
 import ContextDataSkeleton from "@/components/contextData/shared/ContextDataSkeleton.vue"
 import AppButton from "@/components/shared/AppButton.vue"
 import IconInfo from "@/components/icons/IconInfo.vue"
@@ -67,10 +66,7 @@ defineProps({
         v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
         :data="mapStore.contextData.data as PlantabilityVulnerabilityData"
       />
-      <map-context-data-vegetation
-        v-if="mapStore.selectedDataType === DataType.VEGESTRATE"
-        :data="mapStore.contextData.data as VegetationData"
-      />
+      <MapContextDataHeat v-else-if="mapStore.selectedDataType === DataType.HEAT" />
     </template>
   </div>
 </template>

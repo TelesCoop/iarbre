@@ -36,10 +36,7 @@ watch(
       v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
       class="w-full"
     />
-    <vegetation-legend
-      v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
-      class="w-full"
-    />
+    <HeatLegend v-else-if="mapStore.selectedDataType === DataType.HEAT" class="w-full" />
     <MapFiltersStatus />
 
     <p v-if="attributionHTML" class="legend-attribution">
