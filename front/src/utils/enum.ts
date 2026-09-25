@@ -9,7 +9,7 @@ export enum DataType {
   VULNERABILITY = "vulnerability",
   CLIMATE_ZONE = "lcz",
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
-  VEGESTRATE = "vegestrate",
+  HEAT = "heat",
   BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
 }
 
@@ -41,7 +41,7 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
   [DataType.VULNERABILITY]: "Vulnérabilité chaleur",
   [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
-  [DataType.VEGESTRATE]: "Strates végétales",
+  [DataType.HEAT]: "Confort thermique",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère"
 }
 
@@ -51,7 +51,7 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.VULNERABILITY]: GeoLevel.LCZ,
   [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-  [DataType.VEGESTRATE]: GeoLevel.TILE
+  [DataType.HEAT]: GeoLevel.TILE
 }
 
 export const DataTypeToAttributionSource: Record<DataType, string> = {
@@ -63,8 +63,7 @@ export const DataTypeToAttributionSource: Record<DataType, string> = {
     '<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (2024-09)</a>',
   [DataType.PLANTABILITY_VULNERABILITY]:
     '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (2025-07)</a>',
-  [DataType.VEGESTRATE]:
-    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
+  [DataType.HEAT]: "Métropole de Lyon",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois</a>'
 }
@@ -83,8 +82,7 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
     "https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1",
   [DataType.PLANTABILITY_VULNERABILITY]:
     "https://erasme.notion.site/Croisement-plantabilit-vuln-rabilit-la-chaleur-33644e49a3ad80b9a0aeeba0910920f8",
-  [DataType.VEGESTRATE]:
-    "https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d",
+  [DataType.HEAT]: DOCUMENTATION_BASE_URL,
   [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57"

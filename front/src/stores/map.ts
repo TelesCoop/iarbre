@@ -6,6 +6,7 @@ import {
   Map,
   NavigationControl,
   type GeoJSONSource,
+  type RasterTileSource,
   type StyleSpecification,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification
@@ -24,7 +25,6 @@ import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
-import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
@@ -32,14 +32,7 @@ import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/planta
 import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
-import {
-  VEGESTRATE_HEIGHT_MAP,
-  VegestrateMode,
-  VegestrateModeToParams,
-  buildElevationColorRamp,
-  normalizeHeightRanges,
-  type HeightRange
-} from "@/utils/vegetation"
+import { DEFAULT_HEAT_HOUR, HeatMode, buildHeatTileUrl } from "@/utils/heat"
 import {
   extractFeatureProperty,
   getLayerId,
@@ -50,7 +43,6 @@ import {
   showSelectionOutline2D,
   clearSelectionOutline2D
 } from "@/utils/map"
-import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -78,17 +70,6 @@ import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
 import { computePolygonAreaM2 } from "@/utils/geo"
 import type { ZonePolygon } from "@/stores/zone"
-
-const isHeightRange = (range: unknown): range is HeightRange => {
-  if (typeof range !== "object" || range === null) return false
-  const { min, max } = range as HeightRange
-  return typeof min === "number" && (max === null || typeof max === "number")
-}
-
-const loadStoredHeightRanges = (): HeightRange[] => {
-  const stored = LocalStorageHandler.getItem("vegestrateHeightRanges")
-  return Array.isArray(stored) ? normalizeHeightRanges(stored.filter(isHeightRange)) : []
-}
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
@@ -125,11 +106,8 @@ export const useMapStore = defineStore("map", () => {
     geometry: any
     properties: Record<string, any>
   } | null>(null)
-  const showVegestrateHeight = ref<boolean>(false)
-  const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
-  const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
-
-  const vegestrateMode = ref<VegestrateMode>(VegestrateMode.POSTPROCESS_V1_2023_02)
+  const heatMode = ref<HeatMode>(HeatMode.PET_INDEX)
+  const heatHour = ref<number>(DEFAULT_HEAT_HOUR)
 
   const {
     clearAllFilters,
@@ -164,7 +142,7 @@ export const useMapStore = defineStore("map", () => {
   })
 
   const HEIGHT_MULTIPLIER = 15
-  const EXTRUSION_HEIGHT_MAP = computed(() => {
+  const EXTRUSION_HEIGHT_MAP = computed<Partial<Record<DataType, unknown>>>(() => {
     return {
       [DataType.PLANTABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
       [DataType.VULNERABILITY]: [
@@ -174,11 +152,6 @@ export const useMapStore = defineStore("map", () => {
       ],
       [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
       [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.VEGESTRATE]: [
-        "*",
-        ["match", ["get", "indice"], ...VEGESTRATE_HEIGHT_MAP],
-        HEIGHT_MULTIPLIER
-      ],
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
     }
   })
@@ -252,15 +225,14 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE) {
-      // Raster layer for vegetation
+    if (datatype === DataType.HEAT) {
       const rasterLayer: AddLayerObject = {
         id: layerId,
         type: "raster",
         source: sourceId,
         layout: {},
         paint: {
-          "raster-opacity": 0.4
+          "raster-opacity": 0.7
         }
       }
       return [rasterLayer]
@@ -529,8 +501,8 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    // Skip click events for raster layers (vegetation)
-    if (datatype === DataType.VEGESTRATE) {
+    // Skip click events for raster layers
+    if (datatype === DataType.HEAT) {
       return
     }
     const layerId = getLayerId(datatype, geolevel)
@@ -592,21 +564,10 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
-    if (datatype === DataType.VEGESTRATE) {
-      // Raster source for vegetation
-      const { year, resolution, postprocess, version, kind } =
-        VegestrateModeToParams[vegestrateMode.value]
-      const params = new URLSearchParams({
-        year: String(year),
-        resolution,
-        postprocess: String(postprocess),
-        version: version !== null ? String(version) : "",
-        kind
-      })
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation/{z}/{x}/{y}.png?${params}`
+    if (datatype === DataType.HEAT) {
       map.addSource(sourceId, {
         type: "raster",
-        tiles: [tileUrl],
+        tiles: [buildHeatTileUrl(fullBaseApiUrl, heatMode.value, heatHour.value)],
         tileSize: 256,
         minzoom: MIN_ZOOM
       })
@@ -654,11 +615,9 @@ export const useMapStore = defineStore("map", () => {
   const changeDataType = (datatype: DataType) => {
     const previousDataType = selectedDataType.value!
     const previousGeoLevel = getGeoLevelFromDataType()
-    if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
     selectedDataType.value = datatype
     clearAllFilters()
     contextData.removeData()
-    vegetationHeightAtPoint.value = undefined
     selectedLegendCell.value = null
     selectedFeatureInfo.value = null
 
@@ -689,15 +648,12 @@ export const useMapStore = defineStore("map", () => {
         if (mapInstance.getLayer(`${layerId}-border`)) {
           mapInstance.removeLayer(`${layerId}-border`)
         }
-        if (previousDataType !== DataType.VEGESTRATE && mapInstance.getLayer(`${layerId}-border`)) {
-          mapInstance.removeLayer(`${layerId}-border`)
-        }
         const sourceId = getSourceId(previousDataType, previousGeoLevel)
         if (mapInstance.getSource(sourceId)) {
           mapInstance.removeSource(sourceId)
         }
       }
-      mapInstance.setMaxZoom(datatype === DataType.VEGESTRATE ? MAX_ZOOM + 2 : MAX_ZOOM)
+      mapInstance.setMaxZoom(datatype === DataType.HEAT ? MAX_ZOOM + 2 : MAX_ZOOM)
       removeControls(mapInstance)
       initTiles(mapInstance)
       if (showQPVLayer.value) {
@@ -725,23 +681,23 @@ export const useMapStore = defineStore("map", () => {
     changeDataType(selectedDataType.value)
   }
 
-  const toggleVegestrateHeight = () => {
-    showVegestrateHeight.value = !showVegestrateHeight.value
-    refreshDatatype()
+  const updateHeatTiles = () => {
+    if (selectedDataType.value !== DataType.HEAT) return
+    const sourceId = getSourceId(DataType.HEAT, getGeoLevelFromDataType())
+    const tileUrl = buildHeatTileUrl(getFullBaseApiUrl(), heatMode.value, heatHour.value)
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      mapInstance.getSource<RasterTileSource>(sourceId)?.setTiles([tileUrl])
+    })
   }
 
-  const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
-    if (!showVegestrateHeight.value) return
-    const normalized = normalizeHeightRanges(ranges)
-    vegestrateHeightRanges.value = normalized
-    LocalStorageHandler.setItem("vegestrateHeightRanges", normalized)
-    const ramp = buildElevationColorRamp(normalized)
-    const layerId = getLayerId(DataType.VEGESTRATE, getGeoLevelFromDataType())
-    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
-      if (mapInstance.getLayer(layerId)) {
-        mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
-      }
-    })
+  const setHeatMode = (mode: HeatMode) => {
+    heatMode.value = mode
+    updateHeatTiles()
+  }
+
+  const setHeatHour = (hour: number) => {
+    heatHour.value = hour
+    updateHeatTiles()
   }
 
   const refreshLayers = () => {
@@ -752,9 +708,6 @@ export const useMapStore = defineStore("map", () => {
       const layerId = getLayerId(currentDataType, currentGeoLevel)
       if (mapInstance.getLayer(layerId)) {
         mapInstance.removeLayer(layerId)
-      }
-      if (currentDataType !== DataType.VEGESTRATE && mapInstance.getLayer(`${layerId}-border`)) {
-        mapInstance.removeLayer(`${layerId}-border`)
       }
       if (mapInstance.getLayer(`${layerId}-border`)) {
         mapInstance.removeLayer(`${layerId}-border`)
@@ -1437,12 +1390,10 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     use3D,
     toggle3D,
-    vegestrateMode,
-    showVegestrateHeight,
-    toggleVegestrateHeight,
-    vegestrateHeightRanges,
-    setVegestrateHeightRanges,
-    vegetationHeightAtPoint,
+    heatMode,
+    heatHour,
+    setHeatMode,
+    setHeatHour,
     zoomTo
   }
 })

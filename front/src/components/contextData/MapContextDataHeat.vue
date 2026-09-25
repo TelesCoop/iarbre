@@ -1,13 +1,25 @@
 <script lang="ts" setup>
 import IconInfo from "@/components/icons/IconInfo.vue"
+import { useMapStore } from "@/stores/map"
+import { HeatModeToDescription, HeatModeToLabel } from "@/utils/heat"
+
+const mapStore = useMapStore()
 </script>
 
 <template>
   <div class="flex flex-col gap-3 px-2 py-4">
+    <div
+      class="flex flex-col gap-1 bg-white border border-gray-200 rounded-lg p-3"
+      data-cy="heat-description"
+    >
+      <h3 class="text-sm font-bold text-primary-900">{{ HeatModeToLabel[mapStore.heatMode] }}</h3>
+      <p class="text-sm text-gray-700">{{ HeatModeToDescription[mapStore.heatMode] }}</p>
+    </div>
     <div class="flex items-start gap-2.5 bg-primary-50 border border-primary-100 rounded-lg p-3">
       <IconInfo class="shrink-0 mt-0.5 text-primary-500" :size="16" aria-hidden="true" />
       <p class="text-sm text-primary-900">
-        Sélectionnez un raster ci-dessus pour le visualiser sur la carte.
+        Sélectionnez un raster ci-dessus pour le visualiser sur la carte. Pour l'indice PET, faites
+        varier l'heure de la journée avec le curseur.
       </p>
     </div>
     <div class="flex items-start gap-2.5 bg-gray-50 border border-gray-100 rounded-lg p-3">

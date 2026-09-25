@@ -13,8 +13,8 @@ const selectedDataType = computed({
 
 const options = [
   {
-    label: DataTypeToLabel[DataType.VEGESTRATE],
-    value: DataType.VEGESTRATE
+    label: DataTypeToLabel[DataType.HEAT],
+    value: DataType.HEAT
   }
 ]
 </script>

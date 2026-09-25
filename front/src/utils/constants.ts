@@ -16,7 +16,7 @@ export const DEFAULT_MAP_CENTER = {
 }
 
 export const DEFAULT_MAP_PARAMS: MapParams = {
-  dataType: DataType.VEGESTRATE,
+  dataType: DataType.HEAT,
   lng: DEFAULT_MAP_CENTER.lng,
   lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14
