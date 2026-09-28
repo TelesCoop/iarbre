@@ -10,6 +10,7 @@ import VegetationSurfaceWidget from "@/components/dashboard/widgets/VegetationSu
 import BuildingCharacteristicsWidget from "@/components/dashboard/widgets/BuildingCharacteristicsWidget.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 import DashboardFooter from "@/components/dashboard/DashboardFooter.vue"
+import IconMetropoleMap from "@/components/icons/IconMetropoleMap.vue"
 
 const props = defineProps<{ printMode?: boolean }>()
 
@@ -212,24 +213,28 @@ const riskInterpretation = computed(() => {
       <h2 class="text-xl font-bold text-gray-900">Synthèse du territoire</h2>
       <p class="text-sm italic text-gray-500">Les quatre indicateurs clés en une lecture.</p>
 
-      <div class="mt-8 grid grid-cols-4 gap-6">
-        <div
-          v-for="card in summaryCards"
-          :key="card.label"
-          class="flex flex-col gap-2 rounded-xl border border-gray-200 p-5"
-        >
-          <span class="text-[0.625rem] font-semibold uppercase tracking-widest text-primary-500">{{
-            card.label
-          }}</span>
-          <p class="text-4xl font-bold leading-none text-primary-600 tabular-nums">
-            {{ card.value
-            }}<span class="ml-0.5 text-base font-semibold text-primary-400">{{ card.unit }}</span>
-          </p>
-          <p class="text-xs leading-snug text-gray-500">{{ card.description }}</p>
+      <div class="mt-6 flex min-h-0 flex-1 gap-10">
+        <div class="grid flex-[3] grid-cols-2 gap-5">
+          <div
+            v-for="card in summaryCards"
+            :key="card.label"
+            class="flex flex-col gap-2 rounded-xl border border-gray-200 p-5"
+          >
+            <span
+              class="text-[0.625rem] font-semibold uppercase tracking-widest text-primary-500"
+              >{{ card.label }}</span
+            >
+            <p class="text-4xl font-bold leading-none text-primary-600 tabular-nums">
+              {{ card.value
+              }}<span class="ml-0.5 text-base font-semibold text-primary-400">{{ card.unit }}</span>
+            </p>
+            <p class="text-xs leading-snug text-gray-500">{{ card.description }}</p>
+          </div>
         </div>
+        <IconMetropoleMap class="h-full min-w-0 flex-[2] text-primary-300" />
       </div>
 
-      <div class="mt-auto grid grid-cols-2 gap-12 border-t border-gray-200 pt-8">
+      <div class="mt-8 grid grid-cols-2 gap-12 border-t border-gray-200 pt-8">
         <div>
           <h3 class="mb-3 text-sm font-bold text-gray-900">Ce que disent les données</h3>
           <p class="text-sm leading-relaxed text-gray-600">
