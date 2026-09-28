@@ -13,6 +13,11 @@ const experiments = [
     title: "Variations Vegestrate",
     description: "Les différentes pre-processing testés et les diachronies non publiées encore.",
     url: "https://feature-vegestrate-1-carte.iarbre.fr/"
+  },
+  {
+    title: "Modélisation du confort thermique à l'échelle de la rue",
+    description: "Les calques produits mais qui n'ont pas encore une belle interface.",
+    url: "https://feature-heat-1-carte.iarbre.fr/"
   }
 ]
 </script>
