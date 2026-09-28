@@ -95,7 +95,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
-  const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
+  const selectedMapStyle = ref<MapStyle>(MapStyle.ORTHOPHOTO)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
   const contextData = useContextData(selectedDataType)
@@ -254,7 +254,7 @@ export const useMapStore = defineStore("map", () => {
         source: sourceId,
         layout: {},
         paint: {
-          "raster-opacity": 0.7
+          "raster-opacity": 0.6
         }
       }
       return [rasterLayer]
@@ -1335,7 +1335,7 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = markRaw(
       new Map({
         container: mapId,
-        style: loadMapStyle(MapStyle.OSM),
+        style: loadMapStyle(MapStyle.ORTHOPHOTO),
         maxZoom: MAX_ZOOM,
         minZoom: MIN_ZOOM,
         attributionControl: false

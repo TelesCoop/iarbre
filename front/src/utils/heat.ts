@@ -22,7 +22,7 @@ export const HeatModeToDescription: Record<HeatMode, string> = {
 
 export const HEAT_HOURS = Array.from({ length: 15 }, (_, index) => index + 7)
 
-export const DEFAULT_HEAT_HOUR = 17
+export const DEFAULT_HEAT_HOUR = 18
 
 export function isHourlyMode(mode: HeatMode): boolean {
   return HeatModeToParams[mode].hourly
