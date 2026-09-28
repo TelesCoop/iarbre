@@ -1,3 +1,4 @@
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from django.conf import settings
@@ -15,7 +16,12 @@ def _render(token: str, frontend_url: str) -> bytes:
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(args=["--no-sandbox"])
         try:
-            page = browser.new_page()
+            page = browser.new_page(viewport={"width": 1123, "height": 794})
+            page.emulate_media(media="print")
+            page.route(
+                re.compile(r"/tarteaucitron/|analytics\.tlscp\.fr"),
+                lambda route: route.abort(),
+            )
             page.goto(url, wait_until="networkidle", timeout=timeout_ms)
             page.wait_for_function(
                 "() => window.__DASHBOARD_READY__ === true", timeout=timeout_ms
