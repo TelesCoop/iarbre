@@ -97,6 +97,7 @@ nav:
           - Clean MVT: api/clean_mvt.md
   - Frontend: front.md
   - Déploiement: deploy.md
+  - Maintien en conditions opérationnelles: mco.md
   - Documentation: docs.md
 
 theme:
