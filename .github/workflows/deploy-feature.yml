@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-open-pr:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       has_open_pr: ${{ steps.set_output.outputs.has_open_pr }}
       pr_number: ${{ steps.set_output.outputs.pr_number }}
@@ -30,7 +30,7 @@ jobs:
   deploy-feature:
     needs: check-open-pr
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && needs.check-open-pr.outputs.has_open_pr == 'true')
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Extract branch name

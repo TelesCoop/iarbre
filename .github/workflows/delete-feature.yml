@@ -7,7 +7,7 @@ on:
 
 jobs:
   cleanup-feature:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: github.event.pull_request.head.ref != 'dev' && github.event.pull_request.head.ref != 'main'
     steps:
       - uses: actions/checkout@v4
