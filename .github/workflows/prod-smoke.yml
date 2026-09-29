@@ -1,0 +1,47 @@
+name: Prod smoke tests
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_run:
+    workflows: ["Run deploy prod"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ./front/.nvmrc
+          cache: "npm"
+          cache-dependency-path: ./front/package-lock.json
+
+      - name: Run prod smoke tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          config-file: cypress.prod.config.ts
+          working-directory: ./front
+
+      - name: Upload cypress screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: prod-smoke-screenshots
+          path: front/cypress/screenshots
+          retention-days: 10
+
+      - name: Notify Slack
+        if: failure()
+        run: |
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\":red_circle: Prod smoke tests failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}"

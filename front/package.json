@@ -10,6 +10,7 @@
     "test": "vitest tests",
     "test:unit": "vitest",
     "test:cypress": "CYPRESS_COVERAGE=true NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress run'",
+    "test:prod": "cypress run --config-file cypress.prod.config.ts",
     "test:cypress:manually": "NODE_ENV=test start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open'",
     "build-only": "node scripts/sync-tarteaucitron.mjs && vite build",
     "type-check": "vue-tsc --build --force",
