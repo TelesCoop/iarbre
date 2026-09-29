@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { getFullBaseApiUrl } from "@/api"
+import { useMapStore } from "@/stores/map"
+import { HeatMode, HeatModeToLabel, buildHeatRasterUrl, formatHeatHour } from "@/utils/heat"
 import AccordionSection from "./apiDoc/AccordionSection.vue"
 import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
 import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
@@ -21,6 +23,7 @@ const wfsBase = `${origin}/api/wfs/`
 const wmsBase = `${origin}/api/wms/`
 
 const defaultTypename = "iarbre:plantability"
+const defaultWmsLayer = "iarbre:PET_index_h17"
 
 const wfsFullUrl = `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=${defaultTypename}&OUTPUTFORMAT=geojson`
 
@@ -56,7 +59,7 @@ interface RasterDataset {
   url: string
 }
 
-const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
+const mapStore = useMapStore()
 
 type DownloadStatus = "idle" | "loading" | "success" | "error"
 const downloadStatus = ref<Record<string, DownloadStatus>>({})
@@ -87,18 +90,25 @@ const downloadRaster = async (url: string) => {
   }, 2000)
 }
 
-const rasterDatasets: RasterDataset[] = [
-  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
-  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
-  { label: "Végéstrate", url: rasterUrl("vegestrate") },
-  { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
-  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
-  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
-  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
-  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz") }
-]
+const rasterDatasets = computed<RasterDataset[]>(() => {
+  const baseApiUrl = getFullBaseApiUrl()
+  return [
+    {
+      label: `${HeatModeToLabel[HeatMode.PET_INDEX]} (${formatHeatHour(mapStore.heatHour)})`,
+      url: buildHeatRasterUrl(baseApiUrl, HeatMode.PET_INDEX, mapStore.heatHour)
+    },
+    {
+      label: `${HeatModeToLabel[HeatMode.PET_INDEX]} (toutes les heures)`,
+      url: `${baseApiUrl}/rasters/pet_index/`
+    },
+    {
+      label: HeatModeToLabel[HeatMode.SUN_EXPOSURE],
+      url: buildHeatRasterUrl(baseApiUrl, HeatMode.SUN_EXPOSURE)
+    }
+  ]
+})
 
-const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultTypename}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
+const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultWmsLayer}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
 
 const wmsParams: RequestParam[] = [
   { key: "SERVICE", value: "WMS", desc: "Type de service", fixed: true },
@@ -111,7 +121,7 @@ const wmsParams: RequestParam[] = [
   },
   {
     key: "LAYERS",
-    value: defaultTypename,
+    value: defaultWmsLayer,
     desc: "Couche à afficher — voir GetLayers pour la liste complète"
   },
   {

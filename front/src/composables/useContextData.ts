@@ -4,7 +4,6 @@ import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
-import type { VegetationData } from "@/types/vegetation"
 import { getTileDetails } from "@/services/tileService"
 import { getBiosphereLandCoverAtPoint } from "@/services/biosphereService"
 import { DataType, DataTypeToGeolevel, GeoLevel } from "@/utils/enum"
@@ -15,7 +14,6 @@ type ContextData =
   | ClimateData
   | PlantabilityVulnerabilityData
   | BiosphereIntegrityData
-  | VegetationData
   | null
 
 type SetDataArgs = [

@@ -76,8 +76,6 @@ export function useMapFilters() {
           ["get", `mixed_indice_${vulnerabilityMode!.value}`],
           ["literal", mixedIndices]
         ]
-      } else if (dataType === DataType.VEGESTRATE) {
-        filter = ["in", ["get", "indice"], ["literal", filteredValues.value]]
       } else if (dataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
         const conditions = filteredValues.value.map((category) => {
           const [min, max] = BIOSPHERE_INTEGRITY_RANGES[category as BiosphereIntegrityLegendName]
