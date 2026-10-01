@@ -213,7 +213,7 @@ const { svgRef } = useD3Chart(
 }
 
 .bar-track {
-  @apply w-full h-6 bg-gray-100 rounded-md overflow-hidden;
+  @apply w-full h-6 print:h-4 bg-gray-100 rounded-md overflow-hidden;
 }
 
 .bar-fill {

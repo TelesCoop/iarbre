@@ -34,13 +34,13 @@ repos:
     rev: v3.2.0
   - hooks:
       - id: check-ast
-        language_version: python3.10
+        language_version: python3.12
       - id: check-builtin-literals
-        language_version: python3.10
+        language_version: python3.12
       - id: check-docstring-first
-        language_version: python3.10
+        language_version: python3.12
       - id: debug-statements
-        language_version: python3.10
+        language_version: python3.12
       - args:
           - --remove
         id: fix-encoding-pragma
@@ -53,16 +53,16 @@ repos:
     rev: v2.7.2
   - hooks:
       - id: black
-        language_version: python3.10
+        language_version: python3.12
     repo: https://github.com/psf/black
     rev: 23.12.1
   - hooks:
       - args:
           - --config=back/.flake8
         id: flake8
-        language_version: python3.10
+        language_version: python3.12
     repo: https://github.com/pycqa/flake8
-    rev: 3.8.3
+    rev: 7.4.1
   - hooks:
       - id: beautysh
     repo: https://github.com/bemeurer/beautysh.git

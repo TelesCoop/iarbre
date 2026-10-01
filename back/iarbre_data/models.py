@@ -273,6 +273,7 @@ class Vegestrate(models.Model):
         max_length=20, choices=StrateChoices.choices, null=True, blank=True
     )
     surface = models.FloatField(null=True)
+    mean_height = models.FloatField(null=True, blank=True)
 
     class Meta:
         indexes = [

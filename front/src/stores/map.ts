@@ -69,8 +69,28 @@ import {
   CADASTRE_DEFAULT_FILL_OPACITY,
   CITY_CASING_COLOR,
   CITY_CASING_WIDTH,
-  CITY_CASING_OPACITY
+  CITY_CASING_OPACITY,
+  PANORAMAX_SEQUENCE_COLOR,
+  PANORAMAX_SEQUENCE_OPACITY,
+  PANORAMAX_PICTURE_360_COLOR,
+  PANORAMAX_PICTURE_FLAT_COLOR,
+  PANORAMAX_PICTURE_STROKE_COLOR,
+  PANORAMAX_PICTURE_STROKE_WIDTH,
+  PANORAMAX_PICTURE_OPACITY,
+  PANORAMAX_SELECTED_PICTURE_COLOR,
+  PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH
 } from "@/utils/mapLayers"
+import { getPicture, type PanoramaxPicture } from "maplibre-gl-panoramax"
+import {
+  PANORAMAX_API,
+  PANORAMAX_SOURCE_ID,
+  PANORAMAX_SEQUENCES_LAYER,
+  PANORAMAX_PICTURES_LAYER,
+  PANORAMAX_SOURCE_MAX_ZOOM,
+  PANORAMAX_SEQUENCES_MIN_ZOOM,
+  PANORAMAX_PICTURES_MIN_ZOOM,
+  PANORAMAX_ACTIVATION_ZOOM
+} from "@/utils/panoramax"
 import { useContextData } from "@/composables/useContextData"
 import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
 import { addCenterControl, add3DControl } from "@/utils/mapControls"
@@ -106,6 +126,8 @@ export const useMapStore = defineStore("map", () => {
     numero: string
     surface: number | null
   } | null>(null)
+  const showPanoramaxLayer = ref<boolean>(false)
+  const selectedPanoramaxPicture = ref<PanoramaxPicture | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const shapeEditing = ref<boolean>(false)
   const liveArea = ref<number | null>(null)
@@ -691,6 +713,9 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
       }
+      if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
+        removePanoramaxLayer(mapInstance)
+      }
       if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
         removeClickMarker(mapInstance)
       }
@@ -717,6 +742,9 @@ export const useMapStore = defineStore("map", () => {
       }
       if (showCadastreLayer.value) {
         addCadastreLayer(mapInstance)
+      }
+      if (showPanoramaxLayer.value) {
+        addPanoramaxLayer(mapInstance)
       }
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
@@ -781,6 +809,9 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer("cadastre-fill")) {
         removeCadastreLayer(mapInstance)
       }
+      if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
+        removePanoramaxLayer(mapInstance)
+      }
       const newStyle = loadMapStyle(mapstyle)
 
       if (newStyle) {
@@ -795,6 +826,9 @@ export const useMapStore = defineStore("map", () => {
           }
           if (showCadastreLayer.value) {
             addCadastreLayer(mapInstance)
+          }
+          if (showPanoramaxLayer.value) {
+            addPanoramaxLayer(mapInstance)
           }
           mapInstance.fire("moveend")
         }
@@ -967,13 +1001,39 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const cadastreClickHandlers = ref<Record<string, (e: any) => void>>({})
-  const cadastreMouseEnterHandlers = ref<Record<string, () => void>>({})
-  const cadastreMouseLeaveHandlers = ref<Record<string, () => void>>({})
+  type LayerInteractions = Record<string, (e: any) => void>
+
+  const layerInteractions = ref<Record<string, LayerInteractions>>({})
+
+  const interactionKey = (mapInstance: Map, layerId: string) =>
+    `${getMapId(mapInstance)}:${layerId}`
+
+  const unregisterLayerInteractions = (mapInstance: Map, layerId: string) => {
+    const key = interactionKey(mapInstance, layerId)
+    const handlers = layerInteractions.value[key]
+    if (!handlers) return
+
+    for (const [eventType, handler] of Object.entries(handlers)) {
+      mapInstance.off(eventType as any, layerId, handler)
+    }
+    delete layerInteractions.value[key]
+  }
+
+  const registerLayerInteractions = (
+    mapInstance: Map,
+    layerId: string,
+    handlers: LayerInteractions
+  ) => {
+    unregisterLayerInteractions(mapInstance, layerId)
+
+    for (const [eventType, handler] of Object.entries(handlers)) {
+      mapInstance.on(eventType as any, layerId, handler)
+    }
+    layerInteractions.value[interactionKey(mapInstance, layerId)] = handlers
+  }
 
   const addCadastreLayer = (mapInstance: Map) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
-    const mapId = getMapId(mapInstance)
 
     if (!mapInstance.getSource("cadastre-source")) {
       mapInstance.addSource("cadastre-source", {
@@ -1064,13 +1124,11 @@ export const useMapStore = defineStore("map", () => {
       mapInstance.getCanvas().style.cursor = ""
     }
 
-    mapInstance.on("click", "cadastre-fill", clickHandler)
-    mapInstance.on("mouseenter", "cadastre-fill", mouseEnterHandler)
-    mapInstance.on("mouseleave", "cadastre-fill", mouseLeaveHandler)
-
-    cadastreClickHandlers.value[mapId] = clickHandler
-    cadastreMouseEnterHandlers.value[mapId] = mouseEnterHandler
-    cadastreMouseLeaveHandlers.value[mapId] = mouseLeaveHandler
+    registerLayerInteractions(mapInstance, "cadastre-fill", {
+      click: clickHandler,
+      mouseenter: mouseEnterHandler,
+      mouseleave: mouseLeaveHandler
+    })
 
     mapInstance.once("render", () => {
       console.info("cypress: cadastre data loaded")
@@ -1091,22 +1149,9 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const removeCadastreLayer = (mapInstance: Map) => {
-    const mapId = getMapId(mapInstance)
-
     selectedCadastreParcel.value = null
 
-    if (cadastreClickHandlers.value[mapId]) {
-      mapInstance.off("click", "cadastre-fill", cadastreClickHandlers.value[mapId])
-      delete cadastreClickHandlers.value[mapId]
-    }
-    if (cadastreMouseEnterHandlers.value[mapId]) {
-      mapInstance.off("mouseenter", "cadastre-fill", cadastreMouseEnterHandlers.value[mapId])
-      delete cadastreMouseEnterHandlers.value[mapId]
-    }
-    if (cadastreMouseLeaveHandlers.value[mapId]) {
-      mapInstance.off("mouseleave", "cadastre-fill", cadastreMouseLeaveHandlers.value[mapId])
-      delete cadastreMouseLeaveHandlers.value[mapId]
-    }
+    unregisterLayerInteractions(mapInstance, "cadastre-fill")
 
     if (mapInstance.getLayer("cadastre-fill")) {
       mapInstance.removeLayer("cadastre-fill")
@@ -1133,6 +1178,192 @@ export const useMapStore = defineStore("map", () => {
         addCadastreLayer(mapInstance)
       } else {
         removeCadastreLayer(mapInstance)
+      }
+    }
+  }
+
+  let pendingPanoramaxPictureId: string | null = null
+
+  const highlightPanoramaxPicture = (mapInstance: Map, pictureId: string | null) => {
+    if (!mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) return
+
+    const baseColor: DataDrivenPropertyValueSpecification<string> = [
+      "case",
+      ["==", ["get", "type"], "equirectangular"],
+      PANORAMAX_PICTURE_360_COLOR,
+      PANORAMAX_PICTURE_FLAT_COLOR
+    ]
+
+    mapInstance.setPaintProperty(
+      PANORAMAX_PICTURES_LAYER,
+      "circle-color",
+      pictureId
+        ? ([
+            "match",
+            ["get", "id"],
+            pictureId,
+            PANORAMAX_SELECTED_PICTURE_COLOR,
+            baseColor
+          ] as DataDrivenPropertyValueSpecification<string>)
+        : baseColor
+    )
+    mapInstance.setPaintProperty(
+      PANORAMAX_PICTURES_LAYER,
+      "circle-stroke-width",
+      pictureId
+        ? ([
+            "match",
+            ["get", "id"],
+            pictureId,
+            PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH,
+            PANORAMAX_PICTURE_STROKE_WIDTH
+          ] as DataDrivenPropertyValueSpecification<number>)
+        : PANORAMAX_PICTURE_STROKE_WIDTH
+    )
+  }
+
+  const addPanoramaxLayer = (mapInstance: Map) => {
+    if (!mapInstance.getSource(PANORAMAX_SOURCE_ID)) {
+      mapInstance.addSource(PANORAMAX_SOURCE_ID, {
+        type: "vector",
+        tiles: [`${PANORAMAX_API}/map/{z}/{x}/{y}.mvt`],
+        minzoom: PANORAMAX_SEQUENCES_MIN_ZOOM,
+        maxzoom: PANORAMAX_SOURCE_MAX_ZOOM
+      })
+    }
+
+    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
+      ? TERRA_DRAW_POLYGON_LAYER
+      : undefined
+
+    if (!mapInstance.getLayer(PANORAMAX_SEQUENCES_LAYER)) {
+      mapInstance.addLayer(
+        {
+          id: PANORAMAX_SEQUENCES_LAYER,
+          type: "line",
+          source: PANORAMAX_SOURCE_ID,
+          "source-layer": "sequences",
+          minzoom: PANORAMAX_SEQUENCES_MIN_ZOOM,
+          paint: {
+            "line-color": PANORAMAX_SEQUENCE_COLOR,
+            "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1, 16, 3],
+            "line-opacity": PANORAMAX_SEQUENCE_OPACITY
+          }
+        },
+        beforeId
+      )
+    }
+
+    if (!mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
+      mapInstance.addLayer(
+        {
+          id: PANORAMAX_PICTURES_LAYER,
+          type: "circle",
+          source: PANORAMAX_SOURCE_ID,
+          "source-layer": "pictures",
+          minzoom: PANORAMAX_PICTURES_MIN_ZOOM,
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 17, 4, 22, 8],
+            "circle-color": [
+              "case",
+              ["==", ["get", "type"], "equirectangular"],
+              PANORAMAX_PICTURE_360_COLOR,
+              PANORAMAX_PICTURE_FLAT_COLOR
+            ],
+            "circle-stroke-color": PANORAMAX_PICTURE_STROKE_COLOR,
+            "circle-stroke-width": PANORAMAX_PICTURE_STROKE_WIDTH,
+            "circle-opacity": PANORAMAX_PICTURE_OPACITY
+          }
+        },
+        beforeId
+      )
+    }
+
+    highlightPanoramaxPicture(mapInstance, selectedPanoramaxPicture.value?.id ?? null)
+
+    const clickHandler = async (e: any) => {
+      if (!e.features || e.features.length === 0) return
+
+      const pictureId = e.features[0].properties.id
+      if (!pictureId) return
+
+      pendingPanoramaxPictureId = pictureId
+      highlightPanoramaxPicture(mapInstance, pictureId)
+
+      try {
+        const picture = await getPicture(pictureId, PANORAMAX_API)
+        if (pendingPanoramaxPictureId !== pictureId) return
+        selectedPanoramaxPicture.value = picture
+      } catch (error) {
+        if (pendingPanoramaxPictureId !== pictureId) return
+        console.error("Panoramax: could not load picture", pictureId, error)
+        selectedPanoramaxPicture.value = null
+        highlightPanoramaxPicture(mapInstance, null)
+      }
+    }
+
+    const mouseEnterHandler = () => {
+      mapInstance.getCanvas().style.cursor = "pointer"
+    }
+    const mouseLeaveHandler = () => {
+      mapInstance.getCanvas().style.cursor = ""
+    }
+
+    registerLayerInteractions(mapInstance, PANORAMAX_PICTURES_LAYER, {
+      click: clickHandler,
+      mouseenter: mouseEnterHandler,
+      mouseleave: mouseLeaveHandler
+    })
+
+    mapInstance.once("render", () => {
+      console.info("cypress: panoramax data loaded")
+    })
+  }
+
+  const clearPanoramaxSelection = () => {
+    pendingPanoramaxPictureId = null
+    selectedPanoramaxPicture.value = null
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      highlightPanoramaxPicture(mapInstancesByIds.value[mapId], null)
+    }
+  }
+
+  const removePanoramaxLayer = (mapInstance: Map) => {
+    unregisterLayerInteractions(mapInstance, PANORAMAX_PICTURES_LAYER)
+
+    mapInstance.getCanvas().style.cursor = ""
+
+    if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
+      mapInstance.removeLayer(PANORAMAX_PICTURES_LAYER)
+    }
+    if (mapInstance.getLayer(PANORAMAX_SEQUENCES_LAYER)) {
+      mapInstance.removeLayer(PANORAMAX_SEQUENCES_LAYER)
+    }
+    if (mapInstance.getSource(PANORAMAX_SOURCE_ID)) {
+      mapInstance.removeSource(PANORAMAX_SOURCE_ID)
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: panoramax data removed")
+    })
+  }
+
+  const togglePanoramaxLayer = () => {
+    showPanoramaxLayer.value = !showPanoramaxLayer.value
+
+    if (!showPanoramaxLayer.value) clearPanoramaxSelection()
+
+    for (const mapId of Object.keys(mapInstancesByIds.value)) {
+      const mapInstance = mapInstancesByIds.value[mapId]
+
+      if (showPanoramaxLayer.value) {
+        addPanoramaxLayer(mapInstance)
+        if (mapInstance.getZoom() < PANORAMAX_ACTIVATION_ZOOM) {
+          mapInstance.easeTo({ zoom: PANORAMAX_ACTIVATION_ZOOM, duration: 600 })
+        }
+      } else {
+        removePanoramaxLayer(mapInstance)
       }
     }
   }
@@ -1321,6 +1552,14 @@ export const useMapStore = defineStore("map", () => {
     const ring = shapeDrawing.getCurrentShapeCoordinates()
     if (!map || !ring) return
 
+    if (
+      map.getLayer(PANORAMAX_PICTURES_LAYER) &&
+      map.queryRenderedFeatures([e.point.x, e.point.y], { layers: [PANORAMAX_PICTURES_LAYER] })
+        .length > 0
+    ) {
+      return
+    }
+
     const screen = ring.map((coord) => map.project(coord as [number, number]))
     const xs = screen.map((p) => p.x)
     const ys = screen.map((p) => p.y)
@@ -1438,6 +1677,10 @@ export const useMapStore = defineStore("map", () => {
     toggleCadastreLayer,
     selectedCadastreParcel,
     clearCadastreSelection,
+    showPanoramaxLayer,
+    togglePanoramaxLayer,
+    selectedPanoramaxPicture,
+    clearPanoramaxSelection,
     use3D,
     toggle3D,
     zoomTo,

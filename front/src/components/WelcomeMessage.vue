@@ -4,6 +4,8 @@ import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { useTutorial } from "@/composables/useTutorial"
 import { useAppStore } from "@/stores/app"
 import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
+import IconExperiment from "@/components/icons/IconExperiment.vue"
+import ExperimentsMessage from "@/components/ExperimentsMessage.vue"
 
 interface welcomeProps {
   modelValue?: boolean
@@ -55,7 +57,13 @@ const startTutorialAndClose = (tutorialFn: () => void) => {
   setTimeout(tutorialFn, 300)
 }
 
+const experimentsVisible = ref(false)
+
 const startTutorial = () => startTutorialAndClose(tutorial.startFullTutorial)
+const openExperiments = () => {
+  closeWelcome()
+  experimentsVisible.value = true
+}
 const openFeedback = () => {
   closeWelcome()
   appStore.feedbackVisible = true
@@ -149,6 +157,20 @@ const openFeedback = () => {
           </div>
         </a>
 
+        <button
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+          data-cy="welcome-experiments"
+          @click="openExperiments"
+        >
+          <span class="welcome-icon"><IconExperiment :size="20" /></span>
+          <div>
+            <h4 class="font-medium">Expérimentations</h4>
+            <p class="text-sm">
+              Vous trouverez ici des liens vers les expérimentations en cours de test
+            </p>
+          </div>
+        </button>
+
         <a
           href="/mentions-legales"
           target="_blank"
@@ -170,6 +192,8 @@ const openFeedback = () => {
       <AppButton data-cy="welcome-click" full-width @click="closeWelcome"> Compris ! </AppButton>
     </template>
   </AppDialog>
+
+  <ExperimentsMessage v-model="experimentsVisible" />
 </template>
 
 <style scoped>

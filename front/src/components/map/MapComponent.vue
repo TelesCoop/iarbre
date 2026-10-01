@@ -93,6 +93,10 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapCadastreParcelInfo />
   </div>
 
+  <div class="panoramax-viewer-container">
+    <MapPanoramaxViewer />
+  </div>
+
   <div
     :class="['bottom-left-controls', { 'sidepanel-visible': isSidePanelVisible }]"
     data-cy="bottom-left-controls"
@@ -115,6 +119,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       <MapResolution />
       <MapCoordinates />
     </div>
+    <MapPanoramaxCredit />
     <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
@@ -193,6 +198,18 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   .cadastre-info-container.sidepanel-visible {
     left: calc(50% + var(--width-sidepanel) / 2);
   }
+}
+
+.panoramax-viewer-container {
+  @apply absolute pointer-events-none;
+  @apply transition-all duration-300 ease-out;
+  z-index: var(--z-map-floating);
+  top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
+  right: var(--map-edge-gap);
+}
+
+.panoramax-viewer-container > * {
+  @apply pointer-events-auto;
 }
 
 .bottom-left-controls {

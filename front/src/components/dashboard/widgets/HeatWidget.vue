@@ -368,12 +368,12 @@ const { svgRef: nightSvgRef } = useD3Chart(
 }
 
 .spiders-col {
-  @apply flex flex-row gap-2 items-start;
+  @apply flex flex-row gap-2 items-start print:flex-col print:items-center print:gap-6;
   flex: 2;
 }
 
 .spider-block {
-  @apply flex-1 flex flex-col items-center gap-1;
+  @apply flex-1 flex flex-col items-center gap-1 print:flex-none;
 }
 
 .spider-mode-label {
@@ -381,6 +381,6 @@ const { svgRef: nightSvgRef } = useD3Chart(
 }
 
 .spider-wrapper {
-  @apply relative flex items-center justify-center w-full aspect-square;
+  @apply relative flex items-center justify-center w-full aspect-square print:w-[190px];
 }
 </style>
