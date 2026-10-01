@@ -1,5 +1,31 @@
 # Journal des changements
 
+## 🔖 0.39.0 (2026-10-01) : Dashboard export et Panoramax
+
+### ✨ feat : Ajout de Panoramax sur la carte
+
+Il est maintenant possible d'avoir une vue rue, à l'aide d'image Panoramax
+
+&rarr; PR [#761](https://github.com/TelesCoop/iarbre/pull/761)
+
+### 🛠️ enhance : Des améliorations de la mise en page de l'export dashboard
+
+L'export est maintenant mieux éditorialisé avec l'ajout notamment de pictos.
+
+&rarr; PR [#766](https://github.com/TelesCoop/iarbre/pull/766)
+&rarr; PR [#767](https://github.com/TelesCoop/iarbre/pull/767)
+
+### 🧹 chore: Passage de la CI sur Python 3.12 et Ubuntu 24.04 en prévision de la MAJ serveur
+
+&rarr; Commit [dbc5bb9](https://github.com/TelesCoop/iarbre/commit/dbc5bb924d219c7e7043464c587bc8a4cb58ef00)
+
+### 🛠️ enhance : Lien vers les expérimentations
+
+Ajout d'un emplacement pour des liens vers les expérimentations en cours dont celles sur les données liées au confort thermique à l'échelle de la rue.
+
+&rarr; PR [#759](https://github.com/TelesCoop/iarbre/pull/759)
+&rarr; Commit [7b3c2f5](https://github.com/TelesCoop/iarbre/commit/7b3c2f5f872e61e0ee43c4efb3c2e21f6b569efc)
+
 ## 🔖 0.38.0 (2026-09-09) : Matomo et résolutions de bugs
 
 ### ✨ feat : Matomo
