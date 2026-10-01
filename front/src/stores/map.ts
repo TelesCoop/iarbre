@@ -817,7 +817,6 @@ export const useMapStore = defineStore("map", () => {
       if (!data) {
         return
       }
-      // The layer may have been toggled off, or loaded by an overlapping call, meanwhile.
       if (!showQPVLayer.value) {
         return
       }
@@ -903,7 +902,6 @@ export const useMapStore = defineStore("map", () => {
     if (!mapInstance.getSource("city-boundary-source")) {
       const cityData = await getCityBoundaries()
       if (!cityData) return
-      // The layer may have been toggled off, or loaded by an overlapping call, meanwhile.
       if (!showBoundaryLayer.value) return
       if (!mapInstance.getSource("city-boundary-source")) {
         mapInstance.addSource("city-boundary-source", {

@@ -1,7 +1,3 @@
-/**
- * Serialization of the map display (filters, basemap, overlay layers) in the URL query,
- * so that a copied link restores the exact view.
- */
 import type { LocationQuery, LocationQueryRaw } from "vue-router"
 import type { MapDisplayState } from "@/types/map"
 import { DEFAULT_MAP_STYLE } from "@/utils/constants"
@@ -30,10 +26,6 @@ const isSelectableMapStyle = (value: string): value is MapStyle =>
 const isOverlayLayer = (value: string): value is OverlayLayer =>
   Object.values<string>(OverlayLayer).includes(value)
 
-/**
- * Reads the map display from a URL query. Unknown basemaps, unknown overlay layers and
- * malformed numeric filters are ignored, since the URL can be hand-edited.
- */
 export const parseMapDisplayState = (
   query: LocationQuery,
   dataType: DataType | null
@@ -43,7 +35,6 @@ export const parseMapDisplayState = (
   overlayLayers: readQueryValues(query.layers).filter(isOverlayLayer)
 })
 
-/** Builds the URL query of a map display, leaving default values out. */
 export const buildMapDisplayQuery = (state: MapDisplayState): LocationQueryRaw => {
   const query: LocationQueryRaw = {}
 
