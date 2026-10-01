@@ -2,10 +2,11 @@
 import MapComponent from "@/components/map/MapComponent.vue"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import { useRouter, useRoute } from "vue-router"
-import { ref, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import type { MapParams } from "@/types/map"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
+import { buildMapDisplayQuery, parseMapDisplayState } from "@/utils/mapUrlState"
 import { useMapStore } from "@/stores/map"
 
 const router = useRouter()
@@ -24,43 +25,32 @@ if (route.name === "mapWithUrlParams") {
   }
 }
 
-const parseFilters = (
-  raw: string | string[] | undefined,
-  dataType: DataType | null
-): (number | string)[] => {
-  const rawValue = Array.isArray(raw) ? raw.join(",") : raw
-  if (!rawValue) return []
-  return rawValue
-    .split(",")
-    .map((value) => (dataType === DataType.PLANTABILITY ? Number(value) : value))
-}
-
-const initialFilters = parseFilters(
-  route.query.filters as string | string[] | undefined,
-  mapParams.value.dataType
-)
+const initialDisplayState = parseMapDisplayState(route.query, mapParams.value.dataType)
 
 const lastKnownParams = ref<MapParams>({ ...mapParams.value })
 
-const buildFiltersQuery = () => {
-  const values = mapStore.filteredValues
-  return values.length > 0 ? { filters: values.map(String).join(",") } : {}
+const displayQuery = computed(() =>
+  buildMapDisplayQuery({
+    filters: mapStore.filteredValues,
+    mapStyle: mapStore.selectedMapStyle,
+    overlayLayers: mapStore.visibleOverlayLayers
+  })
+)
+
+const replaceUrl = () => {
+  router.replace({
+    name: "mapWithUrlParams",
+    params: {
+      ...lastKnownParams.value,
+      lat: lastKnownParams.value.lat.toFixed(5),
+      lng: lastKnownParams.value.lng.toFixed(5)
+    } as any,
+    query: displayQuery.value
+  })
 }
 
 const handleMapUpdate = (params: MapParams) => {
   lastKnownParams.value = params
-
-  const replaceUrl = () => {
-    router.replace({
-      name: "mapWithUrlParams",
-      params: {
-        ...params,
-        lat: params.lat.toFixed(5),
-        lng: params.lng.toFixed(5)
-      } as any,
-      query: buildFiltersQuery()
-    })
-  }
 
   if (hasAlreadyChanged.value) {
     replaceUrl()
@@ -77,21 +67,13 @@ const handleMapUpdate = (params: MapParams) => {
   }
 }
 
+// Compared by value: restoring an identical display must leave the URL untouched.
 watch(
-  () => mapStore.filteredValues,
+  () => JSON.stringify(displayQuery.value),
   () => {
     hasAlreadyChanged.value = true
-    router.replace({
-      name: "mapWithUrlParams",
-      params: {
-        ...lastKnownParams.value,
-        lat: lastKnownParams.value.lat.toFixed(5),
-        lng: lastKnownParams.value.lng.toFixed(5)
-      } as any,
-      query: buildFiltersQuery()
-    })
-  },
-  { deep: true }
+    replaceUrl()
+  }
 )
 </script>
 
@@ -102,7 +84,7 @@ watch(
     <div class="map-container max-w-screen overflow-hidden relative">
       <MapComponent
         :model-value="mapParams"
-        :initial-filters="initialFilters"
+        :initial-display-state="initialDisplayState"
         map-id="default"
         @update:model-value="handleMapUpdate"
       />

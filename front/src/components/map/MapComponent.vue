@@ -2,7 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
 import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
-import { type MapParams } from "@/types/map"
+import { type MapDisplayState, type MapParams } from "@/types/map"
 import ZoneDashboardCard from "@/components/map/ZoneDashboardCard.vue"
 
 const props = defineProps({
@@ -10,10 +10,9 @@ const props = defineProps({
     required: true,
     type: String
   },
-  initialFilters: {
-    required: false,
-    type: Array as PropType<(number | string)[]>,
-    default: () => []
+  initialDisplayState: {
+    required: true,
+    type: Object as PropType<MapDisplayState>
   }
 })
 
@@ -40,7 +39,7 @@ const setTopRightSize = (el: HTMLElement | null) => {
 let topRightObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType!, props.initialFilters)
+  mapStore.initMap(props.mapId, model.value.dataType!, props.initialDisplayState)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({

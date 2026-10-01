@@ -3,12 +3,14 @@ import { computed } from "vue"
 import { RouterLink } from "vue-router"
 import AppSelect from "@/components/shared/AppSelect.vue"
 import AppBadge from "@/components/shared/AppBadge.vue"
+import { useMapRoute } from "@/composables/useMapRoute"
 import { useDashboardStore } from "@/stores/dashboard"
 import type { DashboardScale } from "@/types/dashboard"
 
 const props = defineProps<{ printMode?: boolean }>()
 
 const store = useDashboardStore()
+const mapRoute = useMapRoute()
 
 const COVER_SECTIONS = [
   {
@@ -113,7 +115,7 @@ const currentLabel = computed(() => {
           <AppBadge variant="secondary">{{ areaDisplay }}</AppBadge>
         </div>
       </div>
-      <RouterLink :to="{ name: 'map' }" class="back-to-map">
+      <RouterLink :to="mapRoute" class="back-to-map">
         <svg
           fill="none"
           height="16"
