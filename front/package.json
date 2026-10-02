@@ -54,7 +54,7 @@
     "babel-plugin-istanbul": "^7.0.0",
     "cypress": "^15.18.0",
     "eslint": "^8.43.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-cypress": "^3.3.0",
     "eslint-plugin-eslint-plugin": "^6.3.2",
     "eslint-plugin-prettier": "^5.2.1",
