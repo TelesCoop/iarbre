@@ -47,6 +47,15 @@ server {
         return 444;
     }
 
+    error_page 503 @maintenance;
+    if (-f {{ project_dir }}/maintenance.on) {
+        return 503;
+    }
+    location @maintenance {
+        root {{ project_dir }};
+        rewrite ^ /maintenance.html break;
+    }
+
     # gzip compression
     gzip on;
     gzip_vary on;
