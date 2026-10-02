@@ -7,6 +7,7 @@ import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import IconChevron from "@/components/icons/IconChevron.vue"
 import type { Feedback } from "@/types/map"
 import { useToast } from "@/composables/useToast"
+import { useMapRoute } from "@/composables/useMapRoute"
 import { useAppStore } from "@/stores/app"
 
 const router = useRouter()
@@ -14,6 +15,7 @@ const route = useRoute()
 const appStore = useAppStore()
 const welcomeIsVisible = ref(false)
 const toast = useToast()
+const mapRoute = useMapRoute()
 
 const isDashboard = computed(() => route.name === "dashboard")
 
@@ -30,7 +32,7 @@ const handleGithubClick = () => {
 }
 
 const handleMapClick = () => {
-  router.push({ name: "map" })
+  router.push(mapRoute.value)
 }
 
 const handleDashboardClick = () => {

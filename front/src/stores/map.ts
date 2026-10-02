@@ -1,4 +1,4 @@
-import { computed, markRaw, ref } from "vue"
+import { computed, markRaw, ref, type Ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
@@ -15,10 +15,18 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_STYLE,
   TERRA_DRAW_POLYGON_LAYER,
   MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
-import { GeoLevel, DataType, MapStyle, SelectionMode, DataTypeToGeolevel } from "@/utils/enum"
+import {
+  GeoLevel,
+  DataType,
+  MapStyle,
+  OverlayLayer,
+  SelectionMode,
+  DataTypeToGeolevel
+} from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
 import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
@@ -97,6 +105,7 @@ import { addCenterControl, add3DControl } from "@/utils/mapControls"
 import { useShapeDrawing } from "@/composables/useTerraDraw"
 import { computePolygonAreaM2 } from "@/utils/geo"
 import type { ZonePolygon } from "@/stores/zone"
+import type { MapDisplayState } from "@/types/map"
 
 const isHeightRange = (range: unknown): range is HeightRange => {
   if (typeof range !== "object" || range === null) return false
@@ -113,7 +122,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
   const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
-  const selectedMapStyle = ref<MapStyle>(MapStyle.OSM)
+  const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
   const contextData = useContextData(selectedDataType)
@@ -704,18 +713,7 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       // Clear overlay layers before removing sources
-      if (mapInstance.getLayer("qpv-border")) {
-        removeQPVLayer(mapInstance)
-      }
-      if (mapInstance.getLayer("city-boundary")) {
-        removeBoundaryLayers(mapInstance)
-      }
-      if (mapInstance.getLayer("cadastre-fill")) {
-        removeCadastreLayer(mapInstance)
-      }
-      if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
-        removePanoramaxLayer(mapInstance)
-      }
+      removeOverlayLayers(mapInstance)
       if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
         removeClickMarker(mapInstance)
       }
@@ -734,18 +732,7 @@ export const useMapStore = defineStore("map", () => {
       }
       removeControls(mapInstance)
       initTiles(mapInstance)
-      if (showQPVLayer.value) {
-        addQPVLayer(mapInstance)
-      }
-      if (showBoundaryLayer.value) {
-        addBoundaryLayers(mapInstance)
-      }
-      if (showCadastreLayer.value) {
-        addCadastreLayer(mapInstance)
-      }
-      if (showPanoramaxLayer.value) {
-        addPanoramaxLayer(mapInstance)
-      }
+      addVisibleOverlayLayers(mapInstance)
       setupControls(mapInstance)
       // MapComponent is listening to moveend event
       mapInstance.fire("moveend")
@@ -800,36 +787,14 @@ export const useMapStore = defineStore("map", () => {
       const mapInstance = mapInstancesByIds.value[mapId]
       removeControls(mapInstance)
       // Clear overlay layers before style change
-      if (mapInstance.getLayer("qpv-border")) {
-        removeQPVLayer(mapInstance)
-      }
-      if (mapInstance.getLayer("city-boundary")) {
-        removeBoundaryLayers(mapInstance)
-      }
-      if (mapInstance.getLayer("cadastre-fill")) {
-        removeCadastreLayer(mapInstance)
-      }
-      if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
-        removePanoramaxLayer(mapInstance)
-      }
+      removeOverlayLayers(mapInstance)
       const newStyle = loadMapStyle(mapstyle)
 
       if (newStyle) {
         const onStyleReady = () => {
           initTiles(mapInstance)
           setupControls(mapInstance)
-          if (showQPVLayer.value) {
-            addQPVLayer(mapInstance)
-          }
-          if (showBoundaryLayer.value) {
-            addBoundaryLayers(mapInstance)
-          }
-          if (showCadastreLayer.value) {
-            addCadastreLayer(mapInstance)
-          }
-          if (showPanoramaxLayer.value) {
-            addPanoramaxLayer(mapInstance)
-          }
+          addVisibleOverlayLayers(mapInstance)
           mapInstance.fire("moveend")
         }
 
@@ -852,11 +817,15 @@ export const useMapStore = defineStore("map", () => {
       if (!data) {
         return
       }
-
-      mapInstance.addSource("qpv-source", {
-        type: "geojson",
-        data: data
-      })
+      if (!showQPVLayer.value) {
+        return
+      }
+      if (!mapInstance.getSource("qpv-source")) {
+        mapInstance.addSource("qpv-source", {
+          type: "geojson",
+          data: data
+        })
+      }
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
@@ -933,11 +902,13 @@ export const useMapStore = defineStore("map", () => {
     if (!mapInstance.getSource("city-boundary-source")) {
       const cityData = await getCityBoundaries()
       if (!cityData) return
-
-      mapInstance.addSource("city-boundary-source", {
-        type: "geojson",
-        data: cityData
-      })
+      if (!showBoundaryLayer.value) return
+      if (!mapInstance.getSource("city-boundary-source")) {
+        mapInstance.addSource("city-boundary-source", {
+          type: "geojson",
+          data: cityData
+        })
+      }
     }
 
     const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
@@ -1368,15 +1339,75 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  interface OverlayLayerHandlers {
+    isVisible: Ref<boolean>
+    /** Layer whose presence on the map tells that the overlay is displayed. */
+    layerId: string
+    add: (mapInstance: Map) => void
+    remove: (mapInstance: Map) => void
+  }
+
+  const overlayLayerHandlers: Record<OverlayLayer, OverlayLayerHandlers> = {
+    [OverlayLayer.QPV]: {
+      isVisible: showQPVLayer,
+      layerId: "qpv-border",
+      add: addQPVLayer,
+      remove: removeQPVLayer
+    },
+    [OverlayLayer.CADASTRE]: {
+      isVisible: showCadastreLayer,
+      layerId: "cadastre-fill",
+      add: addCadastreLayer,
+      remove: removeCadastreLayer
+    },
+    [OverlayLayer.BOUNDARY]: {
+      isVisible: showBoundaryLayer,
+      layerId: "city-boundary",
+      add: addBoundaryLayers,
+      remove: removeBoundaryLayers
+    },
+    [OverlayLayer.PANORAMAX]: {
+      isVisible: showPanoramaxLayer,
+      layerId: PANORAMAX_PICTURES_LAYER,
+      add: addPanoramaxLayer,
+      remove: removePanoramaxLayer
+    }
+  }
+
+  const visibleOverlayLayers = computed(() =>
+    Object.values(OverlayLayer).filter((layer) => overlayLayerHandlers[layer].isVisible.value)
+  )
+
+  const addVisibleOverlayLayers = (mapInstance: Map) => {
+    Object.values(overlayLayerHandlers).forEach(({ isVisible, add }) => {
+      if (isVisible.value) {
+        add(mapInstance)
+      }
+    })
+  }
+
+  const removeOverlayLayers = (mapInstance: Map) => {
+    Object.values(overlayLayerHandlers).forEach(({ layerId, remove }) => {
+      if (mapInstance.getLayer(layerId)) {
+        remove(mapInstance)
+      }
+    })
+  }
+
   const initMap = (
     mapId: string,
     initialDatatype: DataType,
-    initialFilters: (number | string)[] = []
+    initialDisplayState: MapDisplayState
   ) => {
+    const { filters: initialFilters, mapStyle, overlayLayers } = initialDisplayState
     selectedDataType.value = initialDatatype
-    if (initialFilters.length > 0) {
-      setFilteredValues(initialFilters)
-    }
+    selectedMapStyle.value = mapStyle
+    Object.values(OverlayLayer).forEach((layer) => {
+      overlayLayerHandlers[layer].isVisible.value = overlayLayers.includes(layer)
+    })
+    setFilteredValues(initialFilters)
+    clearCadastreSelection()
+    clearPanoramaxSelection()
     controlsAdded.value[mapId] = false
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
@@ -1385,7 +1416,7 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = markRaw(
       new Map({
         container: mapId,
-        style: loadMapStyle(MapStyle.OSM),
+        style: loadMapStyle(mapStyle),
         maxZoom: MAX_ZOOM,
         minZoom: MIN_ZOOM,
         attributionControl: false
@@ -1400,6 +1431,7 @@ export const useMapStore = defineStore("map", () => {
       if (initialFilters.length > 0) {
         applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
       }
+      addVisibleOverlayLayers(mapInstance)
       shapeDrawing.initDraw(mapInstance)
       shapeDrawing.onShapeFinished(() => {
         markShapeFinished()
@@ -1679,6 +1711,7 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     showPanoramaxLayer,
     togglePanoramaxLayer,
+    visibleOverlayLayers,
     selectedPanoramaxPicture,
     clearPanoramaxSelection,
     use3D,
