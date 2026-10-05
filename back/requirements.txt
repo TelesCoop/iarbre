@@ -4,7 +4,7 @@ Django==5.2.16
 django-anymail[mailgun]==12.0
 django-cors-headers==4.4.0
 django-extensions==3.2.3
-django-filter==25.2
+django-filter==26.1
 django-gisserver==2.3.1
 django-prometheus==2.4.1
 django-storages[s3]==1.14.4
