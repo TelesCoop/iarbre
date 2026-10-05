@@ -1,5 +1,5 @@
 import type { MapParams } from "@/types/map"
-import { DataType } from "@/utils/enum"
+import { DataType, MapStyle } from "@/utils/enum"
 
 export enum Layout {
   Default = "Default"
@@ -21,6 +21,8 @@ export const DEFAULT_MAP_PARAMS: MapParams = {
   lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14
 }
+
+export const DEFAULT_MAP_STYLE = MapStyle.OSM
 
 // Terra Draw layer name (used to position layers below drawing layers)
 export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"

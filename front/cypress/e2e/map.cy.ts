@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
+import { DataType, DataTypeToLabel, MapStyle, OverlayLayer } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
@@ -235,6 +235,76 @@ describe("Map - Desktop", () => {
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.mapCheckPanoramaxLayer(true)
+  })
+
+  it("writes the basemap and the overlay layers in the URL", () => {
+    cy.location("search").should("eq", "")
+
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
+    cy.location("search").should("eq", `?layers=${OverlayLayer.QPV}`)
+
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
+    cy.location("search").should("eq", `?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV}`)
+
+    cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
+    cy.location("search").should("eq", `?basemap=${MapStyle.SATELLITE}`)
+  })
+
+  it("keeps the basemap and the overlay layers when coming back from the dashboard", () => {
+    cy.intercept("GET", "**/api/dashboard/", { fixture: "dashboard.json" })
+    cy.getBySel("bg-selector-toggle").should("be.visible").click()
+    cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
+    cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckCadastreLayer(true)
+
+    cy.getBySel("dashboard-button").click()
+    cy.location("pathname").should("eq", "/dashboard")
+    cy.get(".back-to-map").click()
+
+    cy.location("search").should(
+      "eq",
+      `?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.CADASTRE}`
+    )
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      `cypress: map data ${MapStyle.SATELLITE} loaded`
+    )
+    cy.getBySel("cadastre-toggle").filter(":visible").should("have.class", "active")
+  })
+})
+
+describe("Map - Shared link", () => {
+  beforeEach(() => {
+    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
+    cy.visit(
+      `/plantability/13/45.07126/5.55430?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV},${OverlayLayer.CADASTRE}`
+    )
+  })
+
+  it("restores the basemap from the URL", () => {
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      `cypress: map data ${MapStyle.SATELLITE} loaded`
+    )
+  })
+
+  it("restores the overlay layers from the URL", () => {
+    cy.mapCheckQPVLayer(true)
+    cy.mapCheckCadastreLayer(true)
+    cy.getBySel("qpv-toggle").filter(":visible").should("have.class", "active")
+    cy.getBySel("cadastre-toggle").filter(":visible").should("have.class", "active")
+    cy.getBySel("boundary-toggle").filter(":visible").should("not.have.class", "active")
+  })
+
+  it("keeps the shared display in the URL", () => {
+    cy.mapCheckQPVLayer(true)
+    cy.location("search").should(
+      "eq",
+      `?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV},${OverlayLayer.CADASTRE}`
+    )
   })
 })
 
