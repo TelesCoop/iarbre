@@ -1,0 +1,47 @@
+import { describe, it, expect, beforeEach, vi } from "vitest"
+import { setActivePinia, createPinia } from "pinia"
+import type { Map } from "maplibre-gl"
+import { useMapStore } from "@/stores/map"
+import { getLayerId } from "@/utils/map"
+import { DataType, GeoLevel } from "@/utils/enum"
+import { TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
+
+vi.mock("maplibre-gl", () => ({ Map: class {}, NavigationControl: class {} }))
+
+const DATA_LAYER_ID = getLayerId(DataType.PLANTABILITY, GeoLevel.TILE)
+
+const createFakeMap = (layerIds: string[]) => ({
+  layerIds,
+  getLayersOrder: () => [...layerIds],
+  getLayer: (id: string) => (layerIds.includes(id) ? { id } : undefined),
+  addLayer: ({ id }: { id: string }, beforeId?: string) => {
+    if (beforeId && !layerIds.includes(beforeId)) throw new Error(`Layer "${beforeId}" not found`)
+    layerIds.splice(beforeId ? layerIds.indexOf(beforeId) : layerIds.length, 0, id)
+  },
+  removeLayer: (id: string) => layerIds.splice(layerIds.indexOf(id), 1),
+  getSource: () => undefined,
+  removeSource: () => undefined,
+  easeTo: () => undefined,
+  on: () => undefined,
+  off: () => undefined
+})
+
+describe("map store 2D/3D switch", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  it.each([
+    ["with", [TERRA_DRAW_POLYGON_LAYER]],
+    ["without", []]
+  ])("keeps the QPV borders above the data layer %s Terra Draw", (_, topLayerIds) => {
+    const store = useMapStore()
+    const layerIds = ["basemap", DATA_LAYER_ID, "qpv-border-casing", "qpv-border", ...topLayerIds]
+    const map = createFakeMap([...layerIds])
+    store.mapInstancesByIds = { default: map as unknown as Map }
+
+    store.toggle3D()
+
+    expect(map.layerIds).toEqual(layerIds)
+  })
+})
