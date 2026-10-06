@@ -6,6 +6,8 @@ interface TooltipElement extends HTMLElement {
   _tooltipPosition?: string
   _showTooltip?: () => void
   _hideTooltip?: () => void
+  _handlePointerEnter?: (event: PointerEvent) => void
+  _handleFocus?: () => void
 }
 
 type TooltipPosition = "top" | "bottom" | "left" | "right"
@@ -98,9 +100,17 @@ export const vTooltip: Directive<TooltipElement> = {
       }
     }
 
-    el.addEventListener("mouseenter", el._showTooltip)
-    el.addEventListener("mouseleave", el._hideTooltip)
-    el.addEventListener("focus", el._showTooltip)
+    // A tap never sends the leave events, so only a mouse or the keyboard reveals the tooltip.
+    el._handlePointerEnter = (event) => {
+      if (event.pointerType === "mouse") el._showTooltip?.()
+    }
+    el._handleFocus = () => {
+      if (el.matches(":focus-visible")) el._showTooltip?.()
+    }
+
+    el.addEventListener("pointerenter", el._handlePointerEnter)
+    el.addEventListener("pointerleave", el._hideTooltip)
+    el.addEventListener("focus", el._handleFocus)
     el.addEventListener("blur", el._hideTooltip)
   },
 
@@ -110,12 +120,14 @@ export const vTooltip: Directive<TooltipElement> = {
   },
 
   unmounted(el) {
-    if (el._showTooltip) {
-      el.removeEventListener("mouseenter", el._showTooltip)
-      el.removeEventListener("focus", el._showTooltip)
+    if (el._handlePointerEnter) {
+      el.removeEventListener("pointerenter", el._handlePointerEnter)
+    }
+    if (el._handleFocus) {
+      el.removeEventListener("focus", el._handleFocus)
     }
     if (el._hideTooltip) {
-      el.removeEventListener("mouseleave", el._hideTooltip)
+      el.removeEventListener("pointerleave", el._hideTooltip)
       el.removeEventListener("blur", el._hideTooltip)
     }
     if (el._tooltip) {
