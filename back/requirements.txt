@@ -1,6 +1,6 @@
 boto3==1.43.107
 coverage==7.16.2
-Django==5.2.16
+Django==5.2.17
 django-anymail[mailgun]==15.2
 django-cors-headers==4.9.0
 django-extensions==4.1
