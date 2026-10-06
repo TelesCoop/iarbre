@@ -74,7 +74,6 @@ const handleClear = () => mapStore.exitShapeMode()
     <img :src="triggerIcon" alt="" aria-hidden="true" class="w-6 h-6" />
   </button>
 
-  <!-- Card opens in the top-right corner, just below the search bar. -->
   <div
     v-if="isOpen"
     id="shape-toolbar-panel"
@@ -140,23 +139,26 @@ const handleClear = () => mapStore.exitShapeMode()
   right: var(--map-trigger-right);
 }
 
-/* Disclosure card, anchored top-right just below the search bar and matching its
-   width (both right-aligned at --map-edge-gap, so edges line up). MapComponent
-   publishes the bar's live height and width. Flat language (rounded-lg, no
-   shadow) to match the map panels. */
+/* Disclosure card. On phones the search column is narrower than the mode picker,
+   so the card opens above its trigger instead of over the legend. */
 .shape-toolbar__panel {
   @apply absolute flex flex-col items-stretch gap-2 p-3
          bg-white border border-gray-200 rounded-lg
-         max-w-[calc(100vw-1rem)]
          transition-all duration-300 ease-out;
-  /* Wider than the half-width search bar on mobile, so it floats over the legend. */
-  z-index: var(--z-map-floating);
-  top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
-  right: var(--map-edge-gap);
-  /* Never shrink below the mode picker: the search bar is only half-width on
-     mobile, narrower than the five shape buttons. */
-  width: var(--top-right-controls-width, 15rem);
+  z-index: var(--z-map-overlay);
+  bottom: var(--map-above-bottom-row);
+  right: var(--map-trigger-right);
   min-width: min-content;
+}
+
+/* Below the search bar and matching its width, right-aligned on the same edge. */
+@media (min-width: 768px) {
+  .shape-toolbar__panel {
+    top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
+    right: var(--map-edge-gap);
+    bottom: auto;
+    width: var(--top-right-controls-width, 15rem);
+  }
 }
 .shape-toolbar__title {
   @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
