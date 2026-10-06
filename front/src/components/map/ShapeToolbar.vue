@@ -149,7 +149,8 @@ const handleClear = () => mapStore.exitShapeMode()
          bg-white border border-gray-200 rounded-lg
          max-w-[calc(100vw-1rem)]
          transition-all duration-300 ease-out;
-  z-index: var(--z-map-overlay);
+  /* Wider than the half-width search bar on mobile, so it floats over the legend. */
+  z-index: var(--z-map-floating);
   top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
   right: var(--map-edge-gap);
   /* Never shrink below the mode picker: the search bar is only half-width on

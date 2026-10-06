@@ -29,21 +29,30 @@
  * bottom edge: maplibre offsets the group by --map-ctrl-offset and adds a 10px
  * group margin, so --map-overlay-bottom = offset + margin keeps the draw trigger
  * and the bottom-left stack flush with the zoom controls at every breakpoint.
+ * On mobile that bottom edge clears the bottom bar and the peeking details panel.
  */
 :root {
+  --mobile-bar-height: 3.5rem;
+  --mobile-panel-peek: 40px; /* visible part of the closed details panel */
   --map-edge-gap: 0.5rem; /* breathing room from the map edges */
+  --map-ctrl-size: 2.5rem;
   --map-ctrl-group-margin: 10px; /* maplibre's default .maplibregl-ctrl margin */
-  --map-ctrl-offset: 120px; /* maplibre bottom-right bottom offset */
-  --map-ctrl-edge: 8px; /* maplibre bottom-right right offset */
+  --map-ctrl-edge: calc(var(--map-edge-gap) - var(--map-ctrl-group-margin));
+  --map-ctrl-offset: calc(
+    var(--mobile-bar-height) + var(--mobile-panel-peek) + var(--map-edge-gap) -
+      var(--map-ctrl-group-margin)
+  );
   --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
-  --map-cadastre-bottom: 72px; /* parcel info, above the bottom controls */
-  --map-trigger-right: 68px; /* draw trigger sits left of the maplibre controls */
+  /* Parcel info sits above the bottom row of controls, which leaves it no room. */
+  --map-cadastre-bottom: calc(
+    var(--map-overlay-bottom) + var(--map-ctrl-size) + var(--map-edge-gap)
+  );
+  --map-trigger-right: calc(var(--map-ctrl-size) + 2 * var(--map-edge-gap));
 }
 
 @media (min-width: 1024px) {
   :root {
-    --map-ctrl-offset: 8px; /* → --map-overlay-bottom resolves to 18px */
-    --map-cadastre-bottom: 16px;
+    --map-ctrl-offset: var(--map-ctrl-edge);
   }
 }
 
@@ -285,8 +294,10 @@ button.vegestrate-category.is-selected {
   @apply text-primary-500 shrink-0;
 }
 
-.layer-chip:hover {
-  @apply bg-gray-50 text-gray-900 border-gray-300;
+@media (hover: hover) {
+  .layer-chip:hover {
+    @apply bg-gray-50 text-gray-900 border-gray-300;
+  }
 }
 
 .layer-chip.active {
@@ -299,9 +310,11 @@ button.vegestrate-category.is-selected {
   @apply text-white;
 }
 
-.layer-chip.active:hover {
-  background-color: var(--color-primary-600);
-  border-color: var(--color-primary-600);
+@media (hover: hover) {
+  .layer-chip.active:hover {
+    background-color: var(--color-primary-600);
+    border-color: var(--color-primary-600);
+  }
 }
 
 .map-tool-container {
@@ -377,9 +390,11 @@ button.vegestrate-category.is-selected {
   @apply focus:outline-none focus:ring-2 focus:ring-primary-200;
 }
 
-.map-control-btn:hover img,
-.map-control-btn:hover svg {
-  filter: brightness(0) invert(1);
+@media (hover: hover) {
+  .map-control-btn:hover img,
+  .map-control-btn:hover svg {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .map-control-btn-sm {
@@ -400,14 +415,12 @@ button.vegestrate-category.is-selected {
   @apply hover:bg-white hover:border-gray-200;
 }
 
-/* Keep the disabled icon untinted even on hover, otherwise the shared
-   `.map-control-btn:hover img` white filter would render it white on the
-   white (non-highlighted) disabled background. */
-.map-control-btn-disabled img,
-.map-control-btn-disabled svg,
-.map-control-btn-disabled:hover img,
-.map-control-btn-disabled:hover svg {
-  filter: none;
+/* A disabled button keeps its white background on hover, so its icon stays untinted. */
+@media (hover: hover) {
+  .map-control-btn-disabled:hover img,
+  .map-control-btn-disabled:hover svg {
+    filter: none;
+  }
 }
 
 .map-control-icon-btn {
@@ -418,9 +431,11 @@ button.vegestrate-category.is-selected {
   @apply hover:bg-primary-500 hover:border-primary-500 hover:text-white;
 }
 
-.map-control-icon-btn:hover img,
-.map-control-icon-btn:hover svg {
-  filter: brightness(0) invert(1);
+@media (hover: hover) {
+  .map-control-icon-btn:hover img,
+  .map-control-icon-btn:hover svg {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .map-control-group {
@@ -453,9 +468,11 @@ button.vegestrate-category.is-selected {
   background-clip: content-box;
 }
 
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-  background-clip: content-box;
+@media (hover: hover) {
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+    background-clip: content-box;
+  }
 }
 
 .scrollbar::-webkit-scrollbar-thumb:active {

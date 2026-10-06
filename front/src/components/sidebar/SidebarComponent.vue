@@ -727,7 +727,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply fixed bottom-0 left-0 right-0 z-50;
   @apply flex items-center justify-between px-4;
   @apply bg-[#426A45];
-  height: 3.5rem;
+  height: var(--mobile-bar-height);
 }
 
 .mobile-bar-logo {
