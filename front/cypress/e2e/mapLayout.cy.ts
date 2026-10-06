@@ -1,9 +1,9 @@
 /// <reference types="cypress" />
-import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
+import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
 
-const MOBILE_VIEWPORT = { width: 375, height: 667 }
-const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const SHORT_DESKTOP_VIEWPORT = { width: 1280, height: 620 }
+const NARROW_DESKTOP_VIEWPORT = { width: 1024, height: 768 }
+const LANDSCAPE_PHONE_VIEWPORT = { width: 667, height: 375 }
 /** `--map-edge-gap`, the gap between map overlays and the edges they sit against. */
 const EDGE_GAP_PX = 8
 
@@ -13,16 +13,6 @@ const rectOf = (selector: string) =>
     .filter(":visible")
     .first()
     .then(($el) => $el[0].getBoundingClientRect())
-
-const visitMap = (viewport: { width: number; height: number }) => {
-  cy.viewport(viewport.width, viewport.height)
-  LocalStorageHandler.setItem("hasVisitedBefore", true)
-  cy.visit("/plantability/13/45.07126/5.55430")
-  cy.get("@consoleInfo").should(
-    "have.been.calledWith",
-    "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-  )
-}
 
 const rectsOverlap = (a: DOMRect, b: DOMRect) =>
   a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
@@ -52,7 +42,7 @@ const expectStreetViewAboveMapControls = () =>
   })
 
 describe("Map layout - Desktop", () => {
-  beforeEach(() => visitMap(DESKTOP_VIEWPORT))
+  beforeEach(() => cy.visitMap(DESKTOP_VIEWPORT))
 
   it("keeps the map controls at the same distance from the edges as the other overlays", () => {
     rectOf("[data-cy=map-component]").then((map) => {
@@ -76,23 +66,37 @@ describe("Map layout - Desktop", () => {
   })
 })
 
-describe("Map layout - Short desktop", () => {
-  beforeEach(() => visitMap(SHORT_DESKTOP_VIEWPORT))
+for (const viewport of [SHORT_DESKTOP_VIEWPORT, NARROW_DESKTOP_VIEWPORT]) {
+  describe(`Map layout - Desktop ${viewport.width}x${viewport.height}`, () => {
+    beforeEach(() => cy.visitMap(viewport))
 
-  it("keeps the street view clear of the legend and of the map controls", () => {
+    it("keeps the street view clear of the legend and of the map controls", () => {
+      openStreetView()
+
+      rectOf(".legend-container").then((legend) => {
+        rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+          expect(viewer.left).to.be.at.least(legend.right)
+        })
+      })
+      expectStreetViewAboveMapControls()
+    })
+  })
+}
+
+describe("Map layout - Landscape phone", () => {
+  beforeEach(() => cy.visitMap(LANDSCAPE_PHONE_VIEWPORT))
+
+  it("keeps the street view readable when the controls leave no room above them", () => {
     openStreetView()
 
-    rectOf(".legend-container").then((legend) => {
-      rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
-        expect(viewer.left).to.be.at.least(legend.right)
-      })
+    rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+      expect(viewer.height).to.be.at.least(150)
     })
-    expectStreetViewAboveMapControls()
   })
 })
 
 describe("Map layout - Mobile", () => {
-  beforeEach(() => visitMap(MOBILE_VIEWPORT))
+  beforeEach(() => cy.visitMap(MOBILE_VIEWPORT))
 
   it("keeps the bottom controls just above the details panel", () => {
     rectOf("[data-cy=mobile-panel-handle]").then((handle) => {
@@ -135,6 +139,20 @@ describe("Map layout - Mobile", () => {
       for (const selector of [".legend-container", ".maplibregl-ctrl-bottom-right"]) {
         rectOf(selector).then((other) => expect(rectsOverlap(panel, other)).to.equal(false))
       }
+    })
+  })
+
+  it("opens the draw panel above a selected parcel card", () => {
+    selectParcel()
+    cy.getBySel("shape-toolbar-toggle").click()
+
+    cy.getBySel("shape-mode-polygon").then(($button) => {
+      const { left, top, width, height } = $button[0].getBoundingClientRect()
+      const topElement = $button[0].ownerDocument.elementFromPoint(
+        left + width / 2,
+        top + height / 2
+      )
+      expect($button[0].contains(topElement)).to.equal(true)
     })
   })
 

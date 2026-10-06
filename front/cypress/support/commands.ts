@@ -1,4 +1,12 @@
 /// <reference types="cypress" />
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
+
+const DEFAULT_MAP_PATH = "/plantability/13/45.07126/5.55430"
+
+const getMapStore = (win: Window) =>
+  (win.document.querySelector("#app") as any).__vue_app__.config.globalProperties.$pinia._s.get(
+    "map"
+  )
 
 /**
  * Custom command to get element by data-cy attribute
@@ -36,21 +44,34 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
 })
 
 /**
- * Yields the map Pinia store of the running app, the single place tests reach into app internals
+ * Opens the map past the welcome message, once its plantability layer is loaded
  */
-Cypress.Commands.add("mapStore", () =>
-  cy.window().then((win) => {
-    const app = (win.document.querySelector("#app") as any).__vue_app__
-    return app.config.globalProperties.$pinia._s.get("map")
-  })
+Cypress.Commands.add(
+  "visitMap",
+  (viewport: { width: number; height: number }, path: string = DEFAULT_MAP_PATH) => {
+    cy.viewport(viewport.width, viewport.height)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
+    cy.visit(path)
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  }
 )
 
 /**
- * Yields the layer ids of the default map, bottom first
+ * Yields the map Pinia store of the running app, the single place tests reach into app internals
  */
-Cypress.Commands.add("mapLayersOrder", () =>
-  cy.mapStore().then((store) => store.mapInstancesByIds.default.getLayersOrder() as string[])
-)
+Cypress.Commands.add("mapStore", () => cy.window().then(getMapStore))
+
+/**
+ * Yields the layer ids of the default map, bottom first; re-read on every retry of a following assertion
+ */
+Cypress.Commands.addQuery("mapLayersOrder", () => () => {
+  const win = (cy as unknown as { state: (key: string) => Window }).state("window")
+  return getMapStore(win).mapInstancesByIds.default.getLayersOrder() as string[]
+})
 
 /**
  * Custom command to check QPV layer status via console logs

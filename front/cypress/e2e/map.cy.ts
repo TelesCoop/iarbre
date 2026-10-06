@@ -2,9 +2,7 @@
 import { DataType, DataTypeToLabel, MapStyle, OverlayLayer } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
-
-const MOBILE_VIEWPORT = { width: 375, height: 667 }
-const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
 
 const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
   cy.mapLayersOrder().should((layersOrder) => {
@@ -14,15 +12,8 @@ const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
 
 describe("Map - Desktop", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(DESKTOP_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
@@ -293,10 +284,8 @@ describe("Map - Desktop", () => {
 
 describe("Map - Shared link", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit(
+    cy.visitMap(
+      DESKTOP_VIEWPORT,
       `/plantability/13/45.07126/5.55430?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV},${OverlayLayer.CADASTRE}`
     )
   })
@@ -327,15 +316,8 @@ describe("Map - Shared link", () => {
 
 describe("Map - Mobile", () => {
   beforeEach(() => {
-    cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(MOBILE_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 

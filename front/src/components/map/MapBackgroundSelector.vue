@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue"
-import { onClickOutside } from "@vueuse/core"
+import { useTapOutside } from "@/composables/useTapOutside"
 import { useMapStore } from "@/stores/map"
 import { MapStyle } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS, getMapStyleOption } from "@/utils/mapStyleOptions"
@@ -47,7 +47,7 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-onClickOutside(wrapperRef, () => {
+useTapOutside(wrapperRef, () => {
   isExpanded.value = false
   isSourceOpen.value = false
 })

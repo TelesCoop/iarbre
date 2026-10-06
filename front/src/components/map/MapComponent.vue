@@ -210,6 +210,8 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   right: var(--map-edge-gap);
   bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-stack-height) + var(--map-edge-gap));
   left: var(--map-edge-gap);
+  /* Short screens (landscape phones) leave no room above the controls: cover them instead. */
+  min-height: 13rem;
 }
 
 @media (min-width: 1024px) {

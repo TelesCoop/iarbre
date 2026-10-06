@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { describe, it, expect } from "vitest"
 
-const STYLESHEETS = ["src/styles/main.css", "src/styles/maplibre.css"]
+const STYLESHEETS = ["main.css", "maplibre.css"]
 const HOVER_MEDIA_QUERY = "@media (hover: hover)"
 
 /** Selectors of the `:hover` rules that are not nested in a hover-capable media query. */
@@ -34,6 +35,10 @@ describe("hover styles", () => {
   // Touch screens keep `:hover` after a tap; outside this media query the hover
   // colours stick and can leave a whitened icon on a white button.
   it.each(STYLESHEETS)("%s scopes every :hover rule to hover-capable devices", (path) => {
-    expect(findUnguardedHoverSelectors(readFileSync(path, "utf-8"))).toEqual([])
+    expect(
+      findUnguardedHoverSelectors(
+        readFileSync(join(import.meta.dirname, "../../../src/styles", path), "utf-8")
+      )
+    ).toEqual([])
   })
 })

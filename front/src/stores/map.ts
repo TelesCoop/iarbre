@@ -598,6 +598,13 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
+      // A tap on a street-view picture opens it; it must not also select the tile beneath.
+      if (
+        map.getLayer(PANORAMAX_PICTURES_LAYER) &&
+        map.queryRenderedFeatures(e.point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+      ) {
+        return
+      }
       applyTileSelection(map, datatype, geolevel, e.features!, {
         lng: e.lngLat.lng,
         lat: e.lngLat.lat

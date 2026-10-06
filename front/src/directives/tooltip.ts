@@ -100,9 +100,9 @@ export const vTooltip: Directive<TooltipElement> = {
       }
     }
 
-    // A tap never sends the leave events, so only a mouse or the keyboard reveals the tooltip.
+    // A tap never sends the leave events, so only a mouse, a pen or the keyboard reveals it.
     el._handlePointerEnter = (event) => {
-      if (event.pointerType === "mouse") el._showTooltip?.()
+      if (event.pointerType !== "touch") el._showTooltip?.()
     }
     el._handleFocus = () => {
       if (el.matches(":focus-visible")) el._showTooltip?.()

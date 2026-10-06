@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
-import { onClickOutside, onKeyStroke } from "@vueuse/core"
+import { useEventListener } from "@vueuse/core"
+import { useTapOutside } from "@/composables/useTapOutside"
 import { useMapStore } from "@/stores/map"
 import { SelectionMode } from "@/utils/enum"
 import IconClose from "@/components/icons/IconClose.vue"
@@ -24,16 +25,19 @@ const panelRef = ref<HTMLElement | null>(null)
 const isDrawingOnMap = (event: PointerEvent) =>
   state.value !== "point" && (event.target as Element).closest(".maplibregl-map") !== null
 
-onClickOutside(
+useTapOutside(
   panelRef,
   (event) => {
     if (!isDrawingOnMap(event)) isOpen.value = false
   },
   { ignore: [triggerRef] }
 )
-onKeyStroke("Escape", () => {
-  isOpen.value = false
-})
+// Scoped to the toolbar: Escape elsewhere cancels a drawing or closes a dialog.
+const closeOnEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") isOpen.value = false
+}
+useEventListener(triggerRef, "keydown", closeOnEscape)
+useEventListener(panelRef, "keydown", closeOnEscape)
 
 const isPolygon = computed(() => mapStore.selectionMode === SelectionMode.POLYGON)
 
@@ -167,7 +171,7 @@ const handleClear = () => mapStore.exitShapeMode()
   @apply absolute flex flex-col items-stretch gap-2 p-3
          bg-white border border-gray-200 rounded-lg
          transition-all duration-300 ease-out;
-  z-index: var(--z-map-overlay);
+  z-index: var(--z-map-raised);
   bottom: var(--map-above-bottom-row);
   right: var(--map-trigger-right);
   min-width: min-content;

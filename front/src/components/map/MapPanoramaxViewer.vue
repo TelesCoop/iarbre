@@ -72,7 +72,7 @@ onBeforeUnmount(destroyViewer)
 <template>
   <div
     v-if="picture"
-    class="map-control flex flex-col overflow-hidden shadow-lg w-full lg:w-[28rem] lg:min-w-[20rem] max-h-full"
+    class="map-control flex flex-col overflow-hidden shadow-lg w-full lg:w-[28rem] max-h-full"
     data-cy="panoramax-viewer"
   >
     <div class="flex items-center justify-between gap-3 px-3 pt-3">

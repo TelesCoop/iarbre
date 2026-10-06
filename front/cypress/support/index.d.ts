@@ -2,6 +2,7 @@ declare namespace Cypress {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Chainable<Subject = any> {
     getBySel(selector: string, ...args: any[]): Chainable
+    visitMap(viewport: { width: number; height: number }, path?: string): void
     mapStore(): Chainable<any>
     mapLayersOrder(): Chainable<string[]>
     mapSwitchLayer(datatype: string): void

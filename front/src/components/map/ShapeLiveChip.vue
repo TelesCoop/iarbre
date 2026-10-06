@@ -85,7 +85,7 @@ useMapRenderSync(mapInstance, reproject, refreshFromShape)
   @apply absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none
          flex items-center gap-2 px-2.5 py-1.5 rounded-full
          text-xs font-semibold text-white bg-gray-900 whitespace-nowrap;
-  z-index: var(--z-map-callout);
+  z-index: var(--z-map-raised);
 }
 .shape-live-chip--warning {
   @apply bg-red-700;

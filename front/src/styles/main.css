@@ -4,17 +4,11 @@
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
 
-/*
- * Centralized z-index scale (low → high). Callouts follow map features, so they
- * slide under the side panel and every fixed overlay. All map overlays share one
- * tier (they live in different corners and never overlap each other); the mobile
- * result sheet sits above them so it covers the map; control dropdowns sit above
- * the sheet. Higher app tiers are listed for reference.
- */
+/* Centralized z-index scale (low → high). */
 :root {
-  --z-map-callout: 10;
-  --z-map-sidepanel: 20;
-  --z-map-overlay: 30;
+  --z-map-overlay: 30; /* corner overlays, which never overlap each other */
+  --z-map-raised: 34; /* open tool panels and callouts tied to map features */
+  --z-map-sidepanel: 36; /* map features scroll under the desktop side panel */
   --z-map-sheet: 40;
   --z-map-floating: 50;
   --z-popover: 100;
@@ -23,17 +17,8 @@
   --z-overlay-top: 10000;
 }
 
-/*
- * Centralized map-overlay layout anchors. Mobile-first values; the 1024px
- * override below tightens them for desktop. Every map overlay positions itself
- * from these tokens instead of hard-coded offsets, so the corners stay in sync.
- *
- * The bottom anchor lines overlays up with the maplibre control group's visual
- * bottom edge: maplibre offsets the group by --map-ctrl-offset and adds a 10px
- * group margin, so --map-overlay-bottom = offset + margin keeps the draw trigger
- * and the bottom-left stack flush with the zoom controls at every breakpoint.
- * On mobile that bottom edge clears the bottom bar and the peeking details panel.
- */
+/* Map overlay anchors, mobile first. On mobile the bottom row clears the bottom bar
+   and the peeking details panel. */
 :root {
   --mobile-bar-height: 3.5rem;
   --mobile-panel-peek: 40px; /* visible part of the closed details panel */
@@ -47,6 +32,7 @@
     var(--mobile-bar-height) + var(--mobile-panel-peek) + var(--map-edge-gap) -
       var(--map-ctrl-group-margin)
   );
+  /* Visual bottom of the maplibre controls, which add their group margin to the offset. */
   --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
   /* Overlays that would not fit in the bottom row sit just above it. */
   --map-above-bottom-row: calc(

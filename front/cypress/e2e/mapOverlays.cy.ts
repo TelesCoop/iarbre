@@ -1,7 +1,5 @@
 /// <reference types="cypress" />
-import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
-
-const MOBILE_VIEWPORT = { width: 375, height: 667 }
+import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
 
 const expectBackgroundSelectorExpanded = (isExpanded: boolean) =>
   cy.getBySel("bg-selector-toggle").should("have.attr", "aria-expanded", String(isExpanded))
@@ -10,15 +8,7 @@ const expectBackgroundSelectorExpanded = (isExpanded: boolean) =>
 const tapMap = () => cy.getBySel("map-component").click(270, 200)
 
 describe("Map overlays - Mobile", () => {
-  beforeEach(() => {
-    cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
-  })
+  beforeEach(() => cy.visitMap(MOBILE_VIEWPORT))
 
   it("folds the background selector when the map is tapped", () => {
     cy.getBySel("bg-selector-toggle").click()
@@ -62,6 +52,29 @@ describe("Map overlays - Mobile", () => {
     cy.getBySel("bg-selector-toggle").click()
 
     cy.getBySel("shape-toolbar").should("not.exist")
+    expectBackgroundSelectorExpanded(true)
+  })
+
+  it("closes the shape panel with Escape from the toolbar only", () => {
+    cy.getBySel("shape-toolbar-toggle").click()
+
+    cy.get("[data-cy='map-geocoder'] input").trigger("keydown", { key: "Escape" })
+    cy.getBySel("shape-toolbar").should("be.visible")
+
+    cy.getBySel("shape-toolbar-toggle").trigger("keydown", { key: "Escape" })
+    cy.getBySel("shape-toolbar").should("not.exist")
+  })
+})
+
+describe("Map overlays - Desktop", () => {
+  beforeEach(() => cy.visitMap(DESKTOP_VIEWPORT))
+
+  it("keeps the background selector open while the map is dragged", () => {
+    cy.getBySel("bg-selector-toggle").click()
+
+    cy.getBySel("map-component").trigger("pointerdown", 700, 300)
+    cy.getBySel("map-component").trigger("click", 800, 400)
+
     expectBackgroundSelectorExpanded(true)
   })
 })

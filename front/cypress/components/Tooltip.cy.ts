@@ -21,6 +21,11 @@ describe("v-tooltip", () => {
     cy.get("[role=tooltip]").should("not.exist")
   })
 
+  it("shows when a pen hovers", () => {
+    cy.getBySel("target").trigger("pointerenter", { pointerType: "pen" })
+    cy.get("[role=tooltip]").should("contain.text", "Infobulle")
+  })
+
   it("stays hidden after a tap, which never sends the leave events", () => {
     // cy.click() simulates a mouse, hover included: replay a tap's pointer events instead.
     cy.getBySel("target")
