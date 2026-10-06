@@ -105,6 +105,22 @@ describe("Map layout - Mobile", () => {
     })
   })
 
+  it("keeps the expanded background selector clear of the draw trigger", () => {
+    cy.getBySel("bg-selector-toggle").click()
+    cy.get(".bg-selector-options img").each(($img) =>
+      cy
+        .wrap($img)
+        .should(($loaded) => expect(($loaded[0] as HTMLImageElement).complete).to.equal(true))
+    )
+    cy.wait(400) // eslint-disable-line cypress/no-unnecessary-waiting
+
+    rectOf("[data-cy=shape-toolbar-toggle]").then((trigger) => {
+      rectOf(".bg-selector-container").then((selector) => {
+        expect(selector.right).to.be.at.most(trigger.left)
+      })
+    })
+  })
+
   it("keeps the parcel card above the details panel", () => {
     selectParcel()
 

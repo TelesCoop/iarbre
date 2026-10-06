@@ -232,9 +232,15 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   z-index: var(--z-map-overlay);
   left: var(--map-edge-gap);
   bottom: var(--map-overlay-bottom);
+  /* Stops before the draw trigger, which shares the bottom row. */
+  max-width: calc(100% - var(--map-trigger-right) - var(--map-ctrl-size) - 2 * var(--map-edge-gap));
 }
 
 @media (min-width: 1024px) {
+  .bottom-left-controls {
+    max-width: none;
+  }
+
   .bottom-left-controls.sidepanel-visible {
     left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }

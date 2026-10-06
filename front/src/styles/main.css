@@ -5,12 +5,15 @@
 @import "@/styles/utility.css";
 
 /*
- * Centralized z-index scale (low → high). All map overlays share one tier (they
- * live in different corners and never overlap each other); the mobile result
- * sheet sits above them so it covers the map; control dropdowns sit above the
- * sheet. Higher app tiers are listed for reference.
+ * Centralized z-index scale (low → high). Callouts follow map features, so they
+ * slide under the side panel and every fixed overlay. All map overlays share one
+ * tier (they live in different corners and never overlap each other); the mobile
+ * result sheet sits above them so it covers the map; control dropdowns sit above
+ * the sheet. Higher app tiers are listed for reference.
  */
 :root {
+  --z-map-callout: 10;
+  --z-map-sidepanel: 20;
   --z-map-overlay: 30;
   --z-map-sheet: 40;
   --z-map-floating: 50;

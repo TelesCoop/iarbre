@@ -95,7 +95,7 @@ const analyzeZone = () => {
 .zone-dashboard-card {
   @apply absolute flex flex-col gap-2 p-3
          bg-gray-200 border border-gray-300 rounded-lg;
-  z-index: var(--z-map-floating);
+  z-index: var(--z-map-callout);
   width: 13rem;
 }
 

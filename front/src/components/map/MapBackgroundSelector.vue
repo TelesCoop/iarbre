@@ -136,11 +136,11 @@ watch(currentStyle, () => {
 @reference "@/styles/main.css";
 
 .bg-selector-wrapper {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col gap-2 max-w-full;
 }
 
 .bg-selector-container {
-  @apply flex items-center;
+  @apply flex items-center max-w-full;
   @apply bg-white rounded-lg;
   @apply border border-gray-200;
   padding: 10px;
@@ -240,8 +240,15 @@ watch(currentStyle, () => {
   border-left-width: 0;
 }
 
+/* Scrolls sideways when the row is narrower than the options (phones). */
+.bg-selector-options > * {
+  flex-shrink: 0;
+}
+
 .bg-selector-options.is-expanded {
   max-width: 25rem;
+  min-width: 0;
+  overflow-x: auto;
   opacity: 1;
   padding-left: 0.5rem;
   margin-left: 1.5rem;
