@@ -5,26 +5,11 @@ import { useMapStore } from "@/stores/map"
 import { getLayerId } from "@/utils/map"
 import { DataType, GeoLevel } from "@/utils/enum"
 import { TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
+import { createFakeMap } from "../../helpers/fakeMap"
 
 vi.mock("maplibre-gl", () => ({ Map: class {}, NavigationControl: class {} }))
 
 const DATA_LAYER_ID = getLayerId(DataType.PLANTABILITY, GeoLevel.TILE)
-
-const createFakeMap = (layerIds: string[]) => ({
-  layerIds,
-  getLayersOrder: () => [...layerIds],
-  getLayer: (id: string) => (layerIds.includes(id) ? { id } : undefined),
-  addLayer: ({ id }: { id: string }, beforeId?: string) => {
-    if (beforeId && !layerIds.includes(beforeId)) throw new Error(`Layer "${beforeId}" not found`)
-    layerIds.splice(beforeId ? layerIds.indexOf(beforeId) : layerIds.length, 0, id)
-  },
-  removeLayer: (id: string) => layerIds.splice(layerIds.indexOf(id), 1),
-  getSource: () => undefined,
-  removeSource: () => undefined,
-  easeTo: () => undefined,
-  on: () => undefined,
-  off: () => undefined
-})
 
 describe("map store 2D/3D switch", () => {
   beforeEach(() => {
