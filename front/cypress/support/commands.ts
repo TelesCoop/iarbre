@@ -36,6 +36,23 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
 })
 
 /**
+ * Yields the map Pinia store of the running app, the single place tests reach into app internals
+ */
+Cypress.Commands.add("mapStore", () =>
+  cy.window().then((win) => {
+    const app = (win.document.querySelector("#app") as any).__vue_app__
+    return app.config.globalProperties.$pinia._s.get("map")
+  })
+)
+
+/**
+ * Yields the layer ids of the default map, bottom first
+ */
+Cypress.Commands.add("mapLayersOrder", () =>
+  cy.mapStore().then((store) => store.mapInstancesByIds.default.getLayersOrder() as string[])
+)
+
+/**
  * Custom command to check QPV layer status via console logs
  */
 Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {

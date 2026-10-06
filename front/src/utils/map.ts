@@ -1,6 +1,6 @@
-import { DataType, GeoLevel } from "@/utils/enum"
 import { Map, type DataDrivenPropertyValueSpecification } from "maplibre-gl"
 import { TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
+import { DataType, GeoLevel } from "@/utils/enum"
 
 /** Anchor that keeps a layer under the Terra Draw ones, so drawn shapes stay visible and clickable. */
 export const getTerraDrawBeforeId = (map: Map): string | undefined =>
@@ -79,18 +79,21 @@ export const showSelectionWall3D = (
   }
 
   map.addSource(SELECTION_WALL_SOURCE, { type: "geojson", data: wallCollection })
-  map.addLayer({
-    id: SELECTION_WALL_LAYER,
-    type: "fill-extrusion",
-    source: SELECTION_WALL_SOURCE,
-    paint: {
-      "fill-extrusion-color": "#FFFFFF",
-      "fill-extrusion-height": heightExpression,
-      "fill-extrusion-base": 0,
-      "fill-extrusion-opacity": 1,
-      "fill-extrusion-vertical-gradient": false
-    }
-  })
+  map.addLayer(
+    {
+      id: SELECTION_WALL_LAYER,
+      type: "fill-extrusion",
+      source: SELECTION_WALL_SOURCE,
+      paint: {
+        "fill-extrusion-color": "#FFFFFF",
+        "fill-extrusion-height": heightExpression,
+        "fill-extrusion-base": 0,
+        "fill-extrusion-opacity": 1,
+        "fill-extrusion-vertical-gradient": false
+      }
+    },
+    getTerraDrawBeforeId(map)
+  )
 }
 
 export const clearSelectionWall3D = (map: Map) => {
@@ -113,15 +116,18 @@ export const showSelectionOutline2D = (map: Map, geometry: any) => {
   const outline = { type: "Feature" as const, geometry, properties: {} }
 
   map.addSource(SELECTION_OUTLINE_SOURCE, { type: "geojson", data: outline })
-  map.addLayer({
-    id: SELECTION_OUTLINE_LAYER,
-    type: "line",
-    source: SELECTION_OUTLINE_SOURCE,
-    paint: {
-      "line-color": "#FFFFFF",
-      "line-width": 4
-    }
-  })
+  map.addLayer(
+    {
+      id: SELECTION_OUTLINE_LAYER,
+      type: "line",
+      source: SELECTION_OUTLINE_SOURCE,
+      paint: {
+        "line-color": "#FFFFFF",
+        "line-width": 4
+      }
+    },
+    getTerraDrawBeforeId(map)
+  )
 }
 
 export const clearSelectionOutline2D = (map: Map) => {
