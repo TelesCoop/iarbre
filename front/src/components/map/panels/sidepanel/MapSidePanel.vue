@@ -92,8 +92,8 @@ watch(
   z-index: var(--z-map-sheet);
   @apply rounded-t-xl;
   @apply transition-transform duration-300 ease-out;
-  bottom: 56px;
-  transform: translateY(calc(100% - 40px));
+  bottom: var(--mobile-bar-height);
+  transform: translateY(calc(100% - var(--mobile-panel-peek)));
   box-shadow: 0 -8px 32px -16px rgba(16, 24, 40, 0.18);
 }
 
