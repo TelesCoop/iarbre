@@ -6,6 +6,12 @@ import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 const MOBILE_VIEWPORT = { width: 375, height: 667 }
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 
+const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
+  cy.mapLayersOrder().should((layersOrder) => {
+    expect(layersOrder).to.include.members([lowerLayerId, upperLayerId])
+    expect(layersOrder.indexOf(lowerLayerId)).to.be.lessThan(layersOrder.indexOf(upperLayerId))
+  })
+
 describe("Map - Desktop", () => {
   beforeEach(() => {
     cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
@@ -136,24 +142,14 @@ describe("Map - Desktop", () => {
   })
 
   it("keeps the QPV borders above the data layer when switching 2D/3D", () => {
-    const expectQPVAboveDataLayer = () =>
-      cy.window().should((win) => {
-        const app = (win.document.querySelector("#app") as any).__vue_app__
-        const map = app.config.globalProperties.$pinia._s.get("map").mapInstancesByIds.default
-        const layersOrder: string[] = map.getLayersOrder()
-        expect(layersOrder.indexOf("tile-plantability-layer")).to.be.lessThan(
-          layersOrder.indexOf("qpv-border-casing")
-        )
-      })
-
     cy.getBySel("qpv-toggle").filter(":visible").click()
     cy.mapCheckQPVLayer(true)
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
   })
 
   it("maintains QPV layer when switching basemap styles", () => {
