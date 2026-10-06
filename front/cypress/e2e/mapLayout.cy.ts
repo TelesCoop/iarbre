@@ -3,6 +3,7 @@ import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 const MOBILE_VIEWPORT = { width: 375, height: 667 }
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+const SHORT_DESKTOP_VIEWPORT = { width: 1280, height: 620 }
 /** `--map-edge-gap`, the gap between map overlays and the edges they sit against. */
 const EDGE_GAP_PX = 8
 
@@ -23,15 +24,34 @@ const visitMap = (viewport: { width: number; height: number }) => {
   )
 }
 
-const selectParcel = () =>
+const rectsOverlap = (a: DOMRect, b: DOMRect) =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+
+const setMapState = (state: Record<string, unknown>) =>
   cy.window().then((win) => {
     const app = (win.document.querySelector("#app") as any).__vue_app__
-    app.config.globalProperties.$pinia._s.get("map").selectedCadastreParcel = {
-      parcelId: "1",
-      section: "AB",
-      numero: "12",
-      surface: 345
+    Object.assign(app.config.globalProperties.$pinia._s.get("map"), state)
+  })
+
+const selectParcel = () =>
+  setMapState({
+    selectedCadastreParcel: { parcelId: "1", section: "AB", numero: "12", surface: 345 }
+  })
+
+const openStreetView = () =>
+  setMapState({
+    selectedPanoramaxPicture: {
+      id: "picture",
+      type: "flat",
+      assets: { sd: "/images/satellite.png" }
     }
+  })
+
+const expectStreetViewAboveMapControls = () =>
+  rectOf(".maplibregl-ctrl-center").then((topControl) => {
+    rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+      expect(viewer.bottom).to.be.at.most(topControl.top)
+    })
   })
 
 describe("Map layout - Desktop", () => {
@@ -59,6 +79,21 @@ describe("Map layout - Desktop", () => {
   })
 })
 
+describe("Map layout - Short desktop", () => {
+  beforeEach(() => visitMap(SHORT_DESKTOP_VIEWPORT))
+
+  it("keeps the street view clear of the legend and of the map controls", () => {
+    openStreetView()
+
+    rectOf(".legend-container").then((legend) => {
+      rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+        expect(viewer.left).to.be.at.least(legend.right)
+      })
+    })
+    expectStreetViewAboveMapControls()
+  })
+})
+
 describe("Map layout - Mobile", () => {
   beforeEach(() => visitMap(MOBILE_VIEWPORT))
 
@@ -80,19 +115,20 @@ describe("Map layout - Mobile", () => {
     })
   })
 
-  it("shows the draw panel above the legend", () => {
+  it("keeps the draw panel clear of the legend and of the map controls", () => {
     cy.getBySel("shape-toolbar-toggle").click()
 
-    cy.get(".shape-toolbar__panel button")
-      .first()
-      .then(($button) => {
-        const { left, top, width, height } = $button[0].getBoundingClientRect()
-        const topElement = $button[0].ownerDocument.elementFromPoint(
-          left + width / 2,
-          top + height / 2
-        )
-        expect($button[0].contains(topElement)).to.equal(true)
-      })
+    rectOf("[data-cy=shape-toolbar]").then((panel) => {
+      for (const selector of [".legend-container", ".maplibregl-ctrl-bottom-right"]) {
+        rectOf(selector).then((other) => expect(rectsOverlap(panel, other)).to.equal(false))
+      }
+    })
+  })
+
+  it("keeps the street view above the map controls", () => {
+    openStreetView()
+
+    expectStreetViewAboveMapControls()
   })
 
   it("keeps the layer toggles inside the screen when the details panel is open", () => {

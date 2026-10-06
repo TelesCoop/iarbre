@@ -37,14 +37,16 @@
   --map-edge-gap: 0.5rem; /* breathing room from the map edges */
   --map-ctrl-size: 2.5rem;
   --map-ctrl-group-margin: 10px; /* maplibre's default .maplibregl-ctrl margin */
+  /* Locate, zoom in/out, compass and 3D buttons, in three maplibre control groups. */
+  --map-ctrl-stack-height: calc(5 * var(--map-ctrl-size) + 3 * var(--map-ctrl-group-margin));
   --map-ctrl-edge: calc(var(--map-edge-gap) - var(--map-ctrl-group-margin));
   --map-ctrl-offset: calc(
     var(--mobile-bar-height) + var(--mobile-panel-peek) + var(--map-edge-gap) -
       var(--map-ctrl-group-margin)
   );
   --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
-  /* Parcel info sits above the bottom row of controls, which leaves it no room. */
-  --map-cadastre-bottom: calc(
+  /* Overlays that would not fit in the bottom row sit just above it. */
+  --map-above-bottom-row: calc(
     var(--map-overlay-bottom) + var(--map-ctrl-size) + var(--map-edge-gap)
   );
   --map-trigger-right: calc(var(--map-ctrl-size) + 2 * var(--map-edge-gap));

@@ -72,7 +72,7 @@ onBeforeUnmount(destroyViewer)
 <template>
   <div
     v-if="picture"
-    class="map-control flex flex-col overflow-hidden shadow-lg w-[28rem] max-w-[calc(100vw-1rem)]"
+    class="map-control flex flex-col overflow-hidden shadow-lg w-full lg:w-[28rem] lg:min-w-[20rem] max-h-full"
     data-cy="panoramax-viewer"
   >
     <div class="flex items-center justify-between gap-3 px-3 pt-3">
@@ -96,11 +96,16 @@ onBeforeUnmount(destroyViewer)
     <img
       v-if="isFlat"
       alt="Photo de rue Panoramax"
-      class="mt-2 h-60 w-full object-contain bg-gray-900"
+      class="mt-2 h-60 min-h-0 w-full object-contain bg-gray-900"
       data-cy="panoramax-flat-image"
       :src="panoramaUrl"
     />
-    <div v-else ref="canvasEl" class="mt-2 h-60 bg-gray-900" data-cy="panoramax-canvas"></div>
+    <div
+      v-else
+      ref="canvasEl"
+      class="mt-2 h-60 min-h-0 bg-gray-900"
+      data-cy="panoramax-canvas"
+    ></div>
 
     <div
       class="flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 text-xs font-sans text-gray-500 border-t border-gray-100"
