@@ -28,10 +28,7 @@ const rectsOverlap = (a: DOMRect, b: DOMRect) =>
   a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
 
 const setMapState = (state: Record<string, unknown>) =>
-  cy.window().then((win) => {
-    const app = (win.document.querySelector("#app") as any).__vue_app__
-    Object.assign(app.config.globalProperties.$pinia._s.get("map"), state)
-  })
+  cy.mapStore().then((store) => Object.assign(store, state))
 
 const selectParcel = () =>
   setMapState({
