@@ -233,7 +233,6 @@ export function useTutorial() {
 
   const startFullTutorial = async () => {
     await ensureMapPage()
-    const isMobile = appStore.isMobileOrTablet
 
     const steps: DriveStep[] = [
       ...getMapSteps(),

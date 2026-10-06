@@ -110,7 +110,7 @@ const { svgRef } = useD3Chart(
         .text(item.label)
 
       const maxTextW = itemW - 20
-      let textNode = labelNode.node()
+      const textNode = labelNode.node()
       if (textNode && textNode.getComputedTextLength() > maxTextW) {
         let label = item.label
         while (label.length > 0 && textNode!.getComputedTextLength() > maxTextW) {
