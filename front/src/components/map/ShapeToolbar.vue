@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
+import { onClickOutside, onKeyStroke } from "@vueuse/core"
 import { useMapStore } from "@/stores/map"
 import { SelectionMode } from "@/utils/enum"
 import IconClose from "@/components/icons/IconClose.vue"
@@ -15,6 +16,25 @@ const toggleOpen = () => {
 }
 
 const state = computed(() => mapStore.drawingState)
+
+const triggerRef = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
+
+// While a shape is drawn or edited, taps on the map are drawing gestures, not a dismissal.
+const isDrawingOnMap = (event: PointerEvent) =>
+  state.value !== "point" && (event.target as Element).closest(".maplibregl-map") !== null
+
+onClickOutside(
+  panelRef,
+  (event) => {
+    if (!isDrawingOnMap(event)) isOpen.value = false
+  },
+  { ignore: [triggerRef] }
+)
+onKeyStroke("Escape", () => {
+  isOpen.value = false
+})
+
 const isPolygon = computed(() => mapStore.selectionMode === SelectionMode.POLYGON)
 
 // Highlight the trigger whenever the panel is open or a shape is currently active,
@@ -61,6 +81,7 @@ const handleClear = () => mapStore.exitShapeMode()
 
 <template>
   <button
+    ref="triggerRef"
     v-tooltip.left="'Dessiner une zone'"
     :aria-expanded="isOpen"
     :class="{ 'map-control-btn-active': isTriggerActive }"
@@ -77,6 +98,7 @@ const handleClear = () => mapStore.exitShapeMode()
   <div
     v-if="isOpen"
     id="shape-toolbar-panel"
+    ref="panelRef"
     aria-label="Outils de forme"
     class="shape-toolbar__panel"
     data-cy="shape-toolbar"

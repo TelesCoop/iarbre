@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
+import { ref, computed, watch } from "vue"
+import { onClickOutside } from "@vueuse/core"
 import { useMapStore } from "@/stores/map"
 import { MapStyle } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS, getMapStyleOption } from "@/utils/mapStyleOptions"
@@ -46,25 +47,14 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-const handleClickOutside = (event: MouseEvent) => {
-  if (!isSourceOpen.value) return
-  const target = event.target as Node | null
-  if (target && wrapperRef.value && !wrapperRef.value.contains(target)) {
-    isSourceOpen.value = false
-  }
-}
+onClickOutside(wrapperRef, () => {
+  isExpanded.value = false
+  isSourceOpen.value = false
+})
 
 // Close the popover whenever the user picks a different background.
 watch(currentStyle, () => {
   isSourceOpen.value = false
-})
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside)
 })
 </script>
 
