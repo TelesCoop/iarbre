@@ -52,7 +52,7 @@
     "@vue/tsconfig": "^0.9.1",
     "babel-plugin-istanbul": "^8.0.0",
     "cypress": "^16.1.1",
-    "eslint": "^10.11.0",
+    "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-cypress": "^7.0.2",
     "eslint-plugin-vue": "^10.11.1",
