@@ -1,5 +1,10 @@
 import { DataType, GeoLevel } from "@/utils/enum"
 import { Map, type DataDrivenPropertyValueSpecification } from "maplibre-gl"
+import { TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
+
+/** Anchor that keeps a layer under the Terra Draw ones, so drawn shapes stay visible and clickable. */
+export const getTerraDrawBeforeId = (map: Map): string | undefined =>
+  map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
 // fill-extrusion has no stroke/outline paint property. To fake one, turn each
 // edge of the polygon into a thin quad straddling that edge, then render all

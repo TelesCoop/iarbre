@@ -16,7 +16,6 @@ import {
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_STYLE,
-  TERRA_DRAW_POLYGON_LAYER,
   MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
 import {
@@ -56,7 +55,8 @@ import {
   clearSelectionWall3D,
   showSelectionOutline2D,
   clearSelectionOutline2D,
-  METERS_PER_DEGREE_LAT
+  METERS_PER_DEGREE_LAT,
+  getTerraDrawBeforeId
 } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -627,12 +627,14 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const setupTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+  const setupTile = (
+    map: Map,
+    datatype: DataType,
+    geolevel: GeoLevel,
+    beforeId: string | undefined
+  ) => {
     const sourceId = getSourceId(datatype, geolevel)
     const layers = createMapLayers(datatype, geolevel, sourceId)
-
-    // Add layers before Terra Draw layers so they are underneath
-    const beforeId = map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
 
     layers.forEach((layer) => {
       if (!map.getLayer(layer.id)) {
@@ -774,10 +776,15 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       const layerId = getLayerId(currentDataType, currentGeoLevel)
-      if (mapInstance.getLayer(layerId)) {
+      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
+      const layersOrder = mapInstance.getLayersOrder()
+      const layerIndex = layersOrder.indexOf(layerId)
+      const beforeId =
+        layerIndex === -1 ? getTerraDrawBeforeId(mapInstance) : layersOrder[layerIndex + 1]
+      if (layerIndex !== -1) {
         mapInstance.removeLayer(layerId)
       }
-      setupTile(mapInstance, currentDataType, currentGeoLevel)
+      setupTile(mapInstance, currentDataType, currentGeoLevel, beforeId)
     })
   }
 
@@ -807,7 +814,12 @@ export const useMapStore = defineStore("map", () => {
   const initTiles = (mapInstance: Map) => {
     const currentGeoLevel = getGeoLevelFromDataType()
     setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
-    setupTile(mapInstance, selectedDataType.value!, currentGeoLevel)
+    setupTile(
+      mapInstance,
+      selectedDataType.value!,
+      currentGeoLevel,
+      getTerraDrawBeforeId(mapInstance)
+    )
   }
 
   // TODO: display loading during the async execution
@@ -829,10 +841,7 @@ export const useMapStore = defineStore("map", () => {
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
-      // Add QPV layer before Terra Draw layers so it is underneath
-      const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
-        ? TERRA_DRAW_POLYGON_LAYER
-        : undefined
+      const beforeId = getTerraDrawBeforeId(mapInstance)
 
       // White casing drawn first so the coloured line stays legible on any basemap
       mapInstance.addLayer(
@@ -911,9 +920,7 @@ export const useMapStore = defineStore("map", () => {
       }
     }
 
-    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
-      ? TERRA_DRAW_POLYGON_LAYER
-      : undefined
+    const beforeId = getTerraDrawBeforeId(mapInstance)
 
     if (!mapInstance.getLayer("city-boundary")) {
       // White casing drawn first so the coloured line stays legible on any basemap
@@ -1015,9 +1022,7 @@ export const useMapStore = defineStore("map", () => {
       })
     }
 
-    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
-      ? TERRA_DRAW_POLYGON_LAYER
-      : undefined
+    const beforeId = getTerraDrawBeforeId(mapInstance)
 
     if (!mapInstance.getLayer("cadastre-fill")) {
       mapInstance.addLayer(
@@ -1203,9 +1208,7 @@ export const useMapStore = defineStore("map", () => {
       })
     }
 
-    const beforeId = mapInstance.getLayer(TERRA_DRAW_POLYGON_LAYER)
-      ? TERRA_DRAW_POLYGON_LAYER
-      : undefined
+    const beforeId = getTerraDrawBeforeId(mapInstance)
 
     if (!mapInstance.getLayer(PANORAMAX_SEQUENCES_LAYER)) {
       mapInstance.addLayer(

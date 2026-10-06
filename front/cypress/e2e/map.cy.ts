@@ -135,6 +135,27 @@ describe("Map - Desktop", () => {
     cy.mapCheckQPVLayer(true)
   })
 
+  it("keeps the QPV borders above the data layer when switching 2D/3D", () => {
+    const expectQPVAboveDataLayer = () =>
+      cy.window().should((win) => {
+        const app = (win.document.querySelector("#app") as any).__vue_app__
+        const map = app.config.globalProperties.$pinia._s.get("map").mapInstancesByIds.default
+        const layersOrder: string[] = map.getLayersOrder()
+        expect(layersOrder.indexOf("tile-plantability-layer")).to.be.lessThan(
+          layersOrder.indexOf("qpv-border-casing")
+        )
+      })
+
+    cy.getBySel("qpv-toggle").filter(":visible").click()
+    cy.mapCheckQPVLayer(true)
+
+    cy.get(".maplibregl-ctrl-3d").click()
+    expectQPVAboveDataLayer()
+
+    cy.get(".maplibregl-ctrl-3d").click()
+    expectQPVAboveDataLayer()
+  })
+
   it("maintains QPV layer when switching basemap styles", () => {
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
