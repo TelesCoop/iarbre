@@ -82,9 +82,20 @@ export const getRasterLayer = (key: string): RasterLayer =>
 
 export const formatHour = (hour: number): string => `${hour}h`
 
-export const buildTileUrl = (baseApiUrl: string, layer: RasterLayer, hour: number): string => {
+export const buildTileUrl = (
+  baseApiUrl: string,
+  layer: RasterLayer,
+  hour: number,
+  hiddenClasses: number[] = []
+): string => {
   const params = new URLSearchParams({ mode: layer.key })
   if (layer.hourly) params.set("hour", String(hour))
+  if (hiddenClasses.length) {
+    const visibleClasses = layer.legend
+      .map((_, index) => index)
+      .filter((index) => !hiddenClasses.includes(index))
+    params.set("classes", visibleClasses.join(","))
+  }
   return `${baseApiUrl}/tiles/heat/{z}/{x}/{y}.png?${params}`
 }
 

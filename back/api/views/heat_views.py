@@ -35,6 +35,7 @@ class HeatTileView(APIView):
 
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=sun_exposure
+        GET /api/tiles/heat/{z}/{x}/{y}.png?mode=sun_exposure&classes=0,2
     """
 
     @method_decorator(cache_page(60 * 60 * 24))
@@ -43,6 +44,7 @@ class HeatTileView(APIView):
         if mode not in HEAT_FILES:
             raise ValidationError({"mode": f"Must be one of {', '.join(HEAT_FILES)}."})
 
+        classes = self._classes(request.query_params)
         raster_path = Path(settings.MEDIA_ROOT) / "rasters/WMS" / HEAT_FILES[mode]
         if mode in HOURLY_HEAT_LAYERS:
             raster_path = self._hour_path(raster_path, request.query_params)
@@ -61,13 +63,31 @@ class HeatTileView(APIView):
         rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
         valid = data != nodata if nodata is not None else np.ones(data.shape, bool)
         if mode == "pet_index":
-            for value, color in PET_INDEX_COLOR_MAP.items():
-                rgba_data[valid & (data == value)] = color
+            for index, (value, color) in enumerate(PET_INDEX_COLOR_MAP.items()):
+                rgba_data[valid & (data == value)] = self._class_color(
+                    index, color, classes
+                )
         else:
-            for min_value, color in SUN_EXPOSURE_COLOR_BINS:
-                rgba_data[valid & (data >= min_value)] = color
+            for index, (min_value, color) in enumerate(SUN_EXPOSURE_COLOR_BINS):
+                rgba_data[valid & (data >= min_value)] = self._class_color(
+                    index, color, classes
+                )
 
         return self._png_response(Image.fromarray(rgba_data, mode="RGBA"))
+
+    @staticmethod
+    def _classes(query_params) -> set[int] | None:
+        raw = query_params.get("classes")
+        if raw is None:
+            return None
+        try:
+            return {int(value) for value in raw.split(",") if value}
+        except ValueError:
+            raise ValidationError({"classes": "Must be comma-separated integers."})
+
+    @staticmethod
+    def _class_color(index: int, color: tuple, classes: set[int] | None) -> tuple:
+        return color if classes is None or index in classes else (0, 0, 0, 0)
 
     @staticmethod
     def _hour_path(raster_path: Path, query_params) -> Path:

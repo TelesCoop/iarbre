@@ -10,10 +10,14 @@ const mapStore = useMapStore()
       class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1 w-full"
       data-cy="raster-legend"
     >
-      <div
-        v-for="item in mapStore.selectedLayer.legend"
+      <button
+        v-for="(item, index) in mapStore.selectedLayer.legend"
         :key="item.label"
-        class="flex items-center gap-2 select-none"
+        type="button"
+        class="flex items-center gap-2 select-none cursor-pointer text-left"
+        :class="{ 'opacity-40 line-through': mapStore.hiddenClasses.includes(index) }"
+        :aria-pressed="!mapStore.hiddenClasses.includes(index)"
+        @click="mapStore.toggleClass(index)"
       >
         <div
           class="w-4 h-4 shrink-0 border border-gray-300 rounded-sm"
@@ -25,7 +29,7 @@ const mapStore = useMapStore()
             >({{ item.detail }})</span
           >
         </span>
-      </div>
+      </button>
     </div>
 
     <p class="legend-attribution">Source : {{ mapStore.selectedLayer.attribution }}</p>

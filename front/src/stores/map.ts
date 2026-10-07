@@ -71,6 +71,7 @@ export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const selectedLayer = ref<RasterLayer>(getRasterLayer(DEFAULT_LAYER_KEY))
   const selectedHour = ref<number>(DEFAULT_HOUR)
+  const hiddenClasses = ref<number[]>([])
   const selectedMapStyle = ref<MapStyle>(MapStyle.ORTHOPHOTO)
   const currentZoom = ref<number>(14)
   const showQPVLayer = ref<boolean>(false)
@@ -114,7 +115,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const getTileUrl = () =>
-    buildTileUrl(getFullBaseApiUrl(), selectedLayer.value, selectedHour.value)
+    buildTileUrl(getFullBaseApiUrl(), selectedLayer.value, selectedHour.value, hiddenClasses.value)
 
   const addRasterLayer = (mapInstance: Map) => {
     if (!mapInstance.getSource(RASTER_SOURCE_ID)) {
@@ -144,6 +145,14 @@ export const useMapStore = defineStore("map", () => {
 
   const setLayer = (key: string) => {
     selectedLayer.value = getRasterLayer(key)
+    hiddenClasses.value = []
+    updateRasterTiles()
+  }
+
+  const toggleClass = (index: number) => {
+    hiddenClasses.value = hiddenClasses.value.includes(index)
+      ? hiddenClasses.value.filter((hidden) => hidden !== index)
+      : [...hiddenClasses.value, index]
     updateRasterTiles()
   }
 
@@ -706,6 +715,8 @@ export const useMapStore = defineStore("map", () => {
     selectedHour,
     setLayer,
     setHour,
+    hiddenClasses,
+    toggleClass,
     selectedMapStyle,
     changeMapStyle,
     currentZoom,
