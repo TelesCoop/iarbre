@@ -1,16 +1,12 @@
 <script lang="ts" setup>
-import { computed } from "vue"
-import { useMapStore } from "@/stores/map"
-import { DataTypeToDocumentationUrl } from "@/utils/enum"
 import AppButton from "@/components/shared/AppButton.vue"
 import IconInfo from "@/components/icons/IconInfo.vue"
 
-const mapStore = useMapStore()
-
-const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
+const DOCUMENTATION_URL =
+  "https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
 
 const openMethodology = () => {
-  window.open(documentationUrl.value, "_blank", "noopener,noreferrer")
+  window.open(DOCUMENTATION_URL, "_blank", "noopener,noreferrer")
 }
 </script>
 

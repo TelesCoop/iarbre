@@ -1,32 +1,22 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { DataType, DataTypeToLabel } from "@/utils/enum"
-import { computed } from "vue"
+import { RASTER_LAYERS } from "@/utils/rasterLayers"
 import AppSelect from "@/components/shared/AppSelect.vue"
 
 const mapStore = useMapStore()
 
-const selectedDataType = computed({
-  get: () => mapStore.selectedDataType,
-  set: (value: DataType) => mapStore.changeDataType(value)
-})
-
-const options = [
-  {
-    label: DataTypeToLabel[DataType.HEAT],
-    value: DataType.HEAT
-  }
-]
+const options = RASTER_LAYERS.map((layer) => ({ label: layer.label, value: layer.key }))
 </script>
 
 <template>
   <AppSelect
-    v-model="selectedDataType"
+    :model-value="mapStore.selectedLayer.key"
     :options="options"
     class="w-full"
     data-cy="layer-switcher"
     option-label="label"
     option-value="value"
     placeholder="Sélection de calque"
+    @update:model-value="mapStore.setLayer(String($event))"
   />
 </template>

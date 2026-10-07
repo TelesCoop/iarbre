@@ -3,7 +3,7 @@ import AppDialog from "@/components/shared/AppDialog.vue"
 import { computed, ref } from "vue"
 import { getFullBaseApiUrl } from "@/api"
 import { useMapStore } from "@/stores/map"
-import { HeatMode, HeatModeToLabel, buildHeatRasterUrl, formatHeatHour } from "@/utils/heat"
+import { RASTER_LAYERS, buildRasterUrl, formatHour } from "@/utils/rasterLayers"
 import AccordionSection from "./apiDoc/AccordionSection.vue"
 import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
 import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
@@ -12,47 +12,16 @@ import type { RequestParam } from "./apiDoc/types"
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wfs" | "wms" | "raster" | null>(null)
+const expanded = ref<"wms" | "raster" | null>(null)
 
-const toggle = (service: "wfs" | "wms" | "raster") => {
+const toggle = (service: "wms" | "raster") => {
   expanded.value = expanded.value === service ? null : service
 }
 
 const origin = window.location.origin
-const wfsBase = `${origin}/api/wfs/`
 const wmsBase = `${origin}/api/wms/`
 
-const defaultTypename = "iarbre:plantability"
 const defaultWmsLayer = "iarbre:PET_index_h17"
-
-const wfsFullUrl = `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=${defaultTypename}&OUTPUTFORMAT=geojson`
-
-const wfsParams: RequestParam[] = [
-  { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
-  { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
-  { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
-  {
-    key: "TYPENAMES",
-    value: defaultTypename,
-    desc: "Jeu de données à récupérer — voir GetTypes pour la liste complète"
-  },
-  { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
-  {
-    key: "CRS",
-    value: "EPSG:4326",
-    desc: "Système de coordonnées — ex. EPSG:4326, EPSG:2154, EPSG:3857"
-  },
-  {
-    key: "BBOX",
-    value: "minLat,minLon,maxLat,maxLon",
-    desc: "Emprise géographique en degrés décimaux"
-  },
-  {
-    key: "CQL_FILTER",
-    value: "city_code='69123'",
-    desc: "Filtre par commune (code INSEE) — réduit le volume de données"
-  }
-]
 
 interface RasterDataset {
   label: string
@@ -92,20 +61,17 @@ const downloadRaster = async (url: string) => {
 
 const rasterDatasets = computed<RasterDataset[]>(() => {
   const baseApiUrl = getFullBaseApiUrl()
-  return [
-    {
-      label: `${HeatModeToLabel[HeatMode.PET_INDEX]} (${formatHeatHour(mapStore.heatHour)})`,
-      url: buildHeatRasterUrl(baseApiUrl, HeatMode.PET_INDEX, mapStore.heatHour)
-    },
-    {
-      label: `${HeatModeToLabel[HeatMode.PET_INDEX]} (toutes les heures)`,
-      url: `${baseApiUrl}/rasters/pet_index/`
-    },
-    {
-      label: HeatModeToLabel[HeatMode.SUN_EXPOSURE],
-      url: buildHeatRasterUrl(baseApiUrl, HeatMode.SUN_EXPOSURE)
-    }
-  ]
+  return RASTER_LAYERS.flatMap((layer) =>
+    layer.hourly
+      ? [
+          {
+            label: `${layer.label} (${formatHour(mapStore.selectedHour)})`,
+            url: buildRasterUrl(baseApiUrl, layer, mapStore.selectedHour)
+          },
+          { label: `${layer.label} (toutes les heures)`, url: buildRasterUrl(baseApiUrl, layer) }
+        ]
+      : [{ label: layer.label, url: buildRasterUrl(baseApiUrl, layer) }]
+  )
 })
 
 const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultWmsLayer}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
@@ -168,52 +134,6 @@ const wmsParams: RequestParam[] = [
           >.
         </h3>
       </div>
-      <div>
-        <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WFS</p>
-        <AccordionSection :open="expanded === 'wfs'" @toggle="toggle('wfs')">
-          <template #header>
-            <span class="flex-none font-mono font-bold text-xs text-primary-800 w-8">WFS</span>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">WEB FEATURE SERVICE (QGIS)</p>
-              <p class="text-xs text-gray-500">
-                Objets géographiques vecteur, interrogeables et filtrables par commune.
-              </p>
-            </div>
-            <div class="flex gap-1 shrink-0">
-              <span
-                v-for="fmt in ['GeoJSON', 'GML', 'CSV']"
-                :key="fmt"
-                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >{{ fmt }}</span
-              >
-            </div>
-          </template>
-
-          <div class="bg-amber-50 px-3 py-3 rounded-md">
-            <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
-            <p class="text-xs text-amber-800">
-              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CQL_FILTER
-              (voir paramètres avancés) pour limiter le volume. Pour une consultation rapide,
-              préférez le téléchargement raster ci-dessous.
-            </p>
-          </div>
-
-          <QgisConnectionCard
-            :base-url="wfsBase"
-            :steps="[
-              `Onglet &quot;Couche&quot; → &quot;Ajouter une couche&quot; → &quot;WFS&quot;`,
-              `Collez l'URL ci-dessous, puis cliquez sur &quot;Connexion&quot;`
-            ]"
-          />
-
-          <ManualRequestSection
-            url-label="URL du service (exemple)"
-            :url="wfsFullUrl"
-            :params="wfsParams"
-          />
-        </AccordionSection>
-      </div>
-
       <div>
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WMS</p>
         <AccordionSection :open="expanded === 'wms'" @toggle="toggle('wms')">

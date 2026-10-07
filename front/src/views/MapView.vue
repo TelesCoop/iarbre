@@ -2,15 +2,12 @@
 import MapComponent from "@/components/map/MapComponent.vue"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import { useRouter, useRoute } from "vue-router"
-import { ref, watch } from "vue"
+import { ref } from "vue"
 import type { MapParams } from "@/types/map"
-import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
-import { useMapStore } from "@/stores/map"
 
 const router = useRouter()
 const route = useRoute()
-const mapStore = useMapStore()
 
 const mapParams = ref<MapParams>({ ...DEFAULT_MAP_PARAMS })
 const hasAlreadyChanged = ref<boolean>(false)
@@ -20,79 +17,26 @@ if (route.name === "mapWithUrlParams") {
     lng: parseFloat(route.params.lng as string),
     lat: parseFloat(route.params.lat as string),
     zoom: parseFloat(route.params.zoom as string),
-    dataType: route.params.dataType as DataType
+    layer: route.params.layer as string
   }
-}
-
-const parseFilters = (
-  raw: string | string[] | undefined,
-  dataType: DataType | null
-): (number | string)[] => {
-  const rawValue = Array.isArray(raw) ? raw.join(",") : raw
-  if (!rawValue) return []
-  return rawValue
-    .split(",")
-    .map((value) => (dataType === DataType.PLANTABILITY ? Number(value) : value))
-}
-
-const initialFilters = parseFilters(
-  route.query.filters as string | string[] | undefined,
-  mapParams.value.dataType
-)
-
-const lastKnownParams = ref<MapParams>({ ...mapParams.value })
-
-const buildFiltersQuery = () => {
-  const values = mapStore.filteredValues
-  return values.length > 0 ? { filters: values.map(String).join(",") } : {}
 }
 
 const handleMapUpdate = (params: MapParams) => {
-  lastKnownParams.value = params
-
-  const replaceUrl = () => {
-    router.replace({
-      name: "mapWithUrlParams",
-      params: {
-        ...params,
-        lat: params.lat.toFixed(5),
-        lng: params.lng.toFixed(5)
-      } as any,
-      query: buildFiltersQuery()
-    })
-  }
-
-  if (hasAlreadyChanged.value) {
-    replaceUrl()
-    return
-  }
-
   const hasChanged = Object.keys(DEFAULT_MAP_PARAMS).some(
     (key) => params[key as keyof MapParams] !== DEFAULT_MAP_PARAMS[key as keyof MapParams]
   )
+  if (!hasAlreadyChanged.value && !hasChanged) return
 
-  if (hasChanged) {
-    hasAlreadyChanged.value = true
-    replaceUrl()
-  }
+  hasAlreadyChanged.value = true
+  router.replace({
+    name: "mapWithUrlParams",
+    params: {
+      ...params,
+      lat: params.lat.toFixed(5),
+      lng: params.lng.toFixed(5)
+    } as any
+  })
 }
-
-watch(
-  () => mapStore.filteredValues,
-  () => {
-    hasAlreadyChanged.value = true
-    router.replace({
-      name: "mapWithUrlParams",
-      params: {
-        ...lastKnownParams.value,
-        lat: lastKnownParams.value.lat.toFixed(5),
-        lng: lastKnownParams.value.lng.toFixed(5)
-      } as any,
-      query: buildFiltersQuery()
-    })
-  },
-  { deep: true }
-)
 </script>
 
 <template>
@@ -102,12 +46,9 @@ watch(
     <div class="map-container max-w-screen overflow-hidden relative">
       <MapComponent
         :model-value="mapParams"
-        :initial-filters="initialFilters"
         map-id="default"
         @update:model-value="handleMapUpdate"
       />
-
-      <MapScoresDrawer />
     </div>
   </div>
 </template>
@@ -117,8 +58,8 @@ watch(
 
 .map-view-wrapper {
   @apply flex;
-  height: calc(100vh - var(--feedback-banner-height, 0px));
-  height: calc(100dvh - var(--feedback-banner-height, 0px));
+  height: 100vh;
+  height: 100dvh;
   margin-left: 0;
 }
 
