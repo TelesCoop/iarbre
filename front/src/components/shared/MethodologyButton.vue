@@ -2,8 +2,7 @@
 import AppButton from "@/components/shared/AppButton.vue"
 import IconInfo from "@/components/icons/IconInfo.vue"
 
-const DOCUMENTATION_URL =
-  "https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
+const DOCUMENTATION_URL = "https://github.com/TelesCoop/solweig-gpu/tree/main"
 
 const openMethodology = () => {
   window.open(DOCUMENTATION_URL, "_blank", "noopener,noreferrer")

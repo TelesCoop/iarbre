@@ -16,9 +16,21 @@ export interface RasterLayer {
 export const RASTER_LAYERS: RasterLayer[] = [
   {
     key: "pet_index",
-    label: "Indice PET - 2023 - 1m - 2090",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    label: "Indice PET - 1m - 2090",
+    description: `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet 2090.
+      Nous répliquons, avec son aide, une <a href="https://www.sciencedirect.com/science/article/pii/S0360132325007188" target="_blank" rel="noopener noreferrer">étude</a> menée par le chercheur Damien David du CETHIL.</p>
+      <p>Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le confort/inconfort
+      d'une personne selon les caractéristiques d'ambiance (température de l'air, ombre ou soleil,
+      vent, rayonnement secondaire des bâtiments et du sol). Ici, la personne est simulée assise et immobile.</p>
+      <p>Les données d'entrée sont :</p>
+      <ul>
+        <li>Les bâtiments,</li>
+        <li>Le modèle de hauteur de la végétation,</li>
+        <li>L'occupation des sols (béton, terre, etc.),</li>
+        <li>Projection météo 2090 heure par heure (température, humidité relative, vent).</li>
+      </ul>
+      <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
+      Chaque pixel correspond à une zone de 1mx1m.</p>`,
     attribution: "Métropole de Lyon",
     hourly: true,
     legend: [
@@ -39,9 +51,13 @@ export const RASTER_LAYERS: RasterLayer[] = [
   },
   {
     key: "sun_exposure",
-    label: "Exposition solaire - 2023 - 1m - 2090",
+    label: "Exposition solaire - 1m - 2090",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Un produit secondaire des calques de modélisation du climat urbain est l'ombre heure par heure. \
+      Pour chaque heure, on connaît aussi la puissance de l'ensoleillement grâce aux fichiers météo. \
+      On peut donc faire la somme sur la journée de la puissance solaire reçue. Ce score est ramené \
+      entre 0 et 1 pour pouvoir faire des comparaisons plutôt que des valeurs absolues moins parlantes. \n \
+      Chaque pixel correspond à une zone de 1mx1m.",
     attribution: "Métropole de Lyon",
     hourly: false,
     legend: [

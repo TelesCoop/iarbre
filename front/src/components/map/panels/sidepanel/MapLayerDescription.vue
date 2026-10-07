@@ -12,7 +12,10 @@ const mapStore = useMapStore()
       data-cy="layer-description"
     >
       <h3 class="text-sm font-bold text-primary-900">{{ mapStore.selectedLayer.label }}</h3>
-      <p class="text-sm text-gray-700">{{ mapStore.selectedLayer.description }}</p>
+      <div
+        class="flex flex-col gap-2 text-sm text-gray-700 [&_ul]:list-disc [&_ul]:pl-5 [&_a]:text-primary-700 [&_a]:underline"
+        v-html="mapStore.selectedLayer.description"
+      />
     </div>
     <div class="flex items-start gap-2.5 bg-primary-50 border border-primary-100 rounded-lg p-3">
       <IconInfo class="shrink-0 mt-0.5 text-primary-500" :size="16" aria-hidden="true" />
