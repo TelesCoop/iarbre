@@ -16,7 +16,7 @@ def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
 
 base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
-    "pet_index": _entry(base_dir + "PET_index.tif"),
+    "pet_index": _entry(base_dir + "PET_index.tif", "PET_index_2020.tif"),
     "sun_exposure": _entry(base_dir + "SunExposure.tif"),
 }
 HOURLY_RASTERS = {"pet_index"}
@@ -93,4 +93,4 @@ class RasterDownloadView(FileDownloadView):
         hour_path = hour_raster_path(full_path, hour)
         if not is_up_to_date(full_path, hour_path):
             raise Http404(f"File not found: {hour_path.name}.")
-        return self._serve(hour_path, hour_path.name)
+        return self._serve(hour_path, f"{Path(filename).stem}_h{hour:02d}.tif")
