@@ -53,7 +53,7 @@ const mapStore = useMapStore()
 @reference "@/styles/main.css";
 
 .layer-toggles {
-  @apply flex items-center gap-1.5 px-2.5 py-1.5;
+  @apply flex flex-wrap items-center justify-center gap-1.5 px-2.5 py-1.5;
   @apply bg-white border border-gray-200 rounded-lg;
 }
 </style>

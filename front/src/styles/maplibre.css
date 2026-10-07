@@ -13,8 +13,8 @@
 button.maplibregl-ctrl-center,
 .maplibregl-ctrl-3d,
 button.maplibregl-ctrl-3d {
-  width: 2.5rem !important;
-  height: 2.5rem !important;
+  width: var(--map-ctrl-size) !important;
+  height: var(--map-ctrl-size) !important;
   padding: 0 !important;
   margin: 0 !important;
   @apply flex! items-center! justify-center!;
@@ -24,27 +24,29 @@ button.maplibregl-ctrl-3d {
   box-shadow: none !important;
 }
 
-.maplibregl-ctrl-zoom-in:hover,
-.maplibregl-ctrl-zoom-out:hover,
-.maplibregl-ctrl-compass:hover,
-button.maplibregl-ctrl-center:hover,
-button.maplibregl-ctrl-3d:hover {
-  @apply bg-primary-500! border-primary-500!;
-}
+@media (hover: hover) {
+  .maplibregl-ctrl-zoom-in:hover,
+  .maplibregl-ctrl-zoom-out:hover,
+  .maplibregl-ctrl-compass:hover,
+  button.maplibregl-ctrl-center:hover,
+  button.maplibregl-ctrl-3d:hover {
+    @apply bg-primary-500! border-primary-500!;
+  }
 
-.maplibregl-ctrl-zoom-in:hover .maplibregl-ctrl-icon,
-.maplibregl-ctrl-zoom-out:hover .maplibregl-ctrl-icon,
-.maplibregl-ctrl-compass:hover .maplibregl-ctrl-icon,
-button.maplibregl-ctrl-center:hover svg {
-  filter: brightness(0) invert(1);
+  .maplibregl-ctrl-zoom-in:hover .maplibregl-ctrl-icon,
+  .maplibregl-ctrl-zoom-out:hover .maplibregl-ctrl-icon,
+  .maplibregl-ctrl-compass:hover .maplibregl-ctrl-icon,
+  button.maplibregl-ctrl-center:hover svg {
+    filter: brightness(0) invert(1);
+  }
+
+  button.maplibregl-ctrl-3d:hover {
+    @apply text-white!;
+  }
 }
 
 button.maplibregl-ctrl-3d {
   @apply font-medium text-primary-500;
-}
-
-button.maplibregl-ctrl-3d:hover {
-  @apply text-white!;
 }
 
 button.maplibregl-ctrl-3d.is-active {
@@ -128,6 +130,8 @@ button.maplibregl-ctrl-center svg {
   @apply top-2.5 right-2.5 text-lg w-6! h-6!;
 }
 
-.maplibregl-popup-close-button:hover {
-  @apply bg-primary-100;
+@media (hover: hover) {
+  .maplibregl-popup-close-button:hover {
+    @apply bg-primary-100;
+  }
 }

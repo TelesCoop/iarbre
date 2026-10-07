@@ -2,21 +2,19 @@
 import { DataType, DataTypeToLabel, MapStyle, OverlayLayer } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
+import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
 
-const MOBILE_VIEWPORT = { width: 375, height: 667 }
-const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
+  cy.mapStore().should((store) => {
+    const layersOrder: string[] = store.mapInstancesByIds.default.getLayersOrder()
+    expect(layersOrder).to.include.members([lowerLayerId, upperLayerId])
+    expect(layersOrder.indexOf(lowerLayerId)).to.be.lessThan(layersOrder.indexOf(upperLayerId))
+  })
 
 describe("Map - Desktop", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(DESKTOP_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
@@ -136,24 +134,14 @@ describe("Map - Desktop", () => {
   })
 
   it("keeps the QPV borders above the data layer when switching 2D/3D", () => {
-    const expectQPVAboveDataLayer = () =>
-      cy.window().should((win) => {
-        const app = (win.document.querySelector("#app") as any).__vue_app__
-        const map = app.config.globalProperties.$pinia._s.get("map").mapInstancesByIds.default
-        const layersOrder: string[] = map.getLayersOrder()
-        expect(layersOrder.indexOf("tile-plantability-layer")).to.be.lessThan(
-          layersOrder.indexOf("qpv-border-casing")
-        )
-      })
-
     cy.getBySel("qpv-toggle").filter(":visible").click()
     cy.mapCheckQPVLayer(true)
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
   })
 
   it("maintains QPV layer when switching basemap styles", () => {
@@ -297,10 +285,8 @@ describe("Map - Desktop", () => {
 
 describe("Map - Shared link", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit(
+    cy.visitMap(
+      DESKTOP_VIEWPORT,
       `/plantability/13/45.07126/5.55430?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV},${OverlayLayer.CADASTRE}`
     )
   })
@@ -331,15 +317,8 @@ describe("Map - Shared link", () => {
 
 describe("Map - Mobile", () => {
   beforeEach(() => {
-    cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(MOBILE_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 

@@ -598,6 +598,13 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
+      // A tap on a street-view picture opens it; it must not also select the tile beneath.
+      if (
+        map.getLayer(PANORAMAX_PICTURES_LAYER) &&
+        map.queryRenderedFeatures(e.point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+      ) {
+        return
+      }
       applyTileSelection(map, datatype, geolevel, e.features!, {
         lng: e.lngLat.lng,
         lat: e.lngLat.lat
@@ -776,15 +783,14 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       const layerId = getLayerId(currentDataType, currentGeoLevel)
-      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
       const layersOrder = mapInstance.getLayersOrder()
       const layerIndex = layersOrder.indexOf(layerId)
-      const beforeId =
-        layerIndex === -1 ? getTerraDrawBeforeId(mapInstance) : layersOrder[layerIndex + 1]
-      if (layerIndex !== -1) {
-        mapInstance.removeLayer(layerId)
-      }
-      setupTile(mapInstance, currentDataType, currentGeoLevel, beforeId)
+      // Not added yet: the pending map initialisation creates it in the current mode.
+      if (layerIndex === -1) return
+
+      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
+      mapInstance.removeLayer(layerId)
+      setupTile(mapInstance, currentDataType, currentGeoLevel, layersOrder[layerIndex + 1])
     })
   }
 

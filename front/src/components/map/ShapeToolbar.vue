@@ -1,10 +1,17 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue"
+import { computed, ref, watch } from "vue"
+import { useRouter } from "vue-router"
+import { useEventListener } from "@vueuse/core"
+import { useTapOutside } from "@/composables/useTapOutside"
 import { useMapStore } from "@/stores/map"
+import { useZoneStore } from "@/stores/zone"
 import { SelectionMode } from "@/utils/enum"
+import { formatArea } from "@/utils/geo"
 import IconClose from "@/components/icons/IconClose.vue"
 
 const mapStore = useMapStore()
+const zoneStore = useZoneStore()
+const router = useRouter()
 
 // Local disclosure state: the card is hidden behind a single trigger.
 // Closing only hides the card — the drawn shape and its score are kept; use the
@@ -15,6 +22,45 @@ const toggleOpen = () => {
 }
 
 const state = computed(() => mapStore.drawingState)
+
+// A finished shape is when the zone can be analysed, so its actions come into view.
+watch(state, (newState) => {
+  if (newState === "editing") isOpen.value = true
+})
+
+const areaLabel = computed(() =>
+  mapStore.liveArea !== null ? formatArea(mapStore.liveArea) : null
+)
+
+const analyzeZone = () => {
+  const polygon = mapStore.getDrawnPolygon()
+  if (!polygon) return
+  zoneStore.setZone(polygon)
+  mapStore.exitShapeMode()
+  router.push({ name: "dashboard" })
+}
+
+const triggerRef = ref<HTMLElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
+
+// While a shape is drawn or edited, taps on the map are drawing gestures, not a dismissal.
+const isDrawingOnMap = (event: PointerEvent) =>
+  state.value !== "point" && (event.target as Element).closest(".maplibregl-map") !== null
+
+useTapOutside(
+  panelRef,
+  (event) => {
+    if (!isDrawingOnMap(event)) isOpen.value = false
+  },
+  { ignore: [triggerRef] }
+)
+// Scoped to the toolbar: Escape elsewhere cancels a drawing or closes a dialog.
+const closeOnEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") isOpen.value = false
+}
+useEventListener(triggerRef, "keydown", closeOnEscape)
+useEventListener(panelRef, "keydown", closeOnEscape)
+
 const isPolygon = computed(() => mapStore.selectionMode === SelectionMode.POLYGON)
 
 // Highlight the trigger whenever the panel is open or a shape is currently active,
@@ -61,6 +107,7 @@ const handleClear = () => mapStore.exitShapeMode()
 
 <template>
   <button
+    ref="triggerRef"
     v-tooltip.left="'Dessiner une zone'"
     :aria-expanded="isOpen"
     :class="{ 'map-control-btn-active': isTriggerActive }"
@@ -74,16 +121,21 @@ const handleClear = () => mapStore.exitShapeMode()
     <img :src="triggerIcon" alt="" aria-hidden="true" class="w-6 h-6" />
   </button>
 
-  <!-- Card opens in the top-right corner, just below the search bar. -->
   <div
     v-if="isOpen"
     id="shape-toolbar-panel"
+    ref="panelRef"
     aria-label="Outils de forme"
-    class="shape-toolbar__panel"
+    class="map-control-panel shape-toolbar__panel"
     data-cy="shape-toolbar"
     role="toolbar"
   >
-    <span class="shape-toolbar__title">{{ panelTitle }}</span>
+    <div class="shape-toolbar__header">
+      <span class="map-panel-title">{{ panelTitle }}</span>
+      <span v-if="state === 'editing' && areaLabel" class="shape-toolbar__area">
+        {{ areaLabel }}
+      </span>
+    </div>
 
     <ShapeModePicker class="shape-toolbar__picker" />
 
@@ -91,6 +143,16 @@ const handleClear = () => mapStore.exitShapeMode()
       <span aria-hidden="true" class="shape-toolbar__rule" />
       <div class="shape-toolbar__actions">
         <p class="shape-toolbar__hint">{{ contextHint }}</p>
+        <AppButton
+          v-if="state === 'editing'"
+          data-cy="zone-dashboard-cta"
+          full-width
+          size="sm"
+          variant="primary"
+          @click="analyzeZone"
+        >
+          Afficher le tableau de bord de la zone
+        </AppButton>
         <div class="shape-toolbar__buttons">
           <AppButton
             v-if="state === 'drawing' && isPolygon"
@@ -140,25 +202,31 @@ const handleClear = () => mapStore.exitShapeMode()
   right: var(--map-trigger-right);
 }
 
-/* Disclosure card, anchored top-right just below the search bar and matching its
-   width (both right-aligned at --map-edge-gap, so edges line up). MapComponent
-   publishes the bar's live height and width. Flat language (rounded-lg, no
-   shadow) to match the map panels. */
+/* Disclosure card. On phones the search column is narrower than the mode picker,
+   so the card opens above its trigger instead of over the legend. */
 .shape-toolbar__panel {
-  @apply absolute flex flex-col items-stretch gap-2 p-3
-         bg-white border border-gray-200 rounded-lg
-         max-w-[calc(100vw-1rem)]
+  @apply absolute flex flex-col items-stretch gap-2
          transition-all duration-300 ease-out;
-  z-index: var(--z-map-overlay);
-  top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
-  right: var(--map-edge-gap);
-  /* Never shrink below the mode picker: the search bar is only half-width on
-     mobile, narrower than the five shape buttons. */
-  width: var(--top-right-controls-width, 15rem);
+  z-index: var(--z-map-raised);
+  bottom: var(--map-above-bottom-row);
+  right: var(--map-trigger-right);
   min-width: min-content;
 }
-.shape-toolbar__title {
-  @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
+
+/* Below the search bar and matching its width, right-aligned on the same edge. */
+@media (min-width: 768px) {
+  .shape-toolbar__panel {
+    top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
+    right: var(--map-edge-gap);
+    bottom: auto;
+    width: var(--top-right-controls-width, 15rem);
+  }
+}
+.shape-toolbar__header {
+  @apply flex items-baseline justify-between gap-3;
+}
+.shape-toolbar__area {
+  @apply text-sm font-semibold text-gray-900 whitespace-nowrap;
 }
 .shape-toolbar__picker {
   @apply justify-center;

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
+import { ref, computed, watch } from "vue"
+import { useTapOutside } from "@/composables/useTapOutside"
 import { useMapStore } from "@/stores/map"
 import { MapStyle } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS, getMapStyleOption } from "@/utils/mapStyleOptions"
@@ -46,25 +47,14 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-const handleClickOutside = (event: MouseEvent) => {
-  if (!isSourceOpen.value) return
-  const target = event.target as Node | null
-  if (target && wrapperRef.value && !wrapperRef.value.contains(target)) {
-    isSourceOpen.value = false
-  }
-}
+useTapOutside(wrapperRef, () => {
+  isExpanded.value = false
+  isSourceOpen.value = false
+})
 
 // Close the popover whenever the user picks a different background.
 watch(currentStyle, () => {
   isSourceOpen.value = false
-})
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside)
 })
 </script>
 
@@ -146,11 +136,11 @@ onBeforeUnmount(() => {
 @reference "@/styles/main.css";
 
 .bg-selector-wrapper {
-  @apply flex flex-col gap-2;
+  @apply flex flex-col gap-2 max-w-full;
 }
 
 .bg-selector-container {
-  @apply flex items-center;
+  @apply flex items-center max-w-full;
   @apply bg-white rounded-lg;
   @apply border border-gray-200;
   padding: 10px;
@@ -250,8 +240,15 @@ onBeforeUnmount(() => {
   border-left-width: 0;
 }
 
+/* Scrolls sideways when the row is narrower than the options (phones). */
+.bg-selector-options > * {
+  flex-shrink: 0;
+}
+
 .bg-selector-options.is-expanded {
   max-width: 25rem;
+  min-width: 0;
+  overflow-x: auto;
   opacity: 1;
   padding-left: 0.5rem;
   margin-left: 1.5rem;

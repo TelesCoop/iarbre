@@ -1,11 +1,16 @@
 import { describe, it, expect, vi } from "vitest"
-
-vi.mock("maplibre-gl", () => ({ Map: class {}, NavigationControl: class {} }))
 import { mount } from "@vue/test-utils"
 import { createTestingPinia } from "@pinia/testing"
 import ShapeToolbar from "@/components/map/ShapeToolbar.vue"
 import { useMapStore } from "@/stores/map"
+import { useZoneStore } from "@/stores/zone"
 import { SelectionMode } from "@/utils/enum"
+import { formatArea } from "@/utils/geo"
+
+const routerPush = vi.hoisted(() => vi.fn())
+
+vi.mock("maplibre-gl", () => ({ Map: class {}, NavigationControl: class {} }))
+vi.mock("vue-router", () => ({ useRouter: () => ({ push: routerPush }) }))
 
 const mountToolbar = () => {
   const wrapper = mount(ShapeToolbar, {
@@ -19,7 +24,7 @@ const mountToolbar = () => {
       }
     }
   })
-  return { wrapper, store: useMapStore() }
+  return { wrapper, store: useMapStore(), zoneStore: useZoneStore() }
 }
 
 const openPanel = (wrapper: ReturnType<typeof mountToolbar>["wrapper"]) =>
@@ -114,5 +119,33 @@ describe("ShapeToolbar contextual actions (panel open)", () => {
     store.selectionMode = SelectionMode.POINT
     await openPanel(wrapper)
     expect(wrapper.find("[data-cy='shape-clear']").exists()).toBe(false)
+  })
+})
+
+describe("ShapeToolbar finished zone", () => {
+  it("opens the panel with the zone area once the shape is finished", async () => {
+    const { wrapper, store } = mountToolbar()
+    store.selectionMode = SelectionMode.POLYGON
+    store.liveArea = 12000
+
+    store.shapeEditing = true
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find("#shape-toolbar-panel").text()).toContain(formatArea(12000))
+  })
+
+  it("opens the zone dashboard from the panel", async () => {
+    const { wrapper, store, zoneStore } = mountToolbar()
+    const polygon = { type: "Polygon", coordinates: [] }
+    store.selectionMode = SelectionMode.POLYGON
+    vi.mocked(store.getDrawnPolygon).mockReturnValue(polygon as never)
+    store.shapeEditing = true
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find("[data-cy='zone-dashboard-cta']").trigger("click")
+
+    expect(zoneStore.setZone).toHaveBeenCalledWith(polygon)
+    expect(store.exitShapeMode).toHaveBeenCalled()
+    expect(routerPush).toHaveBeenCalledWith({ name: "dashboard" })
   })
 })

@@ -69,7 +69,8 @@ watch(
   @apply hidden lg:flex h-full flex-col bg-white overflow-hidden;
   @apply rounded-r-xl;
   @apply transition-transform duration-300 ease-out;
-  @apply fixed top-0 z-20;
+  @apply fixed top-0;
+  z-index: var(--z-map-sidepanel);
   left: 4.5rem;
   width: var(--width-sidepanel);
   box-shadow: 8px 0 32px -16px rgba(16, 24, 40, 0.18);
@@ -92,8 +93,8 @@ watch(
   z-index: var(--z-map-sheet);
   @apply rounded-t-xl;
   @apply transition-transform duration-300 ease-out;
-  bottom: 56px;
-  transform: translateY(calc(100% - 40px));
+  bottom: var(--mobile-bar-height);
+  transform: translateY(calc(100% - var(--mobile-panel-peek)));
   box-shadow: 0 -8px 32px -16px rgba(16, 24, 40, 0.18);
 }
 
