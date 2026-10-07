@@ -2,6 +2,7 @@ import { nextTick } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { useTutorialStore } from "@/stores/tutorial"
 import { useAppStore } from "@/stores/app"
+import { useMapRoute } from "@/composables/useMapRoute"
 import { DriverButton, TutorialSelector } from "@/types/tutorial"
 import type { AllowedButtons, DriveStep } from "driver.js"
 
@@ -15,12 +16,13 @@ export function useTutorial() {
   const appStore = useAppStore()
   const route = useRoute()
   const router = useRouter()
+  const mapRoute = useMapRoute()
 
   let overlayClickHandler: (() => void) | null = null
 
   const ensureMapPage = async () => {
     if (route.name !== "map") {
-      await router.push({ name: "map" })
+      await router.push(mapRoute.value)
       await nextTick()
     }
   }
@@ -231,7 +233,6 @@ export function useTutorial() {
 
   const startFullTutorial = async () => {
     await ensureMapPage()
-    const isMobile = appStore.isMobileOrTablet
 
     const steps: DriveStep[] = [
       ...getMapSteps(),

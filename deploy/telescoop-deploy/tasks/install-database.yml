@@ -16,8 +16,8 @@
           - postgresql
           - postgresql-contrib
           - libpq-dev
-          - python3-pip # for psycopg2
-          - postgresql-14-postgis-3
+          - python3-psycopg2
+          - postgresql-16-postgis-3
 
     - name: Find postgresql auth config file to configure authentication
       find: paths="/etc/postgresql/" recurse=yes patterns="pg_hba.conf"
@@ -30,10 +30,6 @@
         line: '\1md5'
         backrefs: true
       with_items: "{{ hba_files.files }}"
-
-    - name: Install psycopg2 on system
-      pip:
-        name: psycopg2
 
     - name: Create database user {{ database_user }}
       community.postgresql.postgresql_user:
@@ -50,5 +46,12 @@
       become: true
       become_user: postgres
       when: database_provider == "postgresql"
+
+    - name: Create postgis extension in {{ database_name }}
+      community.postgresql.postgresql_ext:
+        name: postgis
+        db: "{{ database_name }}"
+      become: true
+      become_user: postgres
 
   when: database_provider == "postgresql"

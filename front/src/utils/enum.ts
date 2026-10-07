@@ -20,6 +20,13 @@ export enum MapStyle {
   CADASTRE = "cadastre"
 }
 
+export enum OverlayLayer {
+  QPV = "qpv",
+  CADASTRE = "cadastre",
+  BOUNDARY = "boundary",
+  PANORAMAX = "panoramax"
+}
+
 export enum SelectionMode {
   POINT = "point",
   POLYGON = "polygon",

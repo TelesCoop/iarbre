@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event.pull_request.head.ref != 'dev' && github.event.pull_request.head.ref != 'main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Extract branch name
         id: extract_branch
         run: |
           echo "BRANCH_NAME=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
       - name: Clean up feature environment
-        uses: dawidd6/action-ansible-playbook@v2
+        uses: dawidd6/action-ansible-playbook@v9
         with:
           playbook: cleanup.yml
           directory: deploy
