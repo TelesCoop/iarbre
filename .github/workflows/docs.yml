@@ -7,16 +7,16 @@ on:
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, '[no doc]')"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Build and deploy doc
-        uses: dawidd6/action-ansible-playbook@v2
+        uses: dawidd6/action-ansible-playbook@v9
         with:
           playbook: docs.yml
           directory: deploy

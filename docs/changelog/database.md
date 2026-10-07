@@ -6,6 +6,12 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-09-25T13:37_postgres_backup.dump
+
+**Changements :** :
+
+- Ajout dans les média des rasters `PET_index_2090.tif` et `SunExposure_2090.tif`, générés à l'aide de : https://github.com/TelesCoop/solweig-gpu
+
 ## 2026-09-21T09:43_postgres_backup.dump
 
 **Changements :** :
