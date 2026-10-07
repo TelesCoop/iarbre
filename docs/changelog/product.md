@@ -1,5 +1,10 @@
 # Journal des changements
 
+## 🔖 0.40.0 (2026-10-07) : Montées de version
+
+Tout un travail a été mené pour mettre à jour la version de la DB Postgres de 14 vers 16, ainsi que les packages du back (pip) et du front (npm).
+Les propositions de mise à jour se font avec dependabot.
+
 ## 🔖 0.39.0 (2026-10-01) : Dashboard export et Panoramax
 
 ### ✨ feat : Ajout de Panoramax sur la carte
