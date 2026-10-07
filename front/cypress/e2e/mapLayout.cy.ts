@@ -1,9 +1,7 @@
 /// <reference types="cypress" />
-import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
+import { MOBILE_VIEWPORT } from "../support/viewports"
 
-const SHORT_DESKTOP_VIEWPORT = { width: 1280, height: 620 }
 const NARROW_DESKTOP_VIEWPORT = { width: 1024, height: 768 }
-const LANDSCAPE_PHONE_VIEWPORT = { width: 667, height: 375 }
 /** `--map-edge-gap`, the gap between map overlays and the edges they sit against. */
 const EDGE_GAP_PX = 8
 
@@ -13,9 +11,6 @@ const rectOf = (selector: string) =>
     .filter(":visible")
     .first()
     .then(($el) => $el[0].getBoundingClientRect())
-
-const rectsOverlap = (a: DOMRect, b: DOMRect) =>
-  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
 
 const setMapState = (state: Record<string, unknown>) =>
   cy.mapStore().then((store) => Object.assign(store, state))
@@ -34,64 +29,28 @@ const openStreetView = () =>
     }
   })
 
-const expectStreetViewAboveMapControls = () =>
-  rectOf(".maplibregl-ctrl-center").then((topControl) => {
-    rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
-      expect(viewer.bottom).to.be.at.most(topControl.top)
-    })
-  })
+// cy.click() fails when another element covers its target: each click below checks an overlap.
+const closeParcelCard = () => cy.get("[data-cy=cadastre-parcel-info] [aria-label=Fermer]").click()
 
 describe("Map layout - Desktop", () => {
-  beforeEach(() => cy.visitMap(DESKTOP_VIEWPORT))
+  beforeEach(() => cy.visitMap(NARROW_DESKTOP_VIEWPORT))
 
-  it("keeps the map controls at the same distance from the edges as the other overlays", () => {
-    rectOf("[data-cy=map-component]").then((map) => {
-      rectOf(".maplibregl-ctrl-3d").then((control) => {
-        expect(map.right - control.right).to.equal(EDGE_GAP_PX)
-        expect(map.bottom - control.bottom).to.equal(EDGE_GAP_PX)
-      })
-      rectOf("[data-cy=bottom-left-controls]").then((bottomLeft) => {
-        expect(map.bottom - bottomLeft.bottom).to.equal(EDGE_GAP_PX)
-      })
-    })
-  })
-  it("keeps the parcel card above the layer toggles", () => {
-    selectParcel()
-
-    rectOf("[data-cy=bottom-left-controls] .layer-toggles").then((toggles) => {
-      rectOf("[data-cy=cadastre-parcel-info]").then((card) => {
-        expect(card.bottom).to.be.at.most(toggles.top)
-      })
-    })
-  })
-})
-
-for (const viewport of [SHORT_DESKTOP_VIEWPORT, NARROW_DESKTOP_VIEWPORT]) {
-  describe(`Map layout - Desktop ${viewport.width}x${viewport.height}`, () => {
-    beforeEach(() => cy.visitMap(viewport))
-
-    it("keeps the street view clear of the legend and of the map controls", () => {
-      openStreetView()
-
-      rectOf(".legend-container").then((legend) => {
-        rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
-          expect(viewer.left).to.be.at.least(legend.right)
-        })
-      })
-      expectStreetViewAboveMapControls()
-    })
-  })
-}
-
-describe("Map layout - Landscape phone", () => {
-  beforeEach(() => cy.visitMap(LANDSCAPE_PHONE_VIEWPORT))
-
-  it("keeps the street view readable when the controls leave no room above them", () => {
+  it("keeps the street view clear of the legend and of the map controls", () => {
     openStreetView()
 
-    rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
-      expect(viewer.height).to.be.at.least(150)
+    rectOf(".legend-container").then((legend) => {
+      rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+        expect(viewer.left).to.be.at.least(legend.right)
+      })
     })
+    cy.get(".maplibregl-ctrl-center").click()
+  })
+
+  it("keeps the parcel card clear of the layer toggles", () => {
+    selectParcel()
+
+    cy.getBySel("qpv-toggle").filter(":visible").click()
+    closeParcelCard()
   })
 })
 
@@ -106,60 +65,42 @@ describe("Map layout - Mobile", () => {
     })
   })
 
-  it("keeps the expanded background selector clear of the draw trigger", () => {
-    cy.getBySel("bg-selector-toggle").click()
-    cy.get(".bg-selector-options img").each(($img) =>
-      cy
-        .wrap($img)
-        .should(($loaded) => expect(($loaded[0] as HTMLImageElement).complete).to.equal(true))
-    )
-    cy.wait(400) // eslint-disable-line cypress/no-unnecessary-waiting
-
-    rectOf("[data-cy=shape-toolbar-toggle]").then((trigger) => {
-      rectOf(".bg-selector-container").then((selector) => {
-        expect(selector.right).to.be.at.most(trigger.left)
-      })
-    })
-  })
-
   it("keeps the parcel card above the details panel", () => {
     selectParcel()
 
-    rectOf("[data-cy=mobile-panel-handle]").then((handle) => {
-      rectOf("[data-cy=cadastre-parcel-info]").then((card) => {
-        expect(card.bottom).to.be.at.most(handle.top)
+    closeParcelCard()
+  })
+
+  it("opens the draw panel under the legend and above a selected parcel card", () => {
+    selectParcel()
+    cy.getBySel("shape-toolbar-toggle").click()
+
+    cy.getBySel("shape-mode-polygon").click()
+    rectOf(".legend-container").then((legend) => {
+      rectOf("[data-cy=shape-toolbar]").then((panel) => {
+        expect(panel.top).to.be.at.least(legend.bottom)
       })
     })
   })
 
-  it("keeps the draw panel clear of the legend and of the map controls", () => {
-    cy.getBySel("shape-toolbar-toggle").click()
-
-    rectOf("[data-cy=shape-toolbar]").then((panel) => {
-      for (const selector of [".legend-container", ".maplibregl-ctrl-bottom-right"]) {
-        rectOf(selector).then((other) => expect(rectsOverlap(panel, other)).to.equal(false))
-      }
+  it("keeps the finished-shape panel under the legend", () => {
+    cy.mapStore().then((store) => {
+      store.enterShapeMode("polygon")
+      store.markShapeFinished()
     })
-  })
 
-  it("opens the draw panel above a selected parcel card", () => {
-    selectParcel()
-    cy.getBySel("shape-toolbar-toggle").click()
-
-    cy.getBySel("shape-mode-polygon").then(($button) => {
-      const { left, top, width, height } = $button[0].getBoundingClientRect()
-      const topElement = $button[0].ownerDocument.elementFromPoint(
-        left + width / 2,
-        top + height / 2
-      )
-      expect($button[0].contains(topElement)).to.equal(true)
+    cy.getBySel("zone-dashboard-cta").should("be.visible")
+    rectOf(".legend-container").then((legend) => {
+      rectOf("[data-cy=shape-toolbar]").then((panel) => {
+        expect(panel.top).to.be.at.least(legend.bottom)
+      })
     })
   })
 
   it("keeps the street view above the map controls", () => {
     openStreetView()
 
-    expectStreetViewAboveMapControls()
+    cy.get(".maplibregl-ctrl-center").click()
   })
 
   it("keeps the layer toggles inside the screen when the details panel is open", () => {

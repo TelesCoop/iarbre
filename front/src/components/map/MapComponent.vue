@@ -3,7 +3,6 @@ import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
 import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
 import { type MapDisplayState, type MapParams } from "@/types/map"
-import ZoneDashboardCard from "@/components/map/ZoneDashboardCard.vue"
 
 const props = defineProps({
   mapId: {
@@ -89,7 +88,6 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <ShapeToolbar />
   <ShapeLiveChip />
-  <ZoneDashboardCard />
 
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
@@ -229,13 +227,17 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 .bottom-left-controls {
-  @apply absolute flex flex-col items-start gap-2;
+  @apply absolute flex flex-col items-start gap-2 pointer-events-none;
   @apply transition-all duration-300 ease-out;
   z-index: var(--z-map-overlay);
   left: var(--map-edge-gap);
   bottom: var(--map-overlay-bottom);
   /* Stops before the draw trigger, which shares the bottom row. */
   max-width: calc(100% - var(--map-trigger-right) - var(--map-ctrl-size) - 2 * var(--map-edge-gap));
+}
+
+.bottom-left-controls > * {
+  @apply pointer-events-auto;
 }
 
 @media (min-width: 1024px) {

@@ -5,7 +5,8 @@ import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 import { DESKTOP_VIEWPORT, MOBILE_VIEWPORT } from "../support/viewports"
 
 const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
-  cy.mapLayersOrder().should((layersOrder) => {
+  cy.mapStore().should((store) => {
+    const layersOrder: string[] = store.mapInstancesByIds.default.getLayersOrder()
     expect(layersOrder).to.include.members([lowerLayerId, upperLayerId])
     expect(layersOrder.indexOf(lowerLayerId)).to.be.lessThan(layersOrder.indexOf(upperLayerId))
   })

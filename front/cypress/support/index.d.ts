@@ -4,7 +4,6 @@ declare namespace Cypress {
     getBySel(selector: string, ...args: any[]): Chainable
     visitMap(viewport: { width: number; height: number }, path?: string): void
     mapStore(): Chainable<any>
-    mapLayersOrder(): Chainable<string[]>
     mapSwitchLayer(datatype: string): void
     basemapSwitchLayer(maptype: string): void
     mapZoomTo(zoom: number): void

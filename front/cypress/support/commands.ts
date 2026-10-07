@@ -66,14 +66,6 @@ Cypress.Commands.add(
 Cypress.Commands.add("mapStore", () => cy.window().then(getMapStore))
 
 /**
- * Yields the layer ids of the default map, bottom first; re-read on every retry of a following assertion
- */
-Cypress.Commands.addQuery("mapLayersOrder", () => () => {
-  const win = (cy as unknown as { state: (key: string) => Window }).state("window")
-  return getMapStore(win).mapInstancesByIds.default.getLayersOrder() as string[]
-})
-
-/**
  * Custom command to check QPV layer status via console logs
  */
 Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
