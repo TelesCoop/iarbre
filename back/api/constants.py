@@ -61,7 +61,7 @@ VEGESTRATE_FILES = {
 }
 
 HEAT_FILES = {
-    "pet_index": "PET_index.tif",
+    "pet_index": "PET_index_1m_2090.tif",
 }
 
 HOURLY_HEAT_LAYERS = {"pet_index"}

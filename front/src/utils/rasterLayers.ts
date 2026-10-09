@@ -16,8 +16,8 @@ export interface RasterLayer {
 export const RASTER_LAYERS: RasterLayer[] = [
   {
     key: "pet_index",
-    label: "Indice PET - 1m - 2020",
-    description: `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet 2020.
+    label: "Indice PET - 1m - 2090",
+    description: `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet 2090.
       Nous répliquons, avec son aide, une <a href="https://www.sciencedirect.com/science/article/pii/S0360132325007188" target="_blank" rel="noopener noreferrer">étude</a> menée par le chercheur Damien David du CETHIL.</p>
       <p>Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le confort/inconfort
       d'une personne selon les caractéristiques d'ambiance (température de l'air, ombre ou soleil,
@@ -27,7 +27,7 @@ export const RASTER_LAYERS: RasterLayer[] = [
         <li>Les bâtiments,</li>
         <li>Le modèle de hauteur de la végétation,</li>
         <li>L'occupation des sols (béton, terre, etc.),</li>
-        <li>Projection météo 2020 heure par heure (température, humidité relative, vent).</li>
+        <li>Projection météo 2090 heure par heure (température, humidité relative, vent).</li>
       </ul>
       <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
       Chaque pixel correspond à une zone de 1mx1m.</p>`,
