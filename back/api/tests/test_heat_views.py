@@ -39,6 +39,11 @@ class HeatTileClassesFilterTest(SimpleTestCase):
         alpha = self._get_pixels(data, "mode=pet_index&hour=14&classes=")
         self.assertEqual(alpha.tolist(), [0, 0, 0])
 
+    def test_pet_index_2090_uses_pet_colors(self):
+        data = np.array([[5, 7, 9]], dtype=np.uint8)
+        alpha = self._get_pixels(data, "mode=pet_index_2090&hour=14&classes=0,4")
+        self.assertEqual(alpha.tolist(), [255, 0, 255])
+
     def test_invalid_classes_returns_400(self):
         url = reverse("retrieve-heat-tile", kwargs={"z": 14, "x": 8345, "y": 5765})
         response = self.client.get(f"{url}?mode=sun_exposure&classes=a")

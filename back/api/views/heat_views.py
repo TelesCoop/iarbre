@@ -34,6 +34,7 @@ class HeatTileView(APIView):
     Serve heat raster data as {z}/{x}/{y} PNG tiles for MapLibre.
 
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14
+        GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index_2090&hour=14
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=sun_exposure
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=sun_exposure&classes=0,2
     """
@@ -62,7 +63,7 @@ class HeatTileView(APIView):
 
         rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
         valid = data != nodata if nodata is not None else np.ones(data.shape, bool)
-        if mode == "pet_index":
+        if mode in HOURLY_HEAT_LAYERS:
             for index, (value, color) in enumerate(PET_INDEX_COLOR_MAP.items()):
                 rgba_data[valid & (data == value)] = self._class_color(
                     index, color, classes

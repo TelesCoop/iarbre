@@ -17,9 +17,10 @@ def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
 base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
     "pet_index": _entry(base_dir + "PET_index_2020.tif"),
+    "pet_index_2090": _entry(base_dir + "PET_index_1m_2090.tif"),
     "sun_exposure": _entry(base_dir + "SunExposure.tif"),
 }
-HOURLY_RASTERS = {"pet_index"}
+HOURLY_RASTERS = {"pet_index", "pet_index_2090"}
 
 
 class FileDownloadView(APIView):
