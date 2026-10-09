@@ -1,5 +1,5 @@
 import type { MapParams } from "@/types/map"
-import { DataType, MapStyle } from "@/utils/enum"
+import { DEFAULT_LAYER_KEY } from "@/utils/rasterLayers"
 
 export enum Layout {
   Default = "Default"
@@ -16,17 +16,8 @@ export const DEFAULT_MAP_CENTER = {
 }
 
 export const DEFAULT_MAP_PARAMS: MapParams = {
-  dataType: DataType.PLANTABILITY,
+  layer: DEFAULT_LAYER_KEY,
   lng: DEFAULT_MAP_CENTER.lng,
   lat: DEFAULT_MAP_CENTER.lat,
   zoom: 14
 }
-
-export const DEFAULT_MAP_STYLE = MapStyle.OSM
-
-// Terra Draw layer name (used to position layers below drawing layers)
-export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"
-
-// Mirrors the backend ScoresInPolygonView.MAX_POLYGON_AREA_M2 (5 km²): selections
-// larger than this are not sent to the server, to avoid saturating it.
-export const MAX_SHAPE_AREA_M2 = 5_000_000

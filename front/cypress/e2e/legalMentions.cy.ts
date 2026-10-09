@@ -19,12 +19,6 @@ describe("Legal Mentions Navigation", () => {
     cy.getBySel("map-component").should("exist")
   })
 
-  it("legal mentions link opens in new tab from feedback form", () => {
-    cy.visit("/")
-    cy.get(".sidebar-icon-button").first().click()
-    cy.get('a[href="/mentions-legales"]').should("have.attr", "target", "_blank")
-  })
-
   it("legal mentions link exists in welcome message", () => {
     LocalStorageHandler.removeItem("hasVisitedBefore")
     cy.visit("/")

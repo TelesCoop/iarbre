@@ -1,49 +1,37 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue"
 import { useMapStore } from "@/stores/map"
-import { DataType, getDataTypeAttributionSource } from "@/utils/enum"
 
 const mapStore = useMapStore()
-const attributionHTML = ref("")
-
-watch(
-  () => mapStore.selectedDataType,
-  async (dataType) => {
-    if (dataType) {
-      attributionHTML.value = await getDataTypeAttributionSource(dataType)
-    }
-  },
-  { immediate: true }
-)
 </script>
 
 <template>
-  <div v-if="mapStore.selectedDataType" class="legend-panel">
-    <PlantabilityLegend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" class="w-full" />
-    <ClimateZoneLegend
-      v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
-      class="w-full"
-    />
-    <VulnerabilityLegend
-      v-else-if="mapStore.selectedDataType === DataType.VULNERABILITY"
-      class="w-full"
-    />
-    <PlantVulnerabilityLegend
-      v-else-if="mapStore.selectedDataType === DataType.PLANTABILITY_VULNERABILITY"
-      class="w-full"
-    />
-    <biosphere-functional-integrity-legend
-      v-else-if="mapStore.selectedDataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY"
-      class="w-full"
-    />
-    <vegetation-legend
-      v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
-      class="w-full"
-    />
-    <MapFiltersStatus />
+  <div class="legend-panel">
+    <div
+      class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1 w-full"
+      data-cy="raster-legend"
+    >
+      <button
+        v-for="(item, index) in mapStore.selectedLayer.legend"
+        :key="item.label"
+        type="button"
+        class="flex items-center gap-2 select-none cursor-pointer text-left"
+        :class="{ 'opacity-40 line-through': mapStore.hiddenClasses.includes(index) }"
+        :aria-pressed="!mapStore.hiddenClasses.includes(index)"
+        @click="mapStore.toggleClass(index)"
+      >
+        <div
+          class="w-4 h-4 shrink-0 border border-gray-300 rounded-sm"
+          :style="{ backgroundColor: item.color }"
+        ></div>
+        <span class="text-sm text-primary-900">
+          {{ item.label }}
+          <span v-if="item.detail" class="hidden lg:inline text-xs text-gray-500"
+            >({{ item.detail }})</span
+          >
+        </span>
+      </button>
+    </div>
 
-    <p v-if="attributionHTML" class="legend-attribution">
-      Source : <span v-html="attributionHTML" />
-    </p>
+    <p class="legend-attribution">Source : {{ mapStore.selectedLayer.attribution }}</p>
   </div>
 </template>

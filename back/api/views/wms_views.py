@@ -27,17 +27,26 @@ def _discover_layers() -> dict:
 
     Each ``<name>.tif`` becomes the layer ``iarbre:<name>``. The layer list is
     driven by what is on disk, not by a static registry.
+
+    A multi-band raster split into ``<name>/<name>_hXX.tif`` (see the
+    ``split_pet_index`` command) is replaced by one layer per hour file.
     """
     wms_root = Path(settings.MEDIA_ROOT) / _WMS_RASTER_DIR
     if not wms_root.is_dir():
         return {}
-    return {
-        f"iarbre:{tif.stem}": {"title": tif.stem, "path": tif}
-        for tif in sorted(wms_root.glob("*.tif"))
-    }
+    layers = {}
+    for tif in sorted(wms_root.glob("*.tif")):
+        split_dir = wms_root / tif.stem
+        tifs = sorted(split_dir.glob("*.tif")) if split_dir.is_dir() else [tif]
+        for layer_tif in tifs:
+            layers[f"iarbre:{layer_tif.stem}"] = {
+                "title": layer_tif.stem,
+                "path": layer_tif,
+            }
+    return layers
 
 
-class IArbreWMSView(APIView):
+class WMSView(APIView):
     """OGC WMS 1.1.1 / 1.3.0 endpoint serving raster layers.
 
     Supported requests:

@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
-import { useTutorial } from "@/composables/useTutorial"
-import { useAppStore } from "@/stores/app"
 import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
 import IconExperiment from "@/components/icons/IconExperiment.vue"
 import ExperimentsMessage from "@/components/ExperimentsMessage.vue"
@@ -18,10 +16,6 @@ const props = withDefaults(defineProps<welcomeProps>(), {
 const emit = defineEmits<{
   "update:modelValue": [value: boolean]
 }>()
-
-const appStore = useAppStore()
-
-const tutorial = useTutorial()
 
 const showWelcome = ref(false)
 
@@ -52,21 +46,11 @@ const closeWelcome = () => {
   }
 }
 
-const startTutorialAndClose = (tutorialFn: () => void) => {
-  closeWelcome()
-  setTimeout(tutorialFn, 300)
-}
-
 const experimentsVisible = ref(false)
 
-const startTutorial = () => startTutorialAndClose(tutorial.startFullTutorial)
 const openExperiments = () => {
   closeWelcome()
   experimentsVisible.value = true
-}
-const openFeedback = () => {
-  closeWelcome()
-  appStore.feedbackVisible = true
 }
 </script>
 
@@ -83,36 +67,6 @@ const openFeedback = () => {
   >
     <div class="flex flex-col gap-4 bg-white">
       <div class="space-y-4">
-        <button
-          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
-          data-cy="welcome-map-tutorial"
-          @click="startTutorial"
-        >
-          <span class="welcome-icon"><ContextDataIcon name="generic" :size="20" /></span>
-          <div>
-            <h4 class="font-medium">Cliquez ici pour découvrir IA·rbre pas à pas</h4>
-            <div class="space-y-1 mt-2">
-              <li class="text-sm">Explorez la carte</li>
-              <li class="text-sm">Utilisez la légende pour filtrer</li>
-              <li class="text-sm">Changez de calque et de fond de carte</li>
-            </div>
-          </div>
-        </button>
-
-        <button
-          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
-          data-cy="welcome-feedback-tutorial"
-          @click="openFeedback"
-        >
-          <span class="welcome-icon"><ContextDataIcon name="people" :size="20" /></span>
-          <div>
-            <h4 class="font-medium">Donnez votre avis</h4>
-            <p class="text-sm">
-              en cliquant sur "Envoyer votre avis" pour partager vos commentaires.
-            </p>
-          </div>
-        </button>
-
         <a
           href="https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
           target="_blank"

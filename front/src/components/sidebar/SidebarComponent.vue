@@ -1,27 +1,11 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
-import { useRouter, useRoute } from "vue-router"
-import { useApiPost } from "@/api"
-import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import IconChevron from "@/components/icons/IconChevron.vue"
-import type { Feedback } from "@/types/map"
-import { useToast } from "@/composables/useToast"
-import { useMapRoute } from "@/composables/useMapRoute"
 import { useAppStore } from "@/stores/app"
 
-const router = useRouter()
-const route = useRoute()
 const appStore = useAppStore()
 const welcomeIsVisible = ref(false)
-const toast = useToast()
-const mapRoute = useMapRoute()
-
-const isDashboard = computed(() => route.name === "dashboard")
-
-const handleContactClick = () => {
-  appStore.feedbackVisible = true
-}
 
 const handleFeaturesClick = () => {
   welcomeIsVisible.value = true
@@ -31,39 +15,10 @@ const handleGithubClick = () => {
   window.open("https://github.com/TelesCoop/iarbre", "_blank")
 }
 
-const handleMapClick = () => {
-  router.push(mapRoute.value)
-}
-
-const handleDashboardClick = () => {
-  router.push({ name: "dashboard" })
-}
-
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
 const handleToggleSidePanel = () => {
   appStore.toggleSidePanel()
-}
-
-const sendFeedbackToAPI = async (data: Feedback) => {
-  const { error } = await useApiPost<Feedback>("feedback/", data)
-  if (error != null) {
-    toast.add({
-      severity: "error",
-      summary: "Erreur",
-      detail: "Erreur lors de l'envoi du retour. Veuillez réessayer plus tard."
-    })
-    return false
-  }
-  toast.add({
-    severity: "success",
-    summary: "Merci !",
-    detail: "Votre retour a bien été envoyé",
-    life: 5000,
-    group: "br"
-  })
-  appStore.feedbackVisible = false
-  return true
 }
 </script>
 
@@ -198,7 +153,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
 
     <button
-      v-if="!isDashboard"
       :aria-expanded="isSidePanelVisible"
       :aria-label="isSidePanelVisible ? 'Masquer le panneau' : 'Afficher le panneau'"
       class="sidebar-toggle-panel"
@@ -211,93 +165,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
       />
     </button>
 
-    <nav class="sidebar-nav">
-      <button
-        :class="['sidebar-nav-button', { active: !isDashboard }]"
-        aria-label="Carte"
-        @click="handleMapClick"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <span class="sidebar-nav-label">Carte</span>
-      </button>
-      <button
-        :class="['sidebar-nav-button', { active: isDashboard }]"
-        aria-label="Tableau de bord"
-        data-cy="dashboard-button"
-        @click="handleDashboardClick"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect
-            x="14"
-            y="14"
-            width="7"
-            height="7"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-        </svg>
-        <span class="sidebar-nav-label">Tableau<br />de bord</span>
-      </button>
-    </nav>
-
     <div class="sidebar-icons">
-      <button aria-label="Contact" class="sidebar-icon-button" @click="handleContactClick">
-        <svg
-          fill="none"
-          height="24"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clip-rule="evenodd"
-            d="M8.61097 18.5931L4.8 21L5.46774 16.7827C3.88371 15.3227 3 13.2947 3 11.0526C3 6.60529 6.47715 3 12 3C17.5228 3 21 6.60529 21 11.0526C21 15.5 17.5228 19.1053 12 19.1053C10.7622 19.1053 9.62714 18.9242 8.61097 18.5931Z"
-            fill-rule="evenodd"
-            stroke="white"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-          <path
-            d="M9 9H15"
-            stroke="white"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-          <path
-            d="M9 13H12"
-            stroke="white"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-        </svg>
-      </button>
-
       <button aria-label="Features" class="sidebar-icon-button" @click="handleFeaturesClick">
         <svg
           fill="none"
@@ -494,88 +362,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
     </div>
 
     <div class="mobile-bar-icons">
-      <button
-        :class="['mobile-bar-button', { 'mobile-bar-button-active': !isDashboard }]"
-        aria-label="Carte"
-        @click="handleMapClick"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M9 20L3 17V4L9 7M9 20L15 17M9 20V7M15 17L21 20V7L15 4M15 17V4M9 7L15 4"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-      <button
-        :class="['mobile-bar-button', { 'mobile-bar-button-active': isDashboard }]"
-        aria-label="Tableau de bord"
-        data-cy="dashboard-button-mobile"
-        @click="handleDashboardClick"
-      >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" />
-          <rect
-            x="14"
-            y="14"
-            width="7"
-            height="7"
-            rx="1.5"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-        </svg>
-      </button>
-
-      <button aria-label="Contact" class="mobile-bar-button" @click="handleContactClick">
-        <svg
-          fill="none"
-          height="20"
-          viewBox="0 0 24 24"
-          width="20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clip-rule="evenodd"
-            d="M8.61097 18.5931L4.8 21L5.46774 16.7827C3.88371 15.3227 3 13.2947 3 11.0526C3 6.60529 6.47715 3 12 3C17.5228 3 21 6.60529 21 11.0526C21 15.5 17.5228 19.1053 12 19.1053C10.7622 19.1053 9.62714 18.9242 8.61097 18.5931Z"
-            fill-rule="evenodd"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-          <path
-            d="M9 9H15"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-          <path
-            d="M9 13H12"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          />
-        </svg>
-      </button>
-
       <button aria-label="Features" class="mobile-bar-button" @click="handleFeaturesClick">
         <svg
           fill="none"
@@ -643,8 +429,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   </div>
 
   <WelcomeMessage v-model="welcomeIsVisible" />
-
-  <FeedbackPopin v-model="appStore.feedbackVisible" @submit-feedback="sendFeedbackToAPI" />
 </template>
 
 <style scoped>
@@ -691,33 +475,6 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   flex-shrink: 0;
 }
 
-.sidebar-nav {
-  @apply hidden lg:flex flex-col;
-  @apply border-b-1 border-gray-200;
-  flex-shrink: 0;
-}
-
-.sidebar-nav-button {
-  @apply flex flex-col items-center justify-center cursor-pointer;
-  @apply bg-gray-50 border-none text-gray-500;
-  @apply transition-all duration-200;
-  @apply hover:bg-primary-50 hover:text-primary-600;
-  width: 100%;
-  height: 4rem;
-  gap: 0.25rem;
-}
-
-.sidebar-nav-button.active {
-  @apply bg-primary-100 text-primary-700;
-  @apply border-l-2 border-l-primary-600;
-}
-
-.sidebar-nav-label {
-  @apply text-center leading-tight;
-  font-size: 0.5625rem;
-  font-weight: 500;
-}
-
 .toggle-chevron {
   @apply text-gray-600;
   transition: transform 0.3s ease-out;
@@ -743,9 +500,5 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply bg-transparent border-none p-2;
   @apply text-white;
   @apply transition-opacity hover:opacity-80;
-}
-
-.mobile-bar-button-active {
-  @apply opacity-100 bg-white/20 rounded-lg;
 }
 </style>

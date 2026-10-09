@@ -1,63 +1,26 @@
-import { computed, markRaw, ref, type Ref } from "vue"
+import { markRaw, ref } from "vue"
 import { defineStore } from "pinia"
-import { useDebounceFn } from "@vueuse/core"
-import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
   NavigationControl,
-  type GeoJSONSource,
+  type RasterTileSource,
   type StyleSpecification,
-  type AddLayerObject,
   type DataDrivenPropertyValueSpecification
 } from "maplibre-gl"
-import {
-  MAP_CONTROL_POSITION,
-  MAX_ZOOM,
-  MIN_ZOOM,
-  DEFAULT_MAP_CENTER,
-  DEFAULT_MAP_STYLE,
-  MAX_SHAPE_AREA_M2
-} from "@/utils/constants"
-import {
-  GeoLevel,
-  DataType,
-  MapStyle,
-  OverlayLayer,
-  SelectionMode,
-  DataTypeToGeolevel
-} from "@/utils/enum"
+import { MAP_CONTROL_POSITION, MAX_ZOOM, MIN_ZOOM, DEFAULT_MAP_CENTER } from "@/utils/constants"
+import { MapStyle } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
 import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import { getCityBoundaries } from "@/services/boundaryService"
-import { getVegetationHeightAtPoint } from "@/services/vegetationService"
-import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
-
-import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
-import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
-import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
-import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import {
-  VEGESTRATE_COLOR_MAP,
-  VEGESTRATE_HEIGHT_MAP,
-  buildElevationColorRamp,
-  normalizeHeightRanges,
-  type HeightRange
-} from "@/utils/vegetation"
-import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
-import {
-  extractFeatureProperty,
-  getLayerId,
-  getSourceId,
-  showSelectionWall3D,
-  clearSelectionWall3D,
-  showSelectionOutline2D,
-  clearSelectionOutline2D,
-  METERS_PER_DEGREE_LAT,
-  getTerraDrawBeforeId
-} from "@/utils/map"
+  DEFAULT_HOUR,
+  DEFAULT_LAYER_KEY,
+  buildTileUrl,
+  getRasterLayer,
+  type RasterLayer
+} from "@/utils/rasterLayers"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -99,33 +62,18 @@ import {
   PANORAMAX_PICTURES_MIN_ZOOM,
   PANORAMAX_ACTIVATION_ZOOM
 } from "@/utils/panoramax"
-import { useContextData } from "@/composables/useContextData"
-import { getBivariateCoordinates } from "@/utils/plantability_vulnerability"
-import { addCenterControl, add3DControl } from "@/utils/mapControls"
-import { useShapeDrawing } from "@/composables/useTerraDraw"
-import { computePolygonAreaM2 } from "@/utils/geo"
-import type { ZonePolygon } from "@/stores/zone"
-import type { MapDisplayState } from "@/types/map"
+import { addCenterControl } from "@/utils/mapControls"
 
-const isHeightRange = (range: unknown): range is HeightRange => {
-  if (typeof range !== "object" || range === null) return false
-  const { min, max } = range as HeightRange
-  return typeof min === "number" && (max === null || typeof max === "number")
-}
-
-const loadStoredHeightRanges = (): HeightRange[] => {
-  const stored = LocalStorageHandler.getItem("vegestrateHeightRanges")
-  return Array.isArray(stored) ? normalizeHeightRanges(stored.filter(isHeightRange)) : []
-}
+const RASTER_SOURCE_ID = "raster-source"
+const RASTER_LAYER_ID = "raster-layer"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
-  const mapEventsListener = ref<Record<string, (e: any) => void>>({})
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
-  const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
-  const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
+  const selectedLayer = ref<RasterLayer>(getRasterLayer(DEFAULT_LAYER_KEY))
+  const selectedHour = ref<number>(DEFAULT_HOUR)
+  const hiddenClasses = ref<number[]>([])
+  const selectedMapStyle = ref<MapStyle>(MapStyle.ORTHOPHOTO)
   const currentZoom = ref<number>(14)
-  const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
   const showBoundaryLayer = ref<boolean>(false)
   const showCadastreLayer = ref<boolean>(false)
@@ -137,86 +85,10 @@ export const useMapStore = defineStore("map", () => {
   } | null>(null)
   const showPanoramaxLayer = ref<boolean>(false)
   const selectedPanoramaxPicture = ref<PanoramaxPicture | null>(null)
-  const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
-  const shapeEditing = ref<boolean>(false)
-  const liveArea = ref<number | null>(null)
-  const shapeDrawing = useShapeDrawing()
   const clickCoordinates = ref<{ lat: number; lng: number }>({
     lat: DEFAULT_MAP_CENTER.lat,
     lng: DEFAULT_MAP_CENTER.lng
   })
-  const isCalculating = ref<boolean>(false)
-  const controlsAdded = ref<Record<string, boolean>>({})
-
-  const selectedLegendCell = ref<{ plantability: number; vulnerability: number } | null>(null)
-  const use3D = ref<boolean>(false)
-  const selectedFeatureInfo = ref<{
-    datatype: DataType
-    geometry: any
-    properties: Record<string, any>
-  } | null>(null)
-  const showVegestrateHeight = ref<boolean>(false)
-  const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
-  const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
-  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
-  const heightMapZoomHandler = ref<(() => void) | null>(null)
-
-  const {
-    clearAllFilters,
-    setFilteredValues,
-    applyFilters,
-    hasActiveFilters,
-    isFiltered,
-    filteredValues,
-    toggleFilter,
-    activeFiltersCount
-  } = useMapFilters()
-
-  // reference https://docs.mapbox.com/style-spec/reference/expressions
-  const FILL_COLOR_MAP = computed(() => {
-    const bivariateExpression = generateBivariateColorExpression(vulnerabilityMode.value)
-
-    return {
-      [DataType.PLANTABILITY]: ["match", ["get", "indice"], ...PLANTABILITY_COLOR_MAP],
-      [DataType.VULNERABILITY]: [
-        "match",
-        ["get", `indice_${vulnerabilityMode.value}`],
-        ...VULNERABILITY_COLOR_MAP
-      ],
-      [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
-      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
-        "step",
-        ["get", "indice"],
-        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
-      ],
-      [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
-      [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
-    }
-  })
-
-  const HEIGHT_MULTIPLIER = 15
-  const EXTRUSION_HEIGHT_MAP = computed(() => {
-    return {
-      [DataType.PLANTABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.VULNERABILITY]: [
-        "*",
-        ["get", `indice_${vulnerabilityMode.value}`],
-        HEIGHT_MULTIPLIER
-      ],
-      [DataType.CLIMATE_ZONE]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.PLANTABILITY_VULNERABILITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER],
-      [DataType.VEGESTRATE]: [
-        "*",
-        ["match", ["get", "indice"], ...VEGESTRATE_HEIGHT_MAP],
-        HEIGHT_MULTIPLIER
-      ],
-      [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: ["*", ["get", "indice"], HEIGHT_MULTIPLIER / 100]
-    }
-  })
-
-  const getGeoLevelFromDataType = () => {
-    return DataTypeToGeolevel[selectedDataType.value!]
-  }
 
   /**
    * Deep-clone the raw maplibre style JSON for a given MapStyle, inject the
@@ -233,593 +105,85 @@ export const useMapStore = defineStore("map", () => {
       .replace(/\?key=\{CARTO_API_KEY\}/g, cartoApiKey ? `?key=${cartoApiKey}` : "")
     return applyMapStyleAttributions(JSON.parse(rawStyle)) as StyleSpecification
   }
-  const navControl = ref(
-    new NavigationControl({
-      visualizePitch: true,
-      visualizeRoll: false,
-      showZoom: true,
-      showCompass: true
-    })
-  )
-
-  const toggleAndApplyFilter = (value: number | string) => {
-    toggleFilter(value)
-    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
-  }
-
-  const resetFilters = () => {
-    clearAllFilters()
-    applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
-  }
-
-  const centerControl = ref({
-    onAdd: (map: Map) => addCenterControl(map),
-    onRemove: () => {
-      const controlElement = document.getElementsByClassName("maplibregl-ctrl-center-container")[0]
-      if (controlElement) {
-        controlElement.remove()
-      }
-    }
-  })
-
-  const control3D = ref({
-    onAdd: () => add3DControl(use3D, toggle3D),
-    onRemove: () => {
-      const controlElement = document.getElementsByClassName("maplibregl-ctrl-3d-container")[0]
-      if (controlElement) {
-        controlElement.remove()
-      }
-    }
-  })
 
   const getMapInstance = (mapId: string): Map => {
     return mapInstancesByIds.value[mapId]
-  }
-
-  const createMapLayers = (
-    datatype: DataType,
-    geolevel: GeoLevel,
-    sourceId: string
-  ): AddLayerObject[] => {
-    const layerId = getLayerId(datatype, geolevel)
-
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      return [
-        {
-          id: layerId,
-          type: "color-relief",
-          source: sourceId,
-          layout: {},
-          paint: {
-            "color-relief-opacity": 0.8,
-            "color-relief-color": buildElevationColorRamp(vegestrateHeightRanges.value)
-          }
-        }
-      ]
-    }
-
-    const sourceLayer = `${geolevel}--${datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype}`
-
-    if (use3D.value) {
-      const extrusionLayer: AddLayerObject = {
-        id: layerId,
-        type: "fill-extrusion",
-        source: sourceId,
-        "source-layer": sourceLayer,
-        layout: {},
-        paint: {
-          "fill-extrusion-color": FILL_COLOR_MAP.value[
-            datatype
-          ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-          "fill-extrusion-height": EXTRUSION_HEIGHT_MAP.value[
-            datatype
-          ] as DataDrivenPropertyValueSpecification<number>,
-          "fill-extrusion-base": 0,
-          "fill-extrusion-opacity": 0.7
-        }
-      }
-      return [extrusionLayer]
-    }
-
-    const fillLayer: AddLayerObject = {
-      id: layerId,
-      type: "fill",
-      source: sourceId,
-      "source-layer": sourceLayer,
-      layout: {},
-      paint: {
-        "fill-color": FILL_COLOR_MAP.value[
-          datatype
-        ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
-        "fill-opacity": 0.5,
-        "fill-outline-color": "#00000000"
-      }
-    }
-
-    return [fillLayer]
-  }
-
-  const CLICK_MARKER_SOURCE = "ifb-click-square-source"
-  const CLICK_MARKER_CASING_LAYER = "ifb-click-marker-casing-layer"
-  const CLICK_MARKER_LAYER = "ifb-click-square-layer"
-  const IFB_CLICK_CIRCLE_SOURCE = "ifb-click-circle-source"
-  const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
-  const IFB_CIRCLE_RADIUS_M = 500
-
-  const CROSS_HALF_SIZE_PX = 9
-
-  const metersPerPixel = (map: Map, lat: number) =>
-    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / 2 ** map.getZoom()
-
-  const CLICK_MARKER_STYLES = {
-    square: {
-      halfSizeM: () => 2,
-      width: QPV_CASING_WIDTH,
-      casingWidth: 0
-    },
-    cross: {
-      halfSizeM: (map: Map, lat: number) => CROSS_HALF_SIZE_PX * metersPerPixel(map, lat),
-      width: 2,
-      casingWidth: 5
-    }
-  }
-  type ClickMarkerShape = keyof typeof CLICK_MARKER_STYLES
-
-  const drawClickMarker = (
-    map: Map,
-    lat: number,
-    lng: number,
-    shape: ClickMarkerShape,
-    withCircle = true
-  ) => {
-    const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
-    const sizeM = halfSizeM(map, lat)
-    const latOffset = sizeM / METERS_PER_DEGREE_LAT
-    const lngOffset = sizeM / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
-    const marker = {
-      type: "Feature" as const,
-      geometry:
-        shape === "square"
-          ? {
-              type: "Polygon" as const,
-              coordinates: [
-                [
-                  [lng - lngOffset, lat - latOffset],
-                  [lng + lngOffset, lat - latOffset],
-                  [lng + lngOffset, lat + latOffset],
-                  [lng - lngOffset, lat + latOffset],
-                  [lng - lngOffset, lat - latOffset]
-                ]
-              ]
-            }
-          : {
-              type: "MultiLineString" as const,
-              coordinates: [
-                [
-                  [lng - lngOffset, lat],
-                  [lng + lngOffset, lat]
-                ],
-                [
-                  [lng, lat - latOffset],
-                  [lng, lat + latOffset]
-                ]
-              ]
-            },
-      properties: {}
-    }
-    const source = map.getSource(CLICK_MARKER_SOURCE) as GeoJSONSource | undefined
-    if (source) {
-      source.setData(marker)
-    } else {
-      map.addSource(CLICK_MARKER_SOURCE, { type: "geojson", data: marker })
-      map.addLayer({
-        id: CLICK_MARKER_CASING_LAYER,
-        type: "line",
-        source: CLICK_MARKER_SOURCE,
-        layout: { "line-cap": "round" },
-        paint: {
-          "line-color": QPV_BORDER_COLOR,
-          "line-width": casingWidth,
-          "line-opacity": QPV_CASING_OPACITY
-        }
-      })
-      map.addLayer({
-        id: CLICK_MARKER_LAYER,
-        type: "line",
-        source: CLICK_MARKER_SOURCE,
-        layout: { "line-cap": "round" },
-        paint: {
-          "line-color": QPV_CASING_COLOR,
-          "line-width": width,
-          "line-opacity": QPV_CASING_OPACITY
-        }
-      })
-    }
-
-    if (!withCircle) return
-
-    const latRadiusDeg = IFB_CIRCLE_RADIUS_M / METERS_PER_DEGREE_LAT
-    const lngRadiusDeg =
-      IFB_CIRCLE_RADIUS_M / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
-    const steps = 64
-    const circleCoords = Array.from({ length: steps + 1 }, (_, i) => {
-      const angle = (i * 2 * Math.PI) / steps
-      return [lng + lngRadiusDeg * Math.cos(angle), lat + latRadiusDeg * Math.sin(angle)]
-    })
-    const circle = {
-      type: "Feature" as const,
-      geometry: { type: "Polygon" as const, coordinates: [circleCoords] },
-      properties: {}
-    }
-    const circleSource = map.getSource(IFB_CLICK_CIRCLE_SOURCE) as GeoJSONSource | undefined
-    if (circleSource) {
-      circleSource.setData(circle)
-    } else {
-      map.addSource(IFB_CLICK_CIRCLE_SOURCE, { type: "geojson", data: circle })
-      map.addLayer({
-        id: IFB_CLICK_CIRCLE_LAYER,
-        type: "line",
-        source: IFB_CLICK_CIRCLE_SOURCE,
-        paint: { "line-color": "#FFFFFF", "line-width": 2 }
-      })
-    }
-    console.info("cypress: IFB click square drawn")
-  }
-
-  const removeClickMarker = (map: Map) => {
-    for (const layerId of [CLICK_MARKER_CASING_LAYER, CLICK_MARKER_LAYER, IFB_CLICK_CIRCLE_LAYER]) {
-      if (map.getLayer(layerId)) {
-        map.removeLayer(layerId)
-      }
-    }
-    for (const sourceId of [CLICK_MARKER_SOURCE, IFB_CLICK_CIRCLE_SOURCE]) {
-      if (map.getSource(sourceId)) {
-        map.removeSource(sourceId)
-      }
-    }
-    console.info("cypress: IFB click square removed")
-  }
-
-  const applySelectionHighlight = (map: Map) => {
-    clearSelectionWall3D(map)
-    clearSelectionOutline2D(map)
-    const selection = selectedFeatureInfo.value
-    if (!selection) return
-    if (use3D.value) {
-      const heightExpression = EXTRUSION_HEIGHT_MAP.value[
-        selection.datatype
-      ] as DataDrivenPropertyValueSpecification<number>
-      showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
-    } else {
-      showSelectionOutline2D(map, selection.geometry)
-    }
-  }
-
-  const applyTileSelection = (
-    map: Map,
-    datatype: DataType,
-    geolevel: GeoLevel,
-    features: any[],
-    lngLat: { lng: number; lat: number }
-  ) => {
-    const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
-    const score = extractFeatureProperty(features, datatype, geolevel, "indice")
-    const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
-    const vulnScoreDay =
-      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_day")
-        : undefined
-    const vulnScoreNight =
-      geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
-        ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_night")
-        : undefined
-    if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-      drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
-      selectedFeatureInfo.value = null
-      applySelectionHighlight(map)
-    } else {
-      selectedFeatureInfo.value = {
-        datatype,
-        geometry: features[0].geometry,
-        properties: features[0].properties ?? {}
-      }
-      applySelectionHighlight(map)
-    }
-    // Highlight cell in the legend that correspond to clicked tile
-    if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-      const properties = features[0].properties
-      if (
-        properties &&
-        properties.indice !== undefined &&
-        properties.vulnerability_indice_day !== undefined
-      ) {
-        selectedLegendCell.value = getBivariateCoordinates(
-          properties.indice,
-          properties.vulnerability_indice_day
-        )
-      }
-    } else {
-      selectedLegendCell.value = null
-    }
-
-    clickCoordinates.value = { lat: lngLat.lat, lng: lngLat.lng }
-
-    // Conditionally load context data based on geolevel, datatype, and zoom
-    if (
-      geolevel === GeoLevel.TILE &&
-      datatype === DataType.PLANTABILITY &&
-      map.getZoom() < PLANTABILITY_DETAIL_ZOOM
-    ) {
-      contextData.setData(featureId, score, sourceValues)
-    } else if (geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY) {
-      contextData.setData(featureId, score, sourceValues, vulnScoreDay, vulnScoreNight)
-    } else if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-      contextData.setData(featureId, score, undefined, undefined, undefined, lngLat.lat, lngLat.lng)
-    } else {
-      contextData.setData(featureId)
-    }
-  }
-
-  const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (heightMapClickHandler.value) {
-      map.off("click", heightMapClickHandler.value)
-      heightMapClickHandler.value = null
-    }
-    if (heightMapZoomHandler.value) {
-      map.off("zoom", heightMapZoomHandler.value)
-      heightMapZoomHandler.value = null
-    }
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      const handler = async (e: any) => {
-        if (selectionMode.value !== SelectionMode.POINT) return
-        clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
-        drawClickMarker(map, e.lngLat.lat, e.lngLat.lng, "cross", false)
-        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
-      }
-      map.on("click", handler)
-      heightMapClickHandler.value = handler
-
-      const zoomHandler = () => {
-        if (!map.getLayer(CLICK_MARKER_LAYER)) return
-        const { lat, lng } = clickCoordinates.value
-        drawClickMarker(map, lat, lng, "cross", false)
-      }
-      map.on("zoom", zoomHandler)
-      heightMapZoomHandler.value = zoomHandler
-      return
-    }
-    const layerId = getLayerId(datatype, geolevel)
-    if (mapEventsListener.value[layerId]) {
-      map.off("click", layerId, mapEventsListener.value[layerId])
-    }
-    const clickHandler = (e: any) => {
-      // If we are in POINT mode (simple click), handle click normally
-      // Other modes are handled automatically by Terra Draw
-      if (selectionMode.value !== SelectionMode.POINT) {
-        return
-      }
-      applyTileSelection(map, datatype, geolevel, e.features!, {
-        lng: e.lngLat.lng,
-        lat: e.lngLat.lat
-      })
-    }
-    map.on("click", layerId, clickHandler)
-    mapEventsListener.value[layerId] = clickHandler
-  }
-
-  /**
-   * Re-query the tile under the currently selected coordinates and recompute the
-   * context data for the current zoom (land-use detail when zoomed in, score
-   * distribution when zoomed out). Called after a programmatic zoom.
-   */
-  const recalculateAtSelection = () => {
-    const map = mapInstancesByIds.value["default"]
-    if (!map || !contextData.data.value) return
-    const datatype = selectedDataType.value
-    if (!datatype) return
-    const geolevel = getGeoLevelFromDataType()
-    const layerId = getLayerId(datatype, geolevel)
-    if (!map.getLayer(layerId)) return
-    const { lng, lat } = clickCoordinates.value
-    const features = map.queryRenderedFeatures(map.project([lng, lat]), { layers: [layerId] })
-    if (features.length) {
-      applyTileSelection(map, datatype, geolevel, features, { lng, lat })
-    }
-  }
-
-  const setupTile = (
-    map: Map,
-    datatype: DataType,
-    geolevel: GeoLevel,
-    beforeId: string | undefined
-  ) => {
-    const sourceId = getSourceId(datatype, geolevel)
-    const layers = createMapLayers(datatype, geolevel, sourceId)
-
-    layers.forEach((layer) => {
-      if (!map.getLayer(layer.id)) {
-        map.addLayer(layer, beforeId)
-      }
-    })
-
-    setupClickEventOnTile(map, datatype, geolevel)
-  }
-
-  const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const fullBaseApiUrl = getFullBaseApiUrl()
-    const sourceId = getSourceId(datatype, geolevel)
-
-    if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
-      const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
-      map.addSource(sourceId, {
-        type: "raster-dem",
-        encoding: "terrarium",
-        tiles: [tileUrl],
-        tileSize: 256,
-        minzoom: MIN_ZOOM
-      })
-      return
-    }
-
-    // Vector source for other data types
-    const tileDataType =
-      datatype === DataType.PLANTABILITY_VULNERABILITY ? DataType.PLANTABILITY : datatype
-    const tileUrl = `${fullBaseApiUrl}/tiles/${geolevel}/${tileDataType}/{z}/{x}/{y}.mvt`
-    map.addSource(sourceId, {
-      type: "vector",
-      tiles: [tileUrl],
-      minzoom: MIN_ZOOM
-    })
   }
 
   const getMapId = (map: Map): string => {
     return Object.keys(mapInstancesByIds.value).find((key) => mapInstancesByIds.value[key] === map)!
   }
 
-  const removeControls = (map: Map) => {
-    const mapId = getMapId(map)
-    if (!controlsAdded.value[mapId]) return
+  const getTileUrl = () =>
+    buildTileUrl(getFullBaseApiUrl(), selectedLayer.value, selectedHour.value, hiddenClasses.value)
 
-    try {
-      map.removeControl(navControl.value)
-      map.removeControl(centerControl.value)
-      map.removeControl(control3D.value)
-      controlsAdded.value[mapId] = false
-    } catch {
-      // Control may not be added yet
+  const addRasterLayer = (mapInstance: Map) => {
+    if (!mapInstance.getSource(RASTER_SOURCE_ID)) {
+      mapInstance.addSource(RASTER_SOURCE_ID, {
+        type: "raster",
+        tiles: [getTileUrl()],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+    }
+    if (!mapInstance.getLayer(RASTER_LAYER_ID)) {
+      mapInstance.addLayer({
+        id: RASTER_LAYER_ID,
+        type: "raster",
+        source: RASTER_SOURCE_ID,
+        paint: { "raster-opacity": 0.6 }
+      })
     }
   }
 
-  const setupControls = (map: Map) => {
-    const mapId = getMapId(map)
-    if (!controlsAdded.value[mapId]) {
-      map.addControl(control3D.value, MAP_CONTROL_POSITION)
-      map.addControl(navControl.value, MAP_CONTROL_POSITION)
-      map.addControl(centerControl.value, MAP_CONTROL_POSITION)
-      controlsAdded.value[mapId] = true
-    }
-  }
-
-  const changeDataType = (datatype: DataType) => {
-    const previousDataType = selectedDataType.value!
-    const previousGeoLevel = getGeoLevelFromDataType()
-    if (datatype !== DataType.VEGESTRATE) showVegestrateHeight.value = false
-    selectedDataType.value = datatype
-    clearAllFilters()
-    contextData.removeData()
-    vegetationHeightAtPoint.value = undefined
-    selectedLegendCell.value = null
-    selectedFeatureInfo.value = null
-
-    // Update all map instances with the new layer
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
-      // Clear overlay layers before removing sources
-      removeOverlayLayers(mapInstance)
-      if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
-        removeClickMarker(mapInstance)
-      }
-      clearSelectionWall3D(mapInstance)
-      clearSelectionOutline2D(mapInstance)
-      // remove existing layers and sources
-      if (previousDataType !== null) {
-        const layerId = getLayerId(previousDataType, previousGeoLevel)
-        if (mapInstance.getLayer(layerId)) {
-          mapInstance.removeLayer(layerId)
-        }
-        const sourceId = getSourceId(previousDataType, previousGeoLevel)
-        if (mapInstance.getSource(sourceId)) {
-          mapInstance.removeSource(sourceId)
-        }
-      }
-      removeControls(mapInstance)
-      initTiles(mapInstance)
-      addVisibleOverlayLayers(mapInstance)
-      setupControls(mapInstance)
-      // MapComponent is listening to moveend event
-      mapInstance.fire("moveend")
-    })
-
-    // If a geometry is drawn, automatically recalculate with the new data type
-    const features = shapeDrawing.getSelectedFeatures()
-    if (features.length > 0 && selectionMode.value !== SelectionMode.POINT) {
-      finishShapeSelection()
-    }
-  }
-
-  const refreshDatatype = () => {
-    changeDataType(selectedDataType.value)
-  }
-
-  const toggleVegestrateHeight = () => {
-    showVegestrateHeight.value = !showVegestrateHeight.value
-    refreshDatatype()
-  }
-
-  const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
-    if (!showVegestrateHeight.value) return
-    const normalized = normalizeHeightRanges(ranges)
-    vegestrateHeightRanges.value = normalized
-    LocalStorageHandler.setItem("vegestrateHeightRanges", normalized)
-    const ramp = buildElevationColorRamp(normalized)
-    const layerId = getLayerId(DataType.VEGESTRATE, getGeoLevelFromDataType())
+  const updateRasterTiles = () => {
+    const tileUrl = getTileUrl()
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
-      if (mapInstance.getLayer(layerId)) {
-        mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
-      }
+      mapInstance.getSource<RasterTileSource>(RASTER_SOURCE_ID)?.setTiles([tileUrl])
     })
   }
 
-  const refreshLayers = () => {
-    const currentDataType = selectedDataType.value
-    const currentGeoLevel = getGeoLevelFromDataType()
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
-      const layerId = getLayerId(currentDataType, currentGeoLevel)
-      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
-      const layersOrder = mapInstance.getLayersOrder()
-      const layerIndex = layersOrder.indexOf(layerId)
-      const beforeId =
-        layerIndex === -1 ? getTerraDrawBeforeId(mapInstance) : layersOrder[layerIndex + 1]
-      if (layerIndex !== -1) {
-        mapInstance.removeLayer(layerId)
-      }
-      setupTile(mapInstance, currentDataType, currentGeoLevel, beforeId)
-    })
+  const setLayer = (key: string) => {
+    selectedLayer.value = getRasterLayer(key)
+    hiddenClasses.value = []
+    updateRasterTiles()
+  }
+
+  const toggleClass = (index: number) => {
+    hiddenClasses.value = hiddenClasses.value.includes(index)
+      ? hiddenClasses.value.filter((hidden) => hidden !== index)
+      : [...hiddenClasses.value, index]
+    updateRasterTiles()
+  }
+
+  const setHour = (hour: number) => {
+    selectedHour.value = hour
+    updateRasterTiles()
+  }
+
+  const addOverlays = (mapInstance: Map) => {
+    if (showQPVLayer.value) addQPVLayer(mapInstance)
+    if (showBoundaryLayer.value) addBoundaryLayers(mapInstance)
+    if (showCadastreLayer.value) addCadastreLayer(mapInstance)
+    if (showPanoramaxLayer.value) addPanoramaxLayer(mapInstance)
+  }
+
+  const removeOverlays = (mapInstance: Map) => {
+    if (mapInstance.getLayer("qpv-border")) removeQPVLayer(mapInstance)
+    if (mapInstance.getLayer("city-boundary")) removeBoundaryLayers(mapInstance)
+    if (mapInstance.getLayer("cadastre-fill")) removeCadastreLayer(mapInstance)
+    if (mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) removePanoramaxLayer(mapInstance)
   }
 
   const changeMapStyle = (mapstyle: MapStyle) => {
     selectedMapStyle.value = mapstyle
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
-      removeControls(mapInstance)
-      // Clear overlay layers before style change
-      removeOverlayLayers(mapInstance)
-      const newStyle = loadMapStyle(mapstyle)
-
-      if (newStyle) {
-        const onStyleReady = () => {
-          initTiles(mapInstance)
-          setupControls(mapInstance)
-          addVisibleOverlayLayers(mapInstance)
-          mapInstance.fire("moveend")
-        }
-
-        mapInstance.setStyle(newStyle)
-        onStyleReady()
-      }
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      removeOverlays(mapInstance)
+      mapInstance.setStyle(loadMapStyle(mapstyle))
+      addRasterLayer(mapInstance)
+      addOverlays(mapInstance)
+      mapInstance.fire("moveend")
     })
-  }
-
-  const initTiles = (mapInstance: Map) => {
-    const currentGeoLevel = getGeoLevelFromDataType()
-    setupSource(mapInstance, selectedDataType.value!, currentGeoLevel)
-    setupTile(
-      mapInstance,
-      selectedDataType.value!,
-      currentGeoLevel,
-      getTerraDrawBeforeId(mapInstance)
-    )
   }
 
   // TODO: display loading during the async execution
@@ -829,49 +193,37 @@ export const useMapStore = defineStore("map", () => {
       if (!data) {
         return
       }
-      if (!showQPVLayer.value) {
-        return
-      }
-      if (!mapInstance.getSource("qpv-source")) {
-        mapInstance.addSource("qpv-source", {
-          type: "geojson",
-          data: data
-        })
-      }
+
+      mapInstance.addSource("qpv-source", {
+        type: "geojson",
+        data: data
+      })
     }
 
     if (!mapInstance.getLayer("qpv-border")) {
-      const beforeId = getTerraDrawBeforeId(mapInstance)
-
       // White casing drawn first so the coloured line stays legible on any basemap
-      mapInstance.addLayer(
-        {
-          id: "qpv-border-casing",
-          type: "line",
-          source: "qpv-source",
-          paint: {
-            "line-color": QPV_CASING_COLOR,
-            "line-width": QPV_CASING_WIDTH,
-            "line-opacity": QPV_CASING_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: "qpv-border-casing",
+        type: "line",
+        source: "qpv-source",
+        paint: {
+          "line-color": QPV_CASING_COLOR,
+          "line-width": QPV_CASING_WIDTH,
+          "line-opacity": QPV_CASING_OPACITY
+        }
+      })
 
       // Main QPV border drawn on top of the casing
-      mapInstance.addLayer(
-        {
-          id: "qpv-border",
-          type: "line",
-          source: "qpv-source",
-          paint: {
-            "line-color": QPV_BORDER_COLOR,
-            "line-width": QPV_BORDER_WIDTH,
-            "line-opacity": QPV_BORDER_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: "qpv-border",
+        type: "line",
+        source: "qpv-source",
+        paint: {
+          "line-color": QPV_BORDER_COLOR,
+          "line-width": QPV_BORDER_WIDTH,
+          "line-opacity": QPV_BORDER_OPACITY
+        }
+      })
     }
     mapInstance.once("render", () => {
       console.info(`cypress: QPV data loaded`)
@@ -911,45 +263,35 @@ export const useMapStore = defineStore("map", () => {
     if (!mapInstance.getSource("city-boundary-source")) {
       const cityData = await getCityBoundaries()
       if (!cityData) return
-      if (!showBoundaryLayer.value) return
-      if (!mapInstance.getSource("city-boundary-source")) {
-        mapInstance.addSource("city-boundary-source", {
-          type: "geojson",
-          data: cityData
-        })
-      }
-    }
 
-    const beforeId = getTerraDrawBeforeId(mapInstance)
+      mapInstance.addSource("city-boundary-source", {
+        type: "geojson",
+        data: cityData
+      })
+    }
 
     if (!mapInstance.getLayer("city-boundary")) {
       // White casing drawn first so the coloured line stays legible on any basemap
-      mapInstance.addLayer(
-        {
-          id: "city-boundary-border-casing",
-          type: "line",
-          source: "city-boundary-source",
-          paint: {
-            "line-color": CITY_CASING_COLOR,
-            "line-width": CITY_CASING_WIDTH,
-            "line-opacity": CITY_CASING_OPACITY
-          }
-        },
-        beforeId
-      )
-      mapInstance.addLayer(
-        {
-          id: "city-boundary",
-          type: "line",
-          source: "city-boundary-source",
-          paint: {
-            "line-color": CITY_BORDER_COLOR,
-            "line-width": CITY_BORDER_WIDTH,
-            "line-opacity": CITY_BORDER_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: "city-boundary-border-casing",
+        type: "line",
+        source: "city-boundary-source",
+        paint: {
+          "line-color": CITY_CASING_COLOR,
+          "line-width": CITY_CASING_WIDTH,
+          "line-opacity": CITY_CASING_OPACITY
+        }
+      })
+      mapInstance.addLayer({
+        id: "city-boundary",
+        type: "line",
+        source: "city-boundary-source",
+        paint: {
+          "line-color": CITY_BORDER_COLOR,
+          "line-width": CITY_BORDER_WIDTH,
+          "line-opacity": CITY_BORDER_OPACITY
+        }
+      })
     }
   }
 
@@ -1022,39 +364,31 @@ export const useMapStore = defineStore("map", () => {
       })
     }
 
-    const beforeId = getTerraDrawBeforeId(mapInstance)
-
     if (!mapInstance.getLayer("cadastre-fill")) {
-      mapInstance.addLayer(
-        {
-          id: "cadastre-fill",
-          type: "fill",
-          source: "cadastre-source",
-          "source-layer": "cadastre--cadastre",
-          paint: {
-            "fill-color": CADASTRE_COLOR,
-            "fill-opacity": 0.0
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: "cadastre-fill",
+        type: "fill",
+        source: "cadastre-source",
+        "source-layer": "cadastre--cadastre",
+        paint: {
+          "fill-color": CADASTRE_COLOR,
+          "fill-opacity": 0.0
+        }
+      })
     }
 
     if (!mapInstance.getLayer("cadastre-border")) {
-      mapInstance.addLayer(
-        {
-          id: "cadastre-border",
-          type: "line",
-          source: "cadastre-source",
-          "source-layer": "cadastre--cadastre",
-          paint: {
-            "line-color": CADASTRE_COLOR,
-            "line-width": CADASTRE_BORDER_WIDTH,
-            "line-opacity": CADASTRE_BORDER_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: "cadastre-border",
+        type: "line",
+        source: "cadastre-source",
+        "source-layer": "cadastre--cadastre",
+        paint: {
+          "line-color": CADASTRE_COLOR,
+          "line-width": CADASTRE_BORDER_WIDTH,
+          "line-opacity": CADASTRE_BORDER_OPACITY
+        }
+      })
     }
 
     const clickHandler = (e: any) => {
@@ -1208,49 +542,41 @@ export const useMapStore = defineStore("map", () => {
       })
     }
 
-    const beforeId = getTerraDrawBeforeId(mapInstance)
-
     if (!mapInstance.getLayer(PANORAMAX_SEQUENCES_LAYER)) {
-      mapInstance.addLayer(
-        {
-          id: PANORAMAX_SEQUENCES_LAYER,
-          type: "line",
-          source: PANORAMAX_SOURCE_ID,
-          "source-layer": "sequences",
-          minzoom: PANORAMAX_SEQUENCES_MIN_ZOOM,
-          paint: {
-            "line-color": PANORAMAX_SEQUENCE_COLOR,
-            "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1, 16, 3],
-            "line-opacity": PANORAMAX_SEQUENCE_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: PANORAMAX_SEQUENCES_LAYER,
+        type: "line",
+        source: PANORAMAX_SOURCE_ID,
+        "source-layer": "sequences",
+        minzoom: PANORAMAX_SEQUENCES_MIN_ZOOM,
+        paint: {
+          "line-color": PANORAMAX_SEQUENCE_COLOR,
+          "line-width": ["interpolate", ["linear"], ["zoom"], 13, 1, 16, 3],
+          "line-opacity": PANORAMAX_SEQUENCE_OPACITY
+        }
+      })
     }
 
     if (!mapInstance.getLayer(PANORAMAX_PICTURES_LAYER)) {
-      mapInstance.addLayer(
-        {
-          id: PANORAMAX_PICTURES_LAYER,
-          type: "circle",
-          source: PANORAMAX_SOURCE_ID,
-          "source-layer": "pictures",
-          minzoom: PANORAMAX_PICTURES_MIN_ZOOM,
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 17, 4, 22, 8],
-            "circle-color": [
-              "case",
-              ["==", ["get", "type"], "equirectangular"],
-              PANORAMAX_PICTURE_360_COLOR,
-              PANORAMAX_PICTURE_FLAT_COLOR
-            ],
-            "circle-stroke-color": PANORAMAX_PICTURE_STROKE_COLOR,
-            "circle-stroke-width": PANORAMAX_PICTURE_STROKE_WIDTH,
-            "circle-opacity": PANORAMAX_PICTURE_OPACITY
-          }
-        },
-        beforeId
-      )
+      mapInstance.addLayer({
+        id: PANORAMAX_PICTURES_LAYER,
+        type: "circle",
+        source: PANORAMAX_SOURCE_ID,
+        "source-layer": "pictures",
+        minzoom: PANORAMAX_PICTURES_MIN_ZOOM,
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 17, 4, 22, 8],
+          "circle-color": [
+            "case",
+            ["==", ["get", "type"], "equirectangular"],
+            PANORAMAX_PICTURE_360_COLOR,
+            PANORAMAX_PICTURE_FLAT_COLOR
+          ],
+          "circle-stroke-color": PANORAMAX_PICTURE_STROKE_COLOR,
+          "circle-stroke-width": PANORAMAX_PICTURE_STROKE_WIDTH,
+          "circle-opacity": PANORAMAX_PICTURE_OPACITY
+        }
+      })
     }
 
     highlightPanoramaxPicture(mapInstance, selectedPanoramaxPicture.value?.id ?? null)
@@ -1342,76 +668,8 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  interface OverlayLayerHandlers {
-    isVisible: Ref<boolean>
-    /** Layer whose presence on the map tells that the overlay is displayed. */
-    layerId: string
-    add: (mapInstance: Map) => void
-    remove: (mapInstance: Map) => void
-  }
-
-  const overlayLayerHandlers: Record<OverlayLayer, OverlayLayerHandlers> = {
-    [OverlayLayer.QPV]: {
-      isVisible: showQPVLayer,
-      layerId: "qpv-border",
-      add: addQPVLayer,
-      remove: removeQPVLayer
-    },
-    [OverlayLayer.CADASTRE]: {
-      isVisible: showCadastreLayer,
-      layerId: "cadastre-fill",
-      add: addCadastreLayer,
-      remove: removeCadastreLayer
-    },
-    [OverlayLayer.BOUNDARY]: {
-      isVisible: showBoundaryLayer,
-      layerId: "city-boundary",
-      add: addBoundaryLayers,
-      remove: removeBoundaryLayers
-    },
-    [OverlayLayer.PANORAMAX]: {
-      isVisible: showPanoramaxLayer,
-      layerId: PANORAMAX_PICTURES_LAYER,
-      add: addPanoramaxLayer,
-      remove: removePanoramaxLayer
-    }
-  }
-
-  const visibleOverlayLayers = computed(() =>
-    Object.values(OverlayLayer).filter((layer) => overlayLayerHandlers[layer].isVisible.value)
-  )
-
-  const addVisibleOverlayLayers = (mapInstance: Map) => {
-    Object.values(overlayLayerHandlers).forEach(({ isVisible, add }) => {
-      if (isVisible.value) {
-        add(mapInstance)
-      }
-    })
-  }
-
-  const removeOverlayLayers = (mapInstance: Map) => {
-    Object.values(overlayLayerHandlers).forEach(({ layerId, remove }) => {
-      if (mapInstance.getLayer(layerId)) {
-        remove(mapInstance)
-      }
-    })
-  }
-
-  const initMap = (
-    mapId: string,
-    initialDatatype: DataType,
-    initialDisplayState: MapDisplayState
-  ) => {
-    const { filters: initialFilters, mapStyle, overlayLayers } = initialDisplayState
-    selectedDataType.value = initialDatatype
-    selectedMapStyle.value = mapStyle
-    Object.values(OverlayLayer).forEach((layer) => {
-      overlayLayerHandlers[layer].isVisible.value = overlayLayers.includes(layer)
-    })
-    setFilteredValues(initialFilters)
-    clearCadastreSelection()
-    clearPanoramaxSelection()
-    controlsAdded.value[mapId] = false
+  const initMap = (mapId: string, layerKey: string) => {
+    selectedLayer.value = getRasterLayer(layerKey)
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
     // Style expressions read Color.rgb, a non-writable non-configurable property,
@@ -1419,8 +677,8 @@ export const useMapStore = defineStore("map", () => {
     mapInstancesByIds.value[mapId] = markRaw(
       new Map({
         container: mapId,
-        style: loadMapStyle(mapStyle),
-        maxZoom: MAX_ZOOM,
+        style: loadMapStyle(selectedMapStyle.value),
+        maxZoom: MAX_ZOOM + 2,
         minZoom: MIN_ZOOM,
         attributionControl: false
       })
@@ -1428,282 +686,41 @@ export const useMapStore = defineStore("map", () => {
 
     const mapInstance = mapInstancesByIds.value[mapId]
 
-    const onMapReady = async () => {
-      setupControls(mapInstance)
-      initTiles(mapInstance)
-      if (initialFilters.length > 0) {
-        applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
-      }
-      addVisibleOverlayLayers(mapInstance)
-      shapeDrawing.initDraw(mapInstance)
-      shapeDrawing.onShapeFinished(() => {
-        markShapeFinished()
-        recomputeLiveArea()
-        requestScoreIfWithinLimit()
-      })
-      shapeDrawing.onShapeChanged(() => {
-        recomputeLiveArea()
-        if (shapeEditing.value) {
-          requestScoreIfWithinLimit()
-        }
-      })
-      // Idempotent registration (mirrors setupClickEventOnTile): remove any prior
-      // listener before re-adding so re-initialisation never stacks handlers.
-      mapInstance.off("click", handleEditingMapClick)
-      mapInstance.on("click", handleEditingMapClick)
+    mapInstance.once("style.load", () => {
+      mapInstance.addControl(
+        new NavigationControl({ visualizePitch: true, visualizeRoll: false }),
+        MAP_CONTROL_POSITION
+      )
+      mapInstance.addControl({ onAdd: addCenterControl, onRemove: () => {} }, MAP_CONTROL_POSITION)
+      addRasterLayer(mapInstance)
       mapInstance.once("render", () => {
-        console.info(`cypress: map data ${selectedMapStyle.value!} loaded`)
-        console.info(
-          `cypress: layer: ${getLayerId(selectedDataType.value!, getGeoLevelFromDataType())} and source: ${getSourceId(selectedDataType.value!, getGeoLevelFromDataType())} loaded.`
-        )
+        console.info(`cypress: map data ${selectedMapStyle.value} loaded`)
+        console.info(`cypress: layer ${selectedLayer.value.key} loaded`)
       })
-    }
-
-    if (mapInstance.isStyleLoaded()) {
-      onMapReady()
-    } else {
-      mapInstance.once("style.load", onMapReady)
-    }
+    })
 
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
-    mapInstance.once("load", () => {
-      const center = mapInstance.getCenter()
-      clickCoordinates.value = {
-        lat: center.lat,
-        lng: center.lng
-      }
+    mapInstance.on("click", (e) => {
+      clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
     })
-  }
-
-  const changeSelectionMode = (mode: SelectionMode) => {
-    selectionMode.value = mode
-
-    contextData.removeData()
-
-    shapeDrawing.setMode(mode)
-
-    if (mode === SelectionMode.POINT) {
-      shapeDrawing.stopDrawing()
-    }
-  }
-
-  const MIN_LOADING_DURATION_MS = 500
-
-  const performCalculation = async () => {
-    isCalculating.value = true
-    contextData.error.value = false
-    const loadingStartTime = Date.now()
-
-    try {
-      const scores = await shapeDrawing.getScoresInShape(selectedDataType.value!)
-
-      if (scores) {
-        contextData.data.value = scores
-      }
-    } catch (e) {
-      console.error("Error retrieving scores in shape:", e)
-      contextData.data.value = null
-      contextData.error.value = true
-    } finally {
-      const loadingDuration = Date.now() - loadingStartTime
-      if (loadingDuration < MIN_LOADING_DURATION_MS) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, MIN_LOADING_DURATION_MS - loadingDuration)
-        )
-      }
-      isCalculating.value = false
-    }
-  }
-
-  const finishShapeSelection = useDebounceFn(performCalculation, 500, { maxWait: 1000 })
-
-  const isShapeMode = computed(() => selectionMode.value !== SelectionMode.POINT)
-
-  const hasShapeContextData = computed(
-    () =>
-      isShapeMode.value &&
-      !isCalculating.value &&
-      !contextData.error.value &&
-      contextData.data.value != null
-  )
-
-  const getDrawnPolygon = (): ZonePolygon | null => {
-    const ring = shapeDrawing.getCurrentShapeCoordinates()
-    if (!ring || ring.length < 3) return null
-    return { type: "Polygon", coordinates: [ring as [number, number][]] }
-  }
-
-  const retryContextData = () => {
-    if (isShapeMode.value) {
-      performCalculation()
-    } else {
-      contextData.retry()
-    }
-  }
-
-  const drawingState = computed<"point" | "drawing" | "editing">(() => {
-    if (selectionMode.value === SelectionMode.POINT) return "point"
-    return shapeEditing.value ? "editing" : "drawing"
-  })
-
-  const recomputeLiveArea = () => {
-    const ring = shapeDrawing.getCurrentShapeCoordinates()
-    liveArea.value = ring ? computePolygonAreaM2(ring) : null
-  }
-
-  const isAreaTooLarge = computed(
-    () => liveArea.value !== null && liveArea.value > MAX_SHAPE_AREA_M2
-  )
-
-  const requestScoreIfWithinLimit = () => {
-    if (isAreaTooLarge.value) {
-      contextData.removeData()
-    } else {
-      finishShapeSelection()
-    }
-  }
-
-  const resetToDrawingState = (mode: SelectionMode) => {
-    shapeEditing.value = false
-    liveArea.value = null
-    changeSelectionMode(mode)
-  }
-
-  const enterShapeMode = (mode: SelectionMode) => resetToDrawingState(mode)
-
-  const startNewShape = (mode: SelectionMode) => resetToDrawingState(mode)
-
-  const markShapeFinished = () => {
-    shapeEditing.value = true
-  }
-
-  const REDRAW_MARGIN_PX = 24
-
-  const handleEditingMapClick = (e: { point: { x: number; y: number } }) => {
-    if (drawingState.value !== "editing") return
-    const map = mapInstancesByIds.value["default"]
-    const ring = shapeDrawing.getCurrentShapeCoordinates()
-    if (!map || !ring) return
-
-    if (
-      map.getLayer(PANORAMAX_PICTURES_LAYER) &&
-      map.queryRenderedFeatures([e.point.x, e.point.y], { layers: [PANORAMAX_PICTURES_LAYER] })
-        .length > 0
-    ) {
-      return
-    }
-
-    const screen = ring.map((coord) => map.project(coord as [number, number]))
-    const xs = screen.map((p) => p.x)
-    const ys = screen.map((p) => p.y)
-    const outside =
-      e.point.x < Math.min(...xs) - REDRAW_MARGIN_PX ||
-      e.point.x > Math.max(...xs) + REDRAW_MARGIN_PX ||
-      e.point.y < Math.min(...ys) - REDRAW_MARGIN_PX ||
-      e.point.y > Math.max(...ys) + REDRAW_MARGIN_PX
-
-    if (outside) startNewShape(selectionMode.value)
-  }
-
-  const exitShapeMode = () => {
-    shapeEditing.value = false
-    liveArea.value = null
-    shapeDrawing.clearDrawing()
-    changeSelectionMode(SelectionMode.POINT)
-  }
-
-  const reapplySelectionHighlight = () => {
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      applySelectionHighlight(mapInstancesByIds.value[mapId])
-    })
-  }
-
-  const toggle3D = () => {
-    use3D.value = !use3D.value
-    Object.keys(mapInstancesByIds.value).forEach((mapId) => {
-      const mapInstance = mapInstancesByIds.value[mapId]
-      if (use3D.value) {
-        mapInstance.easeTo({ pitch: 45, duration: 500 })
-      } else {
-        mapInstance.easeTo({ pitch: 0, duration: 500 })
-      }
-    })
-    refreshLayers()
-    reapplySelectionHighlight()
-  }
-
-  const zoomTo = (targetZoom: number) => {
-    const mapInstance = mapInstancesByIds.value["default"]
-    if (!mapInstance) return
-    mapInstance.easeTo({
-      center: [clickCoordinates.value.lng, clickCoordinates.value.lat],
-      zoom: targetZoom,
-      duration: 600
-    })
-    mapInstance.once("idle", recalculateAtSelection)
   }
 
   return {
     mapInstancesByIds,
     initMap,
-    selectedDataType,
+    getMapInstance,
+    selectedLayer,
+    selectedHour,
+    setLayer,
+    setHour,
+    hiddenClasses,
+    toggleClass,
     selectedMapStyle,
     changeMapStyle,
-    changeDataType,
-    refreshDatatype,
-    getMapInstance,
-    vulnerabilityMode,
     currentZoom,
     clickCoordinates,
-    selectedLegendCell,
-    selectionMode,
-    isShapeMode,
-    hasShapeContextData,
-    getDrawnPolygon,
-    shapeEditing,
-    liveArea,
-    isAreaTooLarge,
-    drawingState,
-    enterShapeMode,
-    startNewShape,
-    markShapeFinished,
-    handleEditingMapClick,
-    exitShapeMode,
-    changeSelectionMode,
-    finishShapeSelection,
-    isCalculating,
-    shapeDrawing: {
-      isDrawing: shapeDrawing.isDrawing,
-      drawingPoints: shapeDrawing.drawingPoints,
-      currentMode: shapeDrawing.currentMode,
-      setMode: shapeDrawing.setMode,
-      clearDrawing: shapeDrawing.clearDrawing,
-      getSelectedFeatures: shapeDrawing.getSelectedFeatures,
-      onShapeFinished: shapeDrawing.onShapeFinished,
-      onShapeChanged: shapeDrawing.onShapeChanged,
-      getCurrentShapeCoordinates: shapeDrawing.getCurrentShapeCoordinates,
-      finishCurrentPolygon: shapeDrawing.finishCurrentPolygon
-    },
-    contextData: {
-      data: contextData.data,
-      error: contextData.error,
-      setData: contextData.setData,
-      setMultipleData: contextData.setMultipleData,
-      removeData: contextData.removeData,
-      retry: retryContextData,
-      toggleContextData: contextData.toggleContextData
-    },
-    clearAllFilters,
-    applyFilters,
-    hasActiveFilters,
-    isFiltered,
-    filteredValues,
-    toggleFilter,
-    activeFiltersCount,
-    toggleAndApplyFilter,
-    resetFilters,
     showQPVLayer,
     toggleQPVLayer,
     showBoundaryLayer,
@@ -1714,16 +731,7 @@ export const useMapStore = defineStore("map", () => {
     clearCadastreSelection,
     showPanoramaxLayer,
     togglePanoramaxLayer,
-    visibleOverlayLayers,
     selectedPanoramaxPicture,
-    clearPanoramaxSelection,
-    use3D,
-    toggle3D,
-    zoomTo,
-    showVegestrateHeight,
-    toggleVegestrateHeight,
-    vegestrateHeightRanges,
-    setVegestrateHeightRanges,
-    vegetationHeightAtPoint
+    clearPanoramaxSelection
   }
 })

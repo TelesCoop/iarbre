@@ -7,7 +7,7 @@
       data-cy="map-side-panel-content"
     >
       <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
+      <MapLayerDescription class="w-full flex-1 min-h-0 overflow-y-auto" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
       <div class="w-full" data-cy="map-side-panel-download">
@@ -24,25 +24,23 @@
       </button>
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapLayerToggles />
-        <MapContextTools />
         <MethodologyButton />
+        <HourSlider />
       </div>
     </div>
 
     <div class="mobile-panel-content">
       <div class="mobile-panel-scroll">
-        <MapContextData class="w-full" />
+        <MapLayerDescription class="w-full" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed } from "vue"
-import { useMapStore } from "@/stores/map"
+import { ref, computed } from "vue"
 import { useAppStore } from "@/stores/app"
 
-const mapStore = useMapStore()
 const appStore = useAppStore()
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -51,16 +49,6 @@ const isPanelOpen = ref(false)
 const togglePanel = () => {
   isPanelOpen.value = !isPanelOpen.value
 }
-
-// Open panel automatically when context data is set
-watch(
-  () => mapStore.contextData.data,
-  (newData) => {
-    if (newData) {
-      isPanelOpen.value = true
-    }
-  }
-)
 </script>
 <style scoped>
 @reference "@/styles/main.css";

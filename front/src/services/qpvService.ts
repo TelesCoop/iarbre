@@ -1,8 +1,9 @@
 import { useApiGet } from "@/api"
+import type { FeatureCollection } from "geojson"
 
-export const getQPVData = async (): Promise<GeoJSON.FeatureCollection | null> => {
+export const getQPVData = async (): Promise<FeatureCollection | null> => {
   try {
-    const req = await useApiGet<GeoJSON.FeatureCollection>(
+    const req = await useApiGet<FeatureCollection>(
       "qpv/",
       "Impossible de récupérer les données QPV"
     )
