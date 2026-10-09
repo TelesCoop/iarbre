@@ -55,7 +55,7 @@ export const DEFAULT_LAYER_KEY = RASTER_LAYERS[0].key
 
 export const HOURS = Array.from({ length: 15 }, (_, index) => index + 7)
 
-export const DEFAULT_HOUR = 18
+export const DEFAULT_HOUR = 16
 
 export const getRasterLayer = (key: string): RasterLayer =>
   RASTER_LAYERS.find((layer) => layer.key === key) ?? RASTER_LAYERS[0]
