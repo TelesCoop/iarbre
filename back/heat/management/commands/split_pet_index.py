@@ -16,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--source",
             type=str,
-            default=str(Path(settings.MEDIA_ROOT) / "rasters/WMS/PET_index_2020.tif"),
+            default=str(Path(settings.MEDIA_ROOT) / "rasters/WMS/PET_index.tif"),
             help="Multi-band GeoTIFF, band = hour + 1",
         )
         parser.add_argument(

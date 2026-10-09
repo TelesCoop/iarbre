@@ -12,7 +12,7 @@ class RasterDownloadFilenameTest(SimpleTestCase):
     def setUp(self):
         self.media = tempfile.TemporaryDirectory()
         self.addCleanup(self.media.cleanup)
-        src = Path(self.media.name) / "rasters/WMS/PET_index_2020.tif"
+        src = Path(self.media.name) / "rasters/WMS/PET_index.tif"
         hour = hour_raster_path(src, 14)
         hour.parent.mkdir(parents=True)
         src.write_bytes(b"src")
