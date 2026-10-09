@@ -21,7 +21,7 @@ const toggle = (service: "wms" | "raster") => {
 const origin = window.location.origin
 const wmsBase = `${origin}/api/wms/`
 
-const defaultWmsLayer = "iarbre:PET_index_h17"
+const defaultWmsLayer = "iarbre:PET_index_2020_h17"
 
 interface RasterDataset {
   label: string
