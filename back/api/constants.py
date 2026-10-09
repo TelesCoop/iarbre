@@ -63,7 +63,6 @@ VEGESTRATE_FILES = {
 HEAT_FILES = {
     "pet_index": "PET_index_2020.tif",
     "pet_index_2090": "PET_index_1m_2090.tif",
-    "sun_exposure": "SunExposure.tif",
 }
 
 HOURLY_HEAT_LAYERS = {"pet_index", "pet_index_2090"}
@@ -75,15 +74,6 @@ PET_INDEX_COLOR_MAP = {
     8: (227, 26, 28, 255),
     9: (128, 0, 38, 255),
 }
-
-SUN_EXPOSURE_COLOR_BINS = [
-    (0.0, (255, 255, 204, 255)),
-    (0.2, (255, 237, 160, 255)),
-    (0.4, (254, 217, 118, 255)),
-    (0.6, (254, 178, 76, 255)),
-    (0.8, (253, 141, 60, 255)),
-    (0.9, (240, 59, 32, 255)),
-]
 
 VEGESTRATE_COLOR_MAP = {
     0: (0, 0, 0, 0),

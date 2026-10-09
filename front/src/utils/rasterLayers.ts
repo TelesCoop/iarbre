@@ -61,26 +61,6 @@ export const RASTER_LAYERS: RasterLayer[] = [
     attribution: "Métropole de Lyon",
     hourly: true,
     legend: PET_LEGEND
-  },
-  {
-    key: "sun_exposure",
-    label: "Exposition solaire - 1m - 2020",
-    description:
-      "Un produit secondaire des calques de modélisation du climat urbain est l'ombre heure par heure. \
-      Pour chaque heure, on connaît aussi la puissance de l'ensoleillement grâce aux fichiers météo. \
-      On peut donc faire la somme sur la journée de la puissance solaire reçue. Ce score est ramené \
-      entre 0 et 1 pour pouvoir faire des comparaisons plutôt que des valeurs absolues moins parlantes. \n \
-      Chaque pixel correspond à une zone de 1mx1m.",
-    attribution: "Métropole de Lyon",
-    hourly: false,
-    legend: [
-      { color: "#ffffcc", label: "0 - 0,2" },
-      { color: "#ffeda0", label: "0,2 - 0,4" },
-      { color: "#fed976", label: "0,4 - 0,6" },
-      { color: "#feb24c", label: "0,6 - 0,8" },
-      { color: "#fd8d3c", label: "0,8 - 0,9" },
-      { color: "#f03b20", label: "> 0,9" }
-    ]
   }
 ]
 

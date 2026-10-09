@@ -18,7 +18,6 @@ base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
     "pet_index": _entry(base_dir + "PET_index_2020.tif"),
     "pet_index_2090": _entry(base_dir + "PET_index_1m_2090.tif"),
-    "sun_exposure": _entry(base_dir + "SunExposure.tif"),
 }
 HOURLY_RASTERS = {"pet_index", "pet_index_2090"}
 
@@ -58,7 +57,7 @@ class FileDownloadView(APIView):
 
 
 class RasterDownloadView(FileDownloadView):
-    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/sun_exposure/``.
+    """Download raster files (GeoTIFF). Example: ``GET /api/rasters/pet_index/``.
 
     Hourly rasters (one band per hour, band = hour + 1) accept an ``hour``
     query parameter to download a single-band GeoTIFF for that hour:

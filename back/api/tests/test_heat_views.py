@@ -24,15 +24,10 @@ class HeatTileClassesFilterTest(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         return np.array(Image.open(io.BytesIO(response.content)))[0, :, 3]
 
-    def test_sun_exposure_hides_unselected_bins(self):
-        data = np.array([[0.1, 0.3, 0.5, 0.7, 0.85, 0.95]], dtype=np.float32)
-        alpha = self._get_pixels(data, "mode=sun_exposure&classes=1,4")
-        self.assertEqual(alpha.tolist(), [0, 255, 0, 0, 255, 0])
-
     def test_without_classes_shows_everything(self):
-        data = np.array([[0.1, 0.3, 0.5, 0.7, 0.85, 0.95]], dtype=np.float32)
-        alpha = self._get_pixels(data, "mode=sun_exposure")
-        self.assertEqual(alpha.tolist(), [255] * 6)
+        data = np.array([[5, 6, 7, 8, 9]], dtype=np.uint8)
+        alpha = self._get_pixels(data, "mode=pet_index&hour=14")
+        self.assertEqual(alpha.tolist(), [255] * 5)
 
     def test_empty_classes_hides_everything(self):
         data = np.array([[5, 6, 7]], dtype=np.uint8)
@@ -46,5 +41,5 @@ class HeatTileClassesFilterTest(SimpleTestCase):
 
     def test_invalid_classes_returns_400(self):
         url = reverse("retrieve-heat-tile", kwargs={"z": 14, "x": 8345, "y": 5765})
-        response = self.client.get(f"{url}?mode=sun_exposure&classes=a")
+        response = self.client.get(f"{url}?mode=pet_index&hour=14&classes=a")
         self.assertEqual(response.status_code, 400)
