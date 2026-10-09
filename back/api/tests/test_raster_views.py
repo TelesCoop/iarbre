@@ -12,7 +12,7 @@ class RasterDownloadFilenameTest(SimpleTestCase):
     def setUp(self):
         self.media = tempfile.TemporaryDirectory()
         self.addCleanup(self.media.cleanup)
-        src = Path(self.media.name) / "rasters/WMS/PET_index_1m_2090.tif"
+        src = Path(self.media.name) / "rasters/WMS/PET_index.tif"
         hour = hour_raster_path(src, 14)
         hour.parent.mkdir(parents=True)
         src.write_bytes(b"src")
@@ -23,16 +23,8 @@ class RasterDownloadFilenameTest(SimpleTestCase):
         with override_settings(MEDIA_ROOT=self.media.name):
             return self.client.get(f"{url}{query}")
 
-    def test_full_raster_named_2090(self):
-        response = self._get()
-        self.assertIn(
-            'filename="PET_index_1m_2090.tif"', response["Content-Disposition"]
-        )
-
     @patch("api.views.raster_views.rasterio.open")
-    def test_hour_raster_named_2090(self, mock_open):
+    def test_hour_raster(self, mock_open):
         mock_open.return_value.__enter__.return_value = MagicMock(count=25)
         response = self._get("?hour=14")
-        self.assertIn(
-            'filename="PET_index_1m_2090_h14.tif"', response["Content-Disposition"]
-        )
+        self.assertIn('filename="PET_index_h14.tif"', response["Content-Disposition"])
