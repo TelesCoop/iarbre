@@ -33,7 +33,6 @@ class HeatTileView(APIView):
     Serve heat raster data as {z}/{x}/{y} PNG tiles for MapLibre.
 
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14
-        GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index_2090&hour=14
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14&classes=0,2
     """
 

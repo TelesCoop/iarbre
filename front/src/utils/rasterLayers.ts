@@ -13,54 +13,41 @@ export interface RasterLayer {
   legend: LegendItem[]
 }
 
-const petDescription = (year: number): string =>
-  `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet ${year}.
-    Nous répliquons, avec son aide, une <a href="https://www.sciencedirect.com/science/article/pii/S0360132325007188" target="_blank" rel="noopener noreferrer">étude</a> menée par le chercheur Damien David du CETHIL.</p>
-    <p>Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le confort/inconfort
-    d'une personne selon les caractéristiques d'ambiance (température de l'air, ombre ou soleil,
-    vent, rayonnement secondaire des bâtiments et du sol). Ici, la personne est simulée assise et immobile.</p>
-    <p>Les données d'entrée sont :</p>
-    <ul>
-      <li>Les bâtiments,</li>
-      <li>Le modèle de hauteur de la végétation,</li>
-      <li>L'occupation des sols (béton, terre, etc.),</li>
-      <li>Projection météo ${year} heure par heure (température, humidité relative, vent).</li>
-    </ul>
-    <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
-    Chaque pixel correspond à une zone de 1mx1m.</p>`
-
-const PET_LEGEND: LegendItem[] = [
-  { color: "#ffffcc", label: "18 - 23 °C - Neutre", detail: "Aucun stress thermique" },
-  {
-    color: "#fed976",
-    label: "23 - 29 °C - Légèrement chaud",
-    detail: "Léger stress thermique"
-  },
-  { color: "#fd8d3c", label: "29 - 35 °C - Chaud", detail: "Stress thermique modéré" },
-  { color: "#e31a1c", label: "35 - 41 °C - Très chaud", detail: "Fort stress thermique" },
-  {
-    color: "#800026",
-    label: "> 41 °C - Extrêmement chaud",
-    detail: "Stress thermique extrême"
-  }
-]
-
 export const RASTER_LAYERS: RasterLayer[] = [
   {
     key: "pet_index",
     label: "Indice PET - 1m - 2020",
-    description: petDescription(2020),
+    description: `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet 2020.
+      Nous répliquons, avec son aide, une <a href="https://www.sciencedirect.com/science/article/pii/S0360132325007188" target="_blank" rel="noopener noreferrer">étude</a> menée par le chercheur Damien David du CETHIL.</p>
+      <p>Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le confort/inconfort
+      d'une personne selon les caractéristiques d'ambiance (température de l'air, ombre ou soleil,
+      vent, rayonnement secondaire des bâtiments et du sol). Ici, la personne est simulée assise et immobile.</p>
+      <p>Les données d'entrée sont :</p>
+      <ul>
+        <li>Les bâtiments,</li>
+        <li>Le modèle de hauteur de la végétation,</li>
+        <li>L'occupation des sols (béton, terre, etc.),</li>
+        <li>Projection météo 2020 heure par heure (température, humidité relative, vent).</li>
+      </ul>
+      <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
+      Chaque pixel correspond à une zone de 1mx1m.</p>`,
     attribution: "Métropole de Lyon",
     hourly: true,
-    legend: PET_LEGEND
-  },
-  {
-    key: "pet_index_2090",
-    label: "Indice PET - 1m - 2090",
-    description: petDescription(2090),
-    attribution: "Métropole de Lyon",
-    hourly: true,
-    legend: PET_LEGEND
+    legend: [
+      { color: "#ffffcc", label: "18 - 23 °C - Neutre", detail: "Aucun stress thermique" },
+      {
+        color: "#fed976",
+        label: "23 - 29 °C - Légèrement chaud",
+        detail: "Léger stress thermique"
+      },
+      { color: "#fd8d3c", label: "29 - 35 °C - Chaud", detail: "Stress thermique modéré" },
+      { color: "#e31a1c", label: "35 - 41 °C - Très chaud", detail: "Fort stress thermique" },
+      {
+        color: "#800026",
+        label: "> 41 °C - Extrêmement chaud",
+        detail: "Stress thermique extrême"
+      }
+    ]
   }
 ]
 

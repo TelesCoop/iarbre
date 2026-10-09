@@ -62,10 +62,9 @@ VEGESTRATE_FILES = {
 
 HEAT_FILES = {
     "pet_index": "PET_index_2020.tif",
-    "pet_index_2090": "PET_index_1m_2090.tif",
 }
 
-HOURLY_HEAT_LAYERS = {"pet_index", "pet_index_2090"}
+HOURLY_HEAT_LAYERS = {"pet_index"}
 
 PET_INDEX_COLOR_MAP = {
     5: (255, 255, 204, 255),
