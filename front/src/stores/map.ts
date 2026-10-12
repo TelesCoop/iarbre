@@ -8,7 +8,8 @@ import {
   type GeoJSONSource,
   type StyleSpecification,
   type AddLayerObject,
-  type DataDrivenPropertyValueSpecification
+  type DataDrivenPropertyValueSpecification,
+  type PointLike
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -560,6 +561,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const hasStreetViewPictureAt = (map: Map, point: PointLike) =>
+    map.getLayer(PANORAMAX_PICTURES_LAYER) !== undefined &&
+    map.queryRenderedFeatures(point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     if (heightMapClickHandler.value) {
       map.off("click", heightMapClickHandler.value)
@@ -598,11 +603,7 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
-      // A tap on a street-view picture opens it; it must not also select the tile beneath.
-      if (
-        map.getLayer(PANORAMAX_PICTURES_LAYER) &&
-        map.queryRenderedFeatures(e.point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
-      ) {
+      if (hasStreetViewPictureAt(map, e.point)) {
         return
       }
       applyTileSelection(map, datatype, geolevel, e.features!, {

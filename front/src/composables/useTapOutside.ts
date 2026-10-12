@@ -2,10 +2,6 @@ import { onClickOutside, useEventListener, type MaybeElementRef } from "@vueuse/
 
 const DRAG_THRESHOLD_PX = 5
 
-/**
- * Calls `handler` on a click outside `target`, except for the click a browser fires at the end
- * of a drag: panning the map is not a dismissal.
- */
 export function useTapOutside(
   target: MaybeElementRef,
   handler: (event: PointerEvent) => void,

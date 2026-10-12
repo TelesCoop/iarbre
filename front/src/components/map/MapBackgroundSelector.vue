@@ -240,7 +240,6 @@ watch(currentStyle, () => {
   border-left-width: 0;
 }
 
-/* Scrolls sideways when the row is narrower than the options (phones). */
 .bg-selector-options > * {
   flex-shrink: 0;
 }
