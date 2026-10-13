@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import IconVegestrate from "@/components/icons/IconVegestrate.vue"
 import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
+import FilterIndicator from "@/components/map/legend/FilterIndicator.vue"
+import { useMapStore } from "@/stores/map"
 import type { VegetationIndice } from "@/types/vegetation"
 
 interface Category {
@@ -22,6 +24,8 @@ interface Props {
 }
 
 defineProps<Props>()
+
+const mapStore = useMapStore()
 </script>
 
 <template>
@@ -57,6 +61,7 @@ defineProps<Props>()
           >
             <span class="vegestrate-category-label">{{ category.label }}</span>
             <span class="vegestrate-category-range">{{ category.range }}</span>
+            <FilterIndicator :is-visible="mapStore.isFiltered(category.indice)" />
           </FilterableLegendItem>
           <div v-else class="vegestrate-category">
             <span class="vegestrate-category-label">{{ category.label }}</span>

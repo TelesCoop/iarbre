@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import FilterIndicator from "../legend/FilterIndicator.vue"
+import { useMapStore } from "@/stores/map"
 
 interface ScoreLabelProps {
-  score: number | string
+  score: number
   label: string
   isSelected?: boolean
   clickable?: boolean
@@ -14,9 +15,10 @@ interface ScoreLabelProps {
 const props = defineProps<ScoreLabelProps>()
 
 const emit = defineEmits<{
-  click: [score: number | string]
+  click: [score: number]
 }>()
 
+const mapStore = useMapStore()
 const scoreLabelRef = ref<HTMLElement | null>(null)
 const isSelected = computed(() => props.isSelected || false)
 const isClickable = computed(() => props.clickable || false)
@@ -35,7 +37,8 @@ const handleClick = () => {
       'score-label',
       props.backgroundColorClass,
       isClickable ? 'cursor-pointer hover:scale-110 transition-transform duration-200' : '',
-      isSelected ? 'border-2 border-primary-900' : ''
+      isSelected ? 'border-2 border-primary-900' : '',
+      isClickable && mapStore.hasActiveFilters && !isSelected ? 'opacity-40' : ''
     ]"
     :style="{ backgroundColor: props.backgroundColor }"
     :data-score="clickable ? score : undefined"

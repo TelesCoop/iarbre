@@ -254,12 +254,12 @@
 }
 
 button.vegestrate-category {
-  @apply cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-left;
+  @apply relative cursor-pointer rounded-md border-2 border-transparent bg-transparent px-2 py-1 text-left;
   @apply transition-colors duration-150 hover:bg-gray-50;
 }
 
 button.vegestrate-category.is-selected {
-  @apply bg-primary-50 ring-2 ring-primary-600;
+  @apply border-primary-900;
 }
 
 .vegestrate-category.is-dimmed {
@@ -627,7 +627,7 @@ button.vegestrate-category.is-selected {
 }
 
 .legend-scale {
-  @apply flex items-center rounded overflow-hidden;
+  @apply flex items-center rounded;
 }
 
 .legend-label {
