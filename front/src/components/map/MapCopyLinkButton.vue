@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref } from "vue"
+import { useApiPost } from "@/api"
 import { copyToClipboard } from "@/utils/clipboard"
 import IconCheck from "@/components/icons/IconCheck.vue"
 import IconCopy from "@/components/icons/IconCopy.vue"
@@ -7,7 +8,10 @@ import IconCopy from "@/components/icons/IconCopy.vue"
 const isCopied = ref(false)
 
 const handleCopyLink = async () => {
-  await copyToClipboard(window.location.href)
+  const { data } = await useApiPost<{ code: string }>("short-links/", {
+    path: window.location.pathname + window.location.search
+  })
+  await copyToClipboard(data ? `${window.location.origin}/s/${data.code}` : window.location.href)
   isCopied.value = true
   setTimeout(() => {
     isCopied.value = false
