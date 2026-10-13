@@ -38,8 +38,9 @@ import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
 import {
   BIOSPHERE_DETAIL_ZOOM,
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP,
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP,
+  BIOSPHERE_CLASSES,
+  BIOSPHERE_DETAIL_CLASSES,
+  toColorMap,
   toCoarseFilters,
   toDetailFilters
 } from "@/utils/biosphere_functional_integrity"
@@ -193,9 +194,9 @@ export const useMapStore = defineStore("map", () => {
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
         "step",
         ["zoom"],
-        ["step", ["get", "indice"], ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP],
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_CLASSES)],
         BIOSPHERE_DETAIL_ZOOM,
-        ["step", ["get", "indice"], ...BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP]
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_DETAIL_CLASSES)]
       ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]

@@ -6,8 +6,9 @@ import BiosphereLandCoverInfo from "@/components/contextData/biosphereIntegrity/
 import { useMapStore } from "@/stores/map"
 import {
   BIOSPHERE_DETAIL_ZOOM,
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP,
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP
+  BIOSPHERE_CLASSES,
+  BIOSPHERE_DETAIL_CLASSES,
+  biosphereColor
 } from "@/utils/biosphere_functional_integrity"
 import { getContrastTextHex } from "@/utils/color"
 import ContextDataScoreHeader from "@/components/contextData/shared/ContextDataScoreHeader.vue"
@@ -21,18 +22,12 @@ interface BiosphereIntegrityCardProps {
 
 const props = defineProps<BiosphereIntegrityCardProps>()
 
-const indiceColor = computed(() => {
-  const indice = props.data?.indice ?? 0
-  const map =
-    zoomLevel.value >= BIOSPHERE_DETAIL_ZOOM
-      ? BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP
-      : BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
-  let color = String(map[0])
-  for (let i = 1; i < map.length - 1; i += 2) {
-    if (indice >= (map[i] as number)) color = String(map[i + 1])
-  }
-  return color
-})
+const indiceColor = computed(() =>
+  biosphereColor(
+    props.data?.indice ?? 0,
+    zoomLevel.value >= BIOSPHERE_DETAIL_ZOOM ? BIOSPHERE_DETAIL_CLASSES : BIOSPHERE_CLASSES
+  )
+)
 
 const indiceValue = computed(() => props.data?.indice ?? 0)
 
