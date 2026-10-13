@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import { RouterLink } from "vue-router"
 import AppSelect from "@/components/shared/AppSelect.vue"
@@ -59,7 +60,7 @@ const handleCityChange = (value: string | number) => {
 const areaDisplay = computed(() => {
   if (!store.dashboardData) return null
   const km2 = store.dashboardData.areaKm2
-  if (km2 >= 1) return `${km2.toFixed(1)} km²`
+  if (km2 >= 1) return `${formatNumber(km2)} km²`
   return `${Math.round(km2 * 1_000_000).toLocaleString("fr-FR")} m²`
 })
 

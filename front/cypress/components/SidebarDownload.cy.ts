@@ -42,11 +42,18 @@ describe("MapSidePanelDownload", () => {
     cy.contains("OUTPUTFORMAT").should("be.visible")
   })
 
-  it("should expand raster section and show dataset URLs", () => {
+  it("should expand raster section and show dataset URLs with file sizes", () => {
+    cy.window().then((win) => {
+      cy.stub(win, "fetch")
+        .callThrough()
+        .withArgs(Cypress.sinon.match(/\/rasters\//), { method: "HEAD" })
+        .resolves(new Response(null, { headers: { "Content-Length": "1500000000" } }))
+    })
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("Téléchargement direct des rasters").click()
     cy.contains("Plantabilité (couleurs)").should("be.visible")
     cy.contains("Végéstrate").should("be.visible")
+    cy.contains("(1,5 Go)").should("be.visible")
   })
 
   it("should close the dialog when close button is clicked", () => {

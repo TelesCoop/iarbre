@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 interface DetailItem {
   label: string
   value: number
@@ -21,7 +22,7 @@ withDefaults(defineProps<Props>(), {
       <div class="detail-label-row">
         <span :style="{ backgroundColor: item.color }" class="detail-dot" />
         <span class="detail-label">{{ item.label }}</span>
-        <span class="detail-value">{{ item.value.toFixed(1) }}{{ unit }}</span>
+        <span class="detail-value">{{ formatNumber(item.value) }}{{ unit }}</span>
       </div>
       <div class="bar-track">
         <div :style="{ width: `${item.value}%`, backgroundColor: item.color }" class="bar-fill" />

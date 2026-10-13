@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatSurface } from "@/utils/format"
 import { computed } from "vue"
 import AppSpinner from "@/components/shared/AppSpinner.vue"
 import NarrativeSection from "@/components/dashboard/NarrativeSection.vue"
@@ -38,8 +39,7 @@ const plantabilityInterpretation = computed(() => {
 
 const vegetationFinding = computed(() => {
   if (!store.dashboardData) return ""
-  const totalKm2 = store.dashboardData.vegetation.totalM2 / 1_000_000
-  return `${totalKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km² de végétation inventoriée`
+  return `${formatSurface(store.dashboardData.vegetation.totalM2)} de végétation inventoriée`
 })
 
 const vegetationInterpretation = computed(() => {
@@ -83,7 +83,7 @@ const riskFinding = computed(() => {
 const summaryCards = computed(() => {
   const data = store.dashboardData
   if (!data) return []
-  const km2 = (m2: number) => (m2 / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 2 })
+  const [vegetationValue, vegetationUnit] = formatSurface(data.vegetation.totalM2).split(" ")
   const oneDecimal = (value: number) => value.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
   return [
     {
@@ -94,9 +94,9 @@ const summaryCards = computed(() => {
     },
     {
       label: "02 Végétation",
-      value: oneDecimal(data.vegetation.totalM2 / 1_000_000),
-      unit: "km²",
-      description: `Végétation inventoriée, dont ${km2(data.vegetation.treesSurfaceM2)} km² de strate haute`
+      value: vegetationValue,
+      unit: vegetationUnit,
+      description: `Végétation inventoriée, dont ${formatSurface(data.vegetation.treesSurfaceM2)} de strate haute`
     },
     {
       label: "03 Contraintes",

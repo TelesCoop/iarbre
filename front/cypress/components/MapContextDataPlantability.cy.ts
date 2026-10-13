@@ -29,7 +29,7 @@ describe("MapContextData", () => {
       store.contextData.data = null
       store.selectedDataType = DataType.PLANTABILITY
     })
-    cy.contains("Zommez et cliquez sur un carreau").should("be.visible")
+    cy.contains("Zoomez et cliquez sur un carreau").should("be.visible")
   })
 
   it("should display informations correctly", () => {

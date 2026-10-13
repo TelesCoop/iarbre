@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import type { DashboardBuildings, DashboardLcz } from "@/types/dashboard"
@@ -19,14 +20,14 @@ const bars = computed(() => {
       value: props.lcz.averageBuildingSurfaceRate,
       max: 100,
       color: BUILDING_WIDGET_COLORS.surface,
-      display: `${props.lcz.averageBuildingSurfaceRate.toFixed(1)} %`
+      display: `${formatNumber(props.lcz.averageBuildingSurfaceRate)} %`
     },
     {
       label: "Hauteur moyenne",
       value: props.lcz.averageBuildingHeight,
       max: 50,
       color: BUILDING_WIDGET_COLORS.height,
-      display: `${props.lcz.averageBuildingHeight.toFixed(1)} m`
+      display: `${formatNumber(props.lcz.averageBuildingHeight)} m`
     },
     {
       label: "Superficie moyenne",
