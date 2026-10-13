@@ -54,7 +54,7 @@ const { svgRef } = useD3Chart(
       .attr("y", 0)
       .attr("width", thresholdX)
       .attr("height", innerH)
-      .attr("fill", "#d73026")
+      .attr("fill", BIOSPHERE_CLASSES[0].color)
       .attr("opacity", 0.06)
 
     const bars = g

@@ -10,24 +10,24 @@ export interface BiosphereClass {
 }
 
 export const BIOSPHERE_CLASSES: BiosphereClass[] = [
-  { label: "Entre 0% et 12%", color: "#d73026", min: 0, max: 12 },
-  { label: "Entre 12% et 25%", color: "#BF5A16", min: 12, max: 25 },
-  { label: "Entre 25% et 50%", color: "#A6CC4A", min: 25, max: 50 },
-  { label: "Entre 50% et 75%", color: "#55B250", min: 50, max: 75 },
-  { label: "Entre 75% et 100%", color: "#025400", min: 75, max: 100 }
+  { label: "Entre 0% et 12%", color: "#d4322c", min: 0, max: 12 },
+  { label: "Entre 12% et 25%", color: "#fdbc6e", min: 12, max: 25 },
+  { label: "Entre 25% et 50%", color: "#c4e67f", min: 25, max: 50 },
+  { label: "Entre 50% et 75%", color: "#64bc61", min: 50, max: 75 },
+  { label: "Entre 75% et 100%", color: "#0b7b41", min: 75, max: 100 }
 ]
 
 export const BIOSPHERE_DETAIL_CLASSES: BiosphereClass[] = [
-  { label: "Entre 0% et 6%", color: "#BC261D", min: 0, max: 6 },
-  { label: "Entre 6% et 12%", color: "#CF3F20", min: 6, max: 12 },
-  { label: "Entre 12% et 19%", color: "#C74B1C", min: 12, max: 19 },
-  { label: "Entre 19% et 25%", color: "#B68228", min: 19, max: 25 },
-  { label: "Entre 25% et 37%", color: "#AFA438", min: 25, max: 37 },
-  { label: "Entre 37% et 50%", color: "#8AC34C", min: 37, max: 50 },
-  { label: "Entre 50% et 62%", color: "#71BB4E", min: 50, max: 62 },
-  { label: "Entre 62% et 75%", color: "#389134", min: 62, max: 75 },
-  { label: "Entre 75% et 87%", color: "#1F751C", min: 75, max: 87 },
-  { label: "Entre 87% et 100%", color: "#024500", min: 87, max: 100 }
+  { label: "Entre 0% et 6%", color: "#b91327", min: 0, max: 6 },
+  { label: "Entre 6% et 12%", color: "#e54f36", min: 6, max: 12 },
+  { label: "Entre 12% et 19%", color: "#fa9a59", min: 12, max: 19 },
+  { label: "Entre 19% et 25%", color: "#fed988", min: 19, max: 25 },
+  { label: "Entre 25% et 37%", color: "#d7ee8e", min: 25, max: 37 },
+  { label: "Entre 37% et 50%", color: "#afdd73", min: 37, max: 50 },
+  { label: "Entre 50% et 62%", color: "#7fc866", min: 50, max: 62 },
+  { label: "Entre 62% et 75%", color: "#48ae5b", min: 62, max: 75 },
+  { label: "Entre 75% et 87%", color: "#198d4a", min: 75, max: 87 },
+  { label: "Entre 87% et 100%", color: "#006837", min: 87, max: 100 }
 ]
 
 export const toColorMap = (classes: BiosphereClass[]) => [
