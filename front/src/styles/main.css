@@ -666,7 +666,7 @@ button.vegestrate-category.is-selected {
 }
 
 .strate-item.is-selected .strate-swatch {
-  @apply ring-2 ring-gray-600;
+  @apply border-2 border-primary-900;
 }
 
 .strate-label {

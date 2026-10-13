@@ -3,7 +3,7 @@ import { computed, ref } from "vue"
 import FilterIndicator from "../legend/FilterIndicator.vue"
 
 interface ScoreLabelProps {
-  score: number
+  score: number | string
   label: string
   isSelected?: boolean
   clickable?: boolean
@@ -14,7 +14,7 @@ interface ScoreLabelProps {
 const props = defineProps<ScoreLabelProps>()
 
 const emit = defineEmits<{
-  click: [score: number]
+  click: [score: number | string]
 }>()
 
 const scoreLabelRef = ref<HTMLElement | null>(null)

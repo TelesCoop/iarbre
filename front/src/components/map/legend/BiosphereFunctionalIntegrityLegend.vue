@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { BiosphereIntegrityLegend } from "@/utils/biosphere_functional_integrity"
-import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
+import ScoreLabel from "@/components/map/score/ScoreLabel.vue"
+import { useMapStore } from "@/stores/map"
 
+const mapStore = useMapStore()
 const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
 </script>
 
@@ -11,28 +13,31 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
     data-cy="biosphere-integrity-legend"
   >
     <div class="legend-header">
-      <span class="legend-title">Part d'espaces naturels</span>
+      <span class="legend-title">Intégrité fonctionnelle de la biosphère</span>
     </div>
     <div class="legend-content">
       <div class="legend-label">
-        <span class="legend-axis-indicator">−</span>
+        <span class="legend-axis-indicator">-</span>
         <span class="legend-axis-text">Artificialisé</span>
       </div>
       <div class="scale-stack">
         <div class="legend-scale">
-          <FilterableLegendItem
+          <ScoreLabel
             v-for="([name, color], index) in entries"
             :key="name"
-            :value="name"
-            :label="name"
+            :background-color="color"
             :class="[
-              'biosphere-segment',
-              index === 0 ? 'rounded-l-sm' : '',
-              index === entries.length - 1 ? 'rounded-r-sm' : ''
+              'transition-transform duration-150 ease-out hover:scale-y-110',
+              index === 0 ? 'rounded-l' : '',
+              index === entries.length - 1 ? 'rounded-r' : '',
+              mapStore.isFiltered(name) ? 'z-10 relative' : ''
             ]"
+            :clickable="true"
             :data-biosphere="name"
-            :style="{ backgroundColor: color }"
-            :title="name"
+            :is-selected="mapStore.isFiltered(name)"
+            :label="name"
+            :score="name"
+            @click="mapStore.toggleAndApplyFilter(name)"
           />
         </div>
         <div class="legend-bounds">
@@ -50,28 +55,6 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
 
 <style scoped>
 @reference "@/styles/main.css";
-
-.biosphere-segment {
-  @apply cursor-pointer border-0 p-0;
-  @apply transition-transform duration-150 hover:scale-y-110;
-  width: 0.875rem;
-  height: 1.125rem;
-}
-
-@media (min-width: 1024px) {
-  .biosphere-segment {
-    width: 1.25rem;
-    height: 1.6875rem;
-  }
-}
-
-.biosphere-segment.is-selected {
-  @apply relative z-10 rounded-sm ring-2 ring-gray-600;
-}
-
-.biosphere-segment.is-dimmed {
-  @apply opacity-40;
-}
 
 .scale-stack {
   @apply flex flex-col gap-0.5;
