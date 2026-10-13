@@ -53,7 +53,7 @@ describe("biosphere colors", () => {
   it("picks the class color with lower bound inclusive", () => {
     expect(biosphereColor(0, BIOSPHERE_CLASSES)).toBe("#d4322c")
     expect(biosphereColor(25, BIOSPHERE_CLASSES)).toBe("#c4e67f")
-    expect(biosphereColor(24, BIOSPHERE_DETAIL_CLASSES)).toBe("#fed988")
+    expect(biosphereColor(24, BIOSPHERE_DETAIL_CLASSES)).toBe("#efc250")
     expect(biosphereColor(100, BIOSPHERE_DETAIL_CLASSES)).toBe("#006837")
     expect(biosphereColor(-1, BIOSPHERE_CLASSES)).toBe("#d4d4d4")
   })

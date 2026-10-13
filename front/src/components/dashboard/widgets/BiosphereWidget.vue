@@ -20,7 +20,7 @@ const aboveThresholdPct = computed(() => {
   const entries = Object.entries(props.data.distribution)
   const total = entries.reduce((s, [, v]) => s + v, 0)
   if (total === 0) return 0
-  const above = entries.filter(([k]) => +k > 25).reduce((s, [, v]) => s + v, 0)
+  const above = entries.filter(([k]) => +k >= 25).reduce((s, [, v]) => s + v, 0)
   return Math.round((above / total) * 1000) / 10
 })
 
