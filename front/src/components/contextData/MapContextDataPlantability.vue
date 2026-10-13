@@ -47,7 +47,7 @@ const tileCount = computed(() => {
         : 'Calcul basé sur la pondération de +37 paramètres.'
     "
     :data="currentData"
-    empty-message="Zommez et cliquez sur un carreau."
+    empty-message="Zoomez et cliquez sur un carreau."
     :zoom-level="zoomLevel"
   >
     <template #score="{ data: plantabilityData }">

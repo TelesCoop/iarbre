@@ -69,7 +69,7 @@ describe("Map - Desktop", () => {
 
   it("shows plantability context data", () => {
     cy.getBySel("map-context-data").should("exist")
-    cy.getBySel("map-context-data").should("contain", "Zommez et cliquez sur un carreau")
+    cy.getBySel("map-context-data").should("contain", "Zoomez et cliquez sur un carreau")
     cy.mapZoomTo(3)
     cy.getBySel("map-component").click("center")
   })

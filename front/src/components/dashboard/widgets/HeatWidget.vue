@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed, ref, type Ref } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
@@ -239,7 +240,7 @@ function drawSpiderChart(
       .attr("font-size", "15px")
       .attr("font-weight", "600")
       .attr("fill", "#374151")
-      .text(`${axis.value.toFixed(1)}/${POLAR_MAX_SCORE}`)
+      .text(`${formatNumber(axis.value)}/${POLAR_MAX_SCORE}`)
   })
 }
 
@@ -316,7 +317,7 @@ const { svgRef: nightSvgRef } = useD3Chart(
               <span class="tooltip-dot" :style="{ backgroundColor: dayHoveredAxis.color }" />
               <span class="tooltip-label">{{ dayHoveredAxis.label }}</span>
               <span class="tooltip-value"
-                >{{ dayHoveredAxis.value.toFixed(1) }}/{{ POLAR_MAX_SCORE }}</span
+                >{{ formatNumber(dayHoveredAxis.value) }}/{{ POLAR_MAX_SCORE }}</span
               >
               <span class="tooltip-sep">-</span>
               <span class="tooltip-level">{{ dayHoveredAxis.level }}</span>
@@ -335,7 +336,7 @@ const { svgRef: nightSvgRef } = useD3Chart(
               <span class="tooltip-dot" :style="{ backgroundColor: nightHoveredAxis.color }" />
               <span class="tooltip-label">{{ nightHoveredAxis.label }}</span>
               <span class="tooltip-value"
-                >{{ nightHoveredAxis.value.toFixed(1) }}/{{ POLAR_MAX_SCORE }}</span
+                >{{ formatNumber(nightHoveredAxis.value) }}/{{ POLAR_MAX_SCORE }}</span
               >
               <span class="tooltip-sep">-</span>
               <span class="tooltip-level">{{ nightHoveredAxis.level }}</span>

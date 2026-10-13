@@ -50,7 +50,7 @@ const items = computed(() => {
 
 <template>
   <DashboardWidgetCard
-    :subtitle="`Découpage en trois strates : haute (>1.5m), moyenne (<1.5m) et pelouses.`"
+    :subtitle="`Découpage en trois strates : haute (> 5 m), moyenne (1,5 - 5 m) et basse (< 1,5 m).`"
     title="Inventaire stratifié de végétation existante"
   >
     <div v-if="hasData" class="widget-body">
