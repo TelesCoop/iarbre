@@ -23,6 +23,7 @@ const isFiltered = computed(() => mapStore.isFiltered(props.zone))
 const zoneClasses = computed(() => [
   props.size === "compact" ? "h-7" : "h-4",
   isFiltered.value ? "border-2 border-primary-900 " : "",
+  mapStore.hasActiveFilters && !isFiltered.value ? "opacity-40" : "",
   props.isFirst ? "rounded-l-sm" : "",
   props.isLast ? "rounded-r-sm" : ""
 ])

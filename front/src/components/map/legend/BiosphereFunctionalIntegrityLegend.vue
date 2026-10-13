@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import { BiosphereIntegrityLegend } from "@/utils/biosphere_functional_integrity"
 import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
+import FilterIndicator from "@/components/map/legend/FilterIndicator.vue"
+import { useMapStore } from "@/stores/map"
+
+const mapStore = useMapStore()
 
 const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
 </script>
@@ -11,14 +15,14 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
     data-cy="biosphere-integrity-legend"
   >
     <div class="legend-header">
-      <span class="legend-title">Part d'espaces naturels</span>
+      <span class="legend-title">Intégrité fonctionnelle de la biosphère</span>
     </div>
-    <div class="legend-content">
+    <div class="legend-content pb-3">
       <div class="legend-label">
         <span class="legend-axis-indicator">−</span>
         <span class="legend-axis-text">Artificialisé</span>
       </div>
-      <div class="scale-stack">
+      <div class="relative">
         <div class="legend-scale">
           <FilterableLegendItem
             v-for="([name, color], index) in entries"
@@ -26,16 +30,20 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
             :value="name"
             :label="name"
             :class="[
-              'biosphere-segment',
-              index === 0 ? 'rounded-l-sm' : '',
-              index === entries.length - 1 ? 'rounded-r-sm' : ''
+              'relative shrink-0 cursor-pointer border-0 p-0 w-2.5 h-4.5 lg:w-3.75 lg:h-6.75 transition-transform duration-150 hover:scale-y-110 [&.is-selected]:z-10 [&.is-selected]:border-2 [&.is-selected]:border-primary-900 [&.is-dimmed]:opacity-40',
+              index === 0 ? 'rounded-l' : '',
+              index === entries.length - 1 ? 'rounded-r' : ''
             ]"
             :data-biosphere="name"
             :style="{ backgroundColor: color }"
             :title="name"
-          />
+          >
+            <FilterIndicator :is-visible="mapStore.isFiltered(name)" />
+          </FilterableLegendItem>
         </div>
-        <div class="legend-bounds">
+        <div
+          class="absolute inset-x-0 top-full mt-0.5 flex justify-between text-2xs font-medium text-gray-500"
+        >
           <span>0 %</span>
           <span>100 %</span>
         </div>
@@ -47,37 +55,3 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
     </div>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.biosphere-segment {
-  @apply cursor-pointer border-0 p-0;
-  @apply transition-transform duration-150 hover:scale-y-110;
-  width: 0.875rem;
-  height: 1.125rem;
-}
-
-@media (min-width: 1024px) {
-  .biosphere-segment {
-    width: 1.25rem;
-    height: 1.6875rem;
-  }
-}
-
-.biosphere-segment.is-selected {
-  @apply relative z-10 rounded-sm ring-2 ring-gray-600;
-}
-
-.biosphere-segment.is-dimmed {
-  @apply opacity-40;
-}
-
-.scale-stack {
-  @apply flex flex-col gap-0.5;
-}
-
-.legend-bounds {
-  @apply flex justify-between text-2xs font-medium text-gray-500;
-}
-</style>
