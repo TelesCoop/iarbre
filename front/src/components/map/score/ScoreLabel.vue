@@ -54,6 +54,7 @@ const handleClick = () => {
 @reference "@/styles/main.css";
 
 .score-label {
+  @apply shrink-0;
   width: 0.625rem;
   height: 1.125rem;
 }

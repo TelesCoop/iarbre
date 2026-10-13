@@ -601,6 +601,14 @@ button.vegestrate-category.is-selected {
   @apply lg:gap-2 lg:py-2 lg:px-3 lg:text-sm;
 }
 
+.legend-panel-fixed-width {
+  @apply lg:w-90!;
+}
+
+.legend-panel-fixed-height {
+  @apply lg:min-h-30!;
+}
+
 .legend-attribution {
   @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
 }

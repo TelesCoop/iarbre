@@ -15,7 +15,7 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
     <div class="legend-header">
       <span class="legend-title">Intégrité fonctionnelle de la biosphère</span>
     </div>
-    <div class="legend-content">
+    <div class="legend-content pb-3">
       <div class="legend-label">
         <span class="legend-axis-indicator">-</span>
         <span class="legend-axis-text">Artificialisé</span>
@@ -57,10 +57,10 @@ const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
 @reference "@/styles/main.css";
 
 .scale-stack {
-  @apply flex flex-col gap-0.5;
+  @apply relative;
 }
 
 .legend-bounds {
-  @apply flex justify-between text-2xs font-medium text-gray-500;
+  @apply absolute inset-x-0 top-full mt-0.5 flex justify-between text-2xs font-medium text-gray-500;
 }
 </style>
