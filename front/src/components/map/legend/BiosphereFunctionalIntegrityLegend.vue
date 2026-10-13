@@ -1,12 +1,24 @@
 <script lang="ts" setup>
-import { BiosphereIntegrityLegend } from "@/utils/biosphere_functional_integrity"
+import { computed } from "vue"
+import {
+  BIOSPHERE_DETAIL_ZOOM,
+  BiosphereIntegrityDetailLegend,
+  BiosphereIntegrityLegend
+} from "@/utils/biosphere_functional_integrity"
 import FilterableLegendItem from "@/components/map/legend/FilterableLegendItem.vue"
 import FilterIndicator from "@/components/map/legend/FilterIndicator.vue"
 import { useMapStore } from "@/stores/map"
 
 const mapStore = useMapStore()
 
-const entries = Object.entries(BiosphereIntegrityLegend) as [string, string][]
+const entries = computed(
+  () =>
+    Object.entries(
+      mapStore.currentZoom >= BIOSPHERE_DETAIL_ZOOM
+        ? BiosphereIntegrityDetailLegend
+        : BiosphereIntegrityLegend
+    ) as [string, string][]
+)
 </script>
 
 <template>
