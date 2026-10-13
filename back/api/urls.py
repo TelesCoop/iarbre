@@ -12,6 +12,8 @@ from .views import (
     CityView,
     IrisView,
     FeedbackView,
+    ShortLinkCreateView,
+    ShortLinkDetailView,
     TileView,
     HealthCheckView,
     QPVListView,
@@ -58,6 +60,12 @@ urlpatterns = [
         name="retrieve-tile-details",
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
+    path("short-links/", ShortLinkCreateView.as_view(), name="create-short-link"),
+    path(
+        "short-links/<str:code>/",
+        ShortLinkDetailView.as_view(),
+        name="retrieve-short-link",
+    ),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
     path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
