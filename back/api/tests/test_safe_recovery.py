@@ -12,17 +12,19 @@ from api.models import Feedback, ShortLink
 
 class SafeRecoveryTest(TransactionTestCase):
     def test_rows_survive_a_wiped_database(self):
-        backup_file = os.path.join(tempfile.mkdtemp(), "model_backup.sql")
         Feedback.objects.create(feedback="Raise the floor")
         ShortLink.objects.create(code="abc12345", path="/plantability/14/45.0/4.0")
 
-        with mock.patch.object(Command, "backup_file", backup_file):
-            call_command("safe_recovery", "backup")
-            with connection.cursor() as cursor:
-                cursor.execute("TRUNCATE api_feedback, api_shortlink")
-            call_command("safe_recovery", "restore")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            backup_file = os.path.join(tmp_dir, "model_backup.sql")
+            with mock.patch.object(Command, "backup_file", backup_file):
+                call_command("safe_recovery", "backup")
+                with connection.cursor() as cursor:
+                    cursor.execute("TRUNCATE api_feedback, api_shortlink")
+                call_command("safe_recovery", "restore")
+            self.assertFalse(os.path.exists(backup_file))
 
         self.assertEqual(Feedback.objects.get().feedback, "Raise the floor")
         self.assertEqual(ShortLink.objects.get().code, "abc12345")
-        ShortLink.objects.create(code="new12345", path="/")
-        self.assertFalse(os.path.exists(backup_file))
+        link_after_restore = ShortLink.objects.create(code="new12345", path="/")
+        self.assertIsNotNone(link_after_restore.pk)

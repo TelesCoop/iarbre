@@ -69,7 +69,7 @@ const router = createRouter({
       component: { render: () => null },
       beforeEnter: async (to) => {
         const { data } = await useApiGet<{ path: string }>(`short-links/${to.params.code}/`)
-        return data?.path.startsWith("/") && !data.path.startsWith("//") ? data.path : "/"
+        return data?.path ?? "/"
       }
     },
     {
