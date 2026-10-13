@@ -19,11 +19,15 @@ describe("DashboardFooter export", () => {
 
     cy.stub(window.URL, "createObjectURL").returns("blob:stub")
     cy.stub(window.URL, "revokeObjectURL")
+    const anchorClick = cy.stub(HTMLAnchorElement.prototype, "click")
 
     cy.mount(WrapperWithToast)
     cy.contains("Télécharger").click()
     cy.wait("@export")
     cy.contains("Rapport généré").should("exist")
+    cy.wrap(anchorClick)
+      .its("lastCall.thisValue.download")
+      .should("match", /^iarbre-metropole-de-lyon-\d{4}-\d{2}-\d{2}\.pdf$/)
   })
 
   it("shows an error toast on server error", () => {

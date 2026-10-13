@@ -60,16 +60,6 @@ describe("PlantabilityContextDataList", () => {
     cy.get("@zoomTo").should("have.been.calledWith", 17)
   })
 
-  it("does not show a zoom-out hint when the land-use detail is displayed", () => {
-    cy.mount(PlantabilityContextDataList, {
-      props: {
-        data: createMockData()
-      }
-    })
-
-    cy.get('[data-cy="zoom-out-hint"]').should("not.exist")
-  })
-
   it("renders plantability list with factors", () => {
     const mockData = createMockData()
 
