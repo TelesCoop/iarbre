@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
@@ -121,7 +122,7 @@ const { svgRef } = useD3Chart(
       .attr("text-anchor", "start")
       .attr("font-size", "0.625rem")
       .attr("fill", "#6B7280")
-      .text(`${aboveThresholdPct.value}% > 25`)
+      .text(`${formatNumber(aboveThresholdPct.value)} % > 25`)
 
     const meanX = xScale(score.value)
     g.append("line")
@@ -142,7 +143,7 @@ const { svgRef } = useD3Chart(
       .attr("font-size", "0.625rem")
       .attr("fill", arcColor.value)
       .attr("font-weight", "600")
-      .text(`Valeur moyenne : ${score.value}%`)
+      .text(`Valeur moyenne : ${formatNumber(score.value)} %`)
 
     ticks.forEach((t) => {
       const isThreshold = t === THRESHOLD
