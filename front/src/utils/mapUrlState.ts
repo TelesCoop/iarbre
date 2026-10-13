@@ -3,6 +3,7 @@ import type { MapDisplayState } from "@/types/map"
 import { DEFAULT_MAP_STYLE } from "@/utils/constants"
 import { DataType, MapStyle, OverlayLayer } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS } from "@/utils/mapStyleOptions"
+import { BIOSPHERE_CLASSES, BIOSPHERE_DETAIL_CLASSES } from "@/utils/biosphere_functional_integrity"
 
 const LIST_SEPARATOR = ","
 
@@ -11,14 +12,31 @@ const NUMERIC_FILTER_DATA_TYPES: (DataType | null)[] = [
   DataType.VULNERABILITY
 ]
 
+const BIOSPHERE_ALL_CLASSES = [...BIOSPHERE_CLASSES, ...BIOSPHERE_DETAIL_CLASSES]
+
+const encodeFilter = (value: number | string): string => {
+  const biosphereClass = BIOSPHERE_ALL_CLASSES.find((c) => c.label === value)
+  return biosphereClass ? `${biosphereClass.min}-${biosphereClass.max}` : String(value)
+}
+
+const decodeBiosphereFilter = (value: string): string =>
+  BIOSPHERE_ALL_CLASSES.find((c) => `${c.min}-${c.max}` === value)?.label ?? value
+
 const readQueryValues = (rawValue: LocationQuery[string] | undefined): string[] =>
   [rawValue]
     .flat()
     .flatMap((value) => (value ? value.split(LIST_SEPARATOR) : []))
     .filter((value) => value !== "")
 
-const parseFilters = (values: string[], dataType: DataType | null): (number | string)[] =>
-  NUMERIC_FILTER_DATA_TYPES.includes(dataType) ? values.map(Number).filter(Number.isFinite) : values
+const parseFilters = (values: string[], dataType: DataType | null): (number | string)[] => {
+  if (NUMERIC_FILTER_DATA_TYPES.includes(dataType)) {
+    return values.map(Number).filter(Number.isFinite)
+  }
+  if (dataType === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
+    return values.map(decodeBiosphereFilter)
+  }
+  return values
+}
 
 const isSelectableMapStyle = (value: string): value is MapStyle =>
   MAP_STYLE_OPTIONS.some((option) => option.value === value)
@@ -39,7 +57,7 @@ export const buildMapDisplayQuery = (state: MapDisplayState): LocationQueryRaw =
   const query: LocationQueryRaw = {}
 
   if (state.filters.length > 0) {
-    query.filters = state.filters.map(String).join(LIST_SEPARATOR)
+    query.filters = state.filters.map(encodeFilter).join(LIST_SEPARATOR)
   }
   if (state.mapStyle !== DEFAULT_MAP_STYLE) {
     query.basemap = state.mapStyle
