@@ -1,4 +1,4 @@
-import { computed, markRaw, ref, type Ref } from "vue"
+import { computed, markRaw, ref, watch, type Ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
@@ -36,7 +36,14 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
-import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
+import {
+  BIOSPHERE_DETAIL_ZOOM,
+  BIOSPHERE_CLASSES,
+  BIOSPHERE_DETAIL_CLASSES,
+  toColorMap,
+  toCoarseFilters,
+  toDetailFilters
+} from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import {
@@ -186,8 +193,10 @@ export const useMapStore = defineStore("map", () => {
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
         "step",
-        ["get", "indice"],
-        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+        ["zoom"],
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_CLASSES)],
+        BIOSPHERE_DETAIL_ZOOM,
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_DETAIL_CLASSES)]
       ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
@@ -251,6 +260,17 @@ export const useMapStore = defineStore("map", () => {
     clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
+
+  watch(
+    () => currentZoom.value >= BIOSPHERE_DETAIL_ZOOM,
+    (isDetail) => {
+      if (selectedDataType.value !== DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) return
+      setFilteredValues(
+        isDetail ? toDetailFilters(filteredValues.value) : toCoarseFilters(filteredValues.value)
+      )
+      applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+    }
+  )
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),

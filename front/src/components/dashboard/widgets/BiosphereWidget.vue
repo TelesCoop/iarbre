@@ -3,11 +3,7 @@ import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import type { DashboardBiosphere } from "@/types/dashboard"
-import {
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP,
-  BIOSPHERE_INTEGRITY_RANGES,
-  BiosphereIntegrityLegendName
-} from "@/utils/biosphere_functional_integrity"
+import { BIOSPHERE_CLASSES, biosphereColor } from "@/utils/biosphere_functional_integrity"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
 
 const BIOSPHERE_MAX_SCORE = 100
@@ -18,44 +14,19 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const coloredSegments = Object.values(BIOSPHERE_INTEGRITY_RANGES).map(([min, max], i) => ({
-  min,
-  max,
-  color: String(BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP[2 + i * 2])
-}))
-
 const score = computed(() => Math.round(props.data.averageIndice * 10) / 10)
 
 const aboveThresholdPct = computed(() => {
   const entries = Object.entries(props.data.distribution)
   const total = entries.reduce((s, [, v]) => s + v, 0)
   if (total === 0) return 0
-  const above = entries.filter(([k]) => +k > 25).reduce((s, [, v]) => s + v, 0)
+  const above = entries.filter(([k]) => +k >= 25).reduce((s, [, v]) => s + v, 0)
   return Math.round((above / total) * 1000) / 10
 })
 
-const arcColor = computed(() => {
-  let color = coloredSegments[0].color
-  for (const seg of coloredSegments) {
-    if (score.value >= seg.min) color = seg.color
-  }
-  return color
-})
+const arcColor = computed(() => biosphereColor(score.value, BIOSPHERE_CLASSES))
 
-const ticks = [
-  0,
-  ...Object.keys(BIOSPHERE_INTEGRITY_RANGES).map(
-    (k) => BIOSPHERE_INTEGRITY_RANGES[k as BiosphereIntegrityLegendName][1]
-  )
-]
-
-function colorForIndice(indice: number): string {
-  let color = coloredSegments[0].color
-  for (const seg of coloredSegments) {
-    if (indice >= seg.min) color = seg.color
-  }
-  return color
-}
+const ticks = [0, ...BIOSPHERE_CLASSES.map((c) => c.max)]
 
 const { svgRef } = useD3Chart(
   ({ svg, width, height }: D3ChartContext, animate: boolean) => {
@@ -83,7 +54,7 @@ const { svgRef } = useD3Chart(
       .attr("y", 0)
       .attr("width", thresholdX)
       .attr("height", innerH)
-      .attr("fill", "#d73026")
+      .attr("fill", BIOSPHERE_CLASSES[0].color)
       .attr("opacity", 0.06)
 
     const bars = g
@@ -95,7 +66,7 @@ const { svgRef } = useD3Chart(
       .attr("y", animate ? innerH : (d) => yScale(d.count))
       .attr("width", Math.max(barW - 0.5, 1))
       .attr("height", animate ? 0 : (d) => innerH - yScale(d.count))
-      .attr("fill", (d) => colorForIndice(d.indice))
+      .attr("fill", (d) => biosphereColor(d.indice, BIOSPHERE_CLASSES))
       .attr("opacity", 0.85)
 
     if (animate) {
