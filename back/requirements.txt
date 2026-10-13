@@ -1,14 +1,14 @@
-boto3==1.43.107
+boto3==1.43.111
 coverage==7.16.2
 Django==5.2.17
 django-anymail[mailgun]==15.2
 django-cors-headers==4.9.0
 django-extensions==4.1
-django-filter==26.1
+django-filter==26.2
 django-gisserver==2.4.0
 django-prometheus==2.5.0
 django-storages[s3]==1.14.6
-djangorestframework==3.18.1
+djangorestframework==3.18.3
 djangorestframework_camel_case==1.4.2
 factory-boy==3.3.3
 fiona==1.10.1
@@ -31,7 +31,7 @@ rasterio==1.5.2
 requests_oauthlib==2.0.0
 rollbar==1.5.0
 scipy==1.18.1
-shapely==2.1.2
+shapely==2.2.0
 telescoop_backup==0.6.5
 tqdm==4.70.1
 Unidecode==1.4.0
