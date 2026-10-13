@@ -1,4 +1,4 @@
-import { computed, markRaw, ref, type Ref } from "vue"
+import { computed, markRaw, ref, watch, type Ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
@@ -39,7 +39,9 @@ import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/planta
 import {
   BIOSPHERE_DETAIL_ZOOM,
   BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP,
-  BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP
+  BIOSPHERE_FUNCTIONAL_INTEGRITY_DETAIL_COLOR_MAP,
+  toCoarseFilters,
+  toDetailFilters
 } from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
@@ -257,6 +259,17 @@ export const useMapStore = defineStore("map", () => {
     clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
+
+  watch(
+    () => currentZoom.value >= BIOSPHERE_DETAIL_ZOOM,
+    (isDetail) => {
+      if (selectedDataType.value !== DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) return
+      setFilteredValues(
+        isDetail ? toDetailFilters(filteredValues.value) : toCoarseFilters(filteredValues.value)
+      )
+      applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+    }
+  )
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),

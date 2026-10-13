@@ -47,7 +47,7 @@ export const BIOSPHERE_INTEGRITY_RANGES: Record<BiosphereIntegrityLegendName, [n
   [BiosphereIntegrityLegendName.HIGH]: [75, 100]
 }
 
-export const BIOSPHERE_DETAIL_ZOOM = 15
+export const BIOSPHERE_DETAIL_ZOOM = 14
 
 export enum BiosphereIntegrityDetailColor {
   CRITICAL_1 = "#BC261D",
