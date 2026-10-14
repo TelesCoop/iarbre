@@ -168,7 +168,7 @@ class DashboardView(APIView):
 
         total_counts: dict[str, int] = {}
         meta_totals: dict[str, float] = {}
-        meta_city_count = 0
+        meta_total_weight = 0
         divisions = []
 
         for city in scope.cities_qs.only(
@@ -176,10 +176,11 @@ class DashboardView(APIView):
         ):
             for key, count in city.plantability_counts.items():
                 total_counts[key] = total_counts.get(key, 0) + count
-            if city.meta_factors_avg:
+            tile_count = sum(city.plantability_counts.values())
+            if city.meta_factors_avg and tile_count > 0:
                 for key, val in city.meta_factors_avg.items():
-                    meta_totals[key] = meta_totals.get(key, 0.0) + val
-                meta_city_count += 1
+                    meta_totals[key] = meta_totals.get(key, 0.0) + val * tile_count
+                meta_total_weight += tile_count
             divisions.append(
                 {
                     "code": city.code,
@@ -192,8 +193,8 @@ class DashboardView(APIView):
             )
 
         meta_factors_avg = (
-            {k: _safe_round(v / meta_city_count) for k, v in meta_totals.items()}
-            if meta_city_count > 0
+            {k: _safe_round(v / meta_total_weight) for k, v in meta_totals.items()}
+            if meta_total_weight > 0
             else {}
         )
 
