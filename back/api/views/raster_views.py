@@ -18,8 +18,9 @@ base_dir = "rasters/WMS/"
 RASTER_MAP: dict[str, tuple[str, str]] = {
     "pet_index": _entry(base_dir + "PET_index.tif"),
     "pet_index_2020": _entry(base_dir + "PET_index_2020.tif"),
+    "shadow": _entry(base_dir + "Shadow.tif"),
 }
-HOURLY_RASTERS = {"pet_index", "pet_index_2020"}
+HOURLY_RASTERS = {"pet_index", "pet_index_2020", "shadow"}
 
 
 class FileDownloadView(APIView):

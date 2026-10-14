@@ -61,6 +61,17 @@ export const RASTER_LAYERS: RasterLayer[] = [
     attribution: "Métropole de Lyon",
     hourly: true,
     legend: PET_LEGEND
+  },
+  {
+    key: "shadow",
+    label: "Ombre - 1m",
+    description: `<p>Zones à l'ombre heure par heure, le 14 juillet, selon les bâtiments et la végétation.
+      Les zones au soleil sont transparentes.</p>
+      <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
+      Chaque pixel correspond à une zone de 1mx1m.</p>`,
+    attribution: "Métropole de Lyon",
+    hourly: true,
+    legend: [{ color: "rgba(0, 0, 139, 0.7)", label: "Ombre" }]
   }
 ]
 

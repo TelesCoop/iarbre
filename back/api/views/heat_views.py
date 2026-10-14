@@ -20,6 +20,7 @@ from api.constants import (
     HEAT_FILES,
     HOURLY_HEAT_LAYERS,
     PET_INDEX_COLOR_MAP,
+    SHADOW_COLOR,
 )
 from heat.raster import hour_raster_path, is_up_to_date
 
@@ -33,6 +34,7 @@ class HeatTileView(APIView):
     Serve heat raster data as {z}/{x}/{y} PNG tiles for MapLibre.
 
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14
+        GET /api/tiles/heat/{z}/{x}/{y}.png?mode=shadow&hour=14
         GET /api/tiles/heat/{z}/{x}/{y}.png?mode=pet_index&hour=14&classes=0,2
     """
 
@@ -60,10 +62,13 @@ class HeatTileView(APIView):
 
         rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
         valid = data != nodata if nodata is not None else np.ones(data.shape, bool)
-        for index, (value, color) in enumerate(PET_INDEX_COLOR_MAP.items()):
-            rgba_data[valid & (data == value)] = self._class_color(
-                index, color, classes
-            )
+        if mode == "shadow":
+            rgba_data[valid & (data < 1)] = self._class_color(0, SHADOW_COLOR, classes)
+        else:
+            for index, (value, color) in enumerate(PET_INDEX_COLOR_MAP.items()):
+                rgba_data[valid & (data == value)] = self._class_color(
+                    index, color, classes
+                )
 
         return self._png_response(Image.fromarray(rgba_data, mode="RGBA"))
 
