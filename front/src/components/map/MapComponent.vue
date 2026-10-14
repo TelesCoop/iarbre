@@ -1,18 +1,13 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
-import { type MapDisplayState, type MapParams } from "@/types/map"
-import ZoneDashboardCard from "@/components/map/ZoneDashboardCard.vue"
+import { onMounted, onBeforeUnmount, ref, computed, watch, type PropType } from "vue"
+import { type MapParams } from "@/types/map"
 
 const props = defineProps({
   mapId: {
     required: true,
     type: String
-  },
-  initialDisplayState: {
-    required: true,
-    type: Object as PropType<MapDisplayState>
   }
 })
 
@@ -28,8 +23,6 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 const appStore = useAppStore()
 
-// Mirror the search bar's height and width onto CSS vars so the shape toolbar's
-// card can sit just below it and match its width — without hard-coding either.
 const topRightControlsEl = ref<HTMLElement | null>(null)
 const setTopRightSize = (el: HTMLElement | null) => {
   const root = document.documentElement.style
@@ -39,7 +32,7 @@ const setTopRightSize = (el: HTMLElement | null) => {
 let topRightObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType!, props.initialDisplayState)
+  mapStore.initMap(props.mapId, model.value.layer)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({
@@ -52,12 +45,13 @@ onMounted(() => {
       zoom: Math.round(mapStore.currentZoom),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
-      dataType: mapStore.selectedDataType
+      layer: mapStore.selectedLayer.key
     }
     emit("update:modelValue", params)
   }
 
   mapInstance.on("moveend", updateParams)
+  watch(() => mapStore.selectedLayer, updateParams)
   updateParams()
 
   if (topRightControlsEl.value) {
@@ -84,10 +78,6 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapGeocoder />
   </div>
 
-  <ShapeToolbar />
-  <ShapeLiveChip />
-  <ZoneDashboardCard />
-
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
   </div>
@@ -108,16 +98,13 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLayerSwitcher
       v-if="appStore.isMobileOrTablet"
-      :show-context-tools="false"
+      :show-hour-slider="false"
       :show-methodology="false"
       :with-border="false"
       data-cy="mobile-layer-switcher"
     />
     <MapLegend />
-    <div class="legend-info-row">
-      <MapResolution />
-      <MapCoordinates />
-    </div>
+    <MapCoordinates />
     <MapPanoramaxCredit />
     <MapCopyLinkButton />
   </div>
@@ -223,11 +210,5 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   .bottom-left-controls.sidepanel-visible {
     left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
-}
-
-.legend-info-row {
-  @apply flex flex-row items-center gap-2 pointer-events-auto w-full;
-  min-width: 0;
-  overflow: hidden;
 }
 </style>

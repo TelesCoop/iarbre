@@ -1,52 +1,22 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
-import { DataType, DataTypeToLabel } from "@/utils/enum"
-import { computed } from "vue"
+import { RASTER_LAYERS } from "@/utils/rasterLayers"
 import AppSelect from "@/components/shared/AppSelect.vue"
 
 const mapStore = useMapStore()
 
-const selectedDataType = computed({
-  get: () => mapStore.selectedDataType,
-  set: (value: DataType) => mapStore.changeDataType(value)
-})
-
-const options = [
-  {
-    label: DataTypeToLabel[DataType.PLANTABILITY],
-    value: DataType.PLANTABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.VULNERABILITY],
-    value: DataType.VULNERABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.CLIMATE_ZONE],
-    value: DataType.CLIMATE_ZONE
-  },
-  {
-    label: DataTypeToLabel[DataType.PLANTABILITY_VULNERABILITY],
-    value: DataType.PLANTABILITY_VULNERABILITY
-  },
-  {
-    label: DataTypeToLabel[DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY],
-    value: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
-  },
-  {
-    label: DataTypeToLabel[DataType.VEGESTRATE],
-    value: DataType.VEGESTRATE
-  }
-]
+const options = RASTER_LAYERS.map((layer) => ({ label: layer.label, value: layer.key }))
 </script>
 
 <template>
   <AppSelect
-    v-model="selectedDataType"
+    :model-value="mapStore.selectedLayer.key"
     :options="options"
     class="w-full"
     data-cy="layer-switcher"
     option-label="label"
     option-value="value"
     placeholder="Sélection de calque"
+    @update:model-value="mapStore.setLayer(String($event))"
   />
 </template>

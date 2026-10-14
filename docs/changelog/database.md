@@ -6,13 +6,6 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
-## 2026-10-13T19:15_postgres_backup.dump
-
-**Changements :** :
-
-- Ajout dans les média des rasters `PET_index_2020.tif` et `Shadow.tif`, générés à l'aide de : https://github.com/TelesCoop/solweig-gpu
-- Corrections des valeurs pour les méta facteurs dans le model `City` où il y avait des typos (plan d'eau vs plan eau par exemple).
-
 ## 2026-09-25T13:37_postgres_backup.dump
 
 **Changements :** :

@@ -2,16 +2,9 @@ import { Breakpoint, convertRemToPx } from "@/utils/breakpoints"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 
-export enum Drawer {
-  MAP_SCORES = "map-scores"
-}
 export const useAppStore = defineStore("app", () => {
   const windowWidth = ref(window.innerWidth)
-  const drawerVisible = ref({
-    [Drawer.MAP_SCORES]: false
-  })
   const sidePanelVisible = ref(true)
-  const feedbackVisible = ref(false)
 
   const isMobile = computed(() => windowWidth.value < convertRemToPx(Breakpoint.SM))
   const isMobileOrTablet = computed(() => windowWidth.value < convertRemToPx(Breakpoint.MD))
@@ -30,31 +23,19 @@ export const useAppStore = defineStore("app", () => {
     window.removeEventListener("resize", refreshWindowWidth)
   }
 
-  const toggleDrawer = (drawer: Drawer) => {
-    drawerVisible.value[drawer] = !drawerVisible.value[drawer]
-  }
-
-  const setDrawerVisible = (drawer: Drawer, visible: boolean) => {
-    drawerVisible.value[drawer] = visible
-  }
-
   const toggleSidePanel = () => {
     sidePanelVisible.value = !sidePanelVisible.value
   }
 
   return {
     windowWidth,
-    drawerVisible,
     sidePanelVisible,
-    feedbackVisible,
     isMobile,
     isMobileOrTablet,
     isDesktop,
     refreshWindowWidth,
     mountDetectResize,
     unmountDetectResize,
-    toggleDrawer,
-    setDrawerVisible,
     toggleSidePanel
   }
 })

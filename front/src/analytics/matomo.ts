@@ -14,7 +14,6 @@ export function setupAnalytics() {
     return
   }
 
-  window.tarteaucitronForceLanguage = "fr"
   const script = document.createElement("script")
   script.src = "/tarteaucitron/tarteaucitron.min.js"
   script.onload = () => {

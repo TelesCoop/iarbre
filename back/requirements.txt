@@ -31,7 +31,7 @@ rasterio==1.5.2
 requests_oauthlib==2.0.0
 rollbar==1.5.0
 scipy==1.18.1
-shapely==2.2.0
+shapely==2.1.2
 telescoop_backup==0.6.5
 tqdm==4.70.1
 Unidecode==1.4.0

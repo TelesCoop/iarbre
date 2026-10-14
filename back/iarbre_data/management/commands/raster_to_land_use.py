@@ -4,8 +4,7 @@ from django.core.management import BaseCommand
 from django.contrib.gis.db.models import Extent
 from typing import List, Iterator
 
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
-from itertools import islice
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 import json
 from typing import Dict
@@ -179,31 +178,21 @@ def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> N
 
     batch_count = (total_tiles + batch_size - 1) // batch_size
 
-    max_workers = 6
-    batches = enumerate(get_tile_batches(batch_size))
-
-    def submit_next(executor, future_to_batch) -> None:
-        for i, tile_batch in islice(batches, 1):
-            future = executor.submit(
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        future_to_batch = {
+            executor.submit(
                 process_tile_batch,
                 tiles=tile_batch,
                 raster_files=raster_files,
                 raster_path=raster_path,
-            )
-            future_to_batch[future] = i
+            ): i
+            for i, tile_batch in enumerate(get_tile_batches(batch_size))
+        }
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_batch = {}
-        for _ in range(max_workers * 2):
-            submit_next(executor, future_to_batch)
-
-        while future_to_batch:
-            done, _ = wait(future_to_batch, return_when=FIRST_COMPLETED)
-            for future in done:
-                batch_index = future_to_batch.pop(future)
-                future.result()
-                log_progress(f"Completed batch {batch_index + 1} of {batch_count}")
-                submit_next(executor, future_to_batch)
+        for future in as_completed(future_to_batch):
+            batch_index = future_to_batch.pop(future)
+            future.result()
+            log_progress(f"Completed batch {batch_index + 1} of {batch_count}")
     log_progress("Successfully processed all tiles")
 
 

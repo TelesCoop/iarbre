@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "api",
     "plantability",
     "vegetation",
+    "heat",
     "storages",
     "django_extensions",
     "telescoop_backup",
@@ -270,7 +271,6 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "10/minute"},
 }
 
 DECAP_CMS_AUTH = {

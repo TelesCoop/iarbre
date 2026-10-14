@@ -76,15 +76,15 @@ META_FACTORS_MAPPING = {
         "Strate arborée",
         "Strate basse et pelouse",
         "Espaces agricoles",
-        "Forêts",
+        "Forêt",
     ],
     "Aménagements urbains": [
         "Giratoires",
         "Espaces jeux et pietonnier",
         "Friches",
-        "Marchés forains",
+        "Marchés forrains",
     ],
-    "Plan d'eau": ["Plan eau"],
+    "Plan d'eau": ["Plan d'eau"],
     "Espaces artificialisés": ["Espaces artificialisés"],
 }
 
