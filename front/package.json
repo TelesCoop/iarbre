@@ -22,7 +22,7 @@
     "@photo-sphere-viewer/core": "^5.15.1",
     "@tailwindcss/vite": "^4.3.3",
     "@vue/test-utils": "^2.5.1",
-    "@vueuse/core": "^14.0.0",
+    "@vueuse/core": "^15.0.0",
     "d3": "^7.9.0",
     "driver.js": "^1.8.0",
     "jsdom": "^26.1.0",
