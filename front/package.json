@@ -72,8 +72,8 @@
   },
   "lavamoat": {
     "allowScripts": {
-      "cypress": true,
-      "vite>esbuild": true
+      "vite>esbuild": true,
+      "cypress#16.1.1": true
     }
   }
 }
