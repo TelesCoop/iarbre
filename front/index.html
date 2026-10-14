@@ -1,10 +1,54 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IA·rbre</title>
-    <link rel="icon" href="picto_tree.png" type="image/png" />
+    <title>Carte IA·rbre : où planter des arbres et îlots de chaleur à Lyon</title>
+    <meta
+      name="description"
+      content="Carte interactive de la Métropole de Lyon : score de plantabilité des arbres, vulnérabilité à la chaleur, zones climatiques locales, strates végétales et biodiversité. Données ouvertes."
+    />
+    <meta name="author" content="IA·rbre" />
+    <meta name="theme-color" content="#32412d" />
+    <link rel="canonical" href="https://carte.iarbre.fr/" />
+    <link rel="icon" href="/picto_tree.png" type="image/png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="IA·rbre" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content="https://carte.iarbre.fr/" />
+    <meta
+      property="og:title"
+      content="Carte IA·rbre : où planter des arbres et îlots de chaleur à Lyon"
+    />
+    <meta
+      property="og:description"
+      content="Carte interactive de la Métropole de Lyon : plantabilité des arbres, îlots de chaleur, végétation et biodiversité. Des données ouvertes pour adapter la ville."
+    />
+    <meta property="og:image" content="https://carte.iarbre.fr/images/logo-iarbre.png" />
+    <meta name="twitter:card" content="summary" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "@id": "https://carte.iarbre.fr/#app",
+        "name": "Carte IA·rbre",
+        "url": "https://carte.iarbre.fr/",
+        "description": "Carte interactive de la Métropole de Lyon : score de plantabilité des arbres, vulnérabilité à la chaleur, zones climatiques locales, strates végétales et intégrité fonctionnelle de la biosphère.",
+        "applicationCategory": "Map",
+        "operatingSystem": "Web",
+        "inLanguage": "fr",
+        "isAccessibleForFree": true,
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "spatialCoverage": { "@type": "Place", "name": "Métropole de Lyon" },
+        "publisher": { "@id": "https://iarbre.fr/#organization" },
+        "isPartOf": { "@type": "WebSite", "name": "IA·rbre", "url": "https://iarbre.fr/" },
+        "sameAs": ["https://github.com/TelesCoop/iarbre"]
+      }
+    </script>
+
     <!-- Google Fonts: DM Sans (sans-serif) & Baskervville (serif) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,6 +59,19 @@
   </head>
   <body>
     <div id="app"></div>
+    <noscript>
+      <h1>Carte IA·rbre : où planter des arbres à Lyon</h1>
+      <p>
+        IA·rbre est une carte interactive de la Métropole de Lyon qui indique où planter des arbres
+        (score de plantabilité sur des tuiles de 5 x 5 m), les zones vulnérables à la chaleur, les
+        zones climatiques locales, les strates végétales et l'intégrité fonctionnelle de la
+        biosphère. JavaScript est nécessaire pour afficher la carte.
+      </p>
+      <p>
+        <a href="https://iarbre.fr/">Découvrir le projet IA·rbre</a> -
+        <a href="https://docs.iarbre.fr/">Documentation technique</a>
+      </p>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

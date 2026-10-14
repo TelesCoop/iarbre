@@ -4,6 +4,7 @@ import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 import { useApiGet } from "@/api"
+import { updatePageMeta } from "@/utils/seo"
 
 const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE})`
 
@@ -75,19 +76,31 @@ const router = createRouter({
     {
       path: "/dashboard",
       name: "dashboard",
-      component: () => import("@/views/DashboardView.vue")
+      component: () => import("@/views/DashboardView.vue"),
+      meta: {
+        title: "Tableau de bord",
+        description:
+          "Tableau de bord IA·rbre : statistiques de plantabilité, de chaleur et de végétation par commune et par IRIS de la Métropole de Lyon."
+      }
     },
     {
       path: "/mentions-legales",
       name: "legal",
-      component: () => import("@/views/LegalView.vue")
+      component: () => import("@/views/LegalView.vue"),
+      meta: {
+        title: "Mentions légales",
+        description: "Mentions légales et politique de confidentialité de la carte IA·rbre."
+      }
     },
     {
       path: "/:pathMatch(.*)*",
       name: "notFound",
-      component: NotFoundView
+      component: NotFoundView,
+      meta: { title: "Page introuvable", noindex: true }
     }
   ]
 })
+
+router.afterEach((to) => updatePageMeta(to))
 
 export default router
