@@ -4,14 +4,12 @@
 @import "@/styles/maplibre.css";
 @import "@/styles/utility.css";
 
-/*
- * Centralized z-index scale (low → high). All map overlays share one tier (they
- * live in different corners and never overlap each other); the mobile result
- * sheet sits above them so it covers the map; control dropdowns sit above the
- * sheet. Higher app tiers are listed for reference.
- */
+/* Centralized z-index scale (low → high). */
 :root {
-  --z-map-overlay: 30;
+  --z-map-callout: 20; /* tied to map features, so under every fixed map tool */
+  --z-map-overlay: 30; /* corner overlays, which never overlap each other */
+  --z-map-raised: 34; /* open tool panels */
+  --z-map-sidepanel: 36; /* map features scroll under the desktop side panel */
   --z-map-sheet: 40;
   --z-map-floating: 50;
   --z-popover: 100;
@@ -20,30 +18,33 @@
   --z-overlay-top: 10000;
 }
 
-/*
- * Centralized map-overlay layout anchors. Mobile-first values; the 1024px
- * override below tightens them for desktop. Every map overlay positions itself
- * from these tokens instead of hard-coded offsets, so the corners stay in sync.
- *
- * The bottom anchor lines overlays up with the maplibre control group's visual
- * bottom edge: maplibre offsets the group by --map-ctrl-offset and adds a 10px
- * group margin, so --map-overlay-bottom = offset + margin keeps the draw trigger
- * and the bottom-left stack flush with the zoom controls at every breakpoint.
- */
+/* Map overlay anchors, mobile first. On mobile the bottom row clears the bottom bar
+   and the peeking details panel. */
 :root {
+  --mobile-bar-height: 3.5rem;
+  --mobile-panel-peek: 40px; /* visible part of the closed details panel */
   --map-edge-gap: 0.5rem; /* breathing room from the map edges */
+  --map-ctrl-size: 2.5rem;
   --map-ctrl-group-margin: 10px; /* maplibre's default .maplibregl-ctrl margin */
-  --map-ctrl-offset: 120px; /* maplibre bottom-right bottom offset */
-  --map-ctrl-edge: 8px; /* maplibre bottom-right right offset */
+  /* Locate, zoom in/out, compass and 3D buttons, in three maplibre control groups. */
+  --map-ctrl-stack-height: calc(5 * var(--map-ctrl-size) + 3 * var(--map-ctrl-group-margin));
+  --map-ctrl-edge: calc(var(--map-edge-gap) - var(--map-ctrl-group-margin));
+  --map-ctrl-offset: calc(
+    var(--mobile-bar-height) + var(--mobile-panel-peek) + var(--map-edge-gap) -
+      var(--map-ctrl-group-margin)
+  );
+  /* Visual bottom of the maplibre controls, which add their group margin to the offset. */
   --map-overlay-bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-group-margin));
-  --map-cadastre-bottom: 72px; /* parcel info, above the bottom controls */
-  --map-trigger-right: 68px; /* draw trigger sits left of the maplibre controls */
+  /* Overlays that would not fit in the bottom row sit just above it. */
+  --map-above-bottom-row: calc(
+    var(--map-overlay-bottom) + var(--map-ctrl-size) + var(--map-edge-gap)
+  );
+  --map-trigger-right: calc(var(--map-ctrl-size) + 2 * var(--map-edge-gap));
 }
 
 @media (min-width: 1024px) {
   :root {
-    --map-ctrl-offset: 8px; /* → --map-overlay-bottom resolves to 18px */
-    --map-cadastre-bottom: 16px;
+    --map-ctrl-offset: var(--map-ctrl-edge);
   }
 }
 
@@ -285,8 +286,10 @@ button.vegestrate-category.is-selected {
   @apply text-primary-500 shrink-0;
 }
 
-.layer-chip:hover {
-  @apply bg-gray-50 text-gray-900 border-gray-300;
+@media (hover: hover) {
+  .layer-chip:hover {
+    @apply bg-gray-50 text-gray-900 border-gray-300;
+  }
 }
 
 .layer-chip.active {
@@ -299,9 +302,11 @@ button.vegestrate-category.is-selected {
   @apply text-white;
 }
 
-.layer-chip.active:hover {
-  background-color: var(--color-primary-600);
-  border-color: var(--color-primary-600);
+@media (hover: hover) {
+  .layer-chip.active:hover {
+    background-color: var(--color-primary-600);
+    border-color: var(--color-primary-600);
+  }
 }
 
 .map-tool-container {
@@ -369,6 +374,10 @@ button.vegestrate-category.is-selected {
   @apply p-3;
 }
 
+.map-panel-title {
+  @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
+}
+
 .map-control-btn {
   @apply bg-white rounded-lg border border-gray-200;
   @apply flex items-center justify-center;
@@ -377,9 +386,11 @@ button.vegestrate-category.is-selected {
   @apply focus:outline-none focus:ring-2 focus:ring-primary-200;
 }
 
-.map-control-btn:hover img,
-.map-control-btn:hover svg {
-  filter: brightness(0) invert(1);
+@media (hover: hover) {
+  .map-control-btn:hover img,
+  .map-control-btn:hover svg {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .map-control-btn-sm {
@@ -400,14 +411,12 @@ button.vegestrate-category.is-selected {
   @apply hover:bg-white hover:border-gray-200;
 }
 
-/* Keep the disabled icon untinted even on hover, otherwise the shared
-   `.map-control-btn:hover img` white filter would render it white on the
-   white (non-highlighted) disabled background. */
-.map-control-btn-disabled img,
-.map-control-btn-disabled svg,
-.map-control-btn-disabled:hover img,
-.map-control-btn-disabled:hover svg {
-  filter: none;
+/* A disabled button keeps its white background on hover, so its icon stays untinted. */
+@media (hover: hover) {
+  .map-control-btn-disabled:hover img,
+  .map-control-btn-disabled:hover svg {
+    filter: none;
+  }
 }
 
 .map-control-icon-btn {
@@ -418,9 +427,11 @@ button.vegestrate-category.is-selected {
   @apply hover:bg-primary-500 hover:border-primary-500 hover:text-white;
 }
 
-.map-control-icon-btn:hover img,
-.map-control-icon-btn:hover svg {
-  filter: brightness(0) invert(1);
+@media (hover: hover) {
+  .map-control-icon-btn:hover img,
+  .map-control-icon-btn:hover svg {
+    filter: brightness(0) invert(1);
+  }
 }
 
 .map-control-group {
@@ -453,9 +464,11 @@ button.vegestrate-category.is-selected {
   background-clip: content-box;
 }
 
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-  background-clip: content-box;
+@media (hover: hover) {
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+    background-clip: content-box;
+  }
 }
 
 .scrollbar::-webkit-scrollbar-thumb:active {

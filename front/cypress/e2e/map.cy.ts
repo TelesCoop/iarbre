@@ -2,21 +2,56 @@
 import { DataType, DataTypeToLabel, MapStyle, OverlayLayer } from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
-
 const MOBILE_VIEWPORT = { width: 375, height: 667 }
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
+const NARROW_DESKTOP_VIEWPORT = { width: 1024, height: 768 }
+/** `--map-edge-gap`, the gap between map overlays and the edges they sit against. */
+const EDGE_GAP_PX = 8
+
+const rectOf = (selector: string) =>
+  cy
+    .get(selector)
+    .filter(":visible")
+    .first()
+    .then(($el) => $el[0].getBoundingClientRect())
+
+const setMapState = (state: Record<string, unknown>) =>
+  cy.mapStore().then((store) => Object.assign(store, state))
+
+const selectParcel = () =>
+  setMapState({
+    selectedCadastreParcel: { parcelId: "1", section: "AB", numero: "12", surface: 345 }
+  })
+
+const openStreetView = () =>
+  setMapState({
+    selectedPanoramaxPicture: {
+      id: "picture",
+      type: "flat",
+      assets: { sd: "/images/satellite.png" }
+    }
+  })
+
+// cy.click() fails when another element covers its target: each click below checks an overlap.
+const closeParcelCard = () => cy.get("[data-cy=cadastre-parcel-info] [aria-label=Fermer]").click()
+
+const expectBackgroundSelectorExpanded = (isExpanded: boolean) =>
+  cy.getBySel("bg-selector-toggle").should("have.attr", "aria-expanded", String(isExpanded))
+
+/** A spot of the mobile map that no overlay covers: right column, below the search bar. */
+const tapMap = () => cy.getBySel("map-component").click(270, 200)
+
+const expectLayerBelow = (lowerLayerId: string, upperLayerId: string) =>
+  cy.mapStore().should((store) => {
+    const layersOrder: string[] = store.mapInstancesByIds.default.getLayersOrder()
+    expect(layersOrder).to.include.members([lowerLayerId, upperLayerId])
+    expect(layersOrder.indexOf(lowerLayerId)).to.be.lessThan(layersOrder.indexOf(upperLayerId))
+  })
 
 describe("Map - Desktop", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(DESKTOP_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
@@ -136,24 +171,14 @@ describe("Map - Desktop", () => {
   })
 
   it("keeps the QPV borders above the data layer when switching 2D/3D", () => {
-    const expectQPVAboveDataLayer = () =>
-      cy.window().should((win) => {
-        const app = (win.document.querySelector("#app") as any).__vue_app__
-        const map = app.config.globalProperties.$pinia._s.get("map").mapInstancesByIds.default
-        const layersOrder: string[] = map.getLayersOrder()
-        expect(layersOrder.indexOf("tile-plantability-layer")).to.be.lessThan(
-          layersOrder.indexOf("qpv-border-casing")
-        )
-      })
-
     cy.getBySel("qpv-toggle").filter(":visible").click()
     cy.mapCheckQPVLayer(true)
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
 
     cy.get(".maplibregl-ctrl-3d").click()
-    expectQPVAboveDataLayer()
+    expectLayerBelow("tile-plantability-layer", "qpv-border-casing")
   })
 
   it("maintains QPV layer when switching basemap styles", () => {
@@ -293,14 +318,37 @@ describe("Map - Desktop", () => {
     )
     cy.getBySel("cadastre-toggle").filter(":visible").should("have.class", "active")
   })
+
+  it("fits the street view and the parcel card on a 1024px wide screen", () => {
+    cy.viewport(NARROW_DESKTOP_VIEWPORT.width, NARROW_DESKTOP_VIEWPORT.height)
+    openStreetView()
+
+    rectOf(".legend-container").then((legend) => {
+      rectOf("[data-cy=panoramax-viewer]").then((viewer) => {
+        expect(viewer.left).to.be.at.least(legend.right)
+      })
+    })
+    cy.get(".maplibregl-ctrl-center").click()
+
+    selectParcel()
+    cy.getBySel("qpv-toggle").filter(":visible").click()
+    closeParcelCard()
+  })
+
+  it("keeps the background selector open while the map is dragged", () => {
+    cy.getBySel("bg-selector-toggle").click()
+
+    cy.getBySel("map-component").trigger("pointerdown", 700, 300)
+    cy.getBySel("map-component").trigger("click", 800, 400)
+
+    expectBackgroundSelectorExpanded(true)
+  })
 })
 
 describe("Map - Shared link", () => {
   beforeEach(() => {
-    cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit(
+    cy.visitMap(
+      DESKTOP_VIEWPORT,
       `/plantability/13/45.07126/5.55430?basemap=${MapStyle.SATELLITE}&layers=${OverlayLayer.QPV},${OverlayLayer.CADASTRE}`
     )
   })
@@ -331,20 +379,18 @@ describe("Map - Shared link", () => {
 
 describe("Map - Mobile", () => {
   beforeEach(() => {
-    cy.viewport(MOBILE_VIEWPORT.width, MOBILE_VIEWPORT.height)
-    LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.visit("/plantability/13/45.07126/5.55430")
+    cy.visitMap(MOBILE_VIEWPORT)
     cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
-    cy.get("@consoleInfo").should(
-      "have.been.calledWith",
-      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
-    )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
 
-  it("loads map on mobile viewport", () => {
+  it("loads map on mobile viewport, its controls just above the details panel", () => {
     cy.getBySel("map-component").should("exist")
+    rectOf("[data-cy=mobile-panel-handle]").then((handle) => {
+      rectOf(".maplibregl-ctrl-3d").then((control) => {
+        expect(handle.top - control.bottom).to.equal(EDGE_GAP_PX)
+      })
+    })
   })
 
   it("switches data layer on mobile via layer switcher", () => {
@@ -356,6 +402,11 @@ describe("Map - Mobile", () => {
   it("toggles QPV layer on mobile", () => {
     // Open mobile panel to access toggles
     cy.getBySel("mobile-panel-handle").should("be.visible").click()
+    cy.get("[data-cy=mobile-panel] .layer-chip").each(($chip) => {
+      const { left, right } = $chip[0].getBoundingClientRect()
+      expect(left).to.be.at.least(0)
+      expect(right).to.be.at.most(MOBILE_VIEWPORT.width)
+    })
 
     cy.getBySel("qpv-toggle").filter(":visible").should("be.visible").click()
     cy.mapCheckQPVLayer(true)
@@ -382,6 +433,64 @@ describe("Map - Mobile", () => {
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
     )
+  })
+
+  it("stacks the parcel card and the shape panel above the details panel, under the legend", () => {
+    const expectShapePanelUnderLegend = () =>
+      rectOf(".legend-container").then((legend) => {
+        rectOf("[data-cy=shape-toolbar]").then((panel) => {
+          expect(panel.top).to.be.at.least(legend.bottom)
+        })
+      })
+
+    selectParcel()
+    closeParcelCard()
+
+    selectParcel()
+    cy.getBySel("shape-toolbar-toggle").click()
+    cy.getBySel("shape-mode-polygon").click()
+    expectShapePanelUnderLegend()
+
+    cy.mapStore().then((store) => store.markShapeFinished())
+    cy.getBySel("zone-dashboard-cta").should("be.visible")
+    expectShapePanelUnderLegend()
+  })
+
+  it("keeps the street view above the map controls", () => {
+    openStreetView()
+
+    cy.get(".maplibregl-ctrl-center").click()
+  })
+
+  it("folds the background selector and the shape panel when the user moves on", () => {
+    cy.getBySel("bg-selector-toggle").click()
+    expectBackgroundSelectorExpanded(true)
+    tapMap()
+    expectBackgroundSelectorExpanded(false)
+
+    cy.getBySel("bg-selector-toggle").click()
+    cy.getBySel("shape-toolbar-toggle").click()
+    expectBackgroundSelectorExpanded(false)
+
+    cy.get("[data-cy='map-geocoder'] input").trigger("keydown", { key: "Escape" })
+    cy.getBySel("shape-toolbar").should("be.visible")
+    cy.getBySel("shape-toolbar-toggle").trigger("keydown", { key: "Escape" })
+    cy.getBySel("shape-toolbar").should("not.exist")
+
+    cy.getBySel("shape-toolbar-toggle").click()
+    tapMap()
+    cy.getBySel("shape-toolbar").should("not.exist")
+  })
+
+  it("keeps the shape panel open while drawing, until the background selector opens", () => {
+    cy.getBySel("shape-toolbar-toggle").click()
+    cy.getBySel("shape-mode-polygon").click()
+    tapMap()
+    cy.getBySel("shape-toolbar").should("be.visible")
+
+    cy.getBySel("bg-selector-toggle").click()
+    cy.getBySel("shape-toolbar").should("not.exist")
+    expectBackgroundSelectorExpanded(true)
   })
 })
 

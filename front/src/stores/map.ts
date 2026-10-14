@@ -8,7 +8,8 @@ import {
   type GeoJSONSource,
   type StyleSpecification,
   type AddLayerObject,
-  type DataDrivenPropertyValueSpecification
+  type DataDrivenPropertyValueSpecification,
+  type PointLike
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -580,6 +581,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const hasStreetViewPictureAt = (map: Map, point: PointLike) =>
+    map.getLayer(PANORAMAX_PICTURES_LAYER) !== undefined &&
+    map.queryRenderedFeatures(point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     if (heightMapClickHandler.value) {
       map.off("click", heightMapClickHandler.value)
@@ -616,6 +621,9 @@ export const useMapStore = defineStore("map", () => {
       // If we are in POINT mode (simple click), handle click normally
       // Other modes are handled automatically by Terra Draw
       if (selectionMode.value !== SelectionMode.POINT) {
+        return
+      }
+      if (hasStreetViewPictureAt(map, e.point)) {
         return
       }
       applyTileSelection(map, datatype, geolevel, e.features!, {
@@ -796,15 +804,14 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       const layerId = getLayerId(currentDataType, currentGeoLevel)
-      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
       const layersOrder = mapInstance.getLayersOrder()
       const layerIndex = layersOrder.indexOf(layerId)
-      const beforeId =
-        layerIndex === -1 ? getTerraDrawBeforeId(mapInstance) : layersOrder[layerIndex + 1]
-      if (layerIndex !== -1) {
-        mapInstance.removeLayer(layerId)
-      }
-      setupTile(mapInstance, currentDataType, currentGeoLevel, beforeId)
+      // Not added yet: the pending map initialisation creates it in the current mode.
+      if (layerIndex === -1) return
+
+      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
+      mapInstance.removeLayer(layerId)
+      setupTile(mapInstance, currentDataType, currentGeoLevel, layersOrder[layerIndex + 1])
     })
   }
 

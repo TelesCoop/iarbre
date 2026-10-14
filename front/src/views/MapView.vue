@@ -99,8 +99,7 @@ watch(
 
 .map-view-wrapper {
   @apply flex;
-  height: calc(100vh - var(--feedback-banner-height, 0px));
-  height: calc(100dvh - var(--feedback-banner-height, 0px));
+  height: 100%;
   margin-left: 0;
 }
 
