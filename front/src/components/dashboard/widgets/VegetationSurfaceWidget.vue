@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatSurface } from "@/utils/format"
 import { computed } from "vue"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
 import type { DashboardVegetation } from "@/types/dashboard"
@@ -11,18 +12,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const KM2_IN_M2 = 1_000_000
-
 const hasData = computed(() => props.data.totalM2 >= 1)
-
-const useKm2 = computed(() => props.data.totalM2 >= KM2_IN_M2)
-
-const formatSurface = (m2: number) => {
-  if (useKm2.value) {
-    return `${(m2 / KM2_IN_M2).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} km²`
-  }
-  return `${Math.round(m2).toLocaleString("fr-FR")} m²`
-}
 
 const items = computed(() => {
   const entries = [
@@ -50,7 +40,7 @@ const items = computed(() => {
 
 <template>
   <DashboardWidgetCard
-    :subtitle="`Découpage en trois strates : haute (>1.5m), moyenne (<1.5m) et pelouses.`"
+    :subtitle="`Découpage en trois strates : haute (> 5 m), moyenne (1,5 - 5 m) et basse (< 1,5 m).`"
     title="Inventaire stratifié de végétation existante"
   >
     <div v-if="hasData" class="widget-body">

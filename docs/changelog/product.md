@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 🔖 0.41.0 (2026-10-14) : Mombreuses corrections et petites améliorations
+
+### 🐛 fix: Carte et tableau de bord
+
+De nombreuses petites inconsistences et bugs ont été corrigées, à la fois sur la carte et sur le tableau de bord.
+
+&rarr; PR [#809](https://github.com/TelesCoop/iarbre/pull/809)
+&rarr; PR [#810](https://github.com/TelesCoop/iarbre/pull/810)
+
+### 🛠️ enhance : Frontières et gradients de biodiversité
+
+Un nouveau comportement a été ajouté aquand le zoom se rapproche pour le calque de biodiversité afin d'afficher plus de détails sur les transitions entre zone
+
+&rarr; PR [#813](https://github.com/TelesCoop/iarbre/pull/813)
+
+### ✨ feat : URLs courtes
+
+Une table a été ajoutée dans la DB afin de pouvoir partager des urls courtes, qui contiennent tous les paramètres d'affichage et de filtrage des calques.
+
+&rarr; PR [#811](https://github.com/TelesCoop/iarbre/pull/811)
+
 ## 🔖 0.40.0 (2026-10-07) : Montées de version
 
 Tout un travail a été mené pour mettre à jour la version de la DB Postgres de 14 vers 16, ainsi que les packages du back (pip) et du front (npm).

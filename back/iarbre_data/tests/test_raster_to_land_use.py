@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.contrib.gis.geos import Polygon
 from rasterio.transform import from_origin
 
+from iarbre_data.data_config import FACTORS, META_FACTORS_MAPPING
 from iarbre_data.settings import SRID_DB
 from iarbre_data.models import Tile
 from iarbre_data.management.commands.raster_to_land_use import process_tile_batch
@@ -134,3 +135,14 @@ class RasterToLandUse(TestCase):
                         for value in meta_factors_data["meta_factors"].values()
                     )
                 )
+
+
+class MetaFactorsMappingTest(TestCase):
+    def test_all_mapped_factors_exist(self):
+        missing = [
+            f
+            for factors in META_FACTORS_MAPPING.values()
+            for f in factors
+            if f not in FACTORS
+        ]
+        self.assertEqual(missing, [])

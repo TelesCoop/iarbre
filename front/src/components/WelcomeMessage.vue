@@ -107,9 +107,7 @@ const openFeedback = () => {
           <span class="welcome-icon"><ContextDataIcon name="people" :size="20" /></span>
           <div>
             <h4 class="font-medium">Donnez votre avis</h4>
-            <p class="text-sm">
-              en cliquant sur "Envoyer votre avis" pour partager vos commentaires.
-            </p>
+            <p class="text-sm">en cliquant sur "Donner mon avis" pour partager vos commentaires.</p>
           </div>
         </button>
 

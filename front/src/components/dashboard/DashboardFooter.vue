@@ -9,6 +9,20 @@ const store = useDashboardStore()
 const toast = useToast()
 const loading = ref(false)
 
+const pdfFilename = () => {
+  const zone =
+    store.selectedScale === "zone"
+      ? "zone-personnalisee"
+      : (store.selectedCity?.name ?? "metropole-de-lyon")
+  const slug = zone
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+  return `iarbre-${slug}-${new Date().toISOString().slice(0, 10)}.pdf`
+}
+
 const exportToPdf = async () => {
   if (loading.value) return
   loading.value = true
@@ -25,7 +39,7 @@ const exportToPdf = async () => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "rapport.pdf"
+    a.download = pdfFilename()
     a.click()
     URL.revokeObjectURL(url)
     toast.removeAll()

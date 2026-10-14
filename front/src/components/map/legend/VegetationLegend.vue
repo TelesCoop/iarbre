@@ -76,7 +76,11 @@ const heightRanges = computed(() =>
         :title="item.label"
         role="listitem"
       >
-        <LegendItem :label="item.label" :color="item.color" />
+        <LegendItem
+          :label="item.label"
+          :color="item.color"
+          :selected="mapStore.isFiltered(item.indice)"
+        />
       </FilterableLegendItem>
     </div>
   </div>

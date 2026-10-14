@@ -1,4 +1,4 @@
-import { computed, markRaw, ref, type Ref } from "vue"
+import { computed, markRaw, ref, watch, type Ref } from "vue"
 import { defineStore } from "pinia"
 import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
@@ -8,7 +8,8 @@ import {
   type GeoJSONSource,
   type StyleSpecification,
   type AddLayerObject,
-  type DataDrivenPropertyValueSpecification
+  type DataDrivenPropertyValueSpecification,
+  type PointLike
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -36,7 +37,14 @@ import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerabilit
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
 import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
-import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
+import {
+  BIOSPHERE_DETAIL_ZOOM,
+  BIOSPHERE_CLASSES,
+  BIOSPHERE_DETAIL_CLASSES,
+  toColorMap,
+  toCoarseFilters,
+  toDetailFilters
+} from "@/utils/biosphere_functional_integrity"
 import { generateBivariateColorExpression } from "@/utils/plantability_vulnerability"
 import { CLIMATE_ZONE_MAP_COLOR_MAP } from "@/utils/climateZone"
 import {
@@ -186,8 +194,10 @@ export const useMapStore = defineStore("map", () => {
       [DataType.CLIMATE_ZONE]: ["match", ["get", "indice"], ...CLIMATE_ZONE_MAP_COLOR_MAP],
       [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: [
         "step",
-        ["get", "indice"],
-        ...BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
+        ["zoom"],
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_CLASSES)],
+        BIOSPHERE_DETAIL_ZOOM,
+        ["step", ["get", "indice"], ...toColorMap(BIOSPHERE_DETAIL_CLASSES)]
       ],
       [DataType.PLANTABILITY_VULNERABILITY]: bivariateExpression,
       [DataType.VEGESTRATE]: ["match", ["get", "indice"], ...VEGESTRATE_COLOR_MAP]
@@ -251,6 +261,17 @@ export const useMapStore = defineStore("map", () => {
     clearAllFilters()
     applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
   }
+
+  watch(
+    () => currentZoom.value >= BIOSPHERE_DETAIL_ZOOM,
+    (isDetail) => {
+      if (selectedDataType.value !== DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) return
+      setFilteredValues(
+        isDetail ? toDetailFilters(filteredValues.value) : toCoarseFilters(filteredValues.value)
+      )
+      applyFilters(mapInstancesByIds, selectedDataType, vulnerabilityMode)
+    }
+  )
 
   const centerControl = ref({
     onAdd: (map: Map) => addCenterControl(map),
@@ -560,6 +581,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const hasStreetViewPictureAt = (map: Map, point: PointLike) =>
+    map.getLayer(PANORAMAX_PICTURES_LAYER) !== undefined &&
+    map.queryRenderedFeatures(point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     if (heightMapClickHandler.value) {
       map.off("click", heightMapClickHandler.value)
@@ -596,6 +621,9 @@ export const useMapStore = defineStore("map", () => {
       // If we are in POINT mode (simple click), handle click normally
       // Other modes are handled automatically by Terra Draw
       if (selectionMode.value !== SelectionMode.POINT) {
+        return
+      }
+      if (hasStreetViewPictureAt(map, e.point)) {
         return
       }
       applyTileSelection(map, datatype, geolevel, e.features!, {
@@ -776,15 +804,14 @@ export const useMapStore = defineStore("map", () => {
     Object.keys(mapInstancesByIds.value).forEach((mapId) => {
       const mapInstance = mapInstancesByIds.value[mapId]
       const layerId = getLayerId(currentDataType, currentGeoLevel)
-      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
       const layersOrder = mapInstance.getLayersOrder()
       const layerIndex = layersOrder.indexOf(layerId)
-      const beforeId =
-        layerIndex === -1 ? getTerraDrawBeforeId(mapInstance) : layersOrder[layerIndex + 1]
-      if (layerIndex !== -1) {
-        mapInstance.removeLayer(layerId)
-      }
-      setupTile(mapInstance, currentDataType, currentGeoLevel, beforeId)
+      // Not added yet: the pending map initialisation creates it in the current mode.
+      if (layerIndex === -1) return
+
+      // Re-add the layer at the same depth so overlays (QPV, cadastre…) stay above it
+      mapInstance.removeLayer(layerId)
+      setupTile(mapInstance, currentDataType, currentGeoLevel, layersOrder[layerIndex + 1])
     })
   }
 
