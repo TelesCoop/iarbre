@@ -24,7 +24,6 @@ declare module 'vue' {
     AppToast: typeof import('./src/components/shared/AppToast.vue')['default']
     AppToggleSwitch: typeof import('./src/components/shared/AppToggleSwitch.vue')['default']
     BiosphereFunctionalIntegrityLegend: typeof import('./src/components/map/legend/BiosphereFunctionalIntegrityLegend.vue')['default']
-    BiosphereIntegrityMainContextDataScore: typeof import('./src/components/contextData/biosphereIntegrity/BiosphereIntegrityMainContextDataScore.vue')['default']
     BiosphereLandCoverInfo: typeof import('./src/components/contextData/biosphereIntegrity/BiosphereLandCoverInfo.vue')['default']
     BiosphereWidget: typeof import('./src/components/dashboard/widgets/BiosphereWidget.vue')['default']
     BivariateCellLabel: typeof import('./src/components/map/score/BivariateCellLabel.vue')['default']

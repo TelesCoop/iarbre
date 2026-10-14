@@ -59,6 +59,15 @@ describe("parseMapDisplayState", () => {
     expect(state.filters).toEqual(["1", "A"])
   })
 
+  it("reads biosphere filters as ranges and legacy labels", () => {
+    const state = parseMapDisplayState(
+      { filters: "0-12,Entre 87% et 100%" },
+      DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+    )
+
+    expect(state.filters).toEqual(["Entre 0% et 12%", "Entre 87% et 100%"])
+  })
+
   it("merges a repeated query parameter", () => {
     const state = parseMapDisplayState({ layers: ["qpv", "cadastre"] }, DataType.PLANTABILITY)
 
@@ -93,6 +102,16 @@ describe("buildMapDisplayQuery", () => {
     expect(
       buildMapDisplayQuery({ filters: [2, 4], mapStyle: MapStyle.OSM, overlayLayers: [] })
     ).toEqual({ filters: "2,4" })
+  })
+
+  it("writes biosphere filters as ranges", () => {
+    expect(
+      buildMapDisplayQuery({
+        filters: ["Entre 0% et 12%", "Entre 87% et 100%"],
+        mapStyle: MapStyle.OSM,
+        overlayLayers: []
+      })
+    ).toEqual({ filters: "0-12,87-100" })
   })
 
   it("produces a query that parses back to the same display", () => {

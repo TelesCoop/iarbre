@@ -7,7 +7,7 @@ import ContextDataZoomHint from "@/components/contextData/shared/ContextDataZoom
 import type { ContextDataFactorGroup } from "@/types/contextData"
 import EmptyMessage from "@/components/EmptyMessage.vue"
 import PlantabilityDistributionChart from "./PlantabilityDistributionChart.vue"
-import { PLANTABILITY_DETAIL_ZOOM, PLANTABILITY_DISTRIBUTION_ZOOM } from "@/utils/plantability"
+import { PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
 
 interface PlantabilityFactorsProps {
   data: PlantabilityData
@@ -91,11 +91,6 @@ const distributionEntries = computed(() => {
         aria-label="Liste des paramètres de plantabilité par catégorie"
         color-scheme="plantability"
         variant="cards"
-      />
-      <ContextDataZoomHint
-        :target-zoom="PLANTABILITY_DISTRIBUTION_ZOOM"
-        direction="out"
-        message="Dézoomez pour voir la distribution des scores de plantabilité sur la zone."
       />
     </template>
 

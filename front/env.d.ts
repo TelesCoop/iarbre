@@ -21,4 +21,5 @@ interface Tarteaucitron {
 
 interface Window {
   tarteaucitron: Tarteaucitron
+  tarteaucitronForceLanguage?: string
 }

@@ -69,7 +69,7 @@ jobs:
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
         with:
-          postgres-version: "14"
+          postgres-version: "16"
           username: myuser
           password: securepassword
           database: mydatabase
@@ -284,7 +284,7 @@ jobs:
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
         with:
-          postgres-version: "14"
+          postgres-version: "16"
           username: myuser
           password: securepassword
           database: mydatabase

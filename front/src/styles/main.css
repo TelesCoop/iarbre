@@ -255,12 +255,12 @@
 }
 
 button.vegestrate-category {
-  @apply cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-left;
+  @apply relative cursor-pointer rounded-md border-2 border-transparent bg-transparent px-2 py-1 text-left;
   @apply transition-colors duration-150 hover:bg-gray-50;
 }
 
 button.vegestrate-category.is-selected {
-  @apply bg-primary-50 ring-2 ring-primary-600;
+  @apply border-primary-900;
 }
 
 .vegestrate-category.is-dimmed {
@@ -614,6 +614,14 @@ button.vegestrate-category.is-selected {
   @apply lg:gap-2 lg:py-2 lg:px-3 lg:text-sm;
 }
 
+.legend-panel-fixed-width {
+  @apply lg:w-90!;
+}
+
+.legend-panel-fixed-height {
+  @apply lg:min-h-30!;
+}
+
 .legend-attribution {
   @apply w-full text-center text-gray-500 pt-1 border-t border-gray-100;
 }
@@ -632,7 +640,7 @@ button.vegestrate-category.is-selected {
 }
 
 .legend-scale {
-  @apply flex items-center rounded overflow-hidden;
+  @apply flex items-center rounded;
 }
 
 .legend-label {
@@ -679,7 +687,7 @@ button.vegestrate-category.is-selected {
 }
 
 .strate-item.is-selected .strate-swatch {
-  @apply ring-2 ring-gray-600;
+  @apply border-2 border-primary-900;
 }
 
 .strate-label {
