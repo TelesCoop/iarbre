@@ -3,6 +3,7 @@ import { computed } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
+import PlantabilityContextDataLimits from "@/components/contextData/plantability/PlantabilityContextDataLimits.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
 import { useMapStore } from "@/stores/map"
 
@@ -56,6 +57,7 @@ const tileCount = computed(() => {
         :percentage="scorePercentage"
         :score="plantabilityData.plantabilityNormalizedIndice"
       />
+      <PlantabilityContextDataLimits />
     </template>
     <template #content="{ data: plantabilityData }">
       <PlantabilityContextDataList :data="plantabilityData" />
