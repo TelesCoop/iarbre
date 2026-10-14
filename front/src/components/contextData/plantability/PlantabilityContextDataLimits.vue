@@ -21,7 +21,7 @@ const limits = [
       data-cy="plantability-limits-toggle"
     >
       <IconWarning :size="16" class="shrink-0" aria-hidden="true" />
-      <span class="flex-1">Limites du calque</span>
+      <span class="flex-1">Limites du score</span>
       <span class="flex items-center gap-1.5 group-open:hidden" aria-hidden="true">
         <component :is="limit.icon" v-for="limit in limits" :key="limit.label" :size="16" />
       </span>
