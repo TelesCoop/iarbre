@@ -67,20 +67,39 @@ export const DataTypeToSourceDate: Partial<Record<DataType, string>> = {
   [DataType.VULNERABILITY]: "2024-09"
 }
 
-export const DataTypeToAttributionSource: Record<DataType, string> = {
-  [DataType.CLIMATE_ZONE]: `<a class="text-primary-500" href="https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/" target="_blank">CEREMA (${DataTypeToSourceDate[DataType.CLIMATE_ZONE]})</a>`,
-  [DataType.PLANTABILITY]: `<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME (${DataTypeToSourceDate[DataType.PLANTABILITY]})</a>`,
-  [DataType.VULNERABILITY]: `<a class="text-primary-500" href="https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3" target="_blank">Grand Lyon (${DataTypeToSourceDate[DataType.VULNERABILITY]})</a>`,
-  [DataType.PLANTABILITY_VULNERABILITY]:
-    '<a class="text-primary-500" href="https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf" target="_blank">ERASME</a>',
-  [DataType.VEGESTRATE]:
-    '<a class="text-primary-500" href="https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023" target="_blank">Vegestrate</a>',
-  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
-    '<a class="text-primary-500" href="https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires" target="_blank">2025 Emile Balembois</a>'
+export interface AttributionSource {
+  label: string
+  url: string
 }
 
-export const getDataTypeAttributionSource = async (dataType: DataType): Promise<string> => {
-  return DataTypeToAttributionSource[dataType]
+const PLANTABILITY_NOTICE_URL =
+  "https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf"
+
+export const DataTypeToAttributionSource: Record<DataType, AttributionSource> = {
+  [DataType.CLIMATE_ZONE]: {
+    label: `CEREMA (${DataTypeToSourceDate[DataType.CLIMATE_ZONE]})`,
+    url: "https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/"
+  },
+  [DataType.PLANTABILITY]: {
+    label: `ERASME (${DataTypeToSourceDate[DataType.PLANTABILITY]})`,
+    url: PLANTABILITY_NOTICE_URL
+  },
+  [DataType.VULNERABILITY]: {
+    label: `Grand Lyon (${DataTypeToSourceDate[DataType.VULNERABILITY]})`,
+    url: "https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3"
+  },
+  [DataType.PLANTABILITY_VULNERABILITY]: {
+    label: "ERASME",
+    url: PLANTABILITY_NOTICE_URL
+  },
+  [DataType.VEGESTRATE]: {
+    label: "Vegestrate",
+    url: "https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023"
+  },
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: {
+    label: "2025 Emile Balembois",
+    url: "https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires"
+  }
 }
 
 const DOCUMENTATION_BASE_URL =

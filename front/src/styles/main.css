@@ -602,7 +602,7 @@ button.vegestrate-category.is-selected {
 }
 
 .legend-panel-fixed-width {
-  @apply lg:w-90!;
+  @apply lg:min-w-90!;
 }
 
 .legend-panel-fixed-height {
