@@ -29,7 +29,9 @@ jobs:
 
   deploy-feature:
     needs: check-open-pr
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && needs.check-open-pr.outputs.has_open_pr == 'true')
+    if: >-
+      !startsWith(github.head_ref || github.ref_name, 'dependabot/') &&
+      (github.event_name == 'pull_request' || (github.event_name == 'push' && needs.check-open-pr.outputs.has_open_pr == 'true'))
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
