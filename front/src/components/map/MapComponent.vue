@@ -38,7 +38,6 @@ const publishOverlaySizes = (topRight: HTMLElement | null, legend: HTMLElement |
   root.setProperty("--legend-width", `${legend?.offsetWidth ?? 0}px`)
 }
 let overlaySizeObserver: ResizeObserver | null = null
-let overlaySizeFrame: number | null = null
 
 onMounted(() => {
   mapStore.initMap(props.mapId, model.value.dataType!, props.initialDisplayState)
@@ -63,13 +62,7 @@ onMounted(() => {
   updateParams()
 
   const publishCurrentSizes = () => publishOverlaySizes(topRightControlsEl.value, legendEl.value)
-  overlaySizeObserver = new ResizeObserver(() => {
-    if (overlaySizeFrame !== null) cancelAnimationFrame(overlaySizeFrame)
-    overlaySizeFrame = requestAnimationFrame(() => {
-      overlaySizeFrame = null
-      publishCurrentSizes()
-    })
-  })
+  overlaySizeObserver = new ResizeObserver(publishCurrentSizes)
   for (const el of [topRightControlsEl.value, legendEl.value]) {
     if (el) overlaySizeObserver.observe(el)
   }
@@ -78,7 +71,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   overlaySizeObserver?.disconnect()
-  if (overlaySizeFrame !== null) cancelAnimationFrame(overlaySizeFrame)
   publishOverlaySizes(null, null)
 })
 
