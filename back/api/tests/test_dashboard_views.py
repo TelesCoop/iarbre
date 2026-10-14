@@ -255,6 +255,18 @@ class DashboardMetaFactorsTest(TestCase):
         self.assertAlmostEqual(mf["eau"], 0.6, places=1)
         self.assertAlmostEqual(mf["bati"], 0.2, places=1)
 
+    def test_metropole_weights_meta_factors_by_tile_count(self):
+        CityFactory(
+            code="69001",
+            geometry=VILLARD_SQUARE,
+            plantability_counts={"0": 0, "2": 0, "4": 0, "6": 0, "8": 0, "10": 30},
+            meta_factors_avg={"eau": 0.8, "bati": 0.7},
+        )
+        data = self.client.get(self.url).json()
+        mf = data["plantability"]["metaFactors"]
+        self.assertAlmostEqual(mf["eau"], 0.7)
+        self.assertAlmostEqual(mf["bati"], 0.6)
+
     def test_metropole_skips_cities_without_meta_factors(self):
         CityFactory(
             code="69001",
