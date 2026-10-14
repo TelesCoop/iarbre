@@ -28,7 +28,7 @@
     "jsdom": "^26.1.0",
     "maplibre-gl": "^6.13.0",
     "maplibre-gl-panoramax": "^0.4.0",
-    "pinia": "^3.0.0",
+    "pinia": "^4.0.3",
     "polished": "^4.3.1",
     "strip-ansi": "^7.2.0",
     "tarteaucitronjs": "^1.36.0",
