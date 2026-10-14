@@ -2,6 +2,9 @@
 import PlantabilityLegend from "@/components/map/legend/PlantabilityLegend.vue"
 import VulnerabilityLegend from "@/components/map/legend/VulnerabilityLegend.vue"
 import ClimateZoneLegend from "@/components/map/legend/ClimateZoneLegend.vue"
+import MapLegend from "@/components/map/legend/MapLegend.vue"
+import { useMapStore } from "@/stores/map"
+import { DataType } from "@/utils/enum"
 
 describe("Map legends", () => {
   it("renders correctly plantability legend", () => {
@@ -36,5 +39,16 @@ describe("Map legends", () => {
     // Test zone clicking for filter toggle
     cy.get('[data-zone="1"]').first().click()
     cy.get('[data-zone="1"]').first().should("have.class", "border-2")
+  })
+
+  it("renders the source link", () => {
+    cy.mount(MapLegend)
+    cy.window().then(() => {
+      useMapStore().selectedDataType = DataType.PLANTABILITY
+    })
+    cy.get(".legend-attribution a")
+      .should("contain.text", "ERASME")
+      .and("have.attr", "href")
+      .and("include", "notice_utilisation_calque_plantabilite")
   })
 })
