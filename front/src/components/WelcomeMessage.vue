@@ -106,6 +106,19 @@ const openFeedback = () => {
         </button>
 
         <a
+          href="https://iarbre.fr/tutoriels/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
+        >
+          <span class="welcome-icon"><ContextDataIcon name="video" :size="20" /></span>
+          <div>
+            <h4 class="font-medium">Tutoriels vidéos</h4>
+            <p class="text-sm">Visionnez les tutoriels vidéos.</p>
+          </div>
+        </a>
+
+        <a
           href="https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
           target="_blank"
           rel="noopener noreferrer"
