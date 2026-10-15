@@ -75,7 +75,8 @@
   "lavamoat": {
     "allowScripts": {
       "vite>esbuild": true,
-      "cypress#16.1.1": true
+      "cypress#16.1.1": true,
+      "@watergis/maplibre-gl-export>jspdf>core-js": false
     }
   }
 }
