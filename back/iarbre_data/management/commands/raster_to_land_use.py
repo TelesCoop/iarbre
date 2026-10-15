@@ -13,7 +13,7 @@ from typing import Dict
 from iarbre_data.models import Tile
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.utils.database import log_progress
-from iarbre_data.data_config import META_FACTORS_MAPPING
+from iarbre_data.data_config import FACTORS, META_FACTORS_MAPPING
 
 BATCH_SIZE = 5_000
 
@@ -97,6 +97,8 @@ def process_tile_batch(
             bottom = min(src.height, bottom)
             left = max(0, left)
             right = min(src.width, right)
+            if bottom <= top or right <= left:
+                continue
             # Read the data only within the window
             window = Window.from_slices((top, bottom), (left, right))
             data = src.read(1, window=window)
@@ -171,7 +173,7 @@ def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> N
     raster_files = [
         f
         for f in os.listdir(raster_path)
-        if f.endswith(".tif") and "plantability" not in f
+        if f.endswith(".tif") and os.path.splitext(f)[0] in FACTORS
     ]
     log_progress(f"Found {len(raster_files)} raster files to process")
     total_tiles = Tile.objects.count()

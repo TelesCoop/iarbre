@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 🔖 0.41.0 (2026-10-14) : Mombreuses corrections et petites améliorations
+## 🔖 0.41.0 (2026-10-14) : Nombreuses corrections et petites améliorations
 
 ### 🐛 fix: Carte et tableau de bord
 
