@@ -216,6 +216,16 @@ python manage.py compute_plantability_raster
 python manage.py raster_plantability_to_geom
 ```
 
+### Extraction des usages du sol par tuile
+
+Une fois les rasters des facteurs générés, `raster_to_land_use` lit pour chaque tuile la valeur de chaque raster et enregistre le top-5 des usages du sol dans `Tile.details` et les méta-facteurs dans `Tile.meta_factors`.
+
+Les tuiles sont traitées par lots, répartis entre plusieurs processus (`-nw`) ayant chacun plusieurs threads (`-ntw`). Sur une machine 16 cœurs, avec des lots de 10 000 tuiles, `-nw 12 -ntw 2` traite l'ensemble des tuiles en ~15 min (~2h avec les valeurs par défaut, 1 processus et 1 thread).
+
+```bash
+python manage.py raster_to_land_use --batch-size 10000 -nw 12 -ntw 2
+```
+
 ### Génération des tuiles MVT
 
 [`generate_mvt_files`](https://github.com/TelesCoop/iarbre/blob/main/back/api/management/commands/generate_mvt_files.py),

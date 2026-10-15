@@ -25,7 +25,7 @@ def _humanize(seconds: float) -> str:
 
 
 def _pipeline_slug(name: str) -> str:
-    table = str.maketrans("éèêëàâùûôîïç ", "eeeea auuoiic_")
+    table = str.maketrans("éèêëàâùûôîïç ", "eeeeaauuoiic_")
     return name.lower().translate(table)
 
 
