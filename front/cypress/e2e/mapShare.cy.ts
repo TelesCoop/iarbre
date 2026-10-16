@@ -39,6 +39,15 @@ describe("Share the current map view", () => {
       { timeout: 10000 }
     ).should("have.length.greaterThan", 0)
 
+    cy.getBySel("share-view-format-select").find(".select-trigger").click()
+    cy.getBySel("share-view-format-select").contains(".select-option", "JPEG").click()
+    cy.getBySel("share-view-export-button").should("contain.text", "JPEG 1600 × 1100").click()
+    cy.readFile(
+      `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.jpg`,
+      "binary",
+      { timeout: 10000 }
+    ).should("have.length.greaterThan", 0)
+
     cy.get(".dialog-close").click()
     cy.getBySel("share-view-dialog").should("not.exist")
   })
