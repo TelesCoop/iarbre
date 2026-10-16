@@ -49,6 +49,7 @@ const previewUrl = ref("")
 const exportCanvas = shallowRef<HTMLCanvasElement | null>(null)
 const exportBaseName = ref("")
 const exportSize = ref<ExportSize>({ ...DEFAULT_EXPORT_SIZE })
+const draftSize = ref<ExportSize>({ ...DEFAULT_EXPORT_SIZE })
 const exportFormat = ref(ExportFormat.PNG)
 const isGenerating = ref(false)
 const isDownloading = ref(false)
@@ -161,11 +162,22 @@ watch(
   { immediate: true }
 )
 
-const updateSide = (side: keyof ExportSize, event: Event) => {
-  const input = event.target as HTMLInputElement
-  const value = clampExportSide(input.valueAsNumber, exportSize.value[side])
-  input.value = String(value)
-  if (value !== exportSize.value[side]) exportSize.value = { ...exportSize.value, [side]: value }
+const isSizeDirty = computed(
+  () =>
+    draftSize.value.width !== exportSize.value.width ||
+    draftSize.value.height !== exportSize.value.height
+)
+
+const applySize = () => {
+  if (isGenerating.value) return
+  const size = {
+    width: clampExportSide(draftSize.value.width, exportSize.value.width),
+    height: clampExportSide(draftSize.value.height, exportSize.value.height)
+  }
+  draftSize.value = { ...size }
+  if (size.width !== exportSize.value.width || size.height !== exportSize.value.height) {
+    exportSize.value = size
+  }
 }
 
 watch(exportSize, () => {
@@ -205,22 +217,20 @@ onBeforeUnmount(releasePreview)
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
+        <form class="grid grid-cols-[1fr_1fr_auto] items-end gap-3" @submit.prevent="applySize">
           <label v-for="field in sizeFields" :key="field.side" class="flex flex-col gap-1.5">
             <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">{{
               field.label
             }}</span>
             <span class="relative">
               <input
-                :value="exportSize[field.side]"
+                v-model.number="draftSize[field.side]"
                 type="number"
                 :min="MIN_EXPORT_SIDE_PX"
                 :max="MAX_EXPORT_SIDE_PX"
                 step="1"
-                :disabled="isGenerating"
                 :data-cy="`share-view-${field.side}-input`"
-                class="w-full py-1.5 pl-3 pr-8 lg:py-2 lg:pl-4 bg-white border border-gray-200 rounded-lg text-xs lg:text-sm font-sans text-gray-700 outline-none transition-all hover:border-primary-500 focus:border-primary-500 disabled:opacity-50"
-                @change="updateSide(field.side, $event)"
+                class="w-full py-1.5 pl-3 pr-8 lg:py-2 lg:pl-4 bg-white border border-gray-200 rounded-lg text-xs lg:text-sm font-sans text-gray-700 outline-none transition-all hover:border-primary-500 focus:border-primary-500"
               />
               <span
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"
@@ -228,14 +238,23 @@ onBeforeUnmount(releasePreview)
               >
             </span>
           </label>
-          <div class="flex flex-col gap-1.5">
-            <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">Format</span>
-            <AppSelect
-              v-model="exportFormat"
-              :options="EXPORT_FORMATS"
-              data-cy="share-view-format-select"
-            />
-          </div>
+          <AppButton
+            type="submit"
+            variant="outline"
+            :disabled="!isSizeDirty || isGenerating"
+            data-cy="share-view-apply-size-button"
+          >
+            Appliquer
+          </AppButton>
+        </form>
+
+        <div class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">Format</span>
+          <AppSelect
+            v-model="exportFormat"
+            :options="EXPORT_FORMATS"
+            data-cy="share-view-format-select"
+          />
         </div>
 
         <AppButton
