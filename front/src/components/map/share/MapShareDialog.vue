@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue"
 import AppDialog from "@/components/shared/AppDialog.vue"
 import AppButton from "@/components/shared/AppButton.vue"
+import AppSelect from "@/components/shared/AppSelect.vue"
 import IconCheck from "@/components/icons/IconCheck.vue"
 import IconCopy from "@/components/icons/IconCopy.vue"
 import IconImage from "@/components/icons/IconImage.vue"
@@ -9,11 +10,17 @@ import { fetchShortLink, useCopyLink } from "@/composables/useShortLink"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel, DataTypeToSourceDate, MapStyleToLabel } from "@/utils/enum"
 import {
-  EXPORT_HEIGHT_PX,
-  EXPORT_WIDTH_PX,
+  DEFAULT_EXPORT_SIZE,
+  EXPORT_FORMATS,
+  ExportFormat,
+  MAX_EXPORT_SIDE_PX,
+  MIN_EXPORT_SIDE_PX,
   buildExportFileName,
+  clampExportSide,
+  encodeMapExport,
   generateMapExport
 } from "@/utils/mapExport"
+import type { ExportSize } from "@/utils/mapExport"
 
 const props = defineProps<{
   modelValue: boolean
@@ -39,17 +46,30 @@ const { isCopied, copyLink } = useCopyLink()
 
 const shortUrl = ref("")
 const previewUrl = ref("")
-const exportBlob = ref<Blob | null>(null)
-const exportFileName = ref("")
+const exportCanvas = shallowRef<HTMLCanvasElement | null>(null)
+const exportBaseName = ref("")
+const exportSize = ref<ExportSize>({ ...DEFAULT_EXPORT_SIZE })
+const exportFormat = ref(ExportFormat.PNG)
 const isGenerating = ref(false)
+const isDownloading = ref(false)
 const hasExportError = ref(false)
 const details = ref<ViewDetail[]>([])
 let generationId = 0
+let shareId = 0
+
+const sizeFields: { side: keyof ExportSize; label: string }[] = [
+  { side: "width", label: "Largeur" },
+  { side: "height", label: "Hauteur" }
+]
+
+const formatLabel = computed(
+  () => EXPORT_FORMATS.find(({ value }) => value === exportFormat.value)?.label ?? ""
+)
 
 const releasePreview = () => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
   previewUrl.value = ""
-  exportBlob.value = null
+  exportCanvas.value = null
 }
 
 const snapshotDetails = (lat: number, lng: number, zoom: number): ViewDetail[] => {
@@ -65,31 +85,23 @@ const snapshotDetails = (lat: number, lng: number, zoom: number): ViewDetail[] =
   ]
 }
 
-const prepareShare = async () => {
+const renderExport = async () => {
   const currentId = ++generationId
-  const map = mapStore.getMapInstance(props.mapId)
-  const { lat, lng } = map.getCenter()
-  const zoom = map.getZoom()
-  details.value = snapshotDetails(lat, lng, zoom)
-  exportFileName.value = `${buildExportFileName(mapStore.selectedDataType, lat, lng, zoom)}.png`
-  shortUrl.value = ""
   hasExportError.value = false
   isGenerating.value = true
   releasePreview()
 
-  fetchShortLink().then((url) => {
-    if (currentId === generationId) shortUrl.value = url
-  })
-
   try {
-    const blob = await generateMapExport(
-      map,
+    const canvas = await generateMapExport(
+      mapStore.getMapInstance(props.mapId),
       DataTypeToLabel[mapStore.selectedDataType],
-      document.querySelector<HTMLElement>(".legend-panel")
+      document.querySelector<HTMLElement>(".legend-panel"),
+      exportSize.value
     )
+    const preview = await encodeMapExport(canvas, ExportFormat.JPEG)
     if (currentId !== generationId) return
-    exportBlob.value = blob
-    previewUrl.value = URL.createObjectURL(blob)
+    exportCanvas.value = canvas
+    previewUrl.value = URL.createObjectURL(preview)
   } catch (error) {
     console.error(error)
     if (currentId === generationId) hasExportError.value = true
@@ -98,12 +110,37 @@ const prepareShare = async () => {
   }
 }
 
-const downloadExport = () => {
-  if (!previewUrl.value) return
-  const link = document.createElement("a")
-  link.href = previewUrl.value
-  link.download = exportFileName.value
-  link.click()
+const prepareShare = () => {
+  const map = mapStore.getMapInstance(props.mapId)
+  const { lat, lng } = map.getCenter()
+  const zoom = map.getZoom()
+  details.value = snapshotDetails(lat, lng, zoom)
+  exportBaseName.value = buildExportFileName(mapStore.selectedDataType, lat, lng, zoom)
+  shortUrl.value = ""
+  const currentShareId = ++shareId
+  fetchShortLink().then((url) => {
+    if (currentShareId === shareId) shortUrl.value = url
+  })
+  renderExport()
+}
+
+const downloadExport = async () => {
+  if (!exportCanvas.value) return
+  isDownloading.value = true
+  try {
+    const blob = await encodeMapExport(exportCanvas.value, exportFormat.value)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${exportBaseName.value}.${exportFormat.value}`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error(error)
+    hasExportError.value = true
+  } finally {
+    isDownloading.value = false
+  }
 }
 
 const handleCopy = () => {
@@ -117,11 +154,23 @@ watch(
       prepareShare()
     } else {
       generationId++
+      shareId++
       releasePreview()
     }
   },
   { immediate: true }
 )
+
+const updateSide = (side: keyof ExportSize, event: Event) => {
+  const input = event.target as HTMLInputElement
+  const value = clampExportSide(input.valueAsNumber, exportSize.value[side])
+  input.value = String(value)
+  if (value !== exportSize.value[side]) exportSize.value = { ...exportSize.value, [side]: value }
+}
+
+watch(exportSize, () => {
+  if (props.modelValue) renderExport()
+})
 
 onBeforeUnmount(releasePreview)
 </script>
@@ -139,7 +188,7 @@ onBeforeUnmount(releasePreview)
       <div class="flex flex-col gap-4">
         <div
           class="relative w-full overflow-hidden rounded-xl bg-gray-100 shadow-md"
-          :style="{ aspectRatio: `${EXPORT_WIDTH_PX} / ${EXPORT_HEIGHT_PX}` }"
+          :style="{ aspectRatio: `${exportSize.width} / ${exportSize.height}` }"
           data-cy="share-view-preview"
         >
           <img
@@ -156,12 +205,45 @@ onBeforeUnmount(releasePreview)
           </div>
         </div>
 
+        <div class="grid grid-cols-3 gap-3">
+          <label v-for="field in sizeFields" :key="field.side" class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">{{
+              field.label
+            }}</span>
+            <span class="relative">
+              <input
+                :value="exportSize[field.side]"
+                type="number"
+                :min="MIN_EXPORT_SIDE_PX"
+                :max="MAX_EXPORT_SIDE_PX"
+                step="1"
+                :disabled="isGenerating"
+                :data-cy="`share-view-${field.side}-input`"
+                class="w-full py-1.5 pl-3 pr-8 lg:py-2 lg:pl-4 bg-white border border-gray-200 rounded-lg text-xs lg:text-sm font-sans text-gray-700 outline-none transition-all hover:border-primary-500 focus:border-primary-500 disabled:opacity-50"
+                @change="updateSide(field.side, $event)"
+              />
+              <span
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"
+                >px</span
+              >
+            </span>
+          </label>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">Format</span>
+            <AppSelect
+              v-model="exportFormat"
+              :options="EXPORT_FORMATS"
+              data-cy="share-view-format-select"
+            />
+          </div>
+        </div>
+
         <AppButton
           variant="gold"
           size="lg"
           full-width
-          :disabled="!previewUrl"
-          :loading="isGenerating"
+          :disabled="!exportCanvas"
+          :loading="isGenerating || isDownloading"
           data-cy="share-view-export-button"
           @click="downloadExport"
         >
@@ -171,7 +253,7 @@ onBeforeUnmount(releasePreview)
           <span class="font-semibold">Exporter l'image</span>
           <template #icon-right>
             <span class="ml-auto font-mono text-sm opacity-70"
-              >PNG {{ EXPORT_WIDTH_PX }} × {{ EXPORT_HEIGHT_PX }}</span
+              >{{ formatLabel }} {{ exportSize.width }} × {{ exportSize.height }}</span
             >
           </template>
         </AppButton>

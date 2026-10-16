@@ -2,10 +2,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Map } from "maplibre-gl"
 import { DataType } from "@/utils/enum"
 import {
-  EXPORT_HEIGHT_PX,
-  EXPORT_WIDTH_PX,
+  DEFAULT_EXPORT_SIZE,
+  ExportFormat,
+  MAX_EXPORT_SIDE_PX,
+  MIN_EXPORT_SIDE_PX,
   buildExportFileName,
+  clampExportSide,
   drawTitleChip,
+  encodeMapExport,
   renderMapCanvas
 } from "@/utils/mapExport"
 
@@ -28,6 +32,7 @@ const createContextMock = () =>
   ({
     save: vi.fn(),
     restore: vi.fn(),
+    scale: vi.fn(),
     beginPath: vi.fn(),
     roundRect: vi.fn(),
     fill: vi.fn(),
@@ -43,16 +48,25 @@ describe("buildExportFileName", () => {
   })
 })
 
+describe("clampExportSide", () => {
+  it("rounds and bounds the typed side, keeping the current value when emptied", () => {
+    expect(clampExportSide(1234.6, 1600)).toBe(1235)
+    expect(clampExportSide(10, 1600)).toBe(MIN_EXPORT_SIDE_PX)
+    expect(clampExportSide(100000, 1600)).toBe(MAX_EXPORT_SIDE_PX)
+    expect(clampExportSide(Number.NaN, 1600)).toBe(1600)
+  })
+})
+
 describe("renderMapCanvas", () => {
   beforeEach(() => {
     toCanvasMock.mockReset()
   })
 
-  it("renders the map at the export size without downloading it", async () => {
+  it("renders a portrait export at the requested pixels without downloading it", async () => {
     const canvas = document.createElement("canvas")
     toCanvasMock.mockResolvedValue(canvas)
 
-    await expect(renderMapCanvas({} as Map)).resolves.toBe(canvas)
+    await expect(renderMapCanvas({} as Map, { width: 1080, height: 1920 })).resolves.toBe(canvas)
 
     const config = generatorConfig.value as {
       size: [number, number]
@@ -60,10 +74,18 @@ describe("renderMapCanvas", () => {
       download: boolean
     }
     expect(config.download).toBe(false)
-    expect(config.size.map((inches) => inches * config.dpi)).toEqual([
-      EXPORT_WIDTH_PX,
-      EXPORT_HEIGHT_PX
-    ])
+    expect(config.size.map((inches) => Math.round(inches * config.dpi))).toEqual([1080, 1920])
+  })
+
+  it("keeps the default frame and raises the pixel density for larger exports", async () => {
+    toCanvasMock.mockResolvedValue(document.createElement("canvas"))
+    await renderMapCanvas({} as Map, DEFAULT_EXPORT_SIZE)
+    const defaultSize = (generatorConfig.value as { size: [number, number] }).size
+    await renderMapCanvas({} as Map, { width: 3200, height: 2200 })
+    const config = generatorConfig.value as { size: [number, number]; dpi: number }
+
+    expect(config.size).toEqual(defaultSize)
+    expect(config.dpi).toBe(192)
   })
 })
 
@@ -75,5 +97,21 @@ describe("drawTitleChip", () => {
 
     expect(ctx.roundRect).toHaveBeenCalledWith(24, 24, 144, 44, 22)
     expect(ctx.fillText).toHaveBeenCalledWith("PLANTABILITÉ ET CHALEUR", 46, 46)
+  })
+})
+
+describe("encodeMapExport", () => {
+  it.each([
+    [ExportFormat.PNG, "image/png", undefined],
+    [ExportFormat.JPEG, "image/jpeg", 0.92]
+  ])("encodes the canvas as %s", async (format, mimeType, quality) => {
+    const canvas = document.createElement("canvas")
+    const blob = new Blob([], { type: mimeType })
+    const toBlob = vi
+      .spyOn(canvas, "toBlob")
+      .mockImplementation((callback: BlobCallback) => callback(blob))
+
+    await expect(encodeMapExport(canvas, format)).resolves.toBe(blob)
+    expect(toBlob).toHaveBeenCalledWith(expect.any(Function), mimeType, quality)
   })
 })
