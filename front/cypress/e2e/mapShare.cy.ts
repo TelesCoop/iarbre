@@ -3,7 +3,7 @@ import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 describe("Share the current map view", () => {
   beforeEach(() => {
-    cy.viewport(1440, 900)
+    cy.viewport(1024, 768)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("POST", "**/api/short-links/", { statusCode: 201, body: { code: "r4Vd9x" } }).as(
       "shortLink"
@@ -39,9 +39,17 @@ describe("Share the current map view", () => {
       { timeout: 10000 }
     ).should("have.length.greaterThan", 0)
 
+    cy.getBySel("share-view-width-input").clear()
+    cy.getBySel("share-view-width-input").type("400")
+    cy.getBySel("share-view-height-input").clear()
+    cy.getBySel("share-view-height-input").type("300")
+    cy.getBySel("share-view-apply-size-button").should("not.be.disabled").click()
+    cy.getBySel("share-view-apply-size-button").should("be.disabled")
+    cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
+
     cy.getBySel("share-view-format-select").find(".select-trigger").click()
     cy.getBySel("share-view-format-select").contains(".select-option", "JPEG").click()
-    cy.getBySel("share-view-export-button").should("contain.text", "JPEG 1600 × 1100").click()
+    cy.getBySel("share-view-export-button").should("contain.text", "JPEG 400 × 300").click()
     cy.readFile(
       `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.jpg`,
       "binary",
