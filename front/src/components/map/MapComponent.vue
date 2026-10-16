@@ -116,7 +116,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
       <MapCoordinates />
     </div>
     <MapPanoramaxCredit />
-    <MapCopyLinkButton />
+    <MapShareButton :map-id="mapId" />
   </div>
 
   <!-- After the legend: on mobile the street view spans the width and covers it. -->

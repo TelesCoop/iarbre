@@ -140,7 +140,6 @@ class RasterToLandUse(TestCase):
                     )
                 )
 
-
     def test_get_batch_bounds(self):
         """Batches cover every tile once, in id order, with at most batch_size tiles."""
         bounds = list(get_batch_bounds(batch_size=2))
