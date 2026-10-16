@@ -18,7 +18,8 @@ import {
   buildExportFileName,
   clampExportSide,
   encodeMapExport,
-  generateMapExport
+  generateMapExport,
+  getViewportExportSize
 } from "@/utils/mapExport"
 import type { ExportSize } from "@/utils/mapExport"
 
@@ -117,6 +118,8 @@ const prepareShare = () => {
   const zoom = map.getZoom()
   details.value = snapshotDetails(lat, lng, zoom)
   exportBaseName.value = buildExportFileName(mapStore.selectedDataType, lat, lng, zoom)
+  exportSize.value = getViewportExportSize(map)
+  draftSize.value = { ...exportSize.value }
   shortUrl.value = ""
   const currentShareId = ++shareId
   fetchShortLink().then((url) => {
@@ -177,12 +180,9 @@ const applySize = () => {
   draftSize.value = { ...size }
   if (size.width !== exportSize.value.width || size.height !== exportSize.value.height) {
     exportSize.value = size
+    renderExport()
   }
 }
-
-watch(exportSize, () => {
-  if (props.modelValue) renderExport()
-})
 
 onBeforeUnmount(releasePreview)
 </script>

@@ -7,7 +7,7 @@ export interface ExportSize {
   height: number
 }
 
-export const DEFAULT_EXPORT_SIZE: ExportSize = { width: 1600, height: 1100 }
+export const DEFAULT_EXPORT_SIZE: ExportSize = { width: 800, height: 550 }
 export const MIN_EXPORT_SIDE_PX = 200
 export const MAX_EXPORT_SIDE_PX = 8000
 
@@ -34,18 +34,36 @@ export const clampExportSide = (value: number, fallback: number) =>
     ? Math.min(MAX_EXPORT_SIDE_PX, Math.max(MIN_EXPORT_SIDE_PX, Math.round(value)))
     : fallback
 
-export const getExportScale = ({ width, height }: ExportSize) =>
-  Math.max(1, Math.max(width, height) / BASE_FRAME_SIDE_PX)
+export const getExportScale = ({ width, height }: ExportSize, frameSide = BASE_FRAME_SIDE_PX) =>
+  Math.max(1, Math.max(width, height) / frameSide)
+
+export const getViewportFrameSide = (map: Map) => {
+  const { clientWidth, clientHeight } = map.getContainer()
+  return Math.max(clientWidth, clientHeight) || BASE_FRAME_SIDE_PX
+}
+
+export const getViewportExportSize = (map: Map): ExportSize => {
+  const { clientWidth, clientHeight } = map.getContainer()
+  const pixelRatio = window.devicePixelRatio || 1
+  return {
+    width: clampExportSide(clientWidth * pixelRatio, DEFAULT_EXPORT_SIZE.width),
+    height: clampExportSide(clientHeight * pixelRatio, DEFAULT_EXPORT_SIZE.height)
+  }
+}
 
 export const buildExportFileName = (dataType: DataType, lat: number, lng: number, zoom: number) =>
   `iarbre_${dataType}_${lat.toFixed(5)}_${lng.toFixed(5)}_z${Math.round(zoom)}`
 
-export const renderMapCanvas = async (map: Map, size: ExportSize): Promise<HTMLCanvasElement> => {
+export const renderMapCanvas = async (
+  map: Map,
+  size: ExportSize,
+  frameSide = BASE_FRAME_SIDE_PX
+): Promise<HTMLCanvasElement> => {
   const [{ MapGenerator, Format, Unit }] = await Promise.all([
     import("@watergis/maplibre-gl-export"),
     import("@watergis/maplibre-gl-export/dist/maplibre-gl-export.css")
   ])
-  const scale = getExportScale(size)
+  const scale = getExportScale(size, frameSide)
   const generator = new MapGenerator(map, {
     size: [size.width / scale / CSS_DPI, size.height / scale / CSS_DPI],
     unit: Unit.in,
@@ -95,12 +113,13 @@ export const generateMapExport = async (
   map: Map,
   label: string,
   legendElement: HTMLElement | null,
-  size: ExportSize = DEFAULT_EXPORT_SIZE
+  size: ExportSize = getViewportExportSize(map)
 ): Promise<HTMLCanvasElement> => {
-  const canvas = await renderMapCanvas(map, size)
+  const frameSide = getViewportFrameSide(map)
+  const canvas = await renderMapCanvas(map, size, frameSide)
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Failed to get 2D context for the export canvas")
-  const scale = getExportScale(size)
+  const scale = getExportScale(size, frameSide)
   drawTitleChip(ctx, label, scale)
   if (legendElement) await drawLegend(ctx, legendElement, scale)
   return canvas

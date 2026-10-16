@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Map } from "maplibre-gl"
 import { DataType } from "@/utils/enum"
 import {
-  DEFAULT_EXPORT_SIZE,
   ExportFormat,
   MAX_EXPORT_SIDE_PX,
   MIN_EXPORT_SIDE_PX,
@@ -10,6 +9,7 @@ import {
   clampExportSide,
   drawTitleChip,
   encodeMapExport,
+  getViewportExportSize,
   renderMapCanvas
 } from "@/utils/mapExport"
 
@@ -77,15 +77,29 @@ describe("renderMapCanvas", () => {
     expect(config.size.map((inches) => Math.round(inches * config.dpi))).toEqual([1080, 1920])
   })
 
-  it("keeps the default frame and raises the pixel density for larger exports", async () => {
+  it("keeps the viewport frame and raises the pixel density for larger exports", async () => {
     toCanvasMock.mockResolvedValue(document.createElement("canvas"))
-    await renderMapCanvas({} as Map, DEFAULT_EXPORT_SIZE)
-    const defaultSize = (generatorConfig.value as { size: [number, number] }).size
-    await renderMapCanvas({} as Map, { width: 3200, height: 2200 })
+    await renderMapCanvas({} as Map, { width: 1200, height: 700 }, 1200)
+    const viewportSize = (generatorConfig.value as { size: [number, number] }).size
+    await renderMapCanvas({} as Map, { width: 2400, height: 1400 }, 1200)
     const config = generatorConfig.value as { size: [number, number]; dpi: number }
 
-    expect(config.size).toEqual(defaultSize)
+    expect(config.size).toEqual(viewportSize)
     expect(config.dpi).toBe(192)
+  })
+})
+
+describe("getViewportExportSize", () => {
+  const mapWithContainer = (clientWidth: number, clientHeight: number) =>
+    ({ getContainer: () => ({ clientWidth, clientHeight }) }) as unknown as Map
+
+  it("matches the visible map at the screen pixel density", () => {
+    vi.stubGlobal("devicePixelRatio", 2)
+    expect(getViewportExportSize(mapWithContainer(1200, 700))).toEqual({
+      width: 2400,
+      height: 1400
+    })
+    vi.unstubAllGlobals()
   })
 })
 
