@@ -10,16 +10,17 @@ import { fetchShortLink, useCopyLink } from "@/composables/useShortLink"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel, DataTypeToSourceDate, MapStyleToLabel } from "@/utils/enum"
 import {
-  DEFAULT_EXPORT_SIZE,
+  DEFAULT_EXPORT_FRAME,
   EXPORT_FORMATS,
   ExportFormat,
-  MAX_EXPORT_SIDE_PX,
-  MIN_EXPORT_SIDE_PX,
   buildExportFileName,
-  clampExportSide,
   encodeMapExport,
+  fitExportSize,
   generateMapExport,
-  getViewportExportSize
+  getExportSizeBounds,
+  getViewportExportSize,
+  getViewportFrame,
+  scaleExportFrame
 } from "@/utils/mapExport"
 import type { ExportSize } from "@/utils/mapExport"
 
@@ -49,8 +50,10 @@ const shortUrl = ref("")
 const previewUrl = ref("")
 const exportCanvas = shallowRef<HTMLCanvasElement | null>(null)
 const exportBaseName = ref("")
-const exportSize = ref<ExportSize>({ ...DEFAULT_EXPORT_SIZE })
-const draftSize = ref<ExportSize>({ ...DEFAULT_EXPORT_SIZE })
+const exportFrame = ref<ExportSize>({ ...DEFAULT_EXPORT_FRAME })
+const exportSize = ref<ExportSize>({ ...DEFAULT_EXPORT_FRAME })
+const draftSize = ref<ExportSize>({ ...DEFAULT_EXPORT_FRAME })
+const draftSide = ref<keyof ExportSize>("width")
 const exportFormat = ref(ExportFormat.PNG)
 const isGenerating = ref(false)
 const isDownloading = ref(false)
@@ -63,6 +66,8 @@ const sizeFields: { side: keyof ExportSize; label: string }[] = [
   { side: "width", label: "Largeur" },
   { side: "height", label: "Hauteur" }
 ]
+
+const sizeBounds = computed(() => getExportSizeBounds(exportFrame.value))
 
 const formatLabel = computed(
   () => EXPORT_FORMATS.find(({ value }) => value === exportFormat.value)?.label ?? ""
@@ -98,6 +103,7 @@ const renderExport = async () => {
       mapStore.getMapInstance(props.mapId),
       DataTypeToLabel[mapStore.selectedDataType],
       document.querySelector<HTMLElement>(".legend-panel"),
+      exportFrame.value,
       exportSize.value
     )
     const preview = await encodeMapExport(canvas, ExportFormat.JPEG)
@@ -118,8 +124,10 @@ const prepareShare = () => {
   const zoom = map.getZoom()
   details.value = snapshotDetails(lat, lng, zoom)
   exportBaseName.value = buildExportFileName(mapStore.selectedDataType, lat, lng, zoom)
-  exportSize.value = getViewportExportSize(map)
+  exportFrame.value = getViewportFrame(map)
+  exportSize.value = getViewportExportSize(exportFrame.value)
   draftSize.value = { ...exportSize.value }
+  draftSide.value = "width"
   shortUrl.value = ""
   const currentShareId = ++shareId
   fetchShortLink().then((url) => {
@@ -171,12 +179,22 @@ const isSizeDirty = computed(
     draftSize.value.height !== exportSize.value.height
 )
 
+const updateDraftSide = (side: keyof ExportSize, value: number) => {
+  draftSide.value = side
+  draftSize.value = {
+    ...scaleExportFrame(exportFrame.value, value / exportFrame.value[side]),
+    [side]: value
+  }
+}
+
 const applySize = () => {
   if (isGenerating.value) return
-  const size = {
-    width: clampExportSide(draftSize.value.width, exportSize.value.width),
-    height: clampExportSide(draftSize.value.height, exportSize.value.height)
-  }
+  const size = fitExportSize(
+    exportFrame.value,
+    draftSide.value,
+    draftSize.value[draftSide.value],
+    exportSize.value
+  )
   draftSize.value = { ...size }
   if (size.width !== exportSize.value.width || size.height !== exportSize.value.height) {
     exportSize.value = size
@@ -217,20 +235,27 @@ onBeforeUnmount(releasePreview)
           </div>
         </div>
 
-        <form class="grid grid-cols-[1fr_1fr_auto] items-end gap-3" @submit.prevent="applySize">
+        <form
+          class="grid grid-cols-[1fr_1fr_auto] items-end gap-3"
+          novalidate
+          @submit.prevent="applySize"
+        >
           <label v-for="field in sizeFields" :key="field.side" class="flex flex-col gap-1.5">
             <span class="text-sm font-medium tracking-widest text-gray-500 uppercase">{{
               field.label
             }}</span>
             <span class="relative">
               <input
-                v-model.number="draftSize[field.side]"
+                :value="draftSize[field.side]"
                 type="number"
-                :min="MIN_EXPORT_SIDE_PX"
-                :max="MAX_EXPORT_SIDE_PX"
+                :min="sizeBounds.min[field.side]"
+                :max="sizeBounds.max[field.side]"
                 step="1"
                 :data-cy="`share-view-${field.side}-input`"
                 class="w-full py-1.5 pl-3 pr-8 lg:py-2 lg:pl-4 bg-white border border-gray-200 rounded-lg text-xs lg:text-sm font-sans text-gray-700 outline-none transition-all hover:border-primary-500 focus:border-primary-500"
+                @input="
+                  updateDraftSide(field.side, ($event.target as HTMLInputElement).valueAsNumber)
+                "
               />
               <span
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"

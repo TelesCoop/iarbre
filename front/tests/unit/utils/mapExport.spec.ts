@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Map } from "maplibre-gl"
 import { DataType } from "@/utils/enum"
 import {
@@ -6,14 +6,18 @@ import {
   MAX_EXPORT_SIDE_PX,
   MIN_EXPORT_SIDE_PX,
   buildExportFileName,
-  clampExportSide,
   drawTitleChip,
   encodeMapExport,
+  fitExportSize,
+  getExportSizeBounds,
   getViewportExportSize,
   renderMapCanvas
 } from "@/utils/mapExport"
 
 const generatorConfig = vi.hoisted(() => ({ value: undefined as unknown }))
+const generatorInstance = vi.hoisted(() => ({
+  value: undefined as unknown as { renderMapPost: (map: Map) => Map }
+}))
 const toCanvasMock = vi.hoisted(() => vi.fn())
 
 vi.mock("@watergis/maplibre-gl-export", () => ({
@@ -22,6 +26,10 @@ vi.mock("@watergis/maplibre-gl-export", () => ({
   MapGenerator: class {
     constructor(_map: unknown, config: unknown) {
       generatorConfig.value = config
+      generatorInstance.value = this as never
+    }
+    renderMapPost(map: unknown) {
+      return map
     }
     toCanvas = toCanvasMock
   }
@@ -48,12 +56,32 @@ describe("buildExportFileName", () => {
   })
 })
 
-describe("clampExportSide", () => {
-  it("rounds and bounds the typed side, keeping the current value when emptied", () => {
-    expect(clampExportSide(1234.6, 1600)).toBe(1235)
-    expect(clampExportSide(10, 1600)).toBe(MIN_EXPORT_SIDE_PX)
-    expect(clampExportSide(100000, 1600)).toBe(MAX_EXPORT_SIDE_PX)
-    expect(clampExportSide(Number.NaN, 1600)).toBe(1600)
+describe("fitExportSize", () => {
+  const frame = { width: 1200, height: 600 }
+  const fallback = { width: 2400, height: 1200 }
+
+  it("derives the other side from the viewport ratio", () => {
+    expect(fitExportSize(frame, "width", 1800, fallback)).toEqual({ width: 1800, height: 900 })
+    expect(fitExportSize(frame, "height", 300, fallback)).toEqual({ width: 600, height: 300 })
+  })
+
+  it("bounds both sides while keeping the ratio, and keeps the current size when emptied", () => {
+    expect(fitExportSize(frame, "width", 100000, fallback)).toEqual({
+      width: MAX_EXPORT_SIDE_PX,
+      height: MAX_EXPORT_SIDE_PX / 2
+    })
+    expect(fitExportSize(frame, "width", 10, fallback)).toEqual({
+      width: 2 * MIN_EXPORT_SIDE_PX,
+      height: MIN_EXPORT_SIDE_PX
+    })
+    expect(fitExportSize(frame, "width", Number.NaN, fallback)).toBe(fallback)
+  })
+
+  it("exposes the per-side bounds", () => {
+    expect(getExportSizeBounds(frame)).toEqual({
+      min: { width: 400, height: 200 },
+      max: { width: 4096, height: 2048 }
+    })
   })
 })
 
@@ -66,7 +94,9 @@ describe("renderMapCanvas", () => {
     const canvas = document.createElement("canvas")
     toCanvasMock.mockResolvedValue(canvas)
 
-    await expect(renderMapCanvas({} as Map, { width: 1080, height: 1920 })).resolves.toBe(canvas)
+    await expect(
+      renderMapCanvas({} as Map, { width: 1080, height: 1920 }, { width: 540, height: 960 })
+    ).resolves.toBe(canvas)
 
     const config = generatorConfig.value as {
       size: [number, number]
@@ -77,29 +107,47 @@ describe("renderMapCanvas", () => {
     expect(config.size.map((inches) => Math.round(inches * config.dpi))).toEqual([1080, 1920])
   })
 
-  it("keeps the viewport frame and raises the pixel density for larger exports", async () => {
+  it.each([
+    [{ width: 2400, height: 1400 }, 192],
+    [{ width: 600, height: 350 }, 48]
+  ])("keeps the viewport frame and only changes the pixel density", async (size, dpi) => {
     toCanvasMock.mockResolvedValue(document.createElement("canvas"))
-    await renderMapCanvas({} as Map, { width: 1200, height: 700 }, 1200)
-    const viewportSize = (generatorConfig.value as { size: [number, number] }).size
-    await renderMapCanvas({} as Map, { width: 2400, height: 1400 }, 1200)
+    await renderMapCanvas({} as Map, size, { width: 1200, height: 700 })
     const config = generatorConfig.value as { size: [number, number]; dpi: number }
 
-    expect(config.size).toEqual(viewportSize)
-    expect(config.dpi).toBe(192)
+    expect(config.size).toEqual([1200 / 96, 700 / 96])
+    expect(config.dpi).toBe(dpi)
+  })
+
+  it("repaints the hidden map once loaded so that its idle event fires", async () => {
+    toCanvasMock.mockResolvedValue(document.createElement("canvas"))
+    await renderMapCanvas({} as Map, { width: 1200, height: 700 }, { width: 1200, height: 700 })
+    const renderMap = { triggerRepaint: vi.fn() } as unknown as Map
+
+    expect(generatorInstance.value.renderMapPost(renderMap)).toBe(renderMap)
+    expect(renderMap.triggerRepaint).toHaveBeenCalledOnce()
   })
 })
 
 describe("getViewportExportSize", () => {
-  const mapWithContainer = (clientWidth: number, clientHeight: number) =>
-    ({ getContainer: () => ({ clientWidth, clientHeight }) }) as unknown as Map
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
 
   it("matches the visible map at the screen pixel density", () => {
-    vi.stubGlobal("devicePixelRatio", 2)
-    expect(getViewportExportSize(mapWithContainer(1200, 700))).toEqual({
-      width: 2400,
-      height: 1400
+    vi.stubGlobal("devicePixelRatio", 1.5)
+    expect(getViewportExportSize({ width: 1200, height: 700 })).toEqual({
+      width: 1800,
+      height: 1050
     })
-    vi.unstubAllGlobals()
+  })
+
+  it("caps the definition of high density screens while keeping the ratio", () => {
+    vi.stubGlobal("devicePixelRatio", 2)
+    expect(getViewportExportSize({ width: 1600, height: 900 })).toEqual({
+      width: 2048,
+      height: 1152
+    })
   })
 })
 

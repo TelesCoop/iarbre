@@ -7,9 +7,10 @@ export interface ExportSize {
   height: number
 }
 
-export const DEFAULT_EXPORT_SIZE: ExportSize = { width: 800, height: 550 }
+export const DEFAULT_EXPORT_FRAME: ExportSize = { width: 1024, height: 768 }
 export const MIN_EXPORT_SIDE_PX = 200
-export const MAX_EXPORT_SIDE_PX = 8000
+export const MAX_EXPORT_SIDE_PX = 4096
+export const MAX_DEFAULT_EXPORT_SIDE_PX = 2048
 
 export enum ExportFormat {
   PNG = "png",
@@ -22,33 +23,57 @@ export const EXPORT_FORMATS: { label: string; value: ExportFormat }[] = [
 ]
 
 const CSS_DPI = 96
-const BASE_FRAME_SIDE_PX = 1600
 const JPEG_QUALITY = 0.92
 const OVERLAY_MARGIN_PX = 24
 const CHIP_FONT_SIZE_PX = 20
 const CHIP_PADDING_X_PX = 22
 const CHIP_HEIGHT_PX = 44
 
-export const clampExportSide = (value: number, fallback: number) =>
-  Number.isFinite(value)
-    ? Math.min(MAX_EXPORT_SIDE_PX, Math.max(MIN_EXPORT_SIDE_PX, Math.round(value)))
-    : fallback
-
-export const getExportScale = ({ width, height }: ExportSize, frameSide = BASE_FRAME_SIDE_PX) =>
-  Math.max(1, Math.max(width, height) / frameSide)
-
-export const getViewportFrameSide = (map: Map) => {
+export const getViewportFrame = (map: Map): ExportSize => {
   const { clientWidth, clientHeight } = map.getContainer()
-  return Math.max(clientWidth, clientHeight) || BASE_FRAME_SIDE_PX
+  return clientWidth > 0 && clientHeight > 0
+    ? { width: clientWidth, height: clientHeight }
+    : { ...DEFAULT_EXPORT_FRAME }
 }
 
-export const getViewportExportSize = (map: Map): ExportSize => {
-  const { clientWidth, clientHeight } = map.getContainer()
-  const pixelRatio = window.devicePixelRatio || 1
-  return {
-    width: clampExportSide(clientWidth * pixelRatio, DEFAULT_EXPORT_SIZE.width),
-    height: clampExportSide(clientHeight * pixelRatio, DEFAULT_EXPORT_SIZE.height)
-  }
+export const getExportScale = (size: ExportSize, frame: ExportSize) =>
+  Math.max(size.width / frame.width, size.height / frame.height)
+
+const clampExportScale = (scale: number, frame: ExportSize) =>
+  Math.min(
+    MAX_EXPORT_SIDE_PX / Math.max(frame.width, frame.height),
+    Math.max(MIN_EXPORT_SIDE_PX / Math.min(frame.width, frame.height), scale)
+  )
+
+export const scaleExportFrame = (frame: ExportSize, scale: number): ExportSize => ({
+  width: Math.round(frame.width * scale),
+  height: Math.round(frame.height * scale)
+})
+
+export const fitExportSize = (
+  frame: ExportSize,
+  side: keyof ExportSize,
+  value: number,
+  fallback: ExportSize
+): ExportSize =>
+  Number.isFinite(value) && value > 0
+    ? scaleExportFrame(frame, clampExportScale(value / frame[side], frame))
+    : fallback
+
+export const getExportSizeBounds = (frame: ExportSize) => ({
+  min: scaleExportFrame(frame, clampExportScale(0, frame)),
+  max: scaleExportFrame(frame, clampExportScale(Infinity, frame))
+})
+
+export const getViewportExportSize = (
+  frame: ExportSize,
+  maxSide = MAX_DEFAULT_EXPORT_SIDE_PX
+): ExportSize => {
+  const scale = Math.min(
+    window.devicePixelRatio || 1,
+    maxSide / Math.max(frame.width, frame.height)
+  )
+  return scaleExportFrame(frame, clampExportScale(scale, frame))
 }
 
 export const buildExportFileName = (dataType: DataType, lat: number, lng: number, zoom: number) =>
@@ -57,15 +82,21 @@ export const buildExportFileName = (dataType: DataType, lat: number, lng: number
 export const renderMapCanvas = async (
   map: Map,
   size: ExportSize,
-  frameSide = BASE_FRAME_SIDE_PX
+  frame: ExportSize
 ): Promise<HTMLCanvasElement> => {
   const [{ MapGenerator, Format, Unit }] = await Promise.all([
     import("@watergis/maplibre-gl-export"),
     import("@watergis/maplibre-gl-export/dist/maplibre-gl-export.css")
   ])
-  const scale = getExportScale(size, frameSide)
-  const generator = new MapGenerator(map, {
-    size: [size.width / scale / CSS_DPI, size.height / scale / CSS_DPI],
+  class ExportMapGenerator extends MapGenerator {
+    protected renderMapPost(renderMap: Map) {
+      renderMap.triggerRepaint()
+      return super.renderMapPost(renderMap)
+    }
+  }
+  const scale = getExportScale(size, frame)
+  const generator = new ExportMapGenerator(map, {
+    size: [frame.width / CSS_DPI, frame.height / CSS_DPI],
     unit: Unit.in,
     dpi: (CSS_DPI * scale) as DPIType,
     format: Format.PNG,
@@ -113,13 +144,13 @@ export const generateMapExport = async (
   map: Map,
   label: string,
   legendElement: HTMLElement | null,
-  size: ExportSize = getViewportExportSize(map)
+  frame: ExportSize = getViewportFrame(map),
+  size: ExportSize = getViewportExportSize(frame)
 ): Promise<HTMLCanvasElement> => {
-  const frameSide = getViewportFrameSide(map)
-  const canvas = await renderMapCanvas(map, size, frameSide)
+  const canvas = await renderMapCanvas(map, size, frame)
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Failed to get 2D context for the export canvas")
-  const scale = getExportScale(size, frameSide)
+  const scale = getExportScale(size, frame)
   drawTitleChip(ctx, label, scale)
   if (legendElement) await drawLegend(ctx, legendElement, scale)
   return canvas

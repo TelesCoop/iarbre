@@ -39,17 +39,27 @@ describe("Share the current map view", () => {
       { timeout: 10000 }
     ).should("have.length.greaterThan", 0)
 
-    cy.getBySel("share-view-width-input").clear()
-    cy.getBySel("share-view-width-input").type("400")
-    cy.getBySel("share-view-height-input").clear()
-    cy.getBySel("share-view-height-input").type("300")
-    cy.getBySel("share-view-apply-size-button").should("not.be.disabled").click()
-    cy.getBySel("share-view-apply-size-button").should("be.disabled")
-    cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
+    cy.getBySel("share-view-width-input")
+      .invoke("val")
+      .then((width) => {
+        cy.getBySel("share-view-height-input")
+          .invoke("val")
+          .then((height) => {
+            const expectedHeight = Math.round((400 * Number(height)) / Number(width))
+            cy.getBySel("share-view-width-input").clear()
+            cy.getBySel("share-view-width-input").type("400")
+            cy.getBySel("share-view-height-input").should("have.value", String(expectedHeight))
+            cy.getBySel("share-view-apply-size-button").should("not.be.disabled").click()
+            cy.getBySel("share-view-apply-size-button").should("be.disabled")
+            cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
 
-    cy.getBySel("share-view-format-select").find(".select-trigger").click()
-    cy.getBySel("share-view-format-select").contains(".select-option", "JPEG").click()
-    cy.getBySel("share-view-export-button").should("contain.text", "JPEG 400 × 300").click()
+            cy.getBySel("share-view-format-select").find(".select-trigger").click()
+            cy.getBySel("share-view-format-select").contains(".select-option", "JPEG").click()
+            cy.getBySel("share-view-export-button")
+              .should("contain.text", `JPEG 400 × ${expectedHeight}`)
+              .click()
+          })
+      })
     cy.readFile(
       `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.jpg`,
       "binary",
