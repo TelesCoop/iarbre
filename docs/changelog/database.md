@@ -6,6 +6,11 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-10-15T12:59_postgres_backup.dump
+
+**Changements :** :
+La version précédente ne corrigeait pas bien les valeurs des méta facteurs dans le model `City`. Cette fois c'est bon.
+
 ## 2026-10-13T19:15_postgres_backup.dump
 
 **Changements :** :
