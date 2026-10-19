@@ -33,18 +33,25 @@ describe("Share the current map view", () => {
 
     cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
     cy.getBySel("share-view-export-button").should("not.be.disabled").click()
-    cy.readFile(
-      `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.png`,
-      "binary",
-      { timeout: 10000 }
-    ).should("have.length.greaterThan", 0)
-
     cy.getBySel("share-view-width-input")
       .invoke("val")
       .then((width) => {
         cy.getBySel("share-view-height-input")
           .invoke("val")
           .then((height) => {
+            cy.readFile(
+              `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.png`,
+              "binary",
+              { timeout: 10000 }
+            ).then((png: string) => {
+              const readUint32 = (offset: number) =>
+                [0, 1, 2, 3].reduce((value, i) => value * 256 + png.charCodeAt(offset + i), 0)
+              expect([readUint32(16), readUint32(20)]).to.deep.equal([
+                Number(width),
+                Number(height)
+              ])
+            })
+
             const expectedHeight = Math.round((400 * Number(height)) / Number(width))
             cy.getBySel("share-view-width-input").clear()
             cy.getBySel("share-view-width-input").type("400")

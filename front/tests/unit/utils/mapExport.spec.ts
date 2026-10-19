@@ -34,7 +34,6 @@ vi.mock("@watergis/maplibre-gl-export", () => ({
     toCanvas = toCanvasMock
   }
 }))
-vi.mock("@watergis/maplibre-gl-export/dist/maplibre-gl-export.css", () => ({}))
 
 const createContextMock = () =>
   ({
@@ -164,9 +163,9 @@ describe("drawTitleChip", () => {
 
 describe("encodeMapExport", () => {
   it.each([
-    [ExportFormat.PNG, "image/png", undefined],
-    [ExportFormat.JPEG, "image/jpeg", 0.92]
-  ])("encodes the canvas as %s", async (format, mimeType, quality) => {
+    [ExportFormat.PNG, "image/png"],
+    [ExportFormat.JPEG, "image/jpeg"]
+  ])("encodes the canvas as %s", async (format, mimeType) => {
     const canvas = document.createElement("canvas")
     const blob = new Blob([], { type: mimeType })
     const toBlob = vi
@@ -174,6 +173,6 @@ describe("encodeMapExport", () => {
       .mockImplementation((callback: BlobCallback) => callback(blob))
 
     await expect(encodeMapExport(canvas, format)).resolves.toBe(blob)
-    expect(toBlob).toHaveBeenCalledWith(expect.any(Function), mimeType, quality)
+    expect(toBlob).toHaveBeenCalledWith(expect.any(Function), mimeType, 0.92)
   })
 })

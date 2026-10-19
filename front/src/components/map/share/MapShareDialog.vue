@@ -25,18 +25,10 @@ import {
 import type { ExportSize } from "@/utils/mapExport"
 
 const props = defineProps<{
-  modelValue: boolean
   mapId: string
 }>()
 
-const emit = defineEmits<{
-  "update:modelValue": [value: boolean]
-}>()
-
-const visible = computed({
-  get: () => props.modelValue,
-  set: (value: boolean) => emit("update:modelValue", value)
-})
+const visible = defineModel<boolean>({ required: true })
 
 interface ViewDetail {
   label: string
@@ -147,9 +139,6 @@ const downloadExport = async () => {
     link.download = `${exportBaseName.value}.${exportFormat.value}`
     link.click()
     URL.revokeObjectURL(url)
-  } catch (error) {
-    console.error(error)
-    hasExportError.value = true
   } finally {
     isDownloading.value = false
   }
@@ -160,7 +149,7 @@ const handleCopy = () => {
 }
 
 watch(
-  () => props.modelValue,
+  visible,
   (isOpen) => {
     if (isOpen) {
       prepareShare()
@@ -188,7 +177,6 @@ const updateDraftSide = (side: keyof ExportSize, value: number) => {
 }
 
 const applySize = () => {
-  if (isGenerating.value) return
   const size = fitExportSize(
     exportFrame.value,
     draftSide.value,

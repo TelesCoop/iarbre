@@ -10,7 +10,7 @@ export interface ExportSize {
 export const DEFAULT_EXPORT_FRAME: ExportSize = { width: 1024, height: 768 }
 export const MIN_EXPORT_SIDE_PX = 200
 export const MAX_EXPORT_SIDE_PX = 4096
-export const MAX_DEFAULT_EXPORT_SIDE_PX = 2048
+const MAX_DEFAULT_EXPORT_SIDE_PX = 2048
 
 export enum ExportFormat {
   PNG = "png",
@@ -36,7 +36,7 @@ export const getViewportFrame = (map: Map): ExportSize => {
     : { ...DEFAULT_EXPORT_FRAME }
 }
 
-export const getExportScale = (size: ExportSize, frame: ExportSize) =>
+const getExportScale = (size: ExportSize, frame: ExportSize) =>
   Math.max(size.width / frame.width, size.height / frame.height)
 
 const clampExportScale = (scale: number, frame: ExportSize) =>
@@ -65,13 +65,10 @@ export const getExportSizeBounds = (frame: ExportSize) => ({
   max: scaleExportFrame(frame, clampExportScale(Infinity, frame))
 })
 
-export const getViewportExportSize = (
-  frame: ExportSize,
-  maxSide = MAX_DEFAULT_EXPORT_SIDE_PX
-): ExportSize => {
+export const getViewportExportSize = (frame: ExportSize): ExportSize => {
   const scale = Math.min(
     window.devicePixelRatio || 1,
-    maxSide / Math.max(frame.width, frame.height)
+    MAX_DEFAULT_EXPORT_SIDE_PX / Math.max(frame.width, frame.height)
   )
   return scaleExportFrame(frame, clampExportScale(scale, frame))
 }
@@ -84,10 +81,7 @@ export const renderMapCanvas = async (
   size: ExportSize,
   frame: ExportSize
 ): Promise<HTMLCanvasElement> => {
-  const [{ MapGenerator, Format, Unit }] = await Promise.all([
-    import("@watergis/maplibre-gl-export"),
-    import("@watergis/maplibre-gl-export/dist/maplibre-gl-export.css")
-  ])
+  const { MapGenerator, Format, Unit } = await import("@watergis/maplibre-gl-export")
   class ExportMapGenerator extends MapGenerator {
     protected renderMapPost(renderMap: Map) {
       renderMap.triggerRepaint()
@@ -128,11 +122,7 @@ export const drawTitleChip = (ctx: CanvasRenderingContext2D, label: string, scal
   ctx.restore()
 }
 
-export const drawLegend = async (
-  ctx: CanvasRenderingContext2D,
-  legendElement: HTMLElement,
-  scale = 1
-) => {
+const drawLegend = async (ctx: CanvasRenderingContext2D, legendElement: HTMLElement, scale = 1) => {
   const { toCanvas } = await import("html-to-image")
   const legend = await toCanvas(legendElement, { pixelRatio: scale })
   if (legend.width === 0 || legend.height === 0) return
@@ -144,8 +134,8 @@ export const generateMapExport = async (
   map: Map,
   label: string,
   legendElement: HTMLElement | null,
-  frame: ExportSize = getViewportFrame(map),
-  size: ExportSize = getViewportExportSize(frame)
+  frame: ExportSize,
+  size: ExportSize
 ): Promise<HTMLCanvasElement> => {
   const canvas = await renderMapCanvas(map, size, frame)
   const ctx = canvas.getContext("2d")
@@ -156,16 +146,16 @@ export const generateMapExport = async (
   return canvas
 }
 
-const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality?: number) =>
-  new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error(`Failed to encode the ${type} image`))),
-      type,
-      quality
-    )
-  )
+const MIME_TYPES: Record<ExportFormat, string> = {
+  [ExportFormat.PNG]: "image/png",
+  [ExportFormat.JPEG]: "image/jpeg"
+}
 
 export const encodeMapExport = (canvas: HTMLCanvasElement, format: ExportFormat): Promise<Blob> =>
-  format === ExportFormat.JPEG
-    ? canvasToBlob(canvas, "image/jpeg", JPEG_QUALITY)
-    : canvasToBlob(canvas, "image/png")
+  new Promise((resolve, reject) =>
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error(`Failed to encode the ${format} image`))),
+      MIME_TYPES[format],
+      JPEG_QUALITY
+    )
+  )
