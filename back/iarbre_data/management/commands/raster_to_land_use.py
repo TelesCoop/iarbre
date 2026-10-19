@@ -121,7 +121,10 @@ def process_tile_batch(
             rows -= window.row_off
             cols -= window.col_off
             in_window = (
-                (rows >= 0) & (rows < window.height) & (cols >= 0) & (cols < window.width)
+                (rows >= 0)
+                & (rows < window.height)
+                & (cols >= 0)
+                & (cols < window.width)
             )
             pixel_values = np.zeros(len(tile_ids))
             pixel_values[in_window] = data[rows[in_window], cols[in_window]]
