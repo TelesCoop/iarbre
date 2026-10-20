@@ -550,3 +550,42 @@ LCZ = {
     "F": "Sol nu perméable",
     "G": "Surface en eau",
 }
+
+PUBLIC_BUILDINGS = {
+    "bdtopo_url": "https://data.geopf.fr/wfs/ows",
+    "bdtopo_typename": "BDTOPO_V3:zone_d_activite_ou_d_interet",
+    "bdtopo_columns": [
+        "cleabs",
+        "categorie",
+        "nature",
+        "nature_detaillee",
+        "toponyme",
+        "fictif",
+        "etat_de_l_objet",
+        "identifiants_sources",
+        "insee_commune",
+    ],
+    "grandlyon_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows",
+    "grandlyon_edu_layers": [
+        "metropole-de-lyon:edu_education.ecole",
+        "metropole-de-lyon:edu_education.college",
+        "metropole-de-lyon:edu_education.lycee",
+    ],
+    "categories": {
+        "Science et enseignement": "enseignement",
+        "Santé": "sante",
+        "Sport": "sport",
+        "Administratif ou militaire": "administratif",
+        "Culture et loisirs": "culture",
+        "Religieux": "culte",
+    },
+    "excluded_natures": [
+        "Espace public",
+        "Point de vue",
+        "Vestige archéologique",
+        "Camping",
+        "Aire de détente",
+        "Construction",
+    ],
+    "state_in_service": "En service",
+}

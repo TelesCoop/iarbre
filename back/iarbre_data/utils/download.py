@@ -29,13 +29,18 @@ def _load_or_fetch(file_path, fetch_fn) -> gpd.GeoDataFrame:
     return gdf
 
 
-def download_dbtopo(url: str) -> gpd.GeoDataFrame:
+def download_dbtopo(
+    url: str,
+    typename: str = "BDTOPO_V3:batiment",
+    cache_name: str = "batiments",
+    columns: list[str] | None = None,
+) -> gpd.GeoDataFrame:
     def fetch():
         params = {
             "SERVICE": "WFS",
             "VERSION": "2.0.0",
             "REQUEST": "GetFeature",
-            "TYPENAMES": "BDTOPO_V3:batiment",
+            "TYPENAMES": typename,
             "SRSNAME": "EPSG:2154",
             "OUTPUTFORMAT": "text/xml; subtype=gml/3.2",
             "COUNT": 5000,
@@ -55,15 +60,24 @@ def download_dbtopo(url: str) -> gpd.GeoDataFrame:
                 tmp_gdf = gpd.read_file(BytesIO(response.content))
                 if tmp_gdf.empty:
                     break
-                geom = tmp_gdf["geometry"].force_2d()
+                geom = (
+                    tmp_gdf["geometry"]
+                    .force_2d()
+                    .set_crs("EPSG:2154", allow_override=True)
+                )
                 geom.name = "geometry"
-                all_geometries.append(geom)
+                if columns:
+                    all_geometries.append(
+                        gpd.GeoDataFrame(tmp_gdf[columns], geometry=geom)
+                    )
+                else:
+                    all_geometries.append(geom)
                 start_index += 5000
         return gpd.GeoDataFrame(
             pd.concat(all_geometries, ignore_index=True), crs="EPSG:2154"
         )
 
-    return _load_or_fetch(_cache_path("batiments"), fetch)
+    return _load_or_fetch(_cache_path(cache_name), fetch)
 
 
 def download_cerema(url: str) -> gpd.GeoDataFrame:

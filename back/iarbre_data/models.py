@@ -165,6 +165,30 @@ class Data(models.Model):
     factor = models.CharField(max_length=50, null=True, blank=True)
 
 
+class PublicBuilding(models.Model):
+    """Public building site from IGN BD TOPO activity zones."""
+
+    class Category(models.TextChoices):
+        ENSEIGNEMENT = "enseignement", "Enseignement"
+        SANTE = "sante", "Santé"
+        SPORT = "sport", "Sport"
+        ADMINISTRATIF = "administratif", "Administratif"
+        CULTURE = "culture", "Culture et loisirs"
+        CULTE = "culte", "Culte"
+
+    geometry = GeometryField(srid=SRID_DB)
+    cleabs = models.CharField(max_length=30, unique=True)
+    category = models.CharField(max_length=20, choices=Category.choices)
+    nature = models.CharField(max_length=100)
+    nature_detaillee = models.CharField(max_length=100, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    uai = models.CharField(max_length=8, null=True, blank=True)
+    fictif = models.BooleanField(default=False)
+    insee_commune = models.CharField(max_length=5, null=True, blank=True)
+    student_count = models.IntegerField(null=True, blank=True)
+    education_priority = models.CharField(max_length=20, null=True, blank=True)
+
+
 class TileFactor(models.Model):
     """Factor of a tile.
     A factor value represent the proportion of land occupancy on the tile."""
