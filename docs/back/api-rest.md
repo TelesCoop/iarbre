@@ -346,17 +346,18 @@ Quartiers prioritaires de la politique de la ville en GeoJSON (`FeatureCollectio
 
 ### `GET /public-buildings/`
 
-Bâtiments publics (IGN BD TOPO, écoles privées exclues) en GeoJSON (`FeatureCollection`), coordonnées arrondies à 6 décimales. Cache : 24 heures. Données importées par `python manage.py import_public_buildings`.
+Bâtiments publics (IGN BD TOPO, écoles privées exclues, et crèches publiques de Grand Lyon) en GeoJSON (`FeatureCollection`), coordonnées arrondies à 6 décimales. Cache : 24 heures. Données importées par `python manage.py import_public_buildings`.
 
-| Propriété           | Description                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `name`              | Nom (toponyme)                                                                                                 |
-| `category`          | `enseignement`, `sante`, `sport`, `administratif`, `culture`, `culte`                                          |
-| `nature`            | Nature BD TOPO (ex. `Enseignement primaire`, `Collège`, `Mairie`)                                              |
-| `natureDetaillee`   | Nature détaillée (ex. `Ecole maternelle`)                                                                      |
-| `fictif`            | `true` si l'emprise BD TOPO est fictive : la géométrie est alors un `Point`, sinon un `Polygon`/`MultiPolygon` |
-| `studentCount`      | Nombre d'élèves (écoles, collèges, lycées publics)                                                             |
-| `educationPriority` | `REP`, `REP+` ou `null`                                                                                        |
+| Propriété           | Description                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`              | Nom (toponyme)                                                                                                                                                                                                                                    |
+| `category`          | `enseignement`, `sante` (hôpitaux, établissements hospitaliers, maisons de retraite, résidences autonomie), `administratif` (mairies), `culture` (musées, écomusées, bibliothèques, archives), `petite_enfance` (crèches publiques de Grand Lyon) |
+| `nature`            | Nature BD TOPO (ex. `Enseignement primaire`, `Collège`, `Mairie`)                                                                                                                                                                                 |
+| `natureDetaillee`   | Nature détaillée (ex. `Ecole maternelle`)                                                                                                                                                                                                         |
+| `fictif`            | `true` si l'emprise BD TOPO est fictive : la géométrie est alors un `Point`, sinon un `Polygon`/`MultiPolygon`                                                                                                                                    |
+| `studentCount`      | Nombre d'élèves (écoles, collèges, lycées publics)                                                                                                                                                                                                |
+| `educationPriority` | `REP`, `REP+` ou `null`                                                                                                                                                                                                                           |
+| `capacity`          | Nombre de places d'accueil (crèches)                                                                                                                                                                                                              |
 
 ---
 
