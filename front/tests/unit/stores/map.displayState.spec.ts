@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from "pinia"
 import type { PanoramaxPicture } from "maplibre-gl-panoramax"
 import { useMapStore } from "@/stores/map"
 import { getQPVData } from "@/services/qpvService"
-import { DataType, MapStyle } from "@/utils/enum"
+import { DataType, MapStyle, PublicBuildingCategory } from "@/utils/enum"
 
 const createdMaps = vi.hoisted(() => [] as { sources: Set<string>; layers: Set<string> }[])
 
@@ -54,6 +54,19 @@ describe("map store display state", () => {
     expect(store.visibleOverlayLayers).toEqual([])
     expect(store.selectedCadastreParcel).toBeNull()
     expect(store.selectedPanoramaxPicture).toBeNull()
+  })
+
+  it("initMap restores the public building categories, all of them by default", () => {
+    const store = useMapStore()
+
+    store.initMap("default", DataType.PLANTABILITY, {
+      ...DEFAULT_DISPLAY,
+      publicBuildingCategories: [PublicBuildingCategory.SANTE]
+    })
+    expect(store.selectedPublicBuildingCategories).toEqual([PublicBuildingCategory.SANTE])
+
+    store.initMap("default", DataType.PLANTABILITY, DEFAULT_DISPLAY)
+    expect(store.selectedPublicBuildingCategories).toEqual(Object.values(PublicBuildingCategory))
   })
 
   describe("QPV layer loading", () => {

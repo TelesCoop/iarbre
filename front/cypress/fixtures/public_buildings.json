@@ -1,0 +1,67 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.553,
+              45.07
+            ],
+            [
+              5.556,
+              45.07
+            ],
+            [
+              5.556,
+              45.072
+            ],
+            [
+              5.553,
+              45.072
+            ],
+            [
+              5.553,
+              45.07
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "id": 1,
+      "properties": {
+        "capacity": null,
+        "category": "enseignement",
+        "educationPriority": "REP+",
+        "fictif": false,
+        "name": "\u00c9cole \u00c9l\u00e9mentaire Jean Jaur\u00e8s",
+        "nature": "Enseignement primaire",
+        "natureDetaillee": "Ecole \u00e9l\u00e9mentaire",
+        "studentCount": 250
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          5.5575,
+          45.0715
+        ],
+        "type": "Point"
+      },
+      "id": 2,
+      "properties": {
+        "capacity": 16,
+        "category": "petite_enfance",
+        "educationPriority": null,
+        "fictif": true,
+        "name": "Arc En Ciel",
+        "nature": "Cr\u00e8che",
+        "natureDetaillee": null,
+        "studentCount": null
+      },
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}

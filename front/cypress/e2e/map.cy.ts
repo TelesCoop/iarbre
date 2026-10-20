@@ -283,6 +283,29 @@ describe("Map - Desktop", () => {
     cy.mapCheckPanoramaxLayer(true)
   })
 
+  it("adds public buildings layer when toggled", () => {
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(true)
+
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(false)
+  })
+
+  it("writes the filtered public building categories in the URL", () => {
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(true)
+
+    cy.getBySel("public-buildings-categories-toggle").filter(":visible").click()
+    cy.get('[data-cy="public-buildings-category-enseignement"] input').uncheck()
+    cy.location("search").should(
+      "eq",
+      `?layers=${OverlayLayer.PUBLIC_BUILDINGS}&buildings=petite_enfance,sante,administratif,culture`
+    )
+
+    cy.get('[data-cy="public-buildings-category-enseignement"] input').check()
+    cy.location("search").should("eq", `?layers=${OverlayLayer.PUBLIC_BUILDINGS}`)
+  })
+
   it("writes the basemap and the overlay layers in the URL", () => {
     cy.location("search").should("eq", "")
 

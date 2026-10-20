@@ -22,6 +22,7 @@ describe("MapLayerToggles", () => {
     cy.get('[data-cy="cadastre-toggle"]').should("not.have.class", "active")
     cy.get('[data-cy="boundary-toggle"]').should("not.have.class", "active")
     cy.get('[data-cy="panoramax-toggle"]').should("not.have.class", "active")
+    cy.get('[data-cy="public-buildings-toggle"]').parent().should("not.have.class", "active")
   })
 
   it("should toggle the QPV layer when the QPV button is clicked", () => {
@@ -67,5 +68,37 @@ describe("MapLayerToggles", () => {
       expect(store.showPanoramaxLayer).to.equal(true)
     })
     cy.get('[data-cy="panoramax-toggle"]').should("have.class", "active")
+  })
+
+  it("should toggle the public buildings layer when its chip is clicked", () => {
+    cy.get('[data-cy="public-buildings-toggle"]').click()
+
+    cy.window().then(() => {
+      const store = useMapStore()
+      expect(store.showPublicBuildingsLayer).to.equal(true)
+    })
+    cy.get('[data-cy="public-buildings-toggle"]').parent().should("have.class", "active")
+  })
+
+  it("should filter public building categories from the caret popover", () => {
+    cy.get("[data-cy-root]").invoke("css", "padding-top", "300px")
+    cy.get('[data-cy="public-buildings-categories"]').should("not.exist")
+    cy.get('[data-cy="public-buildings-categories-toggle"]')
+      .click()
+      .should("have.attr", "aria-expanded", "true")
+    cy.get('[data-cy="public-buildings-categories"] input')
+      .should("have.length", 5)
+      .and("be.checked")
+
+    cy.get('[data-cy="public-buildings-category-sante"] input').uncheck()
+
+    cy.window().then(() => {
+      const store = useMapStore()
+      expect(store.selectedPublicBuildingCategories).to.not.include("sante")
+      expect(store.showPublicBuildingsLayer).to.equal(false)
+    })
+
+    cy.get('[data-cy="public-buildings-category-sante"] input').type("{esc}")
+    cy.get('[data-cy="public-buildings-categories"]').should("not.exist")
   })
 })
