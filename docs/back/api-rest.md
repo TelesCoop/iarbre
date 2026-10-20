@@ -1,17 +1,6 @@
 # API REST
 
-Cette page décrit l'API REST exposée par le backend Django (application `api`). Elle sert de référence pour le frontend, pour les intégrations SIG et pour un futur serveur MCP qui exposera ces données à des agents.
-
-## Conventions générales
-
-| Élément                  | Valeur                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------- |
-| URL de base (production) | `https://carte.iarbre.fr/api`                                                            |
-| URL de base (local)      | `http://localhost:8000/api`                                                              |
-| Authentification         | Aucune, toutes les routes sont publiques                                                 |
-| Pagination               | Aucune, les listes sont renvoyées en entier                                              |
-| Format                   | JSON, sauf tuiles (MVT, PNG), rasters (GeoTIFF), PDF, WFS (GML/GeoJSON) et WMS (XML/PNG) |
-| Routes                   | Déclarées dans `back/api/urls.py`, vues dans `back/api/views/`                           |
+Cette page décrit l'API DjangoREST (application `api` pour le backend). Elle sert de référence pour le frontend, pour les intégrations SIG.
 
 ### Casse des clés JSON
 
@@ -39,7 +28,7 @@ Un polygone envoyé sans SRID est considéré en EPSG:4326.
 
 ### Cache
 
-Beaucoup de vues GET sont mises en cache côté serveur (`cache_page`, cache fichier). Une donnée réimportée peut donc rester invisible jusqu'à expiration du cache. La durée est indiquée pour chaque route.
+Beaucoup de vues GET sont mises en cache côté serveur (`cache_page`, cache fichier). La durée est indiquée pour chaque route.
 
 ### Codes d'erreur
 
@@ -282,7 +271,7 @@ Détail d'un élément identifié par l'`id` présent dans les propriétés des 
 
 ### `GET /tiles/vegetation-height/value/`
 
-Hauteur de végétation (modèle numérique de surface normalisé) en un point.
+Renvoie la hauteur de végétation (canopy height model) en un point.
 
 | Paramètre | Type  | Description         |
 | --------- | ----- | ------------------- |
@@ -326,6 +315,7 @@ Répartition de l'occupation du sol dans un rayon de 500 m autour d'un point.
 ### `GET /tiles/{geolevel}/{datatype}/{z}/{x}/{y}.mvt`
 
 Tuiles vectorielles Mapbox Vector Tile pré-générées (`application/x-protobuf`). Cache : 24 heures. `404` si la tuile n'existe pas.
+Sert pour afficher sur une carte MapLibre ou autre mais sinon sans doute peu utile.
 
 Le nom de la couche dans la tuile est `{geolevel}--{datatype}`.
 
@@ -389,7 +379,7 @@ Téléchargement des rasters GeoTIFF (`image/tiff`, en pièce jointe).
 
 ### `GET /wfs/`
 
-Flux OGC WFS (django-gisserver) pour QGIS et autres clients SIG.
+Flux OGC WFS (`django-gisserver`) pour QGIS et autres clients SIG.
 
 | Couche                                  | Champs                                                                                        |
 | --------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -454,23 +444,3 @@ Date de génération des données : `{"generationDate": "2026-10"}`. Cache : 24 
 Vérifie la connexion à la base. Réponse `"OK"`.
 
 ---
-
-## Pistes pour un serveur MCP
-
-Les routes ci-dessous se prêtent directement à des outils MCP en lecture seule. Les tuiles, flux SIG, exports PDF et routes d'écriture (`feedback`, `short-links`) sont à exclure ou à réserver à des usages précis.
-
-| Outil MCP envisagé              | Route(s)                                                                                                           | Entrées                                                |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| Trouver une commune ou un IRIS  | `GET /cities/`, `GET /iris/`                                                                                       | nom (filtrage côté MCP), code INSEE ou point `lng,lat` |
-| Indicateurs d'un territoire     | `GET /dashboard/`                                                                                                  | `city_code` ou `iris_code`                             |
-| Indicateurs d'une zone dessinée | `POST /dashboard/in-polygon/`                                                                                      | polygone GeoJSON (≤ 5 km², ≤ 100 sommets)              |
-| Scores dans une zone            | `POST /tiles/{datatype}/in-polygon/`                                                                               | `datatype`, polygone                                   |
-| Diagnostic en un point          | `GET /cities/?geometry__intersects=`, `GET /tiles/vegetation-height/value/`, `GET /biosphere/land-cover-at-point/` | `lat`, `lng`                                           |
-| Bâtiments publics proches       | `GET /public-buildings/`                                                                                           | filtrage par catégorie et distance côté MCP            |
-| Fraîcheur des données           | `GET /metadata/`                                                                                                   | -                                                      |
-
-Points d'attention pour l'implémentation :
-
-- aucune route ne recherche une commune par nom : le serveur MCP doit charger `/cities/` (67 communes et arrondissements) et filtrer lui-même ;
-- `public-buildings/` et `qpv/` renvoient toute la couche (plusieurs Mo) : à mettre en cache côté MCP plutôt qu'à appeler à chaque outil ;
-- aucune route ne renvoie la plantabilité en un point : il faut passer par un petit polygone autour du point avec `in-polygon`.
