@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "composite": true,
-    "lib": [],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.vitest.tsbuildinfo",
     "types": [
       "node",
