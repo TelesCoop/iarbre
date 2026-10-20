@@ -11,7 +11,7 @@ from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 from unidecode import unidecode
 
-from iarbre_data.models import City, Iris
+from iarbre_data.models import City, Iris, Tile
 from iarbre_data.utils.database import remove_duplicates
 from iarbre_data.settings import SRID_DB
 
@@ -20,6 +20,35 @@ mapping_iris = {"geometry": "POLYGON", "name": "iris_name", "code": "iris_code"}
 
 IRIS_WFS_URL = "https://data.geopf.fr/wfs/ows"
 IRIS_TYPENAME = "STATISTICALUNITS.IRIS:contours_iris"
+
+
+def iris_from_feature(feature: dict) -> tuple[str, str, GEOSGeometry]:
+    properties = feature["properties"]
+    geom = GEOSGeometry(json.dumps(feature["geometry"]))
+    geom.srid = SRID_DB
+    if geom.geom_type == "MultiPolygon":
+        if geom.num_geom > 1:
+            print(
+                f"IRIS {properties['code_iris']} has {geom.num_geom} parts, "
+                "keeping the largest one."
+            )
+        geom = max(geom, key=lambda polygon: polygon.area)
+    return properties["code_iris"], properties["nom_iris"], geom
+
+
+def remove_stale_iris(city: City, codes: list[str]) -> None:
+    if not codes:
+        print(f"No IRIS returned for city {city.name}, keeping existing ones.")
+        return
+    stale = Iris.objects.filter(city=city).exclude(code__in=codes)
+    if not stale.exists():
+        return
+    detached = Tile.objects.filter(iris__in=stale).update(iris=None)
+    print(
+        f"Removing {stale.count()} IRIS no longer in IGN for city {city.name}, "
+        f"{detached} tiles detached."
+    )
+    stale.delete()
 
 
 class Command(BaseCommand):
@@ -44,22 +73,16 @@ class Command(BaseCommand):
             }
             response = requests.get(IRIS_WFS_URL, params=params, timeout=60)
             response.raise_for_status()
+            codes = []
             for feature in tqdm(response.json()["features"]):
-                properties = feature["properties"]
-                geom = GEOSGeometry(json.dumps(feature["geometry"]))
-                geom.srid = SRID_DB
-                if geom.geom_type == "MultiPolygon":
-                    if geom.num_geom > 1:
-                        print(
-                            f"IRIS {properties['code_iris']} has {geom.num_geom} parts, "
-                            "keeping the largest one."
-                        )
-                    geom = max(geom, key=lambda polygon: polygon.area)
+                code, name, geom = iris_from_feature(feature)
+                codes.append(code)
                 Iris.objects.update_or_create(
                     city_id=city.id,
-                    code=properties["code_iris"],
-                    defaults={"geometry": geom, "name": properties["nom_iris"]},
+                    code=code,
+                    defaults={"geometry": geom, "name": name},
                 )
+            remove_stale_iris(city, codes)
 
     @staticmethod
     def _insert_cities(data: str) -> None:
