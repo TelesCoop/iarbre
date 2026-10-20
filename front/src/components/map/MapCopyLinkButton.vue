@@ -1,25 +1,11 @@
 <script lang="ts" setup>
-import { ref } from "vue"
-import { useApiPost } from "@/api"
 import IconCheck from "@/components/icons/IconCheck.vue"
 import IconCopy from "@/components/icons/IconCopy.vue"
+import { fetchShortLink, useCopyLink } from "@/composables/useShortLink"
 
-const isCopied = ref(false)
+const { isCopied, copyLink } = useCopyLink()
 
-const handleCopyLink = async () => {
-  const shortUrl = useApiPost<{ code: string }>("short-links/", {
-    path: window.location.pathname + window.location.search
-  }).then(({ data }) => (data ? `${window.location.origin}/s/${data.code}` : window.location.href))
-  await navigator.clipboard.write([
-    new ClipboardItem({
-      "text/plain": shortUrl.then((url) => new Blob([url], { type: "text/plain" }))
-    })
-  ])
-  isCopied.value = true
-  setTimeout(() => {
-    isCopied.value = false
-  }, 2000)
-}
+const handleCopyLink = () => copyLink(fetchShortLink())
 </script>
 
 <template>
