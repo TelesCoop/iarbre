@@ -7,11 +7,14 @@ describe("MapLayerToggles", () => {
     cy.mount(MapLayerToggles)
   })
 
-  it("should render the four layer toggle buttons", () => {
+  it("should render the five layer toggle buttons", () => {
     cy.get('[data-cy="qpv-toggle"]').should("be.visible").and("contain.text", "QPV")
     cy.get('[data-cy="cadastre-toggle"]').should("be.visible").and("contain.text", "Cadastre")
     cy.get('[data-cy="boundary-toggle"]').should("be.visible").and("contain.text", "Communes")
     cy.get('[data-cy="panoramax-toggle"]').should("be.visible").and("contain.text", "Panoramax")
+    cy.get('[data-cy="public-buildings-toggle"]')
+      .should("be.visible")
+      .and("contain.text", "Bâtiments publics")
   })
 
   it("should start with all layer toggles inactive", () => {

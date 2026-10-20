@@ -1,8 +1,10 @@
 /**
- * Style constants for overlay map layers (QPV, communes boundaries, cadastre).
+ * Style constants for overlay map layers (QPV, communes boundaries, cadastre, public buildings).
  * These constants centralise colors and widths so that visual changes
  * only need to be made in one place.
  */
+
+import { PublicBuildingCategory } from "@/utils/enum"
 
 function getCssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -44,6 +46,25 @@ export const CADASTRE_SELECTED_BORDER_WIDTH = 3
 export const CADASTRE_SELECTED_BORDER_OPACITY = 1
 export const CADASTRE_SELECTED_FILL_OPACITY = 0.3
 export const CADASTRE_DEFAULT_FILL_OPACITY = 0.05
+
+// ---------------------------------------------------------------------------
+// Public buildings
+// ---------------------------------------------------------------------------
+
+export const PUBLIC_BUILDING_COLORS: Record<PublicBuildingCategory, string> = {
+  [PublicBuildingCategory.ENSEIGNEMENT]: "#7048E8",
+  [PublicBuildingCategory.PETITE_ENFANCE]: "#1C7ED6",
+  [PublicBuildingCategory.SANTE]: "#E03131",
+  [PublicBuildingCategory.ADMINISTRATIF]: "#495057",
+  [PublicBuildingCategory.CULTURE]: "#C2255C"
+}
+export const PUBLIC_BUILDING_FILL_OPACITY = 0.25
+export const PUBLIC_BUILDING_BORDER_WIDTH = 1.5
+export const PUBLIC_BUILDING_SELECTED_BORDER_WIDTH = 3.5
+export const PUBLIC_BUILDING_CIRCLE_RADIUS = 5
+export const PUBLIC_BUILDING_SELECTED_CIRCLE_RADIUS = 8
+export const PUBLIC_BUILDING_CIRCLE_STROKE_COLOR = "#FFFFFF"
+export const PUBLIC_BUILDING_CIRCLE_STROKE_WIDTH = 1.5
 
 // ---------------------------------------------------------------------------
 // Panoramax

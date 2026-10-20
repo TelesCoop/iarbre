@@ -24,7 +24,24 @@ export enum OverlayLayer {
   QPV = "qpv",
   CADASTRE = "cadastre",
   BOUNDARY = "boundary",
-  PANORAMAX = "panoramax"
+  PANORAMAX = "panoramax",
+  PUBLIC_BUILDINGS = "public_buildings"
+}
+
+export enum PublicBuildingCategory {
+  ENSEIGNEMENT = "enseignement",
+  PETITE_ENFANCE = "petite_enfance",
+  SANTE = "sante",
+  ADMINISTRATIF = "administratif",
+  CULTURE = "culture"
+}
+
+export const PublicBuildingCategoryToLabel: Record<PublicBuildingCategory, string> = {
+  [PublicBuildingCategory.ENSEIGNEMENT]: "Enseignement",
+  [PublicBuildingCategory.PETITE_ENFANCE]: "Petite enfance",
+  [PublicBuildingCategory.SANTE]: "Santé",
+  [PublicBuildingCategory.ADMINISTRATIF]: "Administratif",
+  [PublicBuildingCategory.CULTURE]: "Culture et loisirs"
 }
 
 export enum SelectionMode {

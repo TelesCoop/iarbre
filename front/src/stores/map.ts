@@ -9,6 +9,8 @@ import {
   type StyleSpecification,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification,
+  type ExpressionSpecification,
+  type FilterSpecification,
   type PointLike
 } from "maplibre-gl"
 import {
@@ -24,6 +26,7 @@ import {
   DataType,
   MapStyle,
   OverlayLayer,
+  PublicBuildingCategory,
   SelectionMode,
   DataTypeToGeolevel
 } from "@/utils/enum"
@@ -31,6 +34,10 @@ import mapStyles from "@/map/map-style.json"
 import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
+import {
+  getPublicBuildingsData,
+  type PublicBuildingProperties
+} from "@/services/publicBuildingService"
 import { getCityBoundaries } from "@/services/boundaryService"
 import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -94,7 +101,15 @@ import {
   PANORAMAX_PICTURE_STROKE_WIDTH,
   PANORAMAX_PICTURE_OPACITY,
   PANORAMAX_SELECTED_PICTURE_COLOR,
-  PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH
+  PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH,
+  PUBLIC_BUILDING_COLORS,
+  PUBLIC_BUILDING_FILL_OPACITY,
+  PUBLIC_BUILDING_BORDER_WIDTH,
+  PUBLIC_BUILDING_SELECTED_BORDER_WIDTH,
+  PUBLIC_BUILDING_CIRCLE_RADIUS,
+  PUBLIC_BUILDING_SELECTED_CIRCLE_RADIUS,
+  PUBLIC_BUILDING_CIRCLE_STROKE_COLOR,
+  PUBLIC_BUILDING_CIRCLE_STROKE_WIDTH
 } from "@/utils/mapLayers"
 import { getPicture, type PanoramaxPicture } from "maplibre-gl-panoramax"
 import {
@@ -145,6 +160,11 @@ export const useMapStore = defineStore("map", () => {
   } | null>(null)
   const showPanoramaxLayer = ref<boolean>(false)
   const selectedPanoramaxPicture = ref<PanoramaxPicture | null>(null)
+  const showPublicBuildingsLayer = ref<boolean>(false)
+  const selectedPublicBuildingCategories = ref<PublicBuildingCategory[]>(
+    Object.values(PublicBuildingCategory)
+  )
+  const selectedPublicBuilding = ref<PublicBuildingProperties | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const shapeEditing = ref<boolean>(false)
   const liveArea = ref<number | null>(null)
@@ -585,6 +605,13 @@ export const useMapStore = defineStore("map", () => {
     map.getLayer(PANORAMAX_PICTURES_LAYER) !== undefined &&
     map.queryRenderedFeatures(point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
 
+  const hasPublicBuildingAt = (map: Map, point: PointLike) => {
+    const layers = [PUBLIC_BUILDINGS_FILL_LAYER, PUBLIC_BUILDINGS_POINT_LAYER].filter((layerId) =>
+      map.getLayer(layerId)
+    )
+    return layers.length > 0 && map.queryRenderedFeatures(point, { layers }).length > 0
+  }
+
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     if (heightMapClickHandler.value) {
       map.off("click", heightMapClickHandler.value)
@@ -623,7 +650,7 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
-      if (hasStreetViewPictureAt(map, e.point)) {
+      if (hasStreetViewPictureAt(map, e.point) || hasPublicBuildingAt(map, e.point)) {
         return
       }
       applyTileSelection(map, datatype, geolevel, e.features!, {
@@ -1185,6 +1212,191 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const PUBLIC_BUILDINGS_SOURCE = "public-buildings-source"
+  const PUBLIC_BUILDINGS_FILL_LAYER = "public-buildings-fill"
+  const PUBLIC_BUILDINGS_BORDER_LAYER = "public-buildings-border"
+  const PUBLIC_BUILDINGS_POINT_LAYER = "public-buildings-point"
+
+  const publicBuildingColor = [
+    "match",
+    ["get", "category"],
+    ...Object.entries(PUBLIC_BUILDING_COLORS).flat(),
+    PUBLIC_BUILDING_COLORS[PublicBuildingCategory.ADMINISTRATIF]
+  ] as unknown as ExpressionSpecification
+
+  const publicBuildingFilter = (geometryTypes: string[]): FilterSpecification => [
+    "all",
+    ["in", ["geometry-type"], ["literal", geometryTypes]],
+    ["in", ["get", "category"], ["literal", selectedPublicBuildingCategories.value]]
+  ]
+
+  const POLYGON_TYPES = ["Polygon", "MultiPolygon"]
+  const POINT_TYPES = ["Point"]
+
+  const highlightPublicBuilding = (mapInstance: Map, featureId: number | null) => {
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_BORDER_LAYER)) return
+    const isSelected: ExpressionSpecification = ["==", ["id"], featureId ?? -1]
+    mapInstance.setPaintProperty(PUBLIC_BUILDINGS_BORDER_LAYER, "line-width", [
+      "case",
+      isSelected,
+      PUBLIC_BUILDING_SELECTED_BORDER_WIDTH,
+      PUBLIC_BUILDING_BORDER_WIDTH
+    ])
+    mapInstance.setPaintProperty(PUBLIC_BUILDINGS_POINT_LAYER, "circle-radius", [
+      "case",
+      isSelected,
+      PUBLIC_BUILDING_SELECTED_CIRCLE_RADIUS,
+      PUBLIC_BUILDING_CIRCLE_RADIUS
+    ])
+  }
+
+  const addPublicBuildingsLayer = async (mapInstance: Map) => {
+    if (!mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
+      const data = await getPublicBuildingsData()
+      if (!data) return
+      if (!showPublicBuildingsLayer.value) return
+      if (!mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
+        mapInstance.addSource(PUBLIC_BUILDINGS_SOURCE, { type: "geojson", data })
+      }
+    }
+
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) {
+      const beforeId = getTerraDrawBeforeId(mapInstance)
+
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_FILL_LAYER,
+          type: "fill",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          filter: publicBuildingFilter(POLYGON_TYPES),
+          paint: {
+            "fill-color": publicBuildingColor,
+            "fill-opacity": PUBLIC_BUILDING_FILL_OPACITY
+          }
+        },
+        beforeId
+      )
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_BORDER_LAYER,
+          type: "line",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          filter: publicBuildingFilter(POLYGON_TYPES),
+          paint: {
+            "line-color": publicBuildingColor,
+            "line-width": PUBLIC_BUILDING_BORDER_WIDTH
+          }
+        },
+        beforeId
+      )
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_POINT_LAYER,
+          type: "circle",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          filter: publicBuildingFilter(POINT_TYPES),
+          paint: {
+            "circle-color": publicBuildingColor,
+            "circle-radius": PUBLIC_BUILDING_CIRCLE_RADIUS,
+            "circle-stroke-color": PUBLIC_BUILDING_CIRCLE_STROKE_COLOR,
+            "circle-stroke-width": PUBLIC_BUILDING_CIRCLE_STROKE_WIDTH
+          }
+        },
+        beforeId
+      )
+    }
+
+    const clickHandler = (e: any) => {
+      if (selectionMode.value !== SelectionMode.POINT) return
+      const feature = e.features?.[0]
+      if (!feature) return
+      selectedPublicBuilding.value = feature.properties as PublicBuildingProperties
+      for (const instance of Object.values(mapInstancesByIds.value)) {
+        highlightPublicBuilding(instance, feature.id as number)
+      }
+    }
+    const mouseEnterHandler = () => {
+      mapInstance.getCanvas().style.cursor = "pointer"
+    }
+    const mouseLeaveHandler = () => {
+      mapInstance.getCanvas().style.cursor = ""
+    }
+    for (const layerId of [PUBLIC_BUILDINGS_FILL_LAYER, PUBLIC_BUILDINGS_POINT_LAYER]) {
+      registerLayerInteractions(mapInstance, layerId, {
+        click: clickHandler,
+        mouseenter: mouseEnterHandler,
+        mouseleave: mouseLeaveHandler
+      })
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: public buildings data loaded")
+    })
+  }
+
+  const clearPublicBuildingSelection = () => {
+    if (!selectedPublicBuilding.value) return
+    selectedPublicBuilding.value = null
+    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+      highlightPublicBuilding(mapInstance, null)
+    }
+  }
+
+  const removePublicBuildingsLayer = (mapInstance: Map) => {
+    selectedPublicBuilding.value = null
+
+    for (const layerId of [
+      PUBLIC_BUILDINGS_POINT_LAYER,
+      PUBLIC_BUILDINGS_BORDER_LAYER,
+      PUBLIC_BUILDINGS_FILL_LAYER
+    ]) {
+      unregisterLayerInteractions(mapInstance, layerId)
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId)
+      }
+    }
+    if (mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
+      mapInstance.removeSource(PUBLIC_BUILDINGS_SOURCE)
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: public buildings data removed")
+    })
+  }
+
+  const togglePublicBuildingsLayer = async () => {
+    showPublicBuildingsLayer.value = !showPublicBuildingsLayer.value
+
+    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+      if (showPublicBuildingsLayer.value) {
+        await addPublicBuildingsLayer(mapInstance)
+      } else {
+        removePublicBuildingsLayer(mapInstance)
+      }
+    }
+  }
+
+  const togglePublicBuildingCategory = (category: PublicBuildingCategory) => {
+    const categories = selectedPublicBuildingCategories.value
+    selectedPublicBuildingCategories.value = categories.includes(category)
+      ? categories.filter((c) => c !== category)
+      : [...categories, category]
+
+    if (
+      selectedPublicBuilding.value &&
+      !selectedPublicBuildingCategories.value.includes(selectedPublicBuilding.value.category)
+    ) {
+      clearPublicBuildingSelection()
+    }
+
+    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+      if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) continue
+      mapInstance.setFilter(PUBLIC_BUILDINGS_FILL_LAYER, publicBuildingFilter(POLYGON_TYPES))
+      mapInstance.setFilter(PUBLIC_BUILDINGS_BORDER_LAYER, publicBuildingFilter(POLYGON_TYPES))
+      mapInstance.setFilter(PUBLIC_BUILDINGS_POINT_LAYER, publicBuildingFilter(POINT_TYPES))
+    }
+  }
+
   let pendingPanoramaxPictureId: string | null = null
 
   const highlightPanoramaxPicture = (mapInstance: Map, pictureId: string | null) => {
@@ -1401,6 +1613,12 @@ export const useMapStore = defineStore("map", () => {
       layerId: PANORAMAX_PICTURES_LAYER,
       add: addPanoramaxLayer,
       remove: removePanoramaxLayer
+    },
+    [OverlayLayer.PUBLIC_BUILDINGS]: {
+      isVisible: showPublicBuildingsLayer,
+      layerId: PUBLIC_BUILDINGS_FILL_LAYER,
+      add: addPublicBuildingsLayer,
+      remove: removePublicBuildingsLayer
     }
   }
 
@@ -1438,6 +1656,7 @@ export const useMapStore = defineStore("map", () => {
     setFilteredValues(initialFilters)
     clearCadastreSelection()
     clearPanoramaxSelection()
+    clearPublicBuildingSelection()
     controlsAdded.value[mapId] = false
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
@@ -1744,6 +1963,12 @@ export const useMapStore = defineStore("map", () => {
     visibleOverlayLayers,
     selectedPanoramaxPicture,
     clearPanoramaxSelection,
+    showPublicBuildingsLayer,
+    togglePublicBuildingsLayer,
+    selectedPublicBuildingCategories,
+    togglePublicBuildingCategory,
+    selectedPublicBuilding,
+    clearPublicBuildingSelection,
     use3D,
     toggle3D,
     zoomTo,
