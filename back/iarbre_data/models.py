@@ -166,15 +166,14 @@ class Data(models.Model):
 
 
 class PublicBuilding(models.Model):
-    """Public building site from IGN BD TOPO activity zones."""
+    """Public building site from IGN BD TOPO activity zones and Grand Lyon crèches."""
 
     class Category(models.TextChoices):
         ENSEIGNEMENT = "enseignement", "Enseignement"
         SANTE = "sante", "Santé"
-        SPORT = "sport", "Sport"
         ADMINISTRATIF = "administratif", "Administratif"
         CULTURE = "culture", "Culture et loisirs"
-        CULTE = "culte", "Culte"
+        PETITE_ENFANCE = "petite_enfance", "Petite enfance"
 
     geometry = GeometryField(srid=SRID_DB)
     cleabs = models.CharField(max_length=30, unique=True)
@@ -187,6 +186,7 @@ class PublicBuilding(models.Model):
     insee_commune = models.CharField(max_length=5, null=True, blank=True)
     student_count = models.IntegerField(null=True, blank=True)
     education_priority = models.CharField(max_length=20, null=True, blank=True)
+    capacity = models.IntegerField(null=True, blank=True)
 
 
 class TileFactor(models.Model):

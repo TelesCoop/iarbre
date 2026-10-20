@@ -18,6 +18,7 @@ PROPERTIES = (
     "fictif",
     "student_count",
     "education_priority",
+    "capacity",
 )
 
 

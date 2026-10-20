@@ -49,13 +49,93 @@ def load_education_directory() -> dict[str, dict]:
     return directory
 
 
+def load_public_creches(cities_geometry) -> gpd.GeoDataFrame:
+    """Load public crèches from Grand Lyon as point features shaped like BD TOPO ones."""
+    creches = download_from_url(
+        PUBLIC_BUILDINGS["grandlyon_url"], PUBLIC_BUILDINGS["grandlyon_creche_layer"]
+    ).to_crs(SRID_DB)
+    creches = creches[
+        creches["categorie"].isin(PUBLIC_BUILDINGS["creche_public_managers"])
+        & creches.geometry.within(cities_geometry)
+    ]
+    return gpd.GeoDataFrame(
+        {
+            "cleabs": "CRECHE" + creches["gid"].astype(str),
+            "categorie": "Petite enfance",
+            "nature": "Crèche",
+            "nature_detaillee": None,
+            "toponyme": creches["nom"],
+            "fictif": True,
+            "uai": None,
+            "insee_commune": creches["insee"].astype(str),
+            "capacity": creches["capacite"],
+        },
+        geometry=creches.geometry,
+        crs=SRID_DB,
+    )
+
+
+def is_kept_nature(categorie: str, nature: str, nature_detaillee) -> bool:
+    if nature_detaillee in PUBLIC_BUILDINGS["dropped_nature_details"]:
+        return False
+    kept_natures = PUBLIC_BUILDINGS["kept_natures"].get(categorie)
+    if kept_natures is None:
+        return True
+    if nature not in kept_natures:
+        return False
+    kept_details = kept_natures[nature]
+    return kept_details is None or nature_detaillee in kept_details
+
+
 def filter_public_buildings(gdf: gpd.GeoDataFrame, cities_geometry) -> gpd.GeoDataFrame:
     gdf = gdf.drop_duplicates(subset="cleabs")
     gdf = gdf[gdf["categorie"].isin(PUBLIC_BUILDINGS["categories"].keys())]
-    gdf = gdf[~gdf["nature"].isin(PUBLIC_BUILDINGS["excluded_natures"])]
+    gdf = gdf[
+        [
+            is_kept_nature(row.categorie, row.nature, row.nature_detaillee)
+            for row in gdf.itertuples()
+        ]
+    ]
     gdf = gdf[gdf["etat_de_l_objet"] == PUBLIC_BUILDINGS["state_in_service"]]
     gdf = gdf[gdf.geometry.notna() & gdf.geometry.is_valid]
     return gdf[gdf.geometry.representative_point().within(cities_geometry)]
+
+
+def exclude_private_schools(
+    gdf: gpd.GeoDataFrame, directory: dict[str, dict]
+) -> gpd.GeoDataFrame:
+    gdf = gdf.assign(uai=gdf["identifiants_sources"].map(extract_uai))
+    is_private = gdf["uai"].map(
+        lambda uai: directory.get(uai, {}).get("status") == "Privé"
+    )
+    return gdf[~is_private]
+
+
+def drop_points_within_footprints(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Drop fictive footprints, shown as points, that fall inside a real footprint."""
+    gdf = gdf.assign(fictif=gdf["fictif"].map(to_bool))
+    points = gdf[gdf["fictif"]].set_geometry(gdf[gdf["fictif"]].geometry.centroid)
+    footprints = gdf[~gdf["fictif"]]
+    inside = gpd.sjoin(
+        points[["geometry"]], footprints[["geometry"]], predicate="within"
+    ).index
+    return gdf.drop(index=inside.unique())
+
+
+def drop_nested_footprints(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Drop real footprints lying inside a larger footprint, keeping one of identical ones."""
+    footprints = gdf[~gdf["fictif"]][["geometry"]]
+    pairs = gpd.sjoin(footprints, footprints, predicate="intersects")
+    pairs = pairs[pairs.index != pairs["index_right"]]
+    outer = footprints.geometry.loc[pairs["index_right"]].set_axis(pairs.index)
+    inner_area = pairs.geometry.area
+    outer_area = outer.area
+    covered = pairs.geometry.intersection(outer, align=False).area / inner_area
+    is_nested = (covered >= PUBLIC_BUILDINGS["nested_footprint_ratio"]) & (
+        (inner_area < outer_area)
+        | ((inner_area == outer_area) & (pairs.index > pairs["index_right"]))
+    )
+    return gdf.drop(index=pairs.index[is_nested].unique())
 
 
 def build_public_buildings(
@@ -63,11 +143,9 @@ def build_public_buildings(
 ) -> list[PublicBuilding]:
     buildings = []
     for row in gdf.itertuples():
-        uai = extract_uai(row.identifiants_sources)
+        uai = row.uai
         school = directory.get(uai, {}) if uai else {}
-        if school.get("status") == "Privé":
-            continue
-        fictif = to_bool(row.fictif)
+        fictif = row.fictif
         geometry = row.geometry.centroid if fictif else row.geometry
         buildings.append(
             PublicBuilding(
@@ -86,13 +164,18 @@ def build_public_buildings(
                 ),
                 student_count=school.get("student_count"),
                 education_priority=school.get("education_priority"),
+                capacity=(
+                    int(row.capacity)
+                    if pd.notna(getattr(row, "capacity", None))
+                    else None
+                ),
             )
         )
     return buildings
 
 
 class Command(BaseCommand):
-    help = "Import public buildings from IGN BD TOPO, excluding private schools"
+    help = "Import public buildings from IGN BD TOPO and public crèches from Grand Lyon"
 
     def handle(self, *args, **options):
         gdf = download_dbtopo(
@@ -102,8 +185,13 @@ class Command(BaseCommand):
             columns=PUBLIC_BUILDINGS["bdtopo_columns"],
         ).to_crs(SRID_DB)
         cities_geometry = select_city(None).to_crs(SRID_DB).union_all()
+        directory = load_education_directory()
         gdf = filter_public_buildings(gdf, cities_geometry)
-        buildings = build_public_buildings(gdf, load_education_directory())
+        gdf = exclude_private_schools(gdf, directory)
+        gdf = pd.concat([gdf, load_public_creches(cities_geometry)], ignore_index=True)
+        gdf = drop_points_within_footprints(gdf)
+        gdf = drop_nested_footprints(gdf)
+        buildings = build_public_buildings(gdf, directory)
 
         with transaction.atomic():
             PublicBuilding.objects.all().delete()
