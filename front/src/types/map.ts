@@ -1,4 +1,9 @@
-import { type DataType, type MapStyle, type OverlayLayer } from "@/utils/enum"
+import {
+  type DataType,
+  type MapStyle,
+  type OverlayLayer,
+  type PublicBuildingCategory
+} from "@/utils/enum"
 
 export interface MapParams {
   lng: number
@@ -12,6 +17,8 @@ export interface MapDisplayState {
   filters: (number | string)[]
   mapStyle: MapStyle
   overlayLayers: OverlayLayer[]
+  /** Public building categories shown, all of them when undefined. */
+  publicBuildingCategories?: PublicBuildingCategory[]
 }
 
 export interface Feedback {

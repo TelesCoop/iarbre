@@ -1647,12 +1647,19 @@ export const useMapStore = defineStore("map", () => {
     initialDatatype: DataType,
     initialDisplayState: MapDisplayState
   ) => {
-    const { filters: initialFilters, mapStyle, overlayLayers } = initialDisplayState
+    const {
+      filters: initialFilters,
+      mapStyle,
+      overlayLayers,
+      publicBuildingCategories
+    } = initialDisplayState
     selectedDataType.value = initialDatatype
     selectedMapStyle.value = mapStyle
     Object.values(OverlayLayer).forEach((layer) => {
       overlayLayerHandlers[layer].isVisible.value = overlayLayers.includes(layer)
     })
+    selectedPublicBuildingCategories.value =
+      publicBuildingCategories ?? Object.values(PublicBuildingCategory)
     setFilteredValues(initialFilters)
     clearCadastreSelection()
     clearPanoramaxSelection()
