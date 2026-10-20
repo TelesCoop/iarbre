@@ -33,6 +33,11 @@ jobs:
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ./front/.nvmrc
+
       - name: Cache Node.js dependencies
         uses: actions/cache@v6
         with:
@@ -123,6 +128,7 @@ jobs:
           fi
 
       - name: Create coverage badge
+        if: github.event_name == 'push'
         uses: schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
@@ -249,7 +255,7 @@ jobs:
             frontend-coverage-${{ github.event.pull_request.base.ref }}-
 
       - name: Report NYC coverage
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: sidx1024/report-nyc-coverage-github-action@v1.2.7
         with:
           coverage_file: "front/coverage/coverage-summary.json"
@@ -260,6 +266,7 @@ jobs:
           comment_mode: "replace"
 
       - name: Create frontend coverage badge
+        if: github.event_name == 'push'
         uses: schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
