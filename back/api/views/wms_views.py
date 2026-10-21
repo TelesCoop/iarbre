@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
 _CAPABILITIES_CACHE_TTL = 60 * 60
+_MAX_SIZE = 4096
 _WMS_RASTER_DIR = "rasters/WMS"
 
 
@@ -99,6 +100,9 @@ class IArbreWMSView(APIView):
         SubElement(
             service, "Abstract"
         ).text = "Service WMS pour les données de végéstrate de la Métropole de Lyon."
+        if is_130:
+            SubElement(service, "MaxWidth").text = str(_MAX_SIZE)
+            SubElement(service, "MaxHeight").text = str(_MAX_SIZE)
 
         capability = SubElement(root, "Capability")
         req_elem = SubElement(capability, "Request")
@@ -204,12 +208,9 @@ class IArbreWMSView(APIView):
             return HttpResponse("Invalid BBOX", status=400, content_type="text/plain")
 
         try:
-            width = int(params.get("WIDTH", 256))
-            height = int(params.get("HEIGHT", 256))
-        except ValueError:
-            return HttpResponse(
-                "Invalid WIDTH or HEIGHT", status=400, content_type="text/plain"
-            )
+            width, height = self._parse_size(params)
+        except ValueError as exc:
+            return HttpResponse(str(exc), status=400, content_type="text/plain")
 
         if version == "1.3.0" and crs == "EPSG:4326":
             min_lat, min_lon, max_lat, max_lon = bbox_vals
@@ -239,6 +240,17 @@ class IArbreWMSView(APIView):
             return HttpResponse(
                 "Rendering error", status=500, content_type="text/plain"
             )
+
+    @staticmethod
+    def _parse_size(params) -> tuple[int, int]:
+        try:
+            width = int(params.get("WIDTH", 256))
+            height = int(params.get("HEIGHT", 256))
+        except ValueError:
+            raise ValueError("Invalid WIDTH or HEIGHT") from None
+        if not (0 < width <= _MAX_SIZE and 0 < height <= _MAX_SIZE):
+            raise ValueError(f"WIDTH and HEIGHT must be between 1 and {_MAX_SIZE}")
+        return width, height
 
     def _render_layer(self, raster_path, crs, west, south, east, north, width, height):
         with rasterio.open(raster_path) as src:

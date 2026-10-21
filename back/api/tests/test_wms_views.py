@@ -94,6 +94,14 @@ class WMSCapabilitiesTest(_WMSFixtureMixin, TestCase):
         )
         self.assertIn(_LAYER_NAME.encode(), response.content)
 
+    def test_get_capabilities_130_advertises_max_size(self):
+        response = self.client.get(
+            WMS_URL,
+            {"SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetCapabilities"},
+        )
+        self.assertIn(b"<MaxWidth>4096</MaxWidth>", response.content)
+        self.assertIn(b"<MaxHeight>4096</MaxHeight>", response.content)
+
     def test_unsupported_request_returns_400(self):
         response = self.client.get(
             WMS_URL,
@@ -170,6 +178,26 @@ class WMSGetMapTest(_WMSFixtureMixin, TestCase):
         params = {**self.valid_params, "HEIGHT": "abc"}
         response = self.client.get(WMS_URL, params)
         self.assertEqual(response.status_code, 400)
+
+    def test_width_above_max_returns_400(self):
+        params = {**self.valid_params, "WIDTH": "4097"}
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 400)
+
+    def test_height_above_max_returns_400(self):
+        params = {**self.valid_params, "HEIGHT": "4097"}
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 400)
+
+    def test_non_positive_size_returns_400(self):
+        params = {**self.valid_params, "WIDTH": "0"}
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 400)
+
+    def test_max_size_is_accepted(self):
+        params = {**self.valid_params, "WIDTH": "4096", "HEIGHT": "4096"}
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 200)
 
     def test_unsupported_format_returns_400(self):
         params = {**self.valid_params, "FORMAT": "image/tiff"}

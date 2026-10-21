@@ -16,6 +16,16 @@ upstream app_frontend_{{ project_slug }} {
 }
 {% endif %}
 
+{% set cors_origin_var = "$cors_origin_" ~ (project_slug | replace('-', '_')) %}
+{% if cors_allowed_origins %}
+map $http_origin {{ cors_origin_var }} {
+    default "";
+    {% for origin in cors_allowed_origins -%}
+    "{{ origin }}" $http_origin;
+    {% endfor %}
+}
+{% endif %}
+
 server {
 
     listen 443 ssl;
@@ -154,6 +164,10 @@ server {
         proxy_cache_lock   on;
         proxy_cache_methods GET HEAD;
         add_header         X-Cache-Status $upstream_cache_status;
+        {% if cors_allowed_origins -%}
+        add_header         Access-Control-Allow-Origin {{ cors_origin_var }} always;
+        add_header         Vary Origin always;
+        {% endif %}
     }
 
     {% for uri in server_uris_passed_to_backend -%}
