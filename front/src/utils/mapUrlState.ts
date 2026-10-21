@@ -1,7 +1,13 @@
 import type { LocationQuery, LocationQueryRaw } from "vue-router"
 import type { MapDisplayState } from "@/types/map"
 import { DEFAULT_MAP_STYLE } from "@/utils/constants"
-import { DataType, MapStyle, OverlayLayer } from "@/utils/enum"
+import {
+  DataType,
+  MapStyle,
+  OverlayLayer,
+  PublicBuildingCategory,
+  ALL_PUBLIC_BUILDING_CATEGORIES
+} from "@/utils/enum"
 import { MAP_STYLE_OPTIONS } from "@/utils/mapStyleOptions"
 import { BIOSPHERE_CLASSES, BIOSPHERE_DETAIL_CLASSES } from "@/utils/biosphere_functional_integrity"
 
@@ -44,13 +50,22 @@ const isSelectableMapStyle = (value: string): value is MapStyle =>
 const isOverlayLayer = (value: string): value is OverlayLayer =>
   Object.values<string>(OverlayLayer).includes(value)
 
+const parsePublicBuildingCategories = (
+  rawValue: LocationQuery[string] | undefined
+): PublicBuildingCategory[] | undefined => {
+  if (rawValue === undefined) return undefined
+  const values = readQueryValues(rawValue)
+  return ALL_PUBLIC_BUILDING_CATEGORIES.filter((category) => values.includes(category))
+}
+
 export const parseMapDisplayState = (
   query: LocationQuery,
   dataType: DataType | null
 ): MapDisplayState => ({
   filters: parseFilters(readQueryValues(query.filters), dataType),
   mapStyle: readQueryValues(query.basemap).find(isSelectableMapStyle) ?? DEFAULT_MAP_STYLE,
-  overlayLayers: readQueryValues(query.layers).filter(isOverlayLayer)
+  overlayLayers: readQueryValues(query.layers).filter(isOverlayLayer),
+  publicBuildingCategories: parsePublicBuildingCategories(query.buildings)
 })
 
 export const buildMapDisplayQuery = (state: MapDisplayState): LocationQueryRaw => {
@@ -64,6 +79,16 @@ export const buildMapDisplayQuery = (state: MapDisplayState): LocationQueryRaw =
   }
   if (state.overlayLayers.length > 0) {
     query.layers = state.overlayLayers.join(LIST_SEPARATOR)
+  }
+  const categories = state.publicBuildingCategories
+  if (
+    categories &&
+    categories.length < ALL_PUBLIC_BUILDING_CATEGORIES.length &&
+    state.overlayLayers.includes(OverlayLayer.PUBLIC_BUILDINGS)
+  ) {
+    query.buildings = ALL_PUBLIC_BUILDING_CATEGORIES.filter((category) =>
+      categories.includes(category)
+    ).join(LIST_SEPARATOR)
   }
 
   return query

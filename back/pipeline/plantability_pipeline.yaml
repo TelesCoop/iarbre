@@ -70,6 +70,10 @@ nodes:
       Input:  media/rasters/<factor_name>.tif + Tile rows
       Output: Tile.details and Tile.meta_factors updated in the database
     command: raster_to_land_use
+    args:
+      batch-size: 10000
+      number_of_workers: 12
+      number_of_threads_by_worker: 2
     depends_on:
       - data_to_raster
 

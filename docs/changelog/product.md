@@ -1,6 +1,20 @@
 # Journal des changements
 
-## 🔖 0.41.0 (2026-10-14) : Mombreuses corrections et petites améliorations
+## 🔖 0.42.0 (2026-10-21) : Etablissements publics et export PNG
+
+### ✨ feat : Affichage des établissements publics
+
+- Il est maintenant possible d'afficher les établissements publics avec quelques donnéées de base en sur-impression des cartes
+
+&rarr; PR [#835](https://github.com/TelesCoop/iarbre/pull/835)
+
+### ✨ feat : Export de la carte en PNG
+
+- Il y a maintenant un bouton permettant de récupérer une capture PNG de la carte que l'on a sous les yeux, avec les filtrages et traçage.
+
+&rarr; PR [#829](https://github.com/TelesCoop/iarbre/pull/829)
+
+## 🔖 0.41.0 (2026-10-14) : Nombreuses corrections et petites améliorations
 
 ### 🐛 fix: Carte et tableau de bord
 

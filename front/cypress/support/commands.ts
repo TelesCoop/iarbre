@@ -52,6 +52,9 @@ Cypress.Commands.add(
     cy.viewport(viewport.width, viewport.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
+    cy.intercept("GET", "**/api/public-buildings/", { fixture: "public_buildings.json" }).as(
+      "publicBuildingsData"
+    )
     cy.visit(path)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
@@ -77,6 +80,13 @@ Cypress.Commands.add("mapCheckCadastreLayer", (shouldExist: boolean) => {
   const expectedMessage = shouldExist
     ? "cypress: cadastre data loaded"
     : "cypress: cadastre data removed"
+  cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
+})
+
+Cypress.Commands.add("mapCheckPublicBuildingsLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist
+    ? "cypress: public buildings data loaded"
+    : "cypress: public buildings data removed"
   cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
 })
 

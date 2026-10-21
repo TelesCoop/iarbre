@@ -3,7 +3,13 @@ import { setActivePinia, createPinia } from "pinia"
 import type { PanoramaxPicture } from "maplibre-gl-panoramax"
 import { useMapStore } from "@/stores/map"
 import { getQPVData } from "@/services/qpvService"
-import { DataType, MapStyle } from "@/utils/enum"
+import { getPublicBuildingsData } from "@/services/publicBuildingService"
+import {
+  DataType,
+  MapStyle,
+  PublicBuildingCategory,
+  ALL_PUBLIC_BUILDING_CATEGORIES
+} from "@/utils/enum"
 
 const createdMaps = vi.hoisted(() => [] as { sources: Set<string>; layers: Set<string> }[])
 
@@ -19,6 +25,9 @@ vi.mock("maplibre-gl", () => ({
     isStyleLoaded = () => false
     once = () => undefined
     on = () => undefined
+    off = () => undefined
+    setPaintProperty = () => undefined
+    setFilter = () => undefined
     getSource = (id: string) => (this.sources.has(id) ? {} : undefined)
     addSource = (id: string) => {
       if (this.sources.has(id)) throw new Error(`Source "${id}" already exists.`)
@@ -32,6 +41,7 @@ vi.mock("maplibre-gl", () => ({
   NavigationControl: class {}
 }))
 vi.mock("@/services/qpvService", () => ({ getQPVData: vi.fn() }))
+vi.mock("@/services/publicBuildingService", () => ({ getPublicBuildingsData: vi.fn() }))
 
 const DEFAULT_DISPLAY = { filters: [], mapStyle: MapStyle.OSM, overlayLayers: [] }
 
@@ -47,6 +57,16 @@ describe("map store display state", () => {
     store.toggleCadastreLayer()
     store.selectedCadastreParcel = { parcelId: "1", section: "AB", numero: "12", surface: null }
     store.selectedPanoramaxPicture = { id: "picture" } as PanoramaxPicture
+    store.selectedPublicBuilding = {
+      id: 1,
+      name: "École Jean Jaurès",
+      category: PublicBuildingCategory.ENSEIGNEMENT,
+      nature: "Enseignement primaire",
+      natureDetaillee: "Ecole élémentaire",
+      studentCount: 250,
+      educationPriority: "REP+",
+      capacity: null
+    }
 
     store.initMap("default", DataType.PLANTABILITY, DEFAULT_DISPLAY)
 
@@ -54,6 +74,20 @@ describe("map store display state", () => {
     expect(store.visibleOverlayLayers).toEqual([])
     expect(store.selectedCadastreParcel).toBeNull()
     expect(store.selectedPanoramaxPicture).toBeNull()
+    expect(store.selectedPublicBuilding).toBeNull()
+  })
+
+  it("initMap restores the public building categories, all of them by default", () => {
+    const store = useMapStore()
+
+    store.initMap("default", DataType.PLANTABILITY, {
+      ...DEFAULT_DISPLAY,
+      publicBuildingCategories: [PublicBuildingCategory.SANTE]
+    })
+    expect(store.selectedPublicBuildingCategories).toEqual([PublicBuildingCategory.SANTE])
+
+    store.initMap("default", DataType.PLANTABILITY, DEFAULT_DISPLAY)
+    expect(store.selectedPublicBuildingCategories).toEqual(ALL_PUBLIC_BUILDING_CATEGORIES)
   })
 
   describe("QPV layer loading", () => {
@@ -91,5 +125,18 @@ describe("map store display state", () => {
 
       expect(createdMaps[0].layers.has("qpv-border")).toBe(true)
     })
+  })
+
+  it("fetches the public buildings once when the layer is shown again", async () => {
+    vi.mocked(getPublicBuildingsData).mockResolvedValue({ type: "FeatureCollection", features: [] })
+    const store = useMapStore()
+    store.initMap("default", DataType.PLANTABILITY, DEFAULT_DISPLAY)
+
+    await store.togglePublicBuildingsLayer()
+    await store.togglePublicBuildingsLayer()
+    await store.togglePublicBuildingsLayer()
+
+    expect(getPublicBuildingsData).toHaveBeenCalledTimes(1)
+    expect(createdMaps[0].layers.has("public-buildings-fill")).toBe(true)
   })
 })

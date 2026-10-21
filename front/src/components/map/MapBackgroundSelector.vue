@@ -90,7 +90,7 @@ watch(currentStyle, () => {
 
         <div
           v-if="isSourceOpen"
-          class="bg-selector-source-popover"
+          class="map-popover bg-selector-source-popover"
           data-cy="bg-selector-source-popover"
           role="dialog"
         >
@@ -166,12 +166,7 @@ watch(currentStyle, () => {
 }
 
 .bg-selector-source-popover {
-  @apply absolute bg-white border border-gray-200 rounded-lg shadow-md;
   @apply font-sans text-xs text-gray-700;
-  bottom: calc(100% + 0.5rem);
-  left: 0;
-  z-index: var(--z-map-floating);
-  padding: 0.5rem 0.75rem;
   min-width: 14rem;
   max-width: 20rem;
 }

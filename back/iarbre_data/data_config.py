@@ -550,3 +550,55 @@ LCZ = {
     "F": "Sol nu perméable",
     "G": "Surface en eau",
 }
+
+PUBLIC_BUILDINGS = {
+    "bdtopo_url": "https://data.geopf.fr/wfs/ows",
+    "bdtopo_typename": "BDTOPO_V3:zone_d_activite_ou_d_interet",
+    "bdtopo_columns": [
+        "cleabs",
+        "categorie",
+        "nature",
+        "nature_detaillee",
+        "toponyme",
+        "fictif",
+        "etat_de_l_objet",
+        "identifiants_sources",
+        "insee_commune",
+    ],
+    "grandlyon_url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows",
+    "grandlyon_edu_layers": [
+        "metropole-de-lyon:edu_education.ecole",
+        "metropole-de-lyon:edu_education.college",
+        "metropole-de-lyon:edu_education.lycee",
+    ],
+    "grandlyon_creche_layer": "metropole-de-lyon:car_care.carcreche_latest",
+    "creche_public_managers": ["Collectivité Locale"],
+    "categories": {
+        "Science et enseignement": "enseignement",
+        "Santé": "sante",
+        "Administratif ou militaire": "administratif",
+        "Culture et loisirs": "culture",
+        "Petite enfance": "petite_enfance",
+    },
+    "dropped_nature_details": ["Crèche"],
+    "kept_natures": {
+        "Santé": {
+            "Hôpital": None,
+            "Etablissement hospitalier": None,
+            "Maison de retraite": None,
+            "Résidence autonomie": None,
+        },
+        "Administratif ou militaire": {"Mairie": None},
+        "Culture et loisirs": {
+            "Musée": None,
+            "Ecomusée": None,
+            "Centre de documentation": [
+                "Bibliothèque",
+                "Médiathèque",
+                "Archives départementales",
+            ],
+        },
+    },
+    "state_in_service": "En service",
+    "nested_footprint_ratio": 0.99,
+}

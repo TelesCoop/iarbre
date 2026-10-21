@@ -46,6 +46,7 @@ const mapStore = useMapStore()
       <IconPanoramax class="layer-chip__icon" :size="14" />
       Panoramax
     </button>
+    <MapPublicBuildingsToggle />
   </div>
 </template>
 

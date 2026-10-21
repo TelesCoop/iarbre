@@ -10,5 +10,6 @@ declare namespace Cypress {
     mapCheckQPVLayer(shouldExist: boolean): void
     mapCheckCadastreLayer(shouldExist: boolean): void
     mapCheckPanoramaxLayer(shouldExist: boolean): void
+    mapCheckPublicBuildingsLayer(shouldExist: boolean): void
   }
 }

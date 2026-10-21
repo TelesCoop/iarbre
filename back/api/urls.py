@@ -17,6 +17,7 @@ from .views import (
     TileView,
     HealthCheckView,
     QPVListView,
+    PublicBuildingListView,
     CityBoundaryView,
     MetadataView,
     RasterDownloadView,
@@ -67,6 +68,11 @@ urlpatterns = [
         name="retrieve-short-link",
     ),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path(
+        "public-buildings/",
+        PublicBuildingListView.as_view(),
+        name="public-buildings-list",
+    ),
     path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
         "rasters/<str:raster_type>/",

@@ -1,0 +1,79 @@
+/// <reference types="cypress" />
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
+
+describe("Share the current map view", () => {
+  beforeEach(() => {
+    cy.viewport(1024, 768)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("POST", "**/api/short-links/", { statusCode: 201, body: { code: "r4Vd9x" } }).as(
+      "shortLink"
+    )
+    cy.visit("/plantability/14/45.75773/4.85377")
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  })
+
+  it("previews, exports and shares the current view", () => {
+    cy.getBySel("share-view-button").click()
+    cy.getBySel("share-view-dialog").should("be.visible")
+
+    cy.wait("@shortLink")
+      .its("request.body")
+      .should("deep.equal", { path: "/plantability/14/45.75773/4.85377" })
+    cy.getBySel("share-view-short-link").should(
+      "have.text",
+      `${Cypress.config("baseUrl")}/s/r4Vd9x`
+    )
+
+    cy.getBySel("share-view-details")
+      .should("contain.text", "Score de plantabilité")
+      .and("contain.text", "45.75773° N, 4.85377° E · z14")
+
+    cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
+    cy.getBySel("share-view-export-button").should("not.be.disabled").click()
+    cy.getBySel("share-view-width-input")
+      .invoke("val")
+      .then((width) => {
+        cy.getBySel("share-view-height-input")
+          .invoke("val")
+          .then((height) => {
+            cy.readFile(
+              `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.png`,
+              "binary",
+              { timeout: 10000 }
+            ).then((png: string) => {
+              const readUint32 = (offset: number) =>
+                [0, 1, 2, 3].reduce((value, i) => value * 256 + png.charCodeAt(offset + i), 0)
+              expect([readUint32(16), readUint32(20)]).to.deep.equal([
+                Number(width),
+                Number(height)
+              ])
+            })
+
+            const expectedHeight = Math.round((400 * Number(height)) / Number(width))
+            cy.getBySel("share-view-width-input").clear()
+            cy.getBySel("share-view-width-input").type("400")
+            cy.getBySel("share-view-height-input").should("have.value", String(expectedHeight))
+            cy.getBySel("share-view-apply-size-button").should("not.be.disabled").click()
+            cy.getBySel("share-view-apply-size-button").should("be.disabled")
+            cy.getBySel("share-view-preview").find("img", { timeout: 40000 }).should("be.visible")
+
+            cy.getBySel("share-view-format-select").find(".select-trigger").click()
+            cy.getBySel("share-view-format-select").contains(".select-option", "JPEG").click()
+            cy.getBySel("share-view-export-button")
+              .should("contain.text", `JPEG 400 × ${expectedHeight}`)
+              .click()
+          })
+      })
+    cy.readFile(
+      `${Cypress.config("downloadsFolder")}/iarbre_plantability_45.75773_4.85377_z14.jpg`,
+      "binary",
+      { timeout: 10000 }
+    ).should("have.length.greaterThan", 0)
+
+    cy.get(".dialog-close").click()
+    cy.getBySel("share-view-dialog").should("not.exist")
+  })
+})

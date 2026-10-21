@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest"
 import { buildMapDisplayQuery, parseMapDisplayState } from "@/utils/mapUrlState"
-import { DataType, MapStyle, OverlayLayer } from "@/utils/enum"
+import {
+  DataType,
+  MapStyle,
+  OverlayLayer,
+  PublicBuildingCategory,
+  ALL_PUBLIC_BUILDING_CATEGORIES
+} from "@/utils/enum"
 
 describe("parseMapDisplayState", () => {
   it("returns the default display when the query is empty", () => {
@@ -73,6 +79,18 @@ describe("parseMapDisplayState", () => {
 
     expect(state.overlayLayers).toEqual([OverlayLayer.QPV, OverlayLayer.CADASTRE])
   })
+
+  it("reads the known categories in the enum order", () => {
+    const state = parseMapDisplayState(
+      { buildings: "sante,unknown,enseignement" },
+      DataType.PLANTABILITY
+    )
+
+    expect(state.publicBuildingCategories).toEqual([
+      PublicBuildingCategory.ENSEIGNEMENT,
+      PublicBuildingCategory.SANTE
+    ])
+  })
 })
 
 describe("buildMapDisplayQuery", () => {
@@ -121,6 +139,54 @@ describe("buildMapDisplayQuery", () => {
       overlayLayers: [OverlayLayer.QPV, OverlayLayer.CADASTRE]
     }
 
+    expect(parseMapDisplayState(buildMapDisplayQuery(state), DataType.PLANTABILITY)).toEqual(state)
+  })
+
+  it("omits the public building categories when all are selected", () => {
+    expect(
+      buildMapDisplayQuery({
+        filters: [],
+        mapStyle: MapStyle.OSM,
+        overlayLayers: [],
+        publicBuildingCategories: ALL_PUBLIC_BUILDING_CATEGORIES
+      })
+    ).toEqual({})
+  })
+
+  it("writes the selected public building categories in the enum order", () => {
+    expect(
+      buildMapDisplayQuery({
+        filters: [],
+        mapStyle: MapStyle.OSM,
+        overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
+        publicBuildingCategories: [
+          PublicBuildingCategory.SANTE,
+          PublicBuildingCategory.ENSEIGNEMENT
+        ]
+      })
+    ).toEqual({ layers: "public_buildings", buildings: "enseignement,sante" })
+  })
+
+  it("omits the public building categories when the layer is hidden", () => {
+    expect(
+      buildMapDisplayQuery({
+        filters: [],
+        mapStyle: MapStyle.OSM,
+        overlayLayers: [OverlayLayer.QPV],
+        publicBuildingCategories: [PublicBuildingCategory.SANTE]
+      })
+    ).toEqual({ layers: "qpv" })
+  })
+
+  it("writes an empty value when no public building category is selected", () => {
+    const state = {
+      filters: [],
+      mapStyle: MapStyle.OSM,
+      overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
+      publicBuildingCategories: []
+    }
+
+    expect(buildMapDisplayQuery(state)).toEqual({ layers: "public_buildings", buildings: "" })
     expect(parseMapDisplayState(buildMapDisplayQuery(state), DataType.PLANTABILITY)).toEqual(state)
   })
 })

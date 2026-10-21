@@ -374,6 +374,14 @@ button.vegestrate-category.is-selected {
   @apply p-3;
 }
 
+.map-popover {
+  @apply absolute bg-white border border-gray-200 rounded-lg shadow-md;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: var(--z-map-floating);
+  padding: 0.5rem 0.75rem;
+}
+
 .map-panel-title {
   @apply text-[11px] font-bold uppercase tracking-wider text-gray-600;
 }

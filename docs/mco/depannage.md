@@ -11,7 +11,7 @@ Accès SSH au serveur puis commandes Django : `iarbre-ctl <commande>` (`iarbre_p
 Forcer un déploiement back sans changement de code, depuis `deploy/` :
 
 ```bash
-ansible-playbook backend.yml -l prod -e force_update=true --vault-password-file vault.key
+ansible-playbook backend.yml -l prod -e force_update=true
 ```
 
 ## Revenir à une version précédente des données
@@ -28,6 +28,7 @@ Détails : [gestion des sauvegardes](../back/backend.md#gestion-des-sauvegardes-
 3. DB : `sudo systemctl status postgresql`.
 4. Front ou tout le site : `sudo systemctl status nginx` et `sudo nginx -t`.
 5. Vérifier la dernière erreur dans Rollbar et le dernier déploiement dans GitHub Actions. Si le problème suit une MEP, [revenir en arrière](#revenir-en-arriere-code).
+6. Aller voir les logs Django : `/telescoop/iarbre/backend/back/logs/iarbre_errors.log`.
 
 ## Disque plein (alerte Grafana > 95 %)
 
@@ -46,7 +47,8 @@ Détails : [gestion des sauvegardes](../back/backend.md#gestion-des-sauvegardes-
 ## WFS lent
 
 1. Dashboard Grafana WFS : repérer les requêtes à grande `bbox_area` ou gros `feature_count`.
-2. Le WFS tourne sur son propre gunicorn (`iarbre-backend-gisserver`) et ne bloque pas la carte. Redémarrer ce seul service si les workers sont saturés.
+2. Aller voir dans le fichier `/telescoop/iarbre/backend/back/logs/wfs.log`.
+3. Le WFS tourne sur son propre gunicorn (`iarbre-backend-gisserver`) et ne bloque pas la carte. Redémarrer ce seul service si les workers sont saturés.
 
 ## Certificat qui expire (alerte Uptime Kuma)
 
