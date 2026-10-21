@@ -234,7 +234,6 @@ class ImportPublicBuildingsCommandTest(TestCase):
         self.assertEqual(list(creches.capacity), [16])
         self.assertTrue(creches.fictif.all())
 
-        creches = creches.assign(categorie="Petite enfance")
         (creche,) = build_public_buildings(creches, {})
         self.assertEqual(creche.category, PublicBuilding.Category.PETITE_ENFANCE)
         self.assertEqual(creche.capacity, 16)

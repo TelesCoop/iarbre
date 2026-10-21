@@ -10,6 +10,7 @@ from iarbre_data.models import (
     Vegestrate,
     Vulnerability,
     Lcz,
+    PublicBuilding,
 )
 import numpy as np
 
@@ -122,3 +123,15 @@ class LczFactory(factory.django.DjangoModelFactory):
             "are": 500.0,
         }
     )
+
+
+class PublicBuildingFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PublicBuilding
+
+    geometry = factory.LazyFunction(
+        lambda: Polygon.from_bbox((842000, 6519000, 842050, 6519050))
+    )
+    cleabs = factory.Sequence(lambda n: f"SURFACTI{n:016d}")
+    category = PublicBuilding.Category.ENSEIGNEMENT
+    nature = "Enseignement primaire"

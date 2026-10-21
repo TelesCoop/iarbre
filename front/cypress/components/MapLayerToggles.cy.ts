@@ -92,10 +92,15 @@ describe("MapLayerToggles", () => {
 
     cy.get('[data-cy="public-buildings-category-sante"] input').uncheck()
 
+    cy.get('[data-cy="public-buildings-categories"] input:checked').should("have.length", 4)
     cy.window().then(() => {
       const store = useMapStore()
-      expect(store.selectedPublicBuildingCategories).to.not.include("sante")
-      expect(store.showPublicBuildingsLayer).to.equal(false)
+      expect(store.selectedPublicBuildingCategories).to.deep.equal([
+        "enseignement",
+        "petite_enfance",
+        "administratif",
+        "culture"
+      ])
     })
 
     cy.get('[data-cy="public-buildings-category-sante"] input').type("{esc}")

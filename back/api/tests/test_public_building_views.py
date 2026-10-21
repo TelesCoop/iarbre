@@ -1,7 +1,8 @@
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import Point
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
+from iarbre_data.factories import PublicBuildingFactory
 from iarbre_data.models import PublicBuilding
 from iarbre_data.settings import SRID_DB
 
@@ -12,29 +13,15 @@ from iarbre_data.settings import SRID_DB
 class PublicBuildingListViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        PublicBuilding.objects.create(
-            geometry=Polygon(
-                (
-                    (842000, 6519000),
-                    (842050, 6519000),
-                    (842050, 6519050),
-                    (842000, 6519050),
-                    (842000, 6519000),
-                ),
-                srid=SRID_DB,
-            ),
-            cleabs="SURFACTI0000000000000001",
-            category=PublicBuilding.Category.ENSEIGNEMENT,
-            nature="Enseignement primaire",
+        PublicBuildingFactory(
             nature_detaillee="Ecole élémentaire",
             name="École Saint-Exupéry",
             uai="0690163C",
             student_count=250,
             education_priority="REP+",
         )
-        PublicBuilding.objects.create(
+        PublicBuildingFactory(
             geometry=Point(843000, 6520000, srid=SRID_DB),
-            cleabs="SURFACTI0000000000000002",
             category=PublicBuilding.Category.SANTE,
             nature="Hôpital",
             fictif=True,
@@ -63,4 +50,4 @@ class PublicBuildingListViewTest(TestCase):
         lon, lat = hospital["geometry"]["coordinates"]
         self.assertAlmostEqual(lon, 4.8, delta=0.3)
         self.assertAlmostEqual(lat, 45.7, delta=0.3)
-        self.assertLessEqual(len(str(lon).split(".")[1]), 6)
+        self.assertEqual(round(lon, 6), lon)
