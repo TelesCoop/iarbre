@@ -36,6 +36,8 @@ export enum PublicBuildingCategory {
   CULTURE = "culture"
 }
 
+export const ALL_PUBLIC_BUILDING_CATEGORIES = Object.values(PublicBuildingCategory)
+
 export const PublicBuildingCategoryToLabel: Record<PublicBuildingCategory, string> = {
   [PublicBuildingCategory.ENSEIGNEMENT]: "Enseignement",
   [PublicBuildingCategory.PETITE_ENFANCE]: "Petite enfance",

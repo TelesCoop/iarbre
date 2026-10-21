@@ -60,7 +60,6 @@ class PublicBuildingListViewTest(TestCase):
         self.assertNotIn("uai", school["properties"])
         hospital = features["sante"]
         self.assertEqual(hospital["geometry"]["type"], "Point")
-        self.assertTrue(hospital["properties"]["fictif"])
         lon, lat = hospital["geometry"]["coordinates"]
         self.assertAlmostEqual(lon, 4.8, delta=0.3)
         self.assertAlmostEqual(lat, 45.7, delta=0.3)

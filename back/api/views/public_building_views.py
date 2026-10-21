@@ -15,7 +15,6 @@ PROPERTIES = (
     "category",
     "nature",
     "nature_detaillee",
-    "fictif",
     "student_count",
     "education_priority",
     "capacity",

@@ -15,12 +15,6 @@ from iarbre_data.utils.download import download_dbtopo, download_from_url
 UAI_PATTERN = re.compile(r"MEN:(\w{8})")
 
 
-def to_bool(value) -> bool:
-    if isinstance(value, str):
-        return value.strip().lower() == "true"
-    return bool(value) if pd.notna(value) else False
-
-
 def extract_uai(identifiants_sources) -> str | None:
     if not isinstance(identifiants_sources, str):
         return None
@@ -113,8 +107,9 @@ def exclude_private_schools(
 
 def drop_points_within_footprints(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Drop fictive footprints, shown as points, that fall inside a real footprint."""
-    gdf = gdf.assign(fictif=gdf["fictif"].map(to_bool))
-    points = gdf[gdf["fictif"]].set_geometry(gdf[gdf["fictif"]].geometry.centroid)
+    gdf = gdf.assign(fictif=gdf["fictif"].fillna(False).astype(bool))
+    points = gdf[gdf["fictif"]]
+    points = points.set_geometry(points.geometry.centroid)
     footprints = gdf[~gdf["fictif"]]
     inside = gpd.sjoin(
         points[["geometry"]], footprints[["geometry"]], predicate="within"

@@ -66,12 +66,9 @@ def download_dbtopo(
                     .set_crs("EPSG:2154", allow_override=True)
                 )
                 geom.name = "geometry"
-                if columns:
-                    all_geometries.append(
-                        gpd.GeoDataFrame(tmp_gdf[columns], geometry=geom)
-                    )
-                else:
-                    all_geometries.append(geom)
+                all_geometries.append(
+                    gpd.GeoDataFrame(tmp_gdf[columns or []], geometry=geom)
+                )
                 start_index += 5000
         return gpd.GeoDataFrame(
             pd.concat(all_geometries, ignore_index=True), crs="EPSG:2154"

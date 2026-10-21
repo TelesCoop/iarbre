@@ -2,7 +2,7 @@
 import { ref } from "vue"
 import { useTapOutside } from "@/composables/useTapOutside"
 import { useMapStore } from "@/stores/map"
-import { PublicBuildingCategory, PublicBuildingCategoryToLabel } from "@/utils/enum"
+import { ALL_PUBLIC_BUILDING_CATEGORIES, PublicBuildingCategoryToLabel } from "@/utils/enum"
 import { PUBLIC_BUILDING_COLORS } from "@/utils/mapLayers"
 import IconPublicBuilding from "@/components/icons/IconPublicBuilding.vue"
 import IconChevron from "@/components/icons/IconChevron.vue"
@@ -10,8 +10,6 @@ import IconChevron from "@/components/icons/IconChevron.vue"
 const mapStore = useMapStore()
 const isExpanded = ref(false)
 const wrapperRef = ref<HTMLElement | null>(null)
-
-const categories = Object.values(PublicBuildingCategory)
 
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === "Escape") isExpanded.value = false
@@ -52,13 +50,13 @@ useTapOutside(wrapperRef, () => {
     <div
       v-if="isExpanded"
       id="public-buildings-categories"
-      class="public-buildings-popover"
+      class="map-popover flex flex-col min-w-48"
       data-cy="public-buildings-categories"
       role="group"
       aria-label="Catégories de bâtiments publics"
     >
       <label
-        v-for="category in categories"
+        v-for="category in ALL_PUBLIC_BUILDING_CATEGORIES"
         :key="category"
         :data-cy="`public-buildings-category-${category}`"
         class="flex items-center gap-2 py-1 cursor-pointer text-xs font-sans text-gray-700"
@@ -79,16 +77,3 @@ useTapOutside(wrapperRef, () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-@reference "@/styles/main.css";
-
-.public-buildings-popover {
-  @apply absolute flex flex-col bg-white border border-gray-200 rounded-lg shadow-md;
-  bottom: calc(100% + 0.5rem);
-  left: 0;
-  z-index: var(--z-map-floating);
-  padding: 0.5rem 0.75rem;
-  min-width: 12rem;
-}
-</style>

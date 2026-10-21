@@ -6,7 +6,6 @@ export interface PublicBuildingProperties {
   category: PublicBuildingCategory
   nature: string
   natureDetaillee: string | null
-  fictif: boolean
   studentCount: number | null
   educationPriority: string | null
   capacity: number | null

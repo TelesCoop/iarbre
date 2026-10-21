@@ -1,7 +1,13 @@
 import type { LocationQuery, LocationQueryRaw } from "vue-router"
 import type { MapDisplayState } from "@/types/map"
 import { DEFAULT_MAP_STYLE } from "@/utils/constants"
-import { DataType, MapStyle, OverlayLayer, PublicBuildingCategory } from "@/utils/enum"
+import {
+  DataType,
+  MapStyle,
+  OverlayLayer,
+  PublicBuildingCategory,
+  ALL_PUBLIC_BUILDING_CATEGORIES
+} from "@/utils/enum"
 import { MAP_STYLE_OPTIONS } from "@/utils/mapStyleOptions"
 import { BIOSPHERE_CLASSES, BIOSPHERE_DETAIL_CLASSES } from "@/utils/biosphere_functional_integrity"
 
@@ -43,8 +49,6 @@ const isSelectableMapStyle = (value: string): value is MapStyle =>
 
 const isOverlayLayer = (value: string): value is OverlayLayer =>
   Object.values<string>(OverlayLayer).includes(value)
-
-const ALL_PUBLIC_BUILDING_CATEGORIES = Object.values(PublicBuildingCategory)
 
 const parsePublicBuildingCategories = (
   rawValue: LocationQuery[string] | undefined

@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest"
 import { buildMapDisplayQuery, parseMapDisplayState } from "@/utils/mapUrlState"
-import { DataType, MapStyle, OverlayLayer, PublicBuildingCategory } from "@/utils/enum"
+import {
+  DataType,
+  MapStyle,
+  OverlayLayer,
+  PublicBuildingCategory,
+  ALL_PUBLIC_BUILDING_CATEGORIES
+} from "@/utils/enum"
 
 describe("parseMapDisplayState", () => {
   it("returns the default display when the query is empty", () => {
@@ -152,7 +158,7 @@ describe("buildMapDisplayQuery", () => {
         filters: [],
         mapStyle: MapStyle.OSM,
         overlayLayers: [],
-        publicBuildingCategories: Object.values(PublicBuildingCategory)
+        publicBuildingCategories: ALL_PUBLIC_BUILDING_CATEGORIES
       })
     ).toEqual({})
   })
