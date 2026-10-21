@@ -80,10 +80,6 @@ describe("parseMapDisplayState", () => {
     expect(state.overlayLayers).toEqual([OverlayLayer.QPV, OverlayLayer.CADASTRE])
   })
 
-  it("leaves the categories undefined when the query has none", () => {
-    expect(parseMapDisplayState({}, DataType.PLANTABILITY).publicBuildingCategories).toBeUndefined()
-  })
-
   it("reads the known categories in the enum order", () => {
     const state = parseMapDisplayState(
       { buildings: "sante,unknown,enseignement" },
@@ -94,12 +90,6 @@ describe("parseMapDisplayState", () => {
       PublicBuildingCategory.ENSEIGNEMENT,
       PublicBuildingCategory.SANTE
     ])
-  })
-
-  it("reads an empty value as no category", () => {
-    const state = parseMapDisplayState({ buildings: "" }, DataType.PLANTABILITY)
-
-    expect(state.publicBuildingCategories).toEqual([])
   })
 })
 

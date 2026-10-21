@@ -34,6 +34,7 @@ const showPublicBuildingsAndSelectSchool = () => {
   cy.mapCheckPublicBuildingsLayer(true)
   setMapState({
     selectedPublicBuilding: {
+      id: 1,
       name: "École Élémentaire Jean Jaurès",
       category: PublicBuildingCategory.ENSEIGNEMENT,
       nature: "Enseignement primaire",

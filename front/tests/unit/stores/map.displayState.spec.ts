@@ -27,6 +27,7 @@ vi.mock("maplibre-gl", () => ({
     on = () => undefined
     off = () => undefined
     setPaintProperty = () => undefined
+    setFilter = () => undefined
     getSource = (id: string) => (this.sources.has(id) ? {} : undefined)
     addSource = (id: string) => {
       if (this.sources.has(id)) throw new Error(`Source "${id}" already exists.`)
@@ -57,6 +58,7 @@ describe("map store display state", () => {
     store.selectedCadastreParcel = { parcelId: "1", section: "AB", numero: "12", surface: null }
     store.selectedPanoramaxPicture = { id: "picture" } as PanoramaxPicture
     store.selectedPublicBuilding = {
+      id: 1,
       name: "École Jean Jaurès",
       category: PublicBuildingCategory.ENSEIGNEMENT,
       nature: "Enseignement primaire",
@@ -73,7 +75,6 @@ describe("map store display state", () => {
     expect(store.selectedCadastreParcel).toBeNull()
     expect(store.selectedPanoramaxPicture).toBeNull()
     expect(store.selectedPublicBuilding).toBeNull()
-    expect(store.selectedPanoramaxPicture).toBeNull()
   })
 
   it("initMap restores the public building categories, all of them by default", () => {

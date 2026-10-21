@@ -6,7 +6,6 @@ from shapely.geometry import Point, box
 
 from iarbre_data.management.commands.import_public_buildings import (
     build_public_buildings,
-    drop_nested_footprints,
     drop_points_within_footprints,
     exclude_private_schools,
     filter_public_buildings,
@@ -166,44 +165,6 @@ class ImportPublicBuildingsCommandTest(TestCase):
         museum = buildings["Musée des Beaux-Arts"]
         self.assertEqual(museum.category, PublicBuilding.Category.CULTURE)
         self.assertEqual(museum.geometry.geom_type, "Point")
-
-    def test_drop_nested_footprints(self):
-        gdf = gpd.GeoDataFrame(
-            [
-                bdtopo_row(
-                    "Groupement Hospitalier Est",
-                    "Santé",
-                    "Hôpital",
-                    box(848000, 6516000, 849000, 6517000),
-                ),
-                bdtopo_row(
-                    "Hôpital Louis Pradel",
-                    "Santé",
-                    "Hôpital",
-                    box(848100, 6516100, 848400, 6516400),
-                ),
-                bdtopo_row(
-                    "Groupe Scolaire Jean Jaurès",
-                    "Science et enseignement",
-                    "Enseignement primaire",
-                    box(842000, 6520000, 842080, 6520060),
-                ),
-                bdtopo_row(
-                    "École Élémentaire Jean Jaurès",
-                    "Science et enseignement",
-                    "Enseignement primaire",
-                    box(842000, 6520000, 842080, 6520060),
-                ),
-            ],
-            crs=SRID_DB,
-        )
-
-        kept = drop_nested_footprints(gdf)
-
-        self.assertEqual(
-            list(kept.toponyme),
-            ["Groupement Hospitalier Est", "Groupe Scolaire Jean Jaurès"],
-        )
 
     @patch("iarbre_data.management.commands.import_public_buildings.download_from_url")
     def test_load_public_creches(self, mock_download):

@@ -165,7 +165,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedPublicBuildingCategories = ref<PublicBuildingCategory[]>(
     ALL_PUBLIC_BUILDING_CATEGORIES
   )
-  const selectedPublicBuilding = ref<PublicBuildingProperties | null>(null)
+  const selectedPublicBuilding = ref<(PublicBuildingProperties & { id: number }) | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const shapeEditing = ref<boolean>(false)
   const liveArea = ref<number | null>(null)
@@ -1097,6 +1097,7 @@ export const useMapStore = defineStore("map", () => {
     const clickHandler = (e: any) => {
       if (!e.features || e.features.length === 0) return
       if (hasRenderedFeatureAt(mapInstance, e.point, PUBLIC_BUILDINGS_CLICKABLE_LAYERS)) return
+      clearPublicBuildingSelection()
 
       const featureProps = e.features[0].properties
       const parcelId = featureProps.parcel_id
@@ -1200,14 +1201,17 @@ export const useMapStore = defineStore("map", () => {
     PUBLIC_BUILDING_COLORS[PublicBuildingCategory.ADMINISTRATIF]
   ] as unknown as ExpressionSpecification
 
-  const publicBuildingFilter = (geometryTypes: string[]): FilterSpecification => [
-    "all",
-    ["in", ["geometry-type"], ["literal", geometryTypes]],
-    ["in", ["get", "category"], ["literal", selectedPublicBuildingCategories.value]]
-  ]
-
-  const POLYGON_TYPES = ["Polygon", "MultiPolygon"]
-  const POINT_TYPES = ["Point"]
+  const applyPublicBuildingFilters = (mapInstance: Map) => {
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) return
+    const filter = (geometryTypes: string[]): FilterSpecification => [
+      "all",
+      ["in", ["geometry-type"], ["literal", geometryTypes]],
+      ["in", ["get", "category"], ["literal", selectedPublicBuildingCategories.value]]
+    ]
+    mapInstance.setFilter(PUBLIC_BUILDINGS_FILL_LAYER, filter(["Polygon", "MultiPolygon"]))
+    mapInstance.setFilter(PUBLIC_BUILDINGS_BORDER_LAYER, filter(["Polygon", "MultiPolygon"]))
+    mapInstance.setFilter(PUBLIC_BUILDINGS_POINT_LAYER, filter(["Point"]))
+  }
 
   const highlightPublicBuilding = (mapInstance: Map, featureId: number | null) => {
     if (!mapInstance.getLayer(PUBLIC_BUILDINGS_BORDER_LAYER)) return
@@ -1226,17 +1230,27 @@ export const useMapStore = defineStore("map", () => {
     ])
   }
 
-  let publicBuildingsData: GeoJSON.FeatureCollection<
-    GeoJSON.Geometry,
-    PublicBuildingProperties
-  > | null = null
-  let selectedPublicBuildingId: number | null = null
+  let publicBuildingsRequest: ReturnType<typeof getPublicBuildingsData> | null = null
+  const fetchPublicBuildings = async () => {
+    publicBuildingsRequest ??= getPublicBuildingsData()
+    const data = await publicBuildingsRequest
+    if (!data) publicBuildingsRequest = null
+    return data
+  }
+
+  watch(
+    () => selectedPublicBuilding.value?.id ?? null,
+    (featureId) => {
+      for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+        highlightPublicBuilding(mapInstance, featureId)
+      }
+    }
+  )
 
   const addPublicBuildingsLayer = async (mapInstance: Map) => {
-    const fetchData = async () => (publicBuildingsData ??= await getPublicBuildingsData())
     const sourceId = PUBLIC_BUILDINGS_SOURCE
-    if (!(await ensureGeoJSONSource(mapInstance, sourceId, fetchData, showPublicBuildingsLayer)))
-      return
+    const isVisible = showPublicBuildingsLayer
+    if (!(await ensureGeoJSONSource(mapInstance, sourceId, fetchPublicBuildings, isVisible))) return
 
     if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) {
       const beforeId = getTerraDrawBeforeId(mapInstance)
@@ -1246,7 +1260,6 @@ export const useMapStore = defineStore("map", () => {
           id: PUBLIC_BUILDINGS_FILL_LAYER,
           type: "fill",
           source: PUBLIC_BUILDINGS_SOURCE,
-          filter: publicBuildingFilter(POLYGON_TYPES),
           paint: {
             "fill-color": publicBuildingColor,
             "fill-opacity": PUBLIC_BUILDING_FILL_OPACITY
@@ -1259,7 +1272,6 @@ export const useMapStore = defineStore("map", () => {
           id: PUBLIC_BUILDINGS_BORDER_LAYER,
           type: "line",
           source: PUBLIC_BUILDINGS_SOURCE,
-          filter: publicBuildingFilter(POLYGON_TYPES),
           paint: {
             "line-color": publicBuildingColor,
             "line-width": PUBLIC_BUILDING_BORDER_WIDTH
@@ -1272,7 +1284,6 @@ export const useMapStore = defineStore("map", () => {
           id: PUBLIC_BUILDINGS_POINT_LAYER,
           type: "circle",
           source: PUBLIC_BUILDINGS_SOURCE,
-          filter: publicBuildingFilter(POINT_TYPES),
           paint: {
             "circle-color": publicBuildingColor,
             "circle-radius": PUBLIC_BUILDING_CIRCLE_RADIUS,
@@ -1284,18 +1295,15 @@ export const useMapStore = defineStore("map", () => {
       )
     }
 
-    highlightPublicBuilding(mapInstance, selectedPublicBuildingId)
+    applyPublicBuildingFilters(mapInstance)
+    highlightPublicBuilding(mapInstance, selectedPublicBuilding.value?.id ?? null)
 
     const clickHandler = (e: any) => {
       if (selectionMode.value !== SelectionMode.POINT) return
       const feature = e.features?.[0]
       if (!feature) return
       clearCadastreSelection()
-      selectedPublicBuilding.value = feature.properties as PublicBuildingProperties
-      selectedPublicBuildingId = feature.id as number
-      for (const instance of Object.values(mapInstancesByIds.value)) {
-        highlightPublicBuilding(instance, selectedPublicBuildingId)
-      }
+      selectedPublicBuilding.value = { id: feature.id as number, ...feature.properties }
     }
     const mouseEnterHandler = () => {
       mapInstance.getCanvas().style.cursor = "pointer"
@@ -1317,12 +1325,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const clearPublicBuildingSelection = () => {
-    if (!selectedPublicBuilding.value) return
     selectedPublicBuilding.value = null
-    selectedPublicBuildingId = null
-    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
-      highlightPublicBuilding(mapInstance, null)
-    }
   }
 
   const removePublicBuildingsLayer = (mapInstance: Map) => {
@@ -1363,12 +1366,7 @@ export const useMapStore = defineStore("map", () => {
       clearPublicBuildingSelection()
     }
 
-    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
-      if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) continue
-      mapInstance.setFilter(PUBLIC_BUILDINGS_FILL_LAYER, publicBuildingFilter(POLYGON_TYPES))
-      mapInstance.setFilter(PUBLIC_BUILDINGS_BORDER_LAYER, publicBuildingFilter(POLYGON_TYPES))
-      mapInstance.setFilter(PUBLIC_BUILDINGS_POINT_LAYER, publicBuildingFilter(POINT_TYPES))
-    }
+    Object.values(mapInstancesByIds.value).forEach(applyPublicBuildingFilters)
   }
 
   let pendingPanoramaxPictureId: string | null = null
