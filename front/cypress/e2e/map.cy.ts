@@ -1,5 +1,11 @@
 /// <reference types="cypress" />
-import { DataType, DataTypeToLabel, MapStyle, OverlayLayer } from "../../src/utils/enum"
+import {
+  DataType,
+  DataTypeToLabel,
+  MapStyle,
+  OverlayLayer,
+  PublicBuildingCategory
+} from "../../src/utils/enum"
 import { GEOCODER_API_URL } from "../../src/utils/geocoder"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 const MOBILE_VIEWPORT = { width: 375, height: 667 }
@@ -22,6 +28,23 @@ const selectParcel = () =>
   setMapState({
     selectedCadastreParcel: { parcelId: "1", section: "AB", numero: "12", surface: 345 }
   })
+
+const showPublicBuildingsAndSelectSchool = () => {
+  cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+  cy.mapCheckPublicBuildingsLayer(true)
+  setMapState({
+    selectedPublicBuilding: {
+      id: 1,
+      name: "École Élémentaire Jean Jaurès",
+      category: PublicBuildingCategory.ENSEIGNEMENT,
+      nature: "Enseignement primaire",
+      natureDetaillee: "Ecole élémentaire",
+      studentCount: 250,
+      educationPriority: "REP+",
+      capacity: null
+    }
+  })
+}
 
 const openStreetView = () =>
   setMapState({
@@ -281,6 +304,61 @@ describe("Map - Desktop", () => {
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.mapCheckPanoramaxLayer(true)
+  })
+
+  it("adds public buildings layer when toggled", () => {
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(true)
+
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(false)
+  })
+
+  it("shows the selected public building card until it is closed", () => {
+    showPublicBuildingsAndSelectSchool()
+
+    cy.getBySel("public-building-info")
+      .should("contain.text", "École Élémentaire Jean Jaurès")
+      .and("contain.text", "Ecole élémentaire")
+      .and("contain.text", "250")
+      .and("contain.text", "REP+")
+      .and("not.contain.text", "Places d'accueil")
+
+    cy.get("[data-cy=public-building-info] [aria-label=Fermer]").click()
+    cy.getBySel("public-building-info").should("not.exist")
+  })
+
+  it("keeps the selected public building when switching data layers", () => {
+    showPublicBuildingsAndSelectSchool()
+
+    cy.getBySel("layer-switcher").filter(":visible").should("be.visible").click()
+    cy.get(".select-option-label").contains(DataTypeToLabel[DataType.VULNERABILITY]).click()
+    cy.mapCheckPublicBuildingsLayer(true)
+    cy.getBySel("public-building-info").should("be.visible")
+  })
+
+  it("clears the selected public building when its category is unchecked", () => {
+    showPublicBuildingsAndSelectSchool()
+    cy.getBySel("public-building-info").should("be.visible")
+
+    cy.getBySel("public-buildings-categories-toggle").filter(":visible").click()
+    cy.get('[data-cy="public-buildings-category-enseignement"] input').uncheck()
+    cy.getBySel("public-building-info").should("not.exist")
+  })
+
+  it("writes the filtered public building categories in the URL", () => {
+    cy.getBySel("public-buildings-toggle").filter(":visible").should("be.visible").click()
+    cy.mapCheckPublicBuildingsLayer(true)
+
+    cy.getBySel("public-buildings-categories-toggle").filter(":visible").click()
+    cy.get('[data-cy="public-buildings-category-enseignement"] input').uncheck()
+    cy.location("search").should(
+      "eq",
+      `?layers=${OverlayLayer.PUBLIC_BUILDINGS}&buildings=petite_enfance,sante,administratif,culture`
+    )
+
+    cy.get('[data-cy="public-buildings-category-enseignement"] input').check()
+    cy.location("search").should("eq", `?layers=${OverlayLayer.PUBLIC_BUILDINGS}`)
   })
 
   it("writes the basemap and the overlay layers in the URL", () => {

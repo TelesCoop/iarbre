@@ -9,6 +9,8 @@ import {
   type StyleSpecification,
   type AddLayerObject,
   type DataDrivenPropertyValueSpecification,
+  type ExpressionSpecification,
+  type FilterSpecification,
   type PointLike
 } from "maplibre-gl"
 import {
@@ -24,6 +26,8 @@ import {
   DataType,
   MapStyle,
   OverlayLayer,
+  ALL_PUBLIC_BUILDING_CATEGORIES,
+  PublicBuildingCategory,
   SelectionMode,
   DataTypeToGeolevel
 } from "@/utils/enum"
@@ -31,6 +35,10 @@ import mapStyles from "@/map/map-style.json"
 import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
 import { getFullBaseApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
+import {
+  getPublicBuildingsData,
+  type PublicBuildingProperties
+} from "@/services/publicBuildingService"
 import { getCityBoundaries } from "@/services/boundaryService"
 import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
@@ -94,7 +102,15 @@ import {
   PANORAMAX_PICTURE_STROKE_WIDTH,
   PANORAMAX_PICTURE_OPACITY,
   PANORAMAX_SELECTED_PICTURE_COLOR,
-  PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH
+  PANORAMAX_SELECTED_PICTURE_STROKE_WIDTH,
+  PUBLIC_BUILDING_COLORS,
+  PUBLIC_BUILDING_FILL_OPACITY,
+  PUBLIC_BUILDING_BORDER_WIDTH,
+  PUBLIC_BUILDING_SELECTED_BORDER_WIDTH,
+  PUBLIC_BUILDING_CIRCLE_RADIUS,
+  PUBLIC_BUILDING_SELECTED_CIRCLE_RADIUS,
+  PUBLIC_BUILDING_CIRCLE_STROKE_COLOR,
+  PUBLIC_BUILDING_CIRCLE_STROKE_WIDTH
 } from "@/utils/mapLayers"
 import { getPicture, type PanoramaxPicture } from "maplibre-gl-panoramax"
 import {
@@ -145,6 +161,11 @@ export const useMapStore = defineStore("map", () => {
   } | null>(null)
   const showPanoramaxLayer = ref<boolean>(false)
   const selectedPanoramaxPicture = ref<PanoramaxPicture | null>(null)
+  const showPublicBuildingsLayer = ref<boolean>(false)
+  const selectedPublicBuildingCategories = ref<PublicBuildingCategory[]>(
+    ALL_PUBLIC_BUILDING_CATEGORIES
+  )
+  const selectedPublicBuilding = ref<(PublicBuildingProperties & { id: number }) | null>(null)
   const selectionMode = ref<SelectionMode>(SelectionMode.POINT)
   const shapeEditing = ref<boolean>(false)
   const liveArea = ref<number | null>(null)
@@ -581,9 +602,10 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const hasStreetViewPictureAt = (map: Map, point: PointLike) =>
-    map.getLayer(PANORAMAX_PICTURES_LAYER) !== undefined &&
-    map.queryRenderedFeatures(point, { layers: [PANORAMAX_PICTURES_LAYER] }).length > 0
+  const hasRenderedFeatureAt = (map: Map, point: PointLike, layerIds: string[]) => {
+    const layers = layerIds.filter((layerId) => map.getLayer(layerId))
+    return layers.length > 0 && map.queryRenderedFeatures(point, { layers }).length > 0
+  }
 
   const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     if (heightMapClickHandler.value) {
@@ -623,7 +645,12 @@ export const useMapStore = defineStore("map", () => {
       if (selectionMode.value !== SelectionMode.POINT) {
         return
       }
-      if (hasStreetViewPictureAt(map, e.point)) {
+      if (
+        hasRenderedFeatureAt(map, e.point, [
+          PANORAMAX_PICTURES_LAYER,
+          ...PUBLIC_BUILDINGS_CLICKABLE_LAYERS
+        ])
+      ) {
         return
       }
       applyTileSelection(map, datatype, geolevel, e.features!, {
@@ -849,23 +876,38 @@ export const useMapStore = defineStore("map", () => {
     )
   }
 
-  // TODO: display loading during the async execution
-  const addQPVLayer = async (mapInstance: Map) => {
-    if (!mapInstance.getSource("qpv-source")) {
-      const data = await getQPVData()
-      if (!data) {
-        return
-      }
-      if (!showQPVLayer.value) {
-        return
-      }
-      if (!mapInstance.getSource("qpv-source")) {
-        mapInstance.addSource("qpv-source", {
-          type: "geojson",
-          data: data
-        })
+  const toggleOverlayLayer = async (layer: OverlayLayer) => {
+    const { isVisible, add, remove } = overlayLayerHandlers[layer]
+    isVisible.value = !isVisible.value
+
+    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+      if (isVisible.value) {
+        await add(mapInstance)
+      } else {
+        remove(mapInstance)
       }
     }
+  }
+
+  /** Fetch and add a GeoJSON source unless it exists, giving up if the layer was hidden meanwhile. */
+  const ensureGeoJSONSource = async (
+    mapInstance: Map,
+    sourceId: string,
+    fetchData: () => Promise<GeoJSON.GeoJSON | null>,
+    isVisible: Ref<boolean>
+  ): Promise<boolean> => {
+    if (mapInstance.getSource(sourceId)) return true
+    const data = await fetchData()
+    if (!data || !isVisible.value) return false
+    if (!mapInstance.getSource(sourceId)) {
+      mapInstance.addSource(sourceId, { type: "geojson", data })
+    }
+    return true
+  }
+
+  // TODO: display loading during the async execution
+  const addQPVLayer = async (mapInstance: Map) => {
+    if (!(await ensureGeoJSONSource(mapInstance, "qpv-source", getQPVData, showQPVLayer))) return
 
     if (!mapInstance.getLayer("qpv-border")) {
       const beforeId = getTerraDrawBeforeId(mapInstance)
@@ -920,32 +962,12 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const toggleQPVLayer = async () => {
-    showQPVLayer.value = !showQPVLayer.value
-
-    for (const mapId of Object.keys(mapInstancesByIds.value)) {
-      const mapInstance = mapInstancesByIds.value[mapId]
-
-      if (showQPVLayer.value) {
-        await addQPVLayer(mapInstance)
-      } else {
-        removeQPVLayer(mapInstance)
-      }
-    }
-  }
+  const toggleQPVLayer = () => toggleOverlayLayer(OverlayLayer.QPV)
 
   const addBoundaryLayers = async (mapInstance: Map) => {
-    if (!mapInstance.getSource("city-boundary-source")) {
-      const cityData = await getCityBoundaries()
-      if (!cityData) return
-      if (!showBoundaryLayer.value) return
-      if (!mapInstance.getSource("city-boundary-source")) {
-        mapInstance.addSource("city-boundary-source", {
-          type: "geojson",
-          data: cityData
-        })
-      }
-    }
+    const sourceId = "city-boundary-source"
+    if (!(await ensureGeoJSONSource(mapInstance, sourceId, getCityBoundaries, showBoundaryLayer)))
+      return
 
     const beforeId = getTerraDrawBeforeId(mapInstance)
 
@@ -992,19 +1014,7 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
-  const toggleBoundaryLayer = async () => {
-    showBoundaryLayer.value = !showBoundaryLayer.value
-
-    for (const mapId of Object.keys(mapInstancesByIds.value)) {
-      const mapInstance = mapInstancesByIds.value[mapId]
-
-      if (showBoundaryLayer.value) {
-        await addBoundaryLayers(mapInstance)
-      } else {
-        removeBoundaryLayers(mapInstance)
-      }
-    }
-  }
+  const toggleBoundaryLayer = () => toggleOverlayLayer(OverlayLayer.BOUNDARY)
 
   type LayerInteractions = Record<string, (e: any) => void>
 
@@ -1086,6 +1096,8 @@ export const useMapStore = defineStore("map", () => {
 
     const clickHandler = (e: any) => {
       if (!e.features || e.features.length === 0) return
+      if (hasRenderedFeatureAt(mapInstance, e.point, PUBLIC_BUILDINGS_CLICKABLE_LAYERS)) return
+      clearPublicBuildingSelection()
 
       const featureProps = e.features[0].properties
       const parcelId = featureProps.parcel_id
@@ -1171,18 +1183,190 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
-  const toggleCadastreLayer = () => {
-    showCadastreLayer.value = !showCadastreLayer.value
+  const toggleCadastreLayer = () => toggleOverlayLayer(OverlayLayer.CADASTRE)
 
-    for (const mapId of Object.keys(mapInstancesByIds.value)) {
-      const mapInstance = mapInstancesByIds.value[mapId]
+  const PUBLIC_BUILDINGS_SOURCE = "public-buildings-source"
+  const PUBLIC_BUILDINGS_FILL_LAYER = "public-buildings-fill"
+  const PUBLIC_BUILDINGS_BORDER_LAYER = "public-buildings-border"
+  const PUBLIC_BUILDINGS_POINT_LAYER = "public-buildings-point"
+  const PUBLIC_BUILDINGS_CLICKABLE_LAYERS = [
+    PUBLIC_BUILDINGS_FILL_LAYER,
+    PUBLIC_BUILDINGS_POINT_LAYER
+  ]
 
-      if (showCadastreLayer.value) {
-        addCadastreLayer(mapInstance)
-      } else {
-        removeCadastreLayer(mapInstance)
+  const publicBuildingColor = [
+    "match",
+    ["get", "category"],
+    ...Object.entries(PUBLIC_BUILDING_COLORS).flat(),
+    PUBLIC_BUILDING_COLORS[PublicBuildingCategory.ADMINISTRATIF]
+  ] as unknown as ExpressionSpecification
+
+  const applyPublicBuildingFilters = (mapInstance: Map) => {
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) return
+    const filter = (geometryTypes: string[]): FilterSpecification => [
+      "all",
+      ["in", ["geometry-type"], ["literal", geometryTypes]],
+      ["in", ["get", "category"], ["literal", selectedPublicBuildingCategories.value]]
+    ]
+    mapInstance.setFilter(PUBLIC_BUILDINGS_FILL_LAYER, filter(["Polygon", "MultiPolygon"]))
+    mapInstance.setFilter(PUBLIC_BUILDINGS_BORDER_LAYER, filter(["Polygon", "MultiPolygon"]))
+    mapInstance.setFilter(PUBLIC_BUILDINGS_POINT_LAYER, filter(["Point"]))
+  }
+
+  const highlightPublicBuilding = (mapInstance: Map, featureId: number | null) => {
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_BORDER_LAYER)) return
+    const isSelected: ExpressionSpecification = ["==", ["id"], featureId ?? -1]
+    mapInstance.setPaintProperty(PUBLIC_BUILDINGS_BORDER_LAYER, "line-width", [
+      "case",
+      isSelected,
+      PUBLIC_BUILDING_SELECTED_BORDER_WIDTH,
+      PUBLIC_BUILDING_BORDER_WIDTH
+    ])
+    mapInstance.setPaintProperty(PUBLIC_BUILDINGS_POINT_LAYER, "circle-radius", [
+      "case",
+      isSelected,
+      PUBLIC_BUILDING_SELECTED_CIRCLE_RADIUS,
+      PUBLIC_BUILDING_CIRCLE_RADIUS
+    ])
+  }
+
+  let publicBuildingsRequest: ReturnType<typeof getPublicBuildingsData> | null = null
+  const fetchPublicBuildings = async () => {
+    publicBuildingsRequest ??= getPublicBuildingsData()
+    const data = await publicBuildingsRequest
+    if (!data) publicBuildingsRequest = null
+    return data
+  }
+
+  watch(
+    () => selectedPublicBuilding.value?.id ?? null,
+    (featureId) => {
+      for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+        highlightPublicBuilding(mapInstance, featureId)
       }
     }
+  )
+
+  const addPublicBuildingsLayer = async (mapInstance: Map) => {
+    const sourceId = PUBLIC_BUILDINGS_SOURCE
+    const isVisible = showPublicBuildingsLayer
+    if (!(await ensureGeoJSONSource(mapInstance, sourceId, fetchPublicBuildings, isVisible))) return
+
+    if (!mapInstance.getLayer(PUBLIC_BUILDINGS_FILL_LAYER)) {
+      const beforeId = getTerraDrawBeforeId(mapInstance)
+
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_FILL_LAYER,
+          type: "fill",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          paint: {
+            "fill-color": publicBuildingColor,
+            "fill-opacity": PUBLIC_BUILDING_FILL_OPACITY
+          }
+        },
+        beforeId
+      )
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_BORDER_LAYER,
+          type: "line",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          paint: {
+            "line-color": publicBuildingColor,
+            "line-width": PUBLIC_BUILDING_BORDER_WIDTH
+          }
+        },
+        beforeId
+      )
+      mapInstance.addLayer(
+        {
+          id: PUBLIC_BUILDINGS_POINT_LAYER,
+          type: "circle",
+          source: PUBLIC_BUILDINGS_SOURCE,
+          paint: {
+            "circle-color": publicBuildingColor,
+            "circle-radius": PUBLIC_BUILDING_CIRCLE_RADIUS,
+            "circle-stroke-color": PUBLIC_BUILDING_CIRCLE_STROKE_COLOR,
+            "circle-stroke-width": PUBLIC_BUILDING_CIRCLE_STROKE_WIDTH
+          }
+        },
+        beforeId
+      )
+    }
+
+    applyPublicBuildingFilters(mapInstance)
+    highlightPublicBuilding(mapInstance, selectedPublicBuilding.value?.id ?? null)
+
+    const clickHandler = (e: any) => {
+      if (selectionMode.value !== SelectionMode.POINT) return
+      const feature = e.features?.[0]
+      if (!feature) return
+      clearCadastreSelection()
+      selectedPublicBuilding.value = { id: feature.id as number, ...feature.properties }
+    }
+    const mouseEnterHandler = () => {
+      mapInstance.getCanvas().style.cursor = "pointer"
+    }
+    const mouseLeaveHandler = () => {
+      mapInstance.getCanvas().style.cursor = ""
+    }
+    for (const layerId of PUBLIC_BUILDINGS_CLICKABLE_LAYERS) {
+      registerLayerInteractions(mapInstance, layerId, {
+        click: clickHandler,
+        mouseenter: mouseEnterHandler,
+        mouseleave: mouseLeaveHandler
+      })
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: public buildings data loaded")
+    })
+  }
+
+  const clearPublicBuildingSelection = () => {
+    selectedPublicBuilding.value = null
+  }
+
+  const removePublicBuildingsLayer = (mapInstance: Map) => {
+    for (const layerId of [
+      PUBLIC_BUILDINGS_POINT_LAYER,
+      PUBLIC_BUILDINGS_BORDER_LAYER,
+      PUBLIC_BUILDINGS_FILL_LAYER
+    ]) {
+      unregisterLayerInteractions(mapInstance, layerId)
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId)
+      }
+    }
+    if (mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
+      mapInstance.removeSource(PUBLIC_BUILDINGS_SOURCE)
+    }
+
+    mapInstance.once("render", () => {
+      console.info("cypress: public buildings data removed")
+    })
+  }
+
+  const togglePublicBuildingsLayer = () => {
+    if (showPublicBuildingsLayer.value) clearPublicBuildingSelection()
+    return toggleOverlayLayer(OverlayLayer.PUBLIC_BUILDINGS)
+  }
+
+  const togglePublicBuildingCategory = (category: PublicBuildingCategory) => {
+    const categories = selectedPublicBuildingCategories.value
+    selectedPublicBuildingCategories.value = categories.includes(category)
+      ? categories.filter((c) => c !== category)
+      : [...categories, category]
+
+    if (
+      selectedPublicBuilding.value &&
+      !selectedPublicBuildingCategories.value.includes(selectedPublicBuilding.value.category)
+    ) {
+      clearPublicBuildingSelection()
+    }
+
+    Object.values(mapInstancesByIds.value).forEach(applyPublicBuildingFilters)
   }
 
   let pendingPanoramaxPictureId: string | null = null
@@ -1351,20 +1535,13 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const togglePanoramaxLayer = () => {
-    showPanoramaxLayer.value = !showPanoramaxLayer.value
+    if (showPanoramaxLayer.value) clearPanoramaxSelection()
+    toggleOverlayLayer(OverlayLayer.PANORAMAX)
+    if (!showPanoramaxLayer.value) return
 
-    if (!showPanoramaxLayer.value) clearPanoramaxSelection()
-
-    for (const mapId of Object.keys(mapInstancesByIds.value)) {
-      const mapInstance = mapInstancesByIds.value[mapId]
-
-      if (showPanoramaxLayer.value) {
-        addPanoramaxLayer(mapInstance)
-        if (mapInstance.getZoom() < PANORAMAX_ACTIVATION_ZOOM) {
-          mapInstance.easeTo({ zoom: PANORAMAX_ACTIVATION_ZOOM, duration: 600 })
-        }
-      } else {
-        removePanoramaxLayer(mapInstance)
+    for (const mapInstance of Object.values(mapInstancesByIds.value)) {
+      if (mapInstance.getZoom() < PANORAMAX_ACTIVATION_ZOOM) {
+        mapInstance.easeTo({ zoom: PANORAMAX_ACTIVATION_ZOOM, duration: 600 })
       }
     }
   }
@@ -1373,7 +1550,7 @@ export const useMapStore = defineStore("map", () => {
     isVisible: Ref<boolean>
     /** Layer whose presence on the map tells that the overlay is displayed. */
     layerId: string
-    add: (mapInstance: Map) => void
+    add: (mapInstance: Map) => void | Promise<void>
     remove: (mapInstance: Map) => void
   }
 
@@ -1401,6 +1578,12 @@ export const useMapStore = defineStore("map", () => {
       layerId: PANORAMAX_PICTURES_LAYER,
       add: addPanoramaxLayer,
       remove: removePanoramaxLayer
+    },
+    [OverlayLayer.PUBLIC_BUILDINGS]: {
+      isVisible: showPublicBuildingsLayer,
+      layerId: PUBLIC_BUILDINGS_FILL_LAYER,
+      add: addPublicBuildingsLayer,
+      remove: removePublicBuildingsLayer
     }
   }
 
@@ -1429,15 +1612,23 @@ export const useMapStore = defineStore("map", () => {
     initialDatatype: DataType,
     initialDisplayState: MapDisplayState
   ) => {
-    const { filters: initialFilters, mapStyle, overlayLayers } = initialDisplayState
+    const {
+      filters: initialFilters,
+      mapStyle,
+      overlayLayers,
+      publicBuildingCategories
+    } = initialDisplayState
     selectedDataType.value = initialDatatype
     selectedMapStyle.value = mapStyle
     Object.values(OverlayLayer).forEach((layer) => {
       overlayLayerHandlers[layer].isVisible.value = overlayLayers.includes(layer)
     })
+    selectedPublicBuildingCategories.value =
+      publicBuildingCategories ?? ALL_PUBLIC_BUILDING_CATEGORIES
     setFilteredValues(initialFilters)
     clearCadastreSelection()
     clearPanoramaxSelection()
+    clearPublicBuildingSelection()
     controlsAdded.value[mapId] = false
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
@@ -1744,6 +1935,12 @@ export const useMapStore = defineStore("map", () => {
     visibleOverlayLayers,
     selectedPanoramaxPicture,
     clearPanoramaxSelection,
+    showPublicBuildingsLayer,
+    togglePublicBuildingsLayer,
+    selectedPublicBuildingCategories,
+    togglePublicBuildingCategory,
+    selectedPublicBuilding,
+    clearPublicBuildingSelection,
     use3D,
     toggle3D,
     zoomTo,

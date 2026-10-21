@@ -33,7 +33,8 @@ const displayQuery = computed(() =>
   buildMapDisplayQuery({
     filters: mapStore.filteredValues,
     mapStyle: mapStore.selectedMapStyle,
-    overlayLayers: mapStore.visibleOverlayLayers
+    overlayLayers: mapStore.visibleOverlayLayers,
+    publicBuildingCategories: mapStore.selectedPublicBuildingCategories
   })
 )
 

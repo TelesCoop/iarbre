@@ -91,6 +91,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
+    <MapPublicBuildingInfo />
   </div>
 
   <div
