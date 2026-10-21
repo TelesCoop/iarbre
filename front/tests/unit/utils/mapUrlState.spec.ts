@@ -162,24 +162,35 @@ describe("buildMapDisplayQuery", () => {
       buildMapDisplayQuery({
         filters: [],
         mapStyle: MapStyle.OSM,
-        overlayLayers: [],
+        overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
         publicBuildingCategories: [
           PublicBuildingCategory.SANTE,
           PublicBuildingCategory.ENSEIGNEMENT
         ]
       })
-    ).toEqual({ buildings: "enseignement,sante" })
+    ).toEqual({ layers: "public_buildings", buildings: "enseignement,sante" })
+  })
+
+  it("omits the public building categories when the layer is hidden", () => {
+    expect(
+      buildMapDisplayQuery({
+        filters: [],
+        mapStyle: MapStyle.OSM,
+        overlayLayers: [OverlayLayer.QPV],
+        publicBuildingCategories: [PublicBuildingCategory.SANTE]
+      })
+    ).toEqual({ layers: "qpv" })
   })
 
   it("writes an empty value when no public building category is selected", () => {
     const state = {
       filters: [],
       mapStyle: MapStyle.OSM,
-      overlayLayers: [],
+      overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
       publicBuildingCategories: []
     }
 
-    expect(buildMapDisplayQuery(state)).toEqual({ buildings: "" })
+    expect(buildMapDisplayQuery(state)).toEqual({ layers: "public_buildings", buildings: "" })
     expect(parseMapDisplayState(buildMapDisplayQuery(state), DataType.PLANTABILITY)).toEqual(state)
   })
 })

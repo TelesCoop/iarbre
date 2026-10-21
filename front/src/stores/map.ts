@@ -1113,6 +1113,7 @@ export const useMapStore = defineStore("map", () => {
 
     const clickHandler = (e: any) => {
       if (!e.features || e.features.length === 0) return
+      if (hasPublicBuildingAt(mapInstance, e.point)) return
 
       const featureProps = e.features[0].properties
       const parcelId = featureProps.parcel_id
@@ -1250,13 +1251,22 @@ export const useMapStore = defineStore("map", () => {
     ])
   }
 
+  let publicBuildingsData: GeoJSON.FeatureCollection<
+    GeoJSON.Geometry,
+    PublicBuildingProperties
+  > | null = null
+  let selectedPublicBuildingId: number | null = null
+
   const addPublicBuildingsLayer = async (mapInstance: Map) => {
     if (!mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
-      const data = await getPublicBuildingsData()
-      if (!data) return
+      publicBuildingsData ??= await getPublicBuildingsData()
+      if (!publicBuildingsData) return
       if (!showPublicBuildingsLayer.value) return
       if (!mapInstance.getSource(PUBLIC_BUILDINGS_SOURCE)) {
-        mapInstance.addSource(PUBLIC_BUILDINGS_SOURCE, { type: "geojson", data })
+        mapInstance.addSource(PUBLIC_BUILDINGS_SOURCE, {
+          type: "geojson",
+          data: publicBuildingsData
+        })
       }
     }
 
@@ -1306,13 +1316,17 @@ export const useMapStore = defineStore("map", () => {
       )
     }
 
+    highlightPublicBuilding(mapInstance, selectedPublicBuildingId)
+
     const clickHandler = (e: any) => {
       if (selectionMode.value !== SelectionMode.POINT) return
       const feature = e.features?.[0]
       if (!feature) return
+      clearCadastreSelection()
       selectedPublicBuilding.value = feature.properties as PublicBuildingProperties
+      selectedPublicBuildingId = feature.id as number
       for (const instance of Object.values(mapInstancesByIds.value)) {
-        highlightPublicBuilding(instance, feature.id as number)
+        highlightPublicBuilding(instance, selectedPublicBuildingId)
       }
     }
     const mouseEnterHandler = () => {
@@ -1337,14 +1351,13 @@ export const useMapStore = defineStore("map", () => {
   const clearPublicBuildingSelection = () => {
     if (!selectedPublicBuilding.value) return
     selectedPublicBuilding.value = null
+    selectedPublicBuildingId = null
     for (const mapInstance of Object.values(mapInstancesByIds.value)) {
       highlightPublicBuilding(mapInstance, null)
     }
   }
 
   const removePublicBuildingsLayer = (mapInstance: Map) => {
-    selectedPublicBuilding.value = null
-
     for (const layerId of [
       PUBLIC_BUILDINGS_POINT_LAYER,
       PUBLIC_BUILDINGS_BORDER_LAYER,
@@ -1366,6 +1379,8 @@ export const useMapStore = defineStore("map", () => {
 
   const togglePublicBuildingsLayer = async () => {
     showPublicBuildingsLayer.value = !showPublicBuildingsLayer.value
+
+    if (!showPublicBuildingsLayer.value) clearPublicBuildingSelection()
 
     for (const mapInstance of Object.values(mapInstancesByIds.value)) {
       if (showPublicBuildingsLayer.value) {

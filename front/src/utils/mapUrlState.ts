@@ -77,7 +77,11 @@ export const buildMapDisplayQuery = (state: MapDisplayState): LocationQueryRaw =
     query.layers = state.overlayLayers.join(LIST_SEPARATOR)
   }
   const categories = state.publicBuildingCategories
-  if (categories && categories.length < ALL_PUBLIC_BUILDING_CATEGORIES.length) {
+  if (
+    categories &&
+    categories.length < ALL_PUBLIC_BUILDING_CATEGORIES.length &&
+    state.overlayLayers.includes(OverlayLayer.PUBLIC_BUILDINGS)
+  ) {
     query.buildings = ALL_PUBLIC_BUILDING_CATEGORIES.filter((category) =>
       categories.includes(category)
     ).join(LIST_SEPARATOR)
