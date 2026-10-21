@@ -21,6 +21,7 @@ database_name: "{{ project_slug }}"
 requests_timeout: 120
 gisserver_workers: 8
 gisserver_requests_timeout: 300
+cors_allowed_origins: []
 # if using postgresql database, you will need to
 # - define the var `database_password`
 # - install an additional Ansible module `ansible-galaxy collection install community.postgresql`
