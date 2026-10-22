@@ -1,4 +1,5 @@
 boto3==1.43.114
+certifi==2026.10.19
 coverage==7.16.2
 Django==5.2.17
 django-anymail[mailgun]==15.2
