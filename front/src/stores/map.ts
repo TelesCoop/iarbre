@@ -1695,6 +1695,18 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const destroyMap = (mapId: string) => {
+    const mapInstance = mapInstancesByIds.value[mapId]
+    if (!mapInstance) return
+    shapeDrawing.cleanup()
+    for (const key of Object.keys(layerInteractions.value)) {
+      if (key.startsWith(`${mapId}:`)) delete layerInteractions.value[key]
+    }
+    mapInstance.remove()
+    delete mapInstancesByIds.value[mapId]
+    delete controlsAdded.value[mapId]
+  }
+
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
@@ -1866,6 +1878,7 @@ export const useMapStore = defineStore("map", () => {
   return {
     mapInstancesByIds,
     initMap,
+    destroyMap,
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
