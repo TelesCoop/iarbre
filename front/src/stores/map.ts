@@ -72,7 +72,8 @@ import {
   showSelectionOutline2D,
   clearSelectionOutline2D,
   METERS_PER_DEGREE_LAT,
-  getTerraDrawBeforeId
+  getTerraDrawBeforeId,
+  keepTerraDrawLayers
 } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -859,7 +860,7 @@ export const useMapStore = defineStore("map", () => {
           mapInstance.fire("moveend")
         }
 
-        mapInstance.setStyle(newStyle)
+        mapInstance.setStyle(newStyle, { transformStyle: keepTerraDrawLayers })
         onStyleReady()
       }
     })
@@ -1698,13 +1699,16 @@ export const useMapStore = defineStore("map", () => {
   const destroyMap = (mapId: string) => {
     const mapInstance = mapInstancesByIds.value[mapId]
     if (!mapInstance) return
-    shapeDrawing.cleanup()
-    for (const key of Object.keys(layerInteractions.value)) {
-      if (key.startsWith(`${mapId}:`)) delete layerInteractions.value[key]
+    try {
+      shapeDrawing.cleanup()
+    } finally {
+      for (const key of Object.keys(layerInteractions.value)) {
+        if (key.startsWith(`${mapId}:`)) delete layerInteractions.value[key]
+      }
+      mapInstance.remove()
+      delete mapInstancesByIds.value[mapId]
+      delete controlsAdded.value[mapId]
     }
-    mapInstance.remove()
-    delete mapInstancesByIds.value[mapId]
-    delete controlsAdded.value[mapId]
   }
 
   const changeSelectionMode = (mode: SelectionMode) => {
