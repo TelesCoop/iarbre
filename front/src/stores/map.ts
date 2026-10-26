@@ -44,7 +44,11 @@ import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
+import {
+  PLANTABILITY_COLOR_MAP,
+  PLANTABILITY_DETAIL_ZOOM,
+  getScoreDistribution
+} from "@/utils/plantability"
 import {
   BIOSPHERE_DETAIL_ZOOM,
   BIOSPHERE_CLASSES,
@@ -65,6 +69,7 @@ import {
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
+  extractFeatureProperties,
   getLayerId,
   getSourceId,
   showSelectionWall3D,
@@ -547,7 +552,9 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
     const score = extractFeatureProperty(features, datatype, geolevel, "indice")
-    const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
+    const sourceValues =
+      getScoreDistribution(extractFeatureProperties(features, datatype, geolevel)) ??
+      extractFeatureProperty(features, datatype, geolevel, "source_values")
     const vulnScoreDay =
       geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
         ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_day")
