@@ -4,9 +4,11 @@ import numpy as np
 import rasterio
 import shapely
 from django.contrib.gis.geos import Polygon, GEOSGeometry
+from django.core.management import call_command
 from django.test import TestCase
 from rasterio.transform import from_origin
 
+from iarbre_data.data_config import FACTORS
 from iarbre_data.settings import SRID_DB
 from iarbre_data.factories import CityFactory
 from iarbre_data.management.commands.data_to_raster import (
@@ -100,3 +102,68 @@ class DataToRasterTestCase(TestCase):
                 import shutil
 
                 shutil.rmtree(self.test_output_dir)
+
+    def test_rasterize_blank_factor(self):
+        kwargs = dict(
+            factor_name="Absent",
+            height=self.height,
+            width=self.width,
+            height_out=self.height_out,
+            width_out=self.width_out,
+            transform=self.transform,
+            transform_out=self.transform_out,
+            all_cities_union=GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            grid_size=self.grid_size,
+            output_dir=self.test_output_dir,
+        )
+        try:
+            with self.assertRaises(ValueError):
+                rasterize_data_across_all_cities(**kwargs)
+
+            rasterize_data_across_all_cities(**kwargs, allow_blank=True)
+            output_path = os.path.join(self.test_output_dir, "Absent.tif")
+            with rasterio.open(output_path, "r") as src:
+                output_raster = src.read(1)
+                self.assertFalse(np.any(output_raster))
+                self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
+                self.assertEqual(src.transform, self.transform_out)
+        finally:
+            if os.path.exists(self.test_output_dir):
+                import shutil
+
+                shutil.rmtree(self.test_output_dir)
+
+    def test_command_bbox(self):
+        minx, miny, maxx, maxy = self.cities[0].geometry.extent
+        bbox = [minx, miny, minx + 100, miny + 50]
+        for grid_size in (1, 5):
+            with self.subTest(grid_size=grid_size):
+                try:
+                    call_command(
+                        "data_to_raster",
+                        "--grid-size",
+                        str(grid_size),
+                        "--bbox",
+                        *[str(v) for v in bbox],
+                        "--output-dir",
+                        self.test_output_dir,
+                    )
+                    for factor_name in FACTORS:
+                        if factor_name == "QPV":
+                            continue
+                        output_path = os.path.join(
+                            self.test_output_dir, f"{factor_name}.tif"
+                        )
+                        with rasterio.open(output_path, "r") as src:
+                            self.assertEqual(
+                                src.shape, (50 // grid_size, 100 // grid_size)
+                            )
+                            self.assertEqual(
+                                src.transform,
+                                from_origin(minx, miny + 50, grid_size, grid_size),
+                            )
+                finally:
+                    if os.path.exists(self.test_output_dir):
+                        import shutil
+
+                        shutil.rmtree(self.test_output_dir)

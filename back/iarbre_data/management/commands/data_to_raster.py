@@ -1,6 +1,6 @@
 from django.contrib.gis.db.models import Union
 import rasterio
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.core.management import BaseCommand
 from rasterio.transform import from_origin
 from rasterio.features import rasterize
@@ -11,8 +11,9 @@ from scipy import ndimage
 
 from iarbre_data.data_config import FACTORS
 from iarbre_data.models import City, Data
-from iarbre_data.settings import BASE_DIR
+from iarbre_data.settings import BASE_DIR, SRID_DB
 from iarbre_data.utils.database import load_geodataframe_from_db, log_progress
+from iarbre_data.utils.factor_margin import get_factor_margin
 
 
 def rasterize_data_across_all_cities(
@@ -26,6 +27,8 @@ def rasterize_data_across_all_cities(
     all_cities_union: GEOSGeometry,
     grid_size: int = 5,
     output_dir: str = None,
+    allow_blank: bool = False,
+    margin: float = 0,
 ) -> None:
     """
     Convert Data polygons to a single binary raster across all cities to avoid border effects.
@@ -44,6 +47,8 @@ def rasterize_data_across_all_cities(
         all_cities_union (GEOSGeometry): GEOSGeometry containing the union of all city geometries.
         grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
+        allow_blank (bool, optional): Write an all-zero raster instead of raising when the factor has no data. Defaults to False.
+        margin (float, optional): Buffer in meters applied to the geometries before rasterizing. Defaults to 0.
 
     Returns:
         None
@@ -53,17 +58,21 @@ def rasterize_data_across_all_cities(
 
     qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
     factor_df = load_geodataframe_from_db(qs, [])
+    if margin:
+        factor_df.geometry = factor_df.geometry.buffer(margin)
     log_progress(f"Rasterizing {factor_name}")
     # Rasterize the shapes
-    raster = rasterize(
-        factor_df.geometry,
-        out_shape=(height, width),
-        transform=transform,
-        fill=0,
-        default_value=1,
-        dtype=np.uint8,
-    )
-    if len(raster[raster > 0]) == 0:
+    raster = np.zeros((height, width), dtype=np.uint8)
+    if not factor_df.empty:
+        raster = rasterize(
+            factor_df.geometry,
+            out_shape=(height, width),
+            transform=transform,
+            fill=0,
+            default_value=1,
+            dtype=np.uint8,
+        )
+    if len(raster[raster > 0]) == 0 and not allow_blank:
         raise ValueError(f"{factor_name} is producing a blank tif.")
     log_progress("Sum on 5x5")
     kernel = np.ones((grid_size, grid_size))
@@ -97,9 +106,22 @@ class Command(BaseCommand):
         parser.add_argument(
             "--grid-size", type=int, default=5, help="Grid size in meters"
         )
+        parser.add_argument(
+            "--bbox",
+            type=float,
+            nargs=4,
+            metavar=("MINX", "MINY", "MAXX", "MAXY"),
+            help="Only rasterize this extent (EPSG:2154)",
+        )
+        parser.add_argument(
+            "--output-dir",
+            default=str(BASE_DIR) + "/media/rasters/",
+            help="Directory to save the rasters",
+        )
 
     def handle(self, *args, **options):
-        output_dir = str(BASE_DIR) + "/media/rasters/"
+        output_dir = options["output_dir"]
+        bbox = options["bbox"]
         resolution = 1
         grid_size = options["grid_size"]
         kernel_size = grid_size / resolution
@@ -108,10 +130,14 @@ class Command(BaseCommand):
                 f"Grid size should be a multiple of the resolution: {resolution}m"
             )
         kernel_size = int(kernel_size)
-        # remove test data
-        all_cities_union = City.objects.exclude(code="38250").aggregate(
-            union=Union("geometry")
-        )["union"]
+        if bbox:
+            all_cities_union = Polygon.from_bbox(bbox)
+            all_cities_union.srid = SRID_DB
+        else:
+            # remove test data
+            all_cities_union = City.objects.exclude(code="38250").aggregate(
+                union=Union("geometry")
+            )["union"]
         minx, miny, maxx, maxy = all_cities_union.extent
 
         width = int((maxx - minx) / resolution)
@@ -137,4 +163,6 @@ class Command(BaseCommand):
                 all_cities_union=all_cities_union,
                 grid_size=kernel_size,
                 output_dir=output_dir,
+                allow_blank=bool(bbox),
+                margin=get_factor_margin(factor_name, grid_size),
             )
