@@ -134,7 +134,7 @@ server {
 
         proxy_cache        api_cache;
         proxy_cache_valid  200 30d;
-        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_key    "$host$uri$is_args$args";
         proxy_cache_lock   on;
         add_header         X-Cache-Status $upstream_cache_status;
     }
@@ -160,7 +160,7 @@ server {
 
         proxy_cache        api_cache;
         proxy_cache_valid  200 30d;
-        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_key    "$host$uri$is_args$args";
         proxy_cache_lock   on;
         proxy_cache_methods GET HEAD;
         add_header         X-Cache-Status $upstream_cache_status;
