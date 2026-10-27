@@ -4,12 +4,21 @@ from django.core.management import BaseCommand
 import rasterio
 from rasterio import features
 import numpy as np
+from scipy import ndimage
 from iarbre_data.data_config import BLOCKING_SCORE, FACTORS
 from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
+from iarbre_data.utils.factor_margin import is_fine_grid
 from typing import Dict, Any
-from plantability.constants import colors, rgb_colors
+from plantability.constants import (
+    MIN_PLANTING_SIZE,
+    PLANTABILITY_THRESHOLDS,
+    colors,
+    rgb_colors,
+)
+
+NEIGHBOUR_OFFSETS = [(dr, dc) for dr in (-1, 0, 1) for dc in (-1, 0, 1) if dr or dc]
 
 
 def build_blocked_mask(raster_directory: str, shape: tuple) -> np.ndarray:
@@ -73,6 +82,40 @@ def compute_weighted_sum(
         dst.write(result.astype(np.float32), 1)
 
     log_progress(f"Weighted sum written to {output_file}")
+
+
+def remove_isolated_pixels(result: np.ndarray, blocked: np.ndarray) -> np.ndarray:
+    classes = np.digitize(result, PLANTABILITY_THRESHOLDS[:-1], right=True).astype(
+        np.uint8
+    )
+    sieved = features.sieve(classes, size=2, connectivity=8)
+    sieved[blocked] = classes[blocked]
+    rows, cols = np.nonzero(sieved != classes)
+    log_progress(f"Reassigning {len(rows)} isolated pixels")
+    padded_result = np.pad(result, 1)
+    padded_classes = np.pad(classes, 1, constant_values=np.iinfo(np.uint8).max)
+    neighbour_scores = np.stack(
+        [padded_result[rows + 1 + dr, cols + 1 + dc] for dr, dc in NEIGHBOUR_OFFSETS],
+        axis=1,
+    )
+    neighbour_classes = np.stack(
+        [padded_classes[rows + 1 + dr, cols + 1 + dc] for dr, dc in NEIGHBOUR_OFFSETS],
+        axis=1,
+    )
+    same_class = neighbour_classes == sieved[rows, cols][:, None]
+    result[rows, cols] = (neighbour_scores * same_class).sum(axis=1) / same_class.sum(
+        axis=1
+    )
+    return result
+
+
+def keep_planting_spots(
+    result: np.ndarray, blocked: np.ndarray, pixel_size: float
+) -> np.ndarray:
+    size = round(MIN_PLANTING_SIZE / pixel_size)
+    result = ndimage.grey_opening(result, size=(size, size))
+    result[blocked] = BLOCKING_SCORE
+    return result
 
 
 def cut_outside_cities(
@@ -175,6 +218,9 @@ class Command(BaseCommand):
             )
 
         result[blocked] = BLOCKING_SCORE
+        if is_fine_grid(meta["transform"].a):
+            result = remove_isolated_pixels(result, blocked)
+            result = keep_planting_spots(result, blocked, meta["transform"].a)
 
         all_cities = select_city(None).union_all()
         result = cut_outside_cities(meta, result, all_cities)
