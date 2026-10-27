@@ -26,6 +26,7 @@ export const DEFAULT_MAP_STYLE = MapStyle.OSM
 
 // Terra Draw layer name (used to position layers below drawing layers)
 export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"
+export const TERRA_DRAW_ID_PREFIX = "td-"
 
 // Mirrors the backend ScoresInPolygonView.MAX_POLYGON_AREA_M2 (5 km²): selections
 // larger than this are not sent to the server, to avoid saturating it.

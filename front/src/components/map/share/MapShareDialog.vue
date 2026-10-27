@@ -121,10 +121,7 @@ const prepareShare = () => {
   draftSize.value = { ...exportSize.value }
   draftSide.value = "width"
   shortUrl.value = ""
-  const currentShareId = ++shareId
-  fetchShortLink().then((url) => {
-    if (currentShareId === shareId) shortUrl.value = url
-  })
+  shareId++
   renderExport()
 }
 
@@ -145,7 +142,14 @@ const downloadExport = async () => {
 }
 
 const handleCopy = () => {
-  if (shortUrl.value) copyLink(shortUrl.value)
+  const currentShareId = shareId
+  copyLink(
+    shortUrl.value ||
+      fetchShortLink().then((url) => {
+        if (currentShareId === shareId) shortUrl.value = url
+        return url
+      })
+  )
 }
 
 watch(
@@ -300,14 +304,9 @@ onBeforeUnmount(releasePreview)
             <span
               class="flex-1 min-w-0 truncate font-mono text-primary-900"
               data-cy="share-view-short-link"
-              >{{ shortUrl || "Création du lien…" }}</span
+              >{{ shortUrl || "Créé à la copie" }}</span
             >
-            <AppButton
-              variant="gold"
-              :disabled="!shortUrl"
-              data-cy="share-view-copy-button"
-              @click="handleCopy"
-            >
+            <AppButton variant="gold" data-cy="share-view-copy-button" @click="handleCopy">
               <template #icon-left>
                 <IconCheck v-if="isCopied" :size="16" />
                 <IconCopy v-else :size="16" />

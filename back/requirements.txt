@@ -33,6 +33,6 @@ requests_oauthlib==2.0.0
 rollbar==1.5.0
 scipy==1.18.1
 shapely==2.2.0
-telescoop_backup==0.6.5
+telescoop_backup==0.6.7
 tqdm==4.70.1
 Unidecode==1.4.0

@@ -22,6 +22,18 @@ export const PLANTABILITY_SCORES_STR = PLANTABILITY_SCORES.map(String)
 // below it the tile feature carries the aggregated score distribution.
 export const PLANTABILITY_DETAIL_ZOOM = 17
 
+export const getScoreDistribution = (
+  properties: Record<string, unknown> | undefined
+): Record<string, number> | undefined => {
+  if (!properties) return undefined
+  const distribution: Record<string, number> = {}
+  for (const score of PLANTABILITY_SCORES) {
+    const count = properties[`count_${score}`]
+    if (typeof count === "number") distribution[score] = count
+  }
+  return Object.keys(distribution).length > 0 ? distribution : undefined
+}
+
 export function getPlantabilityScore(id: number): string {
   if (id < PlantabilityScoreThreshold.VERY_CONSTRAINED) return PlantabilityScore.IMPOSSIBLE
   if (id < PlantabilityScoreThreshold.CONSTRAINED) return PlantabilityScore.VERY_CONSTRAINED

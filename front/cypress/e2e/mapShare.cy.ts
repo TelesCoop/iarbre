@@ -19,6 +19,11 @@ describe("Share the current map view", () => {
     cy.getBySel("share-view-button").click()
     cy.getBySel("share-view-dialog").should("be.visible")
 
+    cy.get("@shortLink.all").should("have.length", 0)
+    cy.window().then((win) => {
+      cy.stub(win.navigator.clipboard, "write").resolves()
+    })
+    cy.getBySel("share-view-copy-button").click()
     cy.wait("@shortLink")
       .its("request.body")
       .should("deep.equal", { path: "/plantability/14/45.75773/4.85377" })

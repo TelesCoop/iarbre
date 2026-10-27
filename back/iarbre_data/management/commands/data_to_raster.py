@@ -132,8 +132,10 @@ def rasterize_data_across_all_cities(
         raster |= rasterizer(layer, margin)
     for layer in exclude or []:
         raster[rasterizer(layer) > 0] = 0
-    if not raster.any() and not allow_blank:
-        raise ValueError(f"{factor_name} is producing a blank tif.")
+    if not raster.any():
+        if not allow_blank:
+            raise ValueError(f"{factor_name} is producing a blank tif.")
+        log_progress(f"{factor_name} is blank in this extent")
     if blur:
         blurred = ndimage.gaussian_filter(raster, blur, output=np.float32)
         pessimistic = np.maximum if FACTORS[factor_name] < 0 else np.minimum
