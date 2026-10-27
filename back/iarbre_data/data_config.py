@@ -344,10 +344,10 @@ URL_FILES = [
         "uncertainty": None,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
         "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-        "typename=metropole-de-lyon:tel_telecom.telfibreripthd_1&"
+        "typename=metropole-de-lyon:tel_telecom.fibre_rip_thd&"
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "scripts": ["fibre.py"],
-        "layer_name": "tel_telecom.telfibreripthd_1",
+        "layer_name": "tel_telecom.fibre_rip_thd",
         "actions": [{"buffer_size": 2, "union": True}],
         "factors": ["Réseau Fibre"],
         "output_type": "LINESTRING",
