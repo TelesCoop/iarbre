@@ -1,15 +1,15 @@
+import os
+
 from django.core.management import BaseCommand
 import rasterio
 from rasterio import features
 import numpy as np
-from iarbre_data.data_config import FACTORS
+from iarbre_data.data_config import BLOCKING_SCORE, FACTORS
 from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
 from typing import Dict, Any
 from plantability.constants import colors, rgb_colors
-
-BLOCKING_SCORE = float(min(FACTORS.values()))
 
 
 def build_blocked_mask(raster_directory: str, shape: tuple) -> np.ndarray:
@@ -139,11 +139,19 @@ def threshold_and_convert_to_colors(
 class Command(BaseCommand):
     help = "Compute and save factors data."
 
+    def add_arguments(self, parser):
+        """Add arguments to the command."""
+        parser.add_argument(
+            "--raster-dir",
+            default=str(BASE_DIR) + "/media/rasters/",
+            help="Directory containing the factor rasters, outputs are written there",
+        )
+
     def handle(self, *args, **options):
         """Compute and save factor data for the selected city."""
-        raster_directory = str(BASE_DIR) + "/media/rasters/"
-        output_file = str(BASE_DIR) + "/media/rasters/plantability.tif"
-        output_color_file = str(BASE_DIR) + "/media/rasters/plantability_colors.tif"
+        raster_directory = os.path.join(options["raster_dir"], "")
+        output_file = raster_directory + "plantability.tif"
+        output_color_file = raster_directory + "plantability_colors.tif"
 
         file_path = raster_directory + list(FACTORS.keys())[0] + ".tif"
         with rasterio.open(file_path) as ref_src:
