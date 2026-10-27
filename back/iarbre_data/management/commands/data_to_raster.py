@@ -94,19 +94,19 @@ def rasterize_data_across_all_cities(
     """
     Convert Data polygons to a single binary raster across all cities to avoid border effects.
 
-    This function rasterizes the geometries of a specified factor across all cities, applies a convolution
-    to aggregate the raster values into larger blocks, and saves the resulting raster to a file.
+    This function rasterizes the geometries of a specified factor across all cities, sums the raster values
+    over grid_size x grid_size blocks, and saves the resulting raster to a file.
 
     Args:
         factor_name (str): Name of the factor to transform to raster.
         height (int): Height of the output raster.
         width (int): Width of the output raster.
-        height_out (int): Height of the output raster after convolution.
-        width_out (int): Width of the output raster after convolution.
+        height_out (int): Height of the output raster after aggregation.
+        width_out (int): Width of the output raster after aggregation.
         transform (rasterio.Affine): Affine transformation for the factor transformation.
         transform_out (rasterio.Affine): Affine transformation for the raster output.
         all_cities_union (GEOSGeometry): GEOSGeometry containing the union of all city geometries.
-        grid_size (int, optional): Size of the convolution kernel. Defaults to 5.
+        grid_size (int, optional): Size of the aggregation block in pixels. Defaults to 5.
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
         allow_blank (bool, optional): Write an all-zero raster instead of raising when the factor has no data. Defaults to False.
         margin (float, optional): Buffer in meters applied to the geometries before rasterizing. Defaults to 0.
@@ -138,18 +138,14 @@ def rasterize_data_across_all_cities(
         blurred = ndimage.gaussian_filter(raster, blur, output=np.float32)
         pessimistic = np.maximum if FACTORS[factor_name] < 0 else np.minimum
         raster = pessimistic(blurred, raster, out=blurred)
-    if grid_size == 1:
-        coarse_raster = raster
-    else:
-        log_progress("Sum on 5x5")
-        kernel = np.ones((grid_size, grid_size))
-        coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
-            0 : height_out * grid_size : grid_size,
-            0 : width_out * grid_size : grid_size,
-        ]
-    coarse_raster = np.multiply(
-        coarse_raster, 100 / max_count, dtype=np.float32
-    ).astype(np.uint8)
+    log_progress("Sum on 5x5")
+    coarse_raster = (
+        raster[: height_out * grid_size, : width_out * grid_size]
+        .reshape(height_out, grid_size, width_out, grid_size)
+        .sum(axis=(1, 3), dtype=np.float32)
+    )
+    coarse_raster *= 100 / max_count
+    coarse_raster = coarse_raster.astype(np.uint8)
     # Save the raster to file
     output_path = os.path.join(output_dir, f"{factor_name}.tif")
     log_progress(f"Saving {factor_name}")

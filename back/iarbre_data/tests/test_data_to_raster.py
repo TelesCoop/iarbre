@@ -213,3 +213,35 @@ class DataToRasterTestCase(TestCase):
         self.assertEqual(rasterize_layer.call_count, 1)
         self.assertIs(first, second)
         self.assertEqual(rasterizer.cache, {})
+
+    def test_tile_aggregates_its_own_pixels(self):
+        minx, _, _, maxy = self.all_cities_union.total_bounds
+        centroid = self.cities[0].geometry.centroid
+        col = int((centroid.x - minx) // self.grid_size)
+        row = int((maxy - centroid.y) // self.grid_size)
+        tile = Polygon.from_bbox(
+            (
+                minx + col * self.grid_size,
+                maxy - (row + 1) * self.grid_size,
+                minx + (col + 1) * self.grid_size,
+                maxy - row * self.grid_size,
+            )
+        )
+        tile.srid = SRID_DB
+        Data.objects.create(factor="Tile", geometry=tile)
+        rasterize_data_across_all_cities(
+            factor_name="Tile",
+            height=self.height,
+            width=self.width,
+            height_out=self.height_out,
+            width_out=self.width_out,
+            transform=from_origin(minx, maxy, 1, 1),
+            transform_out=from_origin(minx, maxy, self.grid_size, self.grid_size),
+            all_cities_union=GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            grid_size=self.grid_size,
+            output_dir=self.test_output_dir,
+        )
+        with rasterio.open(os.path.join(self.test_output_dir, "Tile.tif")) as src:
+            output_raster = src.read(1)
+        self.assertEqual(output_raster[row, col], 100)
+        self.assertEqual(output_raster.sum(), 100)
