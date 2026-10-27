@@ -116,9 +116,12 @@ class ComputePlantabilityRasterTestCase(TestCase):
 
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
-        # Test if it is RGB
-        expected_shape = result.shape + (3,)
+        # Test if it is RGBA
+        expected_shape = result.shape + (4,)
         self.assertEqual(result_colors.shape, expected_shape)
+        self.assertEqual(result_colors[75, 75, 3], 0)
+        self.assertEqual(result_colors[27, 30, 3], 255)
+        self.assertEqual(tuple(result_colors[0, 0]), (255, 255, 255, 255))
 
         # Test nodata in white
         self.assertEqual(

@@ -106,7 +106,7 @@ def threshold_and_convert_to_colors(
     result: np.ndarray, rgb_colors: Dict[float, np.ndarray], colors: Dict[float, str]
 ) -> np.ndarray:
     """
-    Apply thresholding to the result array and convert it to RGB colors.
+    Apply thresholding to the result array and convert it to RGBA colors.
 
     Args:
         result (np.ndarray): The array containing the computed weighted sum.
@@ -114,24 +114,24 @@ def threshold_and_convert_to_colors(
         colors (Dict[float, str]): A dictionary mapping threshold values to color names.
 
     Returns:
-        np.ndarray: The array with RGB color values.
+        np.ndarray: The array with RGBA color values, blocked pixels are transparent.
     """
     thresholds = sorted(colors.keys())
-    result_colors = np.zeros(result.shape + (3,), dtype=np.uint8)
+    result_colors = np.full(result.shape + (4,), 255, dtype=np.uint8)
 
     mask = result <= thresholds[0]
-    result_colors[mask] = rgb_colors[thresholds[0]]
+    result_colors[mask] = (*rgb_colors[thresholds[0]], 0)
 
     for i in range(0, len(thresholds) - 1):
         lower = thresholds[i]
         upper = thresholds[i + 1]
         mask = (result > lower) & (result <= upper)
-        result_colors[mask] = rgb_colors[upper]
+        result_colors[mask, :3] = rgb_colors[upper]
 
     mask = result > thresholds[-1]
-    result_colors[mask] = rgb_colors[thresholds[-1]]
+    result_colors[mask, :3] = rgb_colors[thresholds[-1]]
     nodata_mask = result == -9999
-    result_colors[nodata_mask] = np.array([255, 255, 255], dtype=np.uint8)
+    result_colors[nodata_mask] = 255
 
     return result_colors
 
@@ -185,8 +185,9 @@ class Command(BaseCommand):
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
         color_meta = meta.copy()
-        color_meta.update(dtype=rasterio.uint8, count=3, nodata=None)
+        color_meta.update(
+            dtype=rasterio.uint8, count=4, nodata=None, photometric="RGB", alpha="YES"
+        )
 
         with rasterio.open(output_color_file, "w", **color_meta) as dst:
-            for i in range(3):
-                dst.write(result_colors[:, :, i], i + 1)
+            dst.write(np.moveaxis(result_colors, -1, 0))
