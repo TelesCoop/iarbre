@@ -71,7 +71,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   overlaySizeObserver?.disconnect()
+  overlaySizeObserver = null
   publishOverlaySizes(null, null)
+  mapStore.destroyMap(props.mapId)
 })
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)

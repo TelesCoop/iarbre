@@ -73,7 +73,7 @@ server {
     gzip_comp_level 6;
     gzip_buffers 16 32k;
     gzip_min_length 1000;
-    gzip_types application/json application/javascript application/xml application/gml+xml application/geo+json text/css text/javascript text/plain text/xml image/svg+xml;
+    gzip_types application/json application/javascript application/xml application/gml+xml application/geo+json application/x-protobuf application/vnd.mapbox-vector-tile text/css text/javascript text/plain text/xml image/svg+xml;
 
     {% if has_backend is defined and has_backend %}
     # backend static stuff

@@ -44,7 +44,11 @@ import { getVegetationHeightAtPoint } from "@/services/vegetationService"
 import { VulnerabilityMode as VulnerabilityModeType } from "@/utils/vulnerability"
 
 import { VULNERABILITY_COLOR_MAP } from "@/utils/vulnerability"
-import { PLANTABILITY_COLOR_MAP, PLANTABILITY_DETAIL_ZOOM } from "@/utils/plantability"
+import {
+  PLANTABILITY_COLOR_MAP,
+  PLANTABILITY_DETAIL_ZOOM,
+  getScoreDistribution
+} from "@/utils/plantability"
 import {
   BIOSPHERE_DETAIL_ZOOM,
   BIOSPHERE_CLASSES,
@@ -65,6 +69,7 @@ import {
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
+  extractFeatureProperties,
   getLayerId,
   getSourceId,
   showSelectionWall3D,
@@ -72,7 +77,8 @@ import {
   showSelectionOutline2D,
   clearSelectionOutline2D,
   METERS_PER_DEGREE_LAT,
-  getTerraDrawBeforeId
+  getTerraDrawBeforeId,
+  keepTerraDrawLayers
 } from "@/utils/map"
 import {
   QPV_CASING_COLOR,
@@ -546,7 +552,9 @@ export const useMapStore = defineStore("map", () => {
   ) => {
     const featureId = extractFeatureProperty(features, datatype, geolevel, "id")
     const score = extractFeatureProperty(features, datatype, geolevel, "indice")
-    const sourceValues = extractFeatureProperty(features, datatype, geolevel, "source_values")
+    const sourceValues =
+      getScoreDistribution(extractFeatureProperties(features, datatype, geolevel)) ??
+      extractFeatureProperty(features, datatype, geolevel, "source_values")
     const vulnScoreDay =
       geolevel === GeoLevel.TILE && datatype === DataType.PLANTABILITY_VULNERABILITY
         ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_day")
@@ -859,7 +867,7 @@ export const useMapStore = defineStore("map", () => {
           mapInstance.fire("moveend")
         }
 
-        mapInstance.setStyle(newStyle)
+        mapInstance.setStyle(newStyle, { transformStyle: keepTerraDrawLayers })
         onStyleReady()
       }
     })
@@ -1695,6 +1703,21 @@ export const useMapStore = defineStore("map", () => {
     })
   }
 
+  const destroyMap = (mapId: string) => {
+    const mapInstance = mapInstancesByIds.value[mapId]
+    if (!mapInstance) return
+    try {
+      shapeDrawing.cleanup()
+    } finally {
+      for (const key of Object.keys(layerInteractions.value)) {
+        if (key.startsWith(`${mapId}:`)) delete layerInteractions.value[key]
+      }
+      mapInstance.remove()
+      delete mapInstancesByIds.value[mapId]
+      delete controlsAdded.value[mapId]
+    }
+  }
+
   const changeSelectionMode = (mode: SelectionMode) => {
     selectionMode.value = mode
 
@@ -1866,6 +1889,7 @@ export const useMapStore = defineStore("map", () => {
   return {
     mapInstancesByIds,
     initMap,
+    destroyMap,
     selectedDataType,
     selectedMapStyle,
     changeMapStyle,
