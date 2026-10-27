@@ -1,4 +1,7 @@
 import os
+import shutil
+from collections import Counter
+from unittest import mock
 
 import numpy as np
 import rasterio
@@ -11,7 +14,9 @@ from rasterio.transform import from_origin
 from iarbre_data.data_config import FACTORS
 from iarbre_data.settings import SRID_DB
 from iarbre_data.factories import CityFactory
+from iarbre_data.management.commands import data_to_raster
 from iarbre_data.management.commands.data_to_raster import (
+    LayerRasterizer,
     rasterize_data_across_all_cities,
 )
 from iarbre_data.models import Data
@@ -22,6 +27,7 @@ class DataToRasterTestCase(TestCase):
     def setUp(self):
         self.test_output_dir = "test_raster_outputs"
         os.makedirs(self.test_output_dir, exist_ok=True)
+        self.addCleanup(shutil.rmtree, self.test_output_dir, ignore_errors=True)
 
         self.cities = [CityFactory() for _ in range(3)]
 
@@ -70,38 +76,30 @@ class DataToRasterTestCase(TestCase):
             Data.objects.create(factor=self.factor_name, geometry=poly)
 
     def test_rasterize_data_across_all_cities(self):
-        try:
-            rasterize_data_across_all_cities(
-                factor_name=self.factor_name,
-                height=self.height,
-                width=self.width,
-                height_out=self.height_out,
-                width_out=self.width_out,
-                transform=self.transform,
-                transform_out=self.transform_out,
-                all_cities_union=GEOSGeometry(
-                    self.all_cities_union.geometry.iloc[0].wkt
-                ),
-                grid_size=self.grid_size,
-                output_dir=self.test_output_dir,
-            )
+        rasterize_data_across_all_cities(
+            factor_name=self.factor_name,
+            height=self.height,
+            width=self.width,
+            height_out=self.height_out,
+            width_out=self.width_out,
+            transform=self.transform,
+            transform_out=self.transform_out,
+            all_cities_union=GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            grid_size=self.grid_size,
+            output_dir=self.test_output_dir,
+        )
 
-            output_path = os.path.join(self.test_output_dir, f"{self.factor_name}.tif")
-            self.assertTrue(os.path.exists(output_path))
+        output_path = os.path.join(self.test_output_dir, f"{self.factor_name}.tif")
+        self.assertTrue(os.path.exists(output_path))
 
-            with rasterio.open(output_path, "r") as src:
-                output_raster = src.read(1)
+        with rasterio.open(output_path, "r") as src:
+            output_raster = src.read(1)
 
-                self.assertTrue(np.any(output_raster > 0))
-                self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
+            self.assertTrue(np.any(output_raster > 0))
+            self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
 
-                self.assertEqual(src.crs.to_string(), f"EPSG:{SRID_DB}")
-                self.assertEqual(src.transform, self.transform_out)
-        finally:
-            if os.path.exists(self.test_output_dir):
-                import shutil
-
-                shutil.rmtree(self.test_output_dir)
+            self.assertEqual(src.crs.to_string(), f"EPSG:{SRID_DB}")
+            self.assertEqual(src.transform, self.transform_out)
 
     def test_rasterize_blank_factor(self):
         kwargs = dict(
@@ -116,54 +114,102 @@ class DataToRasterTestCase(TestCase):
             grid_size=self.grid_size,
             output_dir=self.test_output_dir,
         )
-        try:
-            with self.assertRaises(ValueError):
-                rasterize_data_across_all_cities(**kwargs)
+        with self.assertRaises(ValueError):
+            rasterize_data_across_all_cities(**kwargs)
 
-            rasterize_data_across_all_cities(**kwargs, allow_blank=True)
-            output_path = os.path.join(self.test_output_dir, "Absent.tif")
-            with rasterio.open(output_path, "r") as src:
-                output_raster = src.read(1)
-                self.assertFalse(np.any(output_raster))
-                self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
-                self.assertEqual(src.transform, self.transform_out)
-        finally:
-            if os.path.exists(self.test_output_dir):
-                import shutil
+        rasterize_data_across_all_cities(**kwargs, allow_blank=True)
+        output_path = os.path.join(self.test_output_dir, "Absent.tif")
+        with rasterio.open(output_path, "r") as src:
+            output_raster = src.read(1)
+            self.assertFalse(np.any(output_raster))
+            self.assertEqual(output_raster.shape, (self.height_out, self.width_out))
+            self.assertEqual(src.transform, self.transform_out)
 
-                shutil.rmtree(self.test_output_dir)
+    def test_rasterize_with_exclude(self):
+        city_geometry = self.cities[0].geometry
+        Data.objects.create(factor="Hole", geometry=city_geometry)
+        minx, _, _, maxy = self.all_cities_union.total_bounds
+        kwargs = dict(
+            factor_name=self.factor_name,
+            height=self.height,
+            width=self.width,
+            height_out=self.height_out,
+            width_out=self.width_out,
+            transform=from_origin(minx, maxy, 1, 1),
+            transform_out=from_origin(minx, maxy, self.grid_size, self.grid_size),
+            all_cities_union=GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            grid_size=self.grid_size,
+            output_dir=self.test_output_dir,
+            allow_blank=True,
+        )
+        output_path = os.path.join(self.test_output_dir, f"{self.factor_name}.tif")
+        rasterize_data_across_all_cities(**kwargs)
+        with rasterio.open(output_path, "r") as src:
+            full = src.read(1).astype(int).sum()
+        rasterize_data_across_all_cities(**kwargs, exclude=[("data", "Hole")])
+        with rasterio.open(output_path, "r") as src:
+            holed = src.read(1).astype(int).sum()
+        self.assertLess(holed, full)
 
     def test_command_bbox(self):
         minx, miny, maxx, maxy = self.cities[0].geometry.extent
         bbox = [minx, miny, minx + 100, miny + 50]
         for grid_size in (1, 5):
             with self.subTest(grid_size=grid_size):
-                try:
-                    call_command(
-                        "data_to_raster",
-                        "--grid-size",
-                        str(grid_size),
-                        "--bbox",
-                        *[str(v) for v in bbox],
-                        "--output-dir",
-                        self.test_output_dir,
+                call_command(
+                    "data_to_raster",
+                    "--grid-size",
+                    str(grid_size),
+                    "--bbox",
+                    *[str(v) for v in bbox],
+                    "--output-dir",
+                    self.test_output_dir,
+                )
+                for factor_name in FACTORS:
+                    if factor_name == "QPV":
+                        continue
+                    output_path = os.path.join(
+                        self.test_output_dir, f"{factor_name}.tif"
                     )
-                    for factor_name in FACTORS:
-                        if factor_name == "QPV":
-                            continue
-                        output_path = os.path.join(
-                            self.test_output_dir, f"{factor_name}.tif"
+                    with rasterio.open(output_path, "r") as src:
+                        self.assertEqual(src.shape, (50 // grid_size, 100 // grid_size))
+                        self.assertEqual(
+                            src.transform,
+                            from_origin(minx, miny + 50, grid_size, grid_size),
                         )
-                        with rasterio.open(output_path, "r") as src:
-                            self.assertEqual(
-                                src.shape, (50 // grid_size, 100 // grid_size)
-                            )
-                            self.assertEqual(
-                                src.transform,
-                                from_origin(minx, miny + 50, grid_size, grid_size),
-                            )
-                finally:
-                    if os.path.exists(self.test_output_dir):
-                        import shutil
 
-                        shutil.rmtree(self.test_output_dir)
+    def test_rasterize_fine_grid(self):
+        minx, _, _, maxy = self.all_cities_union.total_bounds
+        rasterize_data_across_all_cities(
+            factor_name=self.factor_name,
+            height=self.height,
+            width=self.width,
+            height_out=self.height,
+            width_out=self.width,
+            transform=from_origin(minx, maxy, 1, 1),
+            transform_out=from_origin(minx, maxy, 1, 1),
+            all_cities_union=GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            grid_size=1,
+            output_dir=self.test_output_dir,
+        )
+        output_path = os.path.join(self.test_output_dir, f"{self.factor_name}.tif")
+        with rasterio.open(output_path, "r") as src:
+            self.assertEqual(set(np.unique(src.read(1))), {100})
+
+    def test_shared_layer_rasterized_once(self):
+        layer = ("data", self.factor_name)
+        minx, _, _, maxy = self.all_cities_union.total_bounds
+        rasterizer = LayerRasterizer(
+            GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
+            (self.height, self.width),
+            from_origin(minx, maxy, 1, 1),
+            Counter({(layer, 0): 2}),
+        )
+        with mock.patch.object(
+            data_to_raster, "rasterize_layer", wraps=data_to_raster.rasterize_layer
+        ) as rasterize_layer:
+            first = rasterizer(layer)
+            second = rasterizer(layer)
+        self.assertEqual(rasterize_layer.call_count, 1)
+        self.assertIs(first, second)
+        self.assertEqual(rasterizer.cache, {})

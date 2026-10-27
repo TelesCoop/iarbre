@@ -49,18 +49,25 @@ def read_data(data_config: dict) -> gpd.GeoDataFrame:
 class Command(BaseCommand):
     help = "Create grid and save it to DB"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--sources",
+            nargs="+",
+            help="Only import the data sources with these names",
+        )
+
     def handle(self, *args, **options):
         """Save all land occupancy data to the database."""
         data_configs = DATA_FILES + URL_FILES
+        if options["sources"]:
+            data_configs = [
+                data_config
+                for data_config in data_configs
+                if data_config["name"] in options["sources"]
+            ]
         for data_config in data_configs:
             if data_config["name"] == "Local Climate Zone":
                 continue
-            if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
-                log_progress(
-                    f"Data with metadata {data_config['name']}"
-                    f" already exists ({qs.count()} rows). All deleted"
-                )
-                qs.delete()
             start = time.time()
             try:
                 log_progress(
@@ -73,6 +80,12 @@ class Command(BaseCommand):
                 continue
             log_progress("Processing data.")
             datas = process_data(df, data_config)
+            if (qs := Data.objects.filter(metadata=data_config["name"])).count() > 0:
+                log_progress(
+                    f"Data with metadata {data_config['name']}"
+                    f" already exists ({qs.count()} rows). All deleted"
+                )
+                qs.delete()
             log_progress("Saving geom data.")
             save_geometries(datas, data_config)
             log_progress(

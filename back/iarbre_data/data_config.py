@@ -44,6 +44,40 @@ FACTORS = {
 
 BLOCKING_SCORE = float(min(FACTORS.values()))
 
+VEGESTRATE_LAYERS = [
+    ("vegestrate", "arborescent"),
+    ("vegestrate", "arbustif"),
+    ("vegestrate", "herbacee"),
+]
+
+FINE_GRID_FACTORS = {
+    "Strate arborée": {"include": [("vegestrate", "arborescent")], "uncertainty": 0.5},
+    "Strate basse et pelouse": {
+        "include": [
+            ("vegestrate", "arbustif"),
+            ("vegestrate", "herbacee"),
+            ("data", "EVA sols nus, friches et milieux herbeux"),
+        ],
+        "exclude": [("vegestrate", "arborescent")],
+        "uncertainty": 0.5,
+    },
+    "Espaces agricoles": {
+        "include": [("data", "EVA espaces agricoles")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+    "Forêts": {
+        "include": [("data", "EVA forêts")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+    "Espaces artificialisés": {
+        "include": [("data", "EVA espaces artificialisés")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+}
+
 META_FACTORS_MAPPING = {
     "Réseaux et infrastructures": [
         "Assainissement",
@@ -94,7 +128,6 @@ META_FACTORS_MAPPING = {
 UPDATES = [
     {
         "name": "Réseau Fibre",
-        "uncertainty": None,
         "file": "voirie.gpkg",
         "layer_name": "pub_app_patrimoinevoirie.liengeniecivil",
         "actions": [
@@ -104,6 +137,29 @@ UPDATES = [
         "output_type": "POINT",
     },
 ]
+
+EVA_AGRICULTURAL_CODES = [211, 212, 213, 214, 215, 221, 222, 223, 224, 225, 231, 241]
+EVA_FOREST_CODES = [311, 312, 322, 331, 341, 342, 351, 371, 372, 374, 411, 412]
+EVA_OPEN_GROUND_CODES = [14, 16, 17, 361, 362]
+EVA_ARTIFICIAL_CODES = [15]
+EVA_LAND_COVER_CODES = [
+    EVA_OPEN_GROUND_CODES,
+    EVA_AGRICULTURAL_CODES,
+    EVA_FOREST_CODES,
+    EVA_ARTIFICIAL_CODES,
+]
+
+
+def eva_actions(code_groups: list[list[int]], **extra) -> list[dict]:
+    return [
+        {
+            "filters": [{"name": "gl_2015", "value": code} for code in codes],
+            "explode": True,
+            **extra,
+        }
+        for codes in code_groups
+    ]
+
 
 DATA_FILES = [
     {
@@ -184,68 +240,10 @@ DATA_FILES = [
         "name": "EVA 2015",
         "uncertainty": 3,
         "file": "new_all_eva.shp",
-        "actions": [
-            {
-                "filter": {"name": "gl_2015", "value": 11},
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [12, 13, 14, 16, 17, 361, 362]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [
-                        211,
-                        212,
-                        213,
-                        214,
-                        215,
-                        221,
-                        222,
-                        223,
-                        224,
-                        225,
-                        231,
-                        241,
-                    ]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [
-                        311,
-                        312,
-                        322,
-                        331,
-                        341,
-                        342,
-                        351,
-                        371,
-                        372,
-                        374,
-                        411,
-                        412,
-                    ]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filter": {"name": "gl_2015", "value": 15},
-                "explode": True,
-                "simplify": 3,
-            },
-        ],
+        "actions": eva_actions(
+            [[11], [12, 13] + EVA_OPEN_GROUND_CODES, *EVA_LAND_COVER_CODES[1:]],
+            simplify=3,
+        ),
         "scripts": [
             "strate_arboree.py",
             "strate_basse.py",
@@ -259,6 +257,19 @@ DATA_FILES = [
             "Espaces agricoles",
             "Forêts",
             "Espaces artificialisés",
+        ],
+        "output_type": "POLYGON",
+    },
+    {
+        "name": "EVA 2015 1m",
+        "uncertainty": None,
+        "file": "new_all_eva.shp",
+        "actions": eva_actions(EVA_LAND_COVER_CODES),
+        "factors": [
+            "EVA sols nus, friches et milieux herbeux",
+            "EVA espaces agricoles",
+            "EVA forêts",
+            "EVA espaces artificialisés",
         ],
         "output_type": "POLYGON",
     },
@@ -286,6 +297,7 @@ URL_FILES = [
         "name": "Entrée parking",
         "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/lyon-parc-auto/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=lyon-parc-auto:lpa_mobilite.entree_parking&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0",
+        "layer_name": "lpa_mobilite.entree_parking",
         "actions": [{"buffer_size": 5}],
         "scripts": [],
         "factors": ["Entrée parking"],

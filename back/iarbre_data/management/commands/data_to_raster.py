@@ -1,3 +1,5 @@
+from collections import Counter
+
 from django.contrib.gis.db.models import Union
 import rasterio
 from django.contrib.gis.geos import GEOSGeometry, Polygon
@@ -10,10 +12,65 @@ import os
 from scipy import ndimage
 
 from iarbre_data.data_config import FACTORS
-from iarbre_data.models import City, Data
+from iarbre_data.models import City
 from iarbre_data.settings import BASE_DIR, SRID_DB
 from iarbre_data.utils.database import load_geodataframe_from_db, log_progress
-from iarbre_data.utils.factor_margin import get_factor_margin
+from iarbre_data.utils.factor_layers import (
+    Layer,
+    get_factor_layers,
+    get_layer_queryset,
+)
+from iarbre_data.utils.factor_margin import get_factor_blur, get_factor_margin
+
+
+def rasterize_layer(
+    layer: Layer,
+    all_cities_union: GEOSGeometry,
+    shape: tuple,
+    transform: rasterio.Affine,
+    margin: float = 0,
+) -> np.ndarray:
+    qs = get_layer_queryset(layer).filter(geometry__intersects=all_cities_union)
+    layer_df = load_geodataframe_from_db(qs, [])
+    if layer_df.empty:
+        return np.zeros(shape, dtype=np.uint8)
+    if margin:
+        layer_df.geometry = layer_df.geometry.buffer(margin)
+    return rasterize(
+        layer_df.geometry,
+        out_shape=shape,
+        transform=transform,
+        fill=0,
+        default_value=1,
+        dtype=np.uint8,
+    )
+
+
+class LayerRasterizer:
+    def __init__(
+        self,
+        all_cities_union: GEOSGeometry,
+        shape: tuple,
+        transform: rasterio.Affine,
+        uses: Counter | None = None,
+    ):
+        self.all_cities_union = all_cities_union
+        self.shape = shape
+        self.transform = transform
+        self.uses = uses or Counter()
+        self.cache = {}
+
+    def __call__(self, layer: Layer, margin: float = 0) -> np.ndarray:
+        key = (layer, margin)
+        if key not in self.cache:
+            raster = rasterize_layer(
+                layer, self.all_cities_union, self.shape, self.transform, margin
+            )
+            if self.uses[key] <= 1:
+                return raster
+            self.cache[key] = raster
+        self.uses[key] -= 1
+        return self.cache[key] if self.uses[key] else self.cache.pop(key)
 
 
 def rasterize_data_across_all_cities(
@@ -29,6 +86,10 @@ def rasterize_data_across_all_cities(
     output_dir: str = None,
     allow_blank: bool = False,
     margin: float = 0,
+    include: list[Layer] | None = None,
+    exclude: list[Layer] | None = None,
+    blur: float = 0,
+    rasterizer: LayerRasterizer | None = None,
 ) -> None:
     """
     Convert Data polygons to a single binary raster across all cities to avoid border effects.
@@ -49,6 +110,10 @@ def rasterize_data_across_all_cities(
         output_dir (str, optional): Directory to save the raster file. Defaults to None.
         allow_blank (bool, optional): Write an all-zero raster instead of raising when the factor has no data. Defaults to False.
         margin (float, optional): Buffer in meters applied to the geometries before rasterizing. Defaults to 0.
+        include (list, optional): Layers whose union forms the factor. Defaults to the factor's Data rows.
+        exclude (list, optional): Layers removed from the factor. Defaults to None.
+        blur (float, optional): Gaussian sigma in meters for the position uncertainty. Negative factors only grow, positive ones only shrink. Defaults to 0.
+        rasterizer (LayerRasterizer, optional): Rasterizes the layers, keeping those shared by several factors. Defaults to a rasterizer without cache.
 
     Returns:
         None
@@ -56,31 +121,35 @@ def rasterize_data_across_all_cities(
     max_count = grid_size * grid_size
     os.makedirs(output_dir, exist_ok=True)
 
-    qs = Data.objects.filter(factor=factor_name, geometry__intersects=all_cities_union)
-    factor_df = load_geodataframe_from_db(qs, [])
-    if margin:
-        factor_df.geometry = factor_df.geometry.buffer(margin)
+    rasterizer = rasterizer or LayerRasterizer(
+        all_cities_union, (height, width), transform
+    )
+
     log_progress(f"Rasterizing {factor_name}")
     # Rasterize the shapes
     raster = np.zeros((height, width), dtype=np.uint8)
-    if not factor_df.empty:
-        raster = rasterize(
-            factor_df.geometry,
-            out_shape=(height, width),
-            transform=transform,
-            fill=0,
-            default_value=1,
-            dtype=np.uint8,
-        )
-    if len(raster[raster > 0]) == 0 and not allow_blank:
+    for layer in include or [("data", factor_name)]:
+        raster |= rasterizer(layer, margin)
+    for layer in exclude or []:
+        raster[rasterizer(layer) > 0] = 0
+    if not raster.any() and not allow_blank:
         raise ValueError(f"{factor_name} is producing a blank tif.")
-    log_progress("Sum on 5x5")
-    kernel = np.ones((grid_size, grid_size))
-    coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
-        0 : height_out * grid_size : grid_size,
-        0 : width_out * grid_size : grid_size,
-    ]
-    coarse_raster = (coarse_raster / max_count * 100).astype(np.int8)
+    if blur:
+        blurred = ndimage.gaussian_filter(raster, blur, output=np.float32)
+        pessimistic = np.maximum if FACTORS[factor_name] < 0 else np.minimum
+        raster = pessimistic(blurred, raster, out=blurred)
+    if grid_size == 1:
+        coarse_raster = raster
+    else:
+        log_progress("Sum on 5x5")
+        kernel = np.ones((grid_size, grid_size))
+        coarse_raster = ndimage.convolve(raster, kernel, mode="constant", cval=0)[
+            0 : height_out * grid_size : grid_size,
+            0 : width_out * grid_size : grid_size,
+        ]
+    coarse_raster = np.multiply(
+        coarse_raster, 100 / max_count, dtype=np.float32
+    ).astype(np.uint8)
     # Save the raster to file
     output_path = os.path.join(output_dir, f"{factor_name}.tif")
     log_progress(f"Saving {factor_name}")
@@ -91,7 +160,7 @@ def rasterize_data_across_all_cities(
         height=height_out,
         width=width_out,
         count=1,
-        dtype=raster.dtype,
+        dtype=np.uint8,
         crs="EPSG:2154",
         transform=transform_out,
     ) as dst:
@@ -148,10 +217,27 @@ class Command(BaseCommand):
         height_out = int((maxy - miny) / grid_size)
         transform_out = from_origin(minx, maxy, grid_size, grid_size)
 
+        factor_options = {}
+        layer_uses = Counter()
         for factor_name in FACTORS.keys():
-            log_progress(f"Processing {factor_name}")
             if factor_name == "QPV":
                 continue
+            include, exclude = get_factor_layers(factor_name, grid_size)
+            margin = get_factor_margin(factor_name, grid_size)
+            factor_options[factor_name] = dict(
+                margin=margin,
+                include=include,
+                exclude=exclude,
+                blur=get_factor_blur(factor_name, grid_size),
+            )
+            layer_uses.update((layer, margin) for layer in include)
+            layer_uses.update((layer, 0) for layer in exclude)
+        rasterizer = LayerRasterizer(
+            all_cities_union, (height, width), transform, layer_uses
+        )
+
+        for factor_name, factor_kwargs in factor_options.items():
+            log_progress(f"Processing {factor_name}")
             rasterize_data_across_all_cities(
                 factor_name,
                 height,
@@ -164,5 +250,6 @@ class Command(BaseCommand):
                 grid_size=kernel_size,
                 output_dir=output_dir,
                 allow_blank=bool(bbox),
-                margin=get_factor_margin(factor_name, grid_size),
+                rasterizer=rasterizer,
+                **factor_kwargs,
             )
