@@ -53,7 +53,7 @@ const wfsParams: RequestParam[] = [
   {
     key: "CITY_CODE",
     value: "69381",
-    desc: "Filtre par commune (code INSEE, arrondissement pour Lyon), couche plantabilité uniquement - réduit le volume de données"
+    desc: "Filtre par commune (code INSEE), couche plantabilité uniquement - réduit le volume de données. Pour Lyon, code d'arrondissement 69381 à 69389 (69123 ne renvoie rien)"
   }
 ]
 
