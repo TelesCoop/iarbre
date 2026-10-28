@@ -1,5 +1,31 @@
 # Journal des changements
 
+## 🔖 0.43.0 (2026-10-28) : Améliorations API et correctifs de sécurité
+
+### 🐛 fix: Sécurité mise à jour de certify et de pip
+
+Suite à la faille sur les certificats.
+
+&rarr; Commit [2ea54dc](https://github.com/TelesCoop/iarbre/commit/2ea54dcc6ea883fc56f8d42912e7331da524cecb)
+
+### 🛠️ enhance : Accélérations pour servir les données
+
+- Ajout d'un overview sur les rasters, pour un préchargement plus léger sur QGIS
+- Au passage changement des valeurs encodées dans les .mvt (enlever JSON) pour alléger le load
+- Fix du bug terradraw au moment du changement de base alyer
+- Correction d'un bug qui recréait une nouvelle map à chaque passage par le dashboard (et donc un memory leak)
+
+&rarr; PR [#841](https://github.com/TelesCoop/iarbre/pull/841)
+
+### 🛠️ enhance : Ajout d'un city code dans le flux WFS
+
+- [x] Permettre de filter le flux sur des city code INSEE
+- [x] Enlever les mentions de filtrage CQL dans le front parce que ce n'est pas possible
+- [x] Enlever les mentions sur le CRS84 vu que c'est cassé
+- [x] Repointer dans le flux WMS vers la plantabilité couleur
+
+&rarr; PR [#856](https://github.com/TelesCoop/iarbre/pull/856)
+
 ## 🔖 0.42.0 (2026-10-21) : Etablissements publics et export PNG
 
 ### ✨ feat : Affichage des établissements publics
