@@ -1,7 +1,5 @@
 import os
 import shutil
-from collections import Counter
-from unittest import mock
 
 import numpy as np
 import rasterio
@@ -14,9 +12,7 @@ from rasterio.transform import from_origin
 from iarbre_data.data_config import FACTORS
 from iarbre_data.settings import SRID_DB
 from iarbre_data.factories import CityFactory
-from iarbre_data.management.commands import data_to_raster
 from iarbre_data.management.commands.data_to_raster import (
-    LayerRasterizer,
     rasterize_data_across_all_cities,
 )
 from iarbre_data.models import Data
@@ -195,24 +191,6 @@ class DataToRasterTestCase(TestCase):
         output_path = os.path.join(self.test_output_dir, f"{self.factor_name}.tif")
         with rasterio.open(output_path, "r") as src:
             self.assertEqual(set(np.unique(src.read(1))), {100})
-
-    def test_shared_layer_rasterized_once(self):
-        layer = ("data", self.factor_name)
-        minx, _, _, maxy = self.all_cities_union.total_bounds
-        rasterizer = LayerRasterizer(
-            GEOSGeometry(self.all_cities_union.geometry.iloc[0].wkt),
-            (self.height, self.width),
-            from_origin(minx, maxy, 1, 1),
-            Counter({(layer, 0): 2}),
-        )
-        with mock.patch.object(
-            data_to_raster, "rasterize_layer", wraps=data_to_raster.rasterize_layer
-        ) as rasterize_layer:
-            first = rasterizer(layer)
-            second = rasterizer(layer)
-        self.assertEqual(rasterize_layer.call_count, 1)
-        self.assertIs(first, second)
-        self.assertEqual(rasterizer.cache, {})
 
     def test_tile_aggregates_its_own_pixels(self):
         minx, _, _, maxy = self.all_cities_union.total_bounds

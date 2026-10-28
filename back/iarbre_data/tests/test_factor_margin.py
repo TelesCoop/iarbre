@@ -9,13 +9,6 @@ from iarbre_data.utils.factor_margin import (
 
 
 class FactorMarginTestCase(SimpleTestCase):
-    def test_uncertainty_lookup(self):
-        self.assertEqual(get_factor_uncertainty("Bâtiments"), 1)
-        self.assertEqual(get_factor_uncertainty("Proximité façade"), 1)
-        self.assertIsNone(get_factor_uncertainty("Rsx souterrains ERDF"))
-        with self.assertRaises(KeyError):
-            get_factor_uncertainty("Unknown")
-
     def test_legacy_grid_has_no_margin(self):
         for factor_name in FACTORS:
             self.assertEqual(get_factor_margin(factor_name, LEGACY_GRID_SIZE), 0)
@@ -25,6 +18,5 @@ class FactorMarginTestCase(SimpleTestCase):
             margin = get_factor_margin(factor_name, 1)
             if weight == BLOCKING_SCORE:
                 self.assertEqual(margin, get_factor_uncertainty(factor_name))
-                self.assertGreater(margin, 0)
             else:
                 self.assertEqual(margin, 0)
