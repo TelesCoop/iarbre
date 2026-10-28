@@ -37,19 +37,19 @@ const wfsParams: RequestParam[] = [
   },
   { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
   {
-    key: "CRS",
-    value: "EPSG:4326",
-    desc: "Système de coordonnées — ex. EPSG:4326, EPSG:2154, EPSG:3857"
+    key: "SRSNAME",
+    value: "EPSG:2154",
+    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut), EPSG:3857, urn:ogc:def:crs:OGC::CRS84"
   },
   {
     key: "BBOX",
-    value: "minLat,minLon,maxLat,maxLon",
-    desc: "Emprise géographique en degrés décimaux"
+    value: "minX,minY,maxX,maxY",
+    desc: "Emprise en EPSG:2154. En degrés : lonMin,latMin,lonMax,latMax,urn:ogc:def:crs:OGC::CRS84"
   },
   {
-    key: "CQL_FILTER",
-    value: "city_code='69123'",
-    desc: "Filtre par commune (code INSEE) — réduit le volume de données"
+    key: "CITY_CODE",
+    value: "69381",
+    desc: "Filtre par commune (code INSEE, arrondissement pour Lyon), couche plantabilité uniquement - réduit le volume de données"
   }
 ]
 
@@ -214,7 +214,7 @@ const wmsParams: RequestParam[] = [
           <div class="bg-amber-50 px-3 py-3 rounded-md">
             <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
             <p class="text-xs text-amber-800">
-              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CQL_FILTER
+              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CITY_CODE
               (voir paramètres avancés) pour limiter le volume. Pour une consultation rapide,
               préférez le téléchargement raster ci-dessous.
             </p>
