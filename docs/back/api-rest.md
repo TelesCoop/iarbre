@@ -387,10 +387,10 @@ Flux OGC WFS (`django-gisserver`) pour QGIS et autres clients SIG.
 | `iarbre:vegestrate`                     | `geometry`, `strate`, `surface`                                                               |
 | `iarbre:biosphere_functional_integrity` | `geometry`, `indice`                                                                          |
 
-Projections : EPSG:2154, EPSG:4326 (CRS84), EPSG:3857. Requêtes standards (`GetCapabilities`, `DescribeFeatureType`, `GetFeature` avec `BBOX`, `COUNT`, `STARTINDEX`), plus `REQUEST=GetTypes` qui renvoie la liste des couches en JSON.
+Projections : EPSG:2154 (défaut), EPSG:3857 (`SRSNAME`). Requêtes standards (`GetCapabilities`, `DescribeFeatureType`, `GetFeature` avec `BBOX`, `FILTER`, `COUNT`, `STARTINDEX`), plus `REQUEST=GetTypes` qui renvoie la liste des couches en JSON et `CITY_CODE=<code INSEE>` qui filtre `iarbre:plantability` par commune.
 
 ```bash
-curl "https://carte.iarbre.fr/api/wfs/?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&BBOX=4.83,45.75,4.84,45.76,urn:ogc:def:crs:EPSG::4326&COUNT=100&OUTPUTFORMAT=geojson"
+curl "https://carte.iarbre.fr/api/wfs/?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&BBOX=842000,6518000,843000,6519000&COUNT=100&OUTPUTFORMAT=geojson"
 ```
 
 ### `GET /wms/`

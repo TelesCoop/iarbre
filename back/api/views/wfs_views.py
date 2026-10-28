@@ -3,7 +3,7 @@ import time
 
 from django.contrib.gis.geos import Polygon
 from django.http import JsonResponse
-from gisserver.crs import CRS84, WEB_MERCATOR, CRS
+from gisserver.crs import WEB_MERCATOR, CRS
 from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
@@ -176,20 +176,20 @@ class IArbreWFSView(WFSView):
                     FeatureField("city_code", model_attribute="city.code"),
                     FeatureField("city_name", model_attribute="city.name"),
                 ],
-                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+                other_crs=[LAMBERT93, WEB_MERCATOR],
             ),
             TileFeatureType(
                 _vegestrate_qs,
                 name="vegestrate",
                 title="Végéstrate",
                 fields=["geometry", "strate", "surface"],
-                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+                other_crs=[LAMBERT93, WEB_MERCATOR],
             ),
             TileFeatureType(
                 _biosphere_functional_integrity_qs,
                 name="biosphere_functional_integrity",
                 title="Intégrité fonctionnelle de la biosphère",
                 fields=["geometry", "indice"],
-                other_crs=[LAMBERT93, CRS84, WEB_MERCATOR],
+                other_crs=[LAMBERT93, WEB_MERCATOR],
             ),
         ]

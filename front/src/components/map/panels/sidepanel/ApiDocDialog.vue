@@ -35,16 +35,20 @@ const wfsParams: RequestParam[] = [
     value: defaultTypename,
     desc: "Jeu de données à récupérer — voir GetTypes pour la liste complète"
   },
-  { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
+  {
+    key: "OUTPUTFORMAT",
+    value: "geojson",
+    desc: "Format de sortie - geojson, csv, application/gml+xml (défaut si absent)"
+  },
   {
     key: "SRSNAME",
     value: "EPSG:2154",
-    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut), EPSG:3857, urn:ogc:def:crs:OGC::CRS84"
+    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut) ou EPSG:3857"
   },
   {
     key: "BBOX",
     value: "minX,minY,maxX,maxY",
-    desc: "Emprise en EPSG:2154. En degrés : lonMin,latMin,lonMax,latMax,urn:ogc:def:crs:OGC::CRS84"
+    desc: "Emprise en EPSG:2154. En EPSG:3857 : minX,minY,maxX,maxY,EPSG:3857"
   },
   {
     key: "CITY_CODE",
