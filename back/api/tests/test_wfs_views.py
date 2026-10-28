@@ -123,6 +123,33 @@ class WFSViewTest(TestCase):
         body = b"".join(response.streaming_content)
         self.assertIn(b'numberReturned="0"', body)
 
+    def test_get_feature_filters_by_city_code(self):
+        other_city = City.objects.create(
+            name="Rillieux-la-Pape", code="69286", geometry=VILLARD_SQUARE
+        )
+        Tile.objects.create(
+            geometry=VILLARD_SQUARE,
+            plantability_indice=1.0,
+            plantability_normalized_indice=2,
+            city=other_city,
+        )
+        params = {
+            "SERVICE": "WFS",
+            "VERSION": "2.0.0",
+            "REQUEST": "GetFeature",
+            "TYPENAMES": "plantability",
+            "OUTPUTFORMAT": "geojson",
+        }
+
+        unfiltered = b"".join(self.client.get(WFS_URL, params).streaming_content)
+        filtered = b"".join(
+            self.client.get(WFS_URL, {**params, "city_code": "69286"}).streaming_content
+        )
+
+        self.assertIn(b"Villard-de-Lans", unfiltered)
+        self.assertIn(b"Rillieux-la-Pape", filtered)
+        self.assertNotIn(b"Villard-de-Lans", filtered)
+
 
 class VegestrateWFSViewTest(TestCase):
     def setUp(self):

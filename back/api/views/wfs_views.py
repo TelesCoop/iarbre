@@ -103,6 +103,7 @@ class IArbreWFSView(WFSView):
     def dispatch(self, request, *args, **kwargs):
         params = {k.upper(): v for k, v in request.GET.items()}
         req = params.get("REQUEST", "").upper()
+        self.city_code = params.get("CITY_CODE")
 
         if req == "GETTYPES":
             types = [
@@ -160,9 +161,12 @@ class IArbreWFSView(WFSView):
         return response
 
     def get_feature_types(self):
+        tile_qs = (
+            _tile_qs.filter(city__code=self.city_code) if self.city_code else _tile_qs
+        )
         return [
             TileFeatureType(
-                _tile_qs,
+                tile_qs,
                 name="plantability",
                 title="Plantabilité",
                 fields=[
