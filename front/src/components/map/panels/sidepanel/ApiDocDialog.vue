@@ -64,9 +64,6 @@ interface RasterDataset {
 
 const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
 
-type DownloadStatus = "idle" | "loading" | "success" | "error"
-const downloadStatus = ref<Record<string, DownloadStatus>>({})
-const downloadProgress = ref<Record<string, number>>({})
 const rasterSizes = ref<Record<string, number>>({})
 
 const formatBytes = (bytes: number) =>
@@ -83,44 +80,6 @@ const loadRasterSizes = () => {
       return
     }
   })
-}
-
-const downloadRaster = async (url: string) => {
-  downloadStatus.value[url] = "loading"
-  downloadProgress.value[url] = 0
-  try {
-    const response = await fetch(url)
-    if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`)
-    const disposition = response.headers.get("Content-Disposition")
-    let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
-    const match = disposition?.match(/filename="?([^"]+)"?/)
-    if (match) filename = match[1]
-    const total = Number(response.headers.get("Content-Length")) || rasterSizes.value[url] || 0
-    const reader = response.body.getReader()
-    const chunks: Uint8Array[] = []
-    let received = 0
-    for (;;) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-      received += value.length
-      if (total) downloadProgress.value[url] = Math.min(Math.round((received / total) * 100), 100)
-    }
-    const blob = new Blob(chunks as BlobPart[], { type: "image/tiff" })
-    const blobUrl = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = blobUrl
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(blobUrl)
-    downloadStatus.value[url] = "success"
-  } catch {
-    downloadStatus.value[url] = "error"
-    return
-  }
-  setTimeout(() => {
-    if (downloadStatus.value[url] === "success") downloadStatus.value[url] = "idle"
-  }, 2000)
 }
 
 const rasterDatasets: RasterDataset[] = [
@@ -298,62 +257,20 @@ const wmsParams: RequestParam[] = [
             :key="dataset.url"
             class="py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
           >
-            <div class="flex items-center justify-between gap-2 mb-1">
+            <div class="flex items-center justify-between gap-2">
               <span class="text-sm text-gray-700">
                 {{ dataset.label }}
                 <span v-if="rasterSizes[dataset.url]" class="text-xs text-gray-400">
                   ({{ formatBytes(rasterSizes[dataset.url]) }})
                 </span>
               </span>
-              <button
-                type="button"
-                :disabled="downloadStatus[dataset.url] === 'loading'"
-                :class="[
-                  'text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0',
-                  downloadStatus[dataset.url] === 'loading'
-                    ? 'bg-primary-300 cursor-wait'
-                    : downloadStatus[dataset.url] === 'error'
-                      ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
-                      : downloadStatus[dataset.url] === 'success'
-                        ? 'bg-green-600 cursor-pointer'
-                        : 'bg-primary-500 hover:bg-primary-600 cursor-pointer'
-                ]"
-                @click="downloadRaster(dataset.url)"
+              <a
+                :href="dataset.url"
+                download
+                class="text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0 bg-primary-500 hover:bg-primary-600"
+                >Télécharger</a
               >
-                <span
-                  v-if="downloadStatus[dataset.url] === 'loading'"
-                  class="inline-flex items-center gap-1"
-                >
-                  <span
-                    class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"
-                    aria-hidden="true"
-                  />
-                  Téléchargement…
-                  <template v-if="downloadProgress[dataset.url]">
-                    {{ downloadProgress[dataset.url] }} %
-                  </template>
-                </span>
-                <span v-else-if="downloadStatus[dataset.url] === 'success'">Téléchargé ✓</span>
-                <span v-else-if="downloadStatus[dataset.url] === 'error'">Échec</span>
-                <span v-else>Télécharger</span>
-              </button>
             </div>
-            <div
-              v-if="downloadStatus[dataset.url] === 'loading'"
-              class="h-1 mt-1 bg-gray-200 rounded-full overflow-hidden"
-              role="progressbar"
-              :aria-valuenow="downloadProgress[dataset.url]"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <div
-                class="h-full bg-primary-500 transition-all"
-                :style="{ width: `${downloadProgress[dataset.url] ?? 0}%` }"
-              />
-            </div>
-            <p v-if="downloadStatus[dataset.url] === 'error'" class="text-2xs text-red-600">
-              Le téléchargement a échoué. Vérifiez votre connexion ou réessayez.
-            </p>
           </div>
         </AccordionSection>
       </div>
