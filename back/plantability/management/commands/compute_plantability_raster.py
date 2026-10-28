@@ -12,6 +12,7 @@ from iarbre_data.utils.database import log_progress, select_city
 from iarbre_data.utils.factor_margin import is_fine_grid
 from typing import Dict, Any
 from plantability.constants import (
+    BLOCKED_SCORE,
     MIN_PLANTING_SIZE,
     PLANTABILITY_THRESHOLDS,
     colors,
@@ -163,7 +164,7 @@ def threshold_and_convert_to_colors(
     result_colors = np.full(result.shape + (4,), 255, dtype=np.uint8)
 
     mask = result <= thresholds[0]
-    result_colors[mask] = (*rgb_colors[thresholds[0]], 0)
+    result_colors[mask, :3] = rgb_colors[thresholds[0]]
 
     for i in range(0, len(thresholds) - 1):
         lower = thresholds[i]
@@ -173,6 +174,7 @@ def threshold_and_convert_to_colors(
 
     mask = result > thresholds[-1]
     result_colors[mask, :3] = rgb_colors[thresholds[-1]]
+    result_colors[result == BLOCKED_SCORE, 3] = 0
     nodata_mask = result == -9999
     result_colors[nodata_mask] = 255
 
@@ -221,6 +223,7 @@ class Command(BaseCommand):
         if is_fine_grid(meta["transform"].a):
             result = remove_isolated_pixels(result, blocked)
             result = keep_planting_spots(result, blocked, meta["transform"].a)
+        result[blocked] = BLOCKED_SCORE
 
         all_cities = select_city(None).union_all()
         result = cut_outside_cities(meta, result, all_cities)

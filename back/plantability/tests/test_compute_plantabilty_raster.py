@@ -11,7 +11,7 @@ from plantability.management.commands.compute_plantability_raster import (
     threshold_and_convert_to_colors,
     BLOCKING_SCORE,
 )
-from plantability.constants import colors, rgb_colors
+from plantability.constants import BLOCKED_SCORE, colors, rgb_colors
 
 
 class ComputePlantabilityRasterTestCase(TestCase):
@@ -79,6 +79,7 @@ class ComputePlantabilityRasterTestCase(TestCase):
                 weight,
             )
         result[blocked] = BLOCKING_SCORE
+        self.blocked = blocked
 
         meta_out = self.meta.copy()
         meta_out.update(dtype=np.float32, count=1, compress="lzw", nodata=-9999)
@@ -115,6 +116,8 @@ class ComputePlantabilityRasterTestCase(TestCase):
         result = self.final_result.copy()
         # Include some nodata values for testing
         result[0:5, 0:5] = -9999
+        result[self.blocked] = BLOCKED_SCORE
+        result[95, 95] = BLOCKING_SCORE
 
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
@@ -124,6 +127,9 @@ class ComputePlantabilityRasterTestCase(TestCase):
         self.assertEqual(result_colors[75, 75, 3], 0)
         self.assertEqual(result_colors[27, 30, 3], 255)
         self.assertEqual(tuple(result_colors[0, 0]), (255, 255, 255, 255))
+        self.assertEqual(
+            tuple(result_colors[95, 95]), (*rgb_colors[BLOCKING_SCORE], 255)
+        )
 
         # Test nodata in white
         self.assertEqual(
