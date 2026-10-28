@@ -1,10 +1,31 @@
-import { Map, type DataDrivenPropertyValueSpecification } from "maplibre-gl"
-import { TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
+import {
+  Map,
+  type DataDrivenPropertyValueSpecification,
+  type StyleSpecification
+} from "maplibre-gl"
+import { TERRA_DRAW_ID_PREFIX, TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
 import { DataType, GeoLevel } from "@/utils/enum"
 
 /** Anchor that keeps a layer under the Terra Draw ones, so drawn shapes stay visible and clickable. */
 export const getTerraDrawBeforeId = (map: Map): string | undefined =>
   map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
+
+/** setStyle transformStyle that carries the Terra Draw sources and layers over to the new style. */
+export const keepTerraDrawLayers = (
+  previous: StyleSpecification | undefined,
+  next: StyleSpecification
+): StyleSpecification => {
+  if (!previous) return next
+  const isTerraDraw = (id: string) => id.startsWith(TERRA_DRAW_ID_PREFIX)
+  return {
+    ...next,
+    sources: {
+      ...next.sources,
+      ...Object.fromEntries(Object.entries(previous.sources).filter(([id]) => isTerraDraw(id)))
+    },
+    layers: [...next.layers, ...previous.layers.filter((layer) => isTerraDraw(layer.id))]
+  }
+}
 
 // fill-extrusion has no stroke/outline paint property. To fake one, turn each
 // edge of the polygon into a thin quad straddling that edge, then render all

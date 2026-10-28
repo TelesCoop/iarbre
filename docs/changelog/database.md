@@ -6,6 +6,14 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-10-26T16:08_postgres_backup.dump
+
+**Changements :** :
+
+- Allégements des MVTs par l'ajout d'un champ `count_score` qui fait le compte par bin, au lieu du champ JSON qui contenait tous les scores.
+- Ajout d'une iamge preview pour les raster afin de charger plus vite sur le WFS
+- Clean des rasters de PET et Ombre
+
 ## 2026-10-15T12:59_postgres_backup.dump
 
 **Changements :** :

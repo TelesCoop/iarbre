@@ -159,3 +159,17 @@ class GenerateMVTCommandTest(TestCase):
         self.assertEqual(MVTGenerator.compute_mixed_indice(5, 7), 24)  # 2*10 + 4
         self.assertEqual(MVTGenerator.compute_mixed_indice(5, 8), 24)  # 2*10 + 4
         self.assertEqual(MVTGenerator.compute_mixed_indice(5, 9), 25)  # 2*10 + 5
+
+    def test_score_counts(self):
+        self.assertEqual(
+            MVTGenerator.score_counts([2.0, 2.0, 6.0, 10.0, 2.0]),
+            {"count_2": 3, "count_6": 1, "count_10": 1},
+        )
+
+    def test_score_counts_ignores_missing_values(self):
+        self.assertEqual(
+            MVTGenerator.score_counts([0.0, None, float("nan"), 0.0]), {"count_0": 2}
+        )
+        self.assertEqual(MVTGenerator.score_counts([]), {})
+        self.assertEqual(MVTGenerator.score_counts(float("nan")), {})
+        self.assertEqual(MVTGenerator.score_counts(None), {})
