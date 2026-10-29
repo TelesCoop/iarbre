@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from "vue"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import { useTutorial } from "@/composables/useTutorial"
-import { useAppStore } from "@/stores/app"
 import ContextDataIcon from "@/components/contextData/shared/ContextDataIcon.vue"
 import IconExperiment from "@/components/icons/IconExperiment.vue"
 import ExperimentsMessage from "@/components/ExperimentsMessage.vue"
@@ -18,8 +17,6 @@ const props = withDefaults(defineProps<welcomeProps>(), {
 const emit = defineEmits<{
   "update:modelValue": [value: boolean]
 }>()
-
-const appStore = useAppStore()
 
 const tutorial = useTutorial()
 
@@ -64,10 +61,6 @@ const openExperiments = () => {
   closeWelcome()
   experimentsVisible.value = true
 }
-const openFeedback = () => {
-  closeWelcome()
-  appStore.feedbackVisible = true
-}
 </script>
 
 <template>
@@ -96,18 +89,6 @@ const openFeedback = () => {
               <li class="text-sm">Utilisez la légende pour filtrer</li>
               <li class="text-sm">Changez de calque et de fond de carte</li>
             </div>
-          </div>
-        </button>
-
-        <button
-          class="welcome-functionnality welcome-functionnality--clickable w-full text-left"
-          data-cy="welcome-feedback-tutorial"
-          @click="openFeedback"
-        >
-          <span class="welcome-icon"><ContextDataIcon name="people" :size="20" /></span>
-          <div>
-            <h4 class="font-medium">Donnez votre avis</h4>
-            <p class="text-sm">en cliquant sur "Donner mon avis" pour partager vos commentaires.</p>
           </div>
         </button>
 
