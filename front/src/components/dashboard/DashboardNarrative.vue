@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber, formatSurface } from "@/utils/format"
 import { computed } from "vue"
 import AppSpinner from "@/components/shared/AppSpinner.vue"
 import NarrativeSection from "@/components/dashboard/NarrativeSection.vue"
@@ -10,6 +11,7 @@ import VegetationSurfaceWidget from "@/components/dashboard/widgets/VegetationSu
 import BuildingCharacteristicsWidget from "@/components/dashboard/widgets/BuildingCharacteristicsWidget.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 import DashboardFooter from "@/components/dashboard/DashboardFooter.vue"
+import IconMetropoleMap from "@/components/icons/IconMetropoleMap.vue"
 
 const props = defineProps<{ printMode?: boolean }>()
 
@@ -19,8 +21,7 @@ const hasData = computed(() => store.dashboardData !== null && !store.loading)
 
 const plantabilityFinding = computed(() => {
   if (!store.dashboardData) return ""
-  const score = Math.round(store.dashboardData.plantability.averageNormalizedIndice * 10) / 10
-  return `${score.toLocaleString("fr-FR")}/10 en indice moyen de plantabilité`
+  return `${formatNumber(store.dashboardData.plantability.averageNormalizedIndice)}/10 en indice moyen de plantabilité`
 })
 
 const plantabilityInterpretation = computed(() => {
@@ -37,8 +38,7 @@ const plantabilityInterpretation = computed(() => {
 
 const vegetationFinding = computed(() => {
   if (!store.dashboardData) return ""
-  const totalKm2 = store.dashboardData.vegetation.totalM2 / 1_000_000
-  return `${totalKm2.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} km² de végétation inventoriée`
+  return `${formatSurface(store.dashboardData.vegetation.totalM2)} de végétation inventoriée`
 })
 
 const vegetationInterpretation = computed(() => {
@@ -56,8 +56,8 @@ const vegetationInterpretation = computed(() => {
 const constraintsFinding = computed(() => {
   if (!store.dashboardData) return ""
   const lcz = store.dashboardData.lcz
-  const rate = Math.round(((lcz.buildingRate ?? 0) + (lcz.impermeableSurfaceRate ?? 0)) * 10) / 10
-  return `${rate.toLocaleString("fr-FR")} % de surfaces imperméables`
+  const rate = (lcz.buildingRate ?? 0) + (lcz.impermeableSurfaceRate ?? 0)
+  return `${formatNumber(rate)} % de surfaces imperméables`
 })
 
 const constraintsInterpretation = computed(() => {
@@ -74,40 +74,37 @@ const constraintsInterpretation = computed(() => {
 const riskFinding = computed(() => {
   if (!store.dashboardData) return ""
   const v = store.dashboardData.vulnerability
-  const day = v.averageDay.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
-  const night = v.averageNight.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
-  return `${day}/9 de jour · ${night}/9 de nuit`
+  return `${formatNumber(v.averageDay)}/9 de jour · ${formatNumber(v.averageNight)}/9 de nuit`
 })
 
 const summaryCards = computed(() => {
   const data = store.dashboardData
   if (!data) return []
-  const km2 = (m2: number) => (m2 / 1_000_000).toLocaleString("fr-FR", { maximumFractionDigits: 2 })
-  const oneDecimal = (value: number) => value.toLocaleString("fr-FR", { maximumFractionDigits: 1 })
+  const [vegetationValue, vegetationUnit] = formatSurface(data.vegetation.totalM2).split(" ")
   return [
     {
       label: "01 Plantabilité",
-      value: oneDecimal(data.plantability.averageNormalizedIndice),
+      value: formatNumber(data.plantability.averageNormalizedIndice),
       unit: "/10",
       description: "Indice moyen de plantabilité en pleine terre"
     },
     {
       label: "02 Végétation",
-      value: oneDecimal(data.vegetation.totalM2 / 1_000_000),
-      unit: "km²",
-      description: `Végétation inventoriée, dont ${km2(data.vegetation.treesSurfaceM2)} km² de strate haute`
+      value: vegetationValue,
+      unit: vegetationUnit,
+      description: `Végétation inventoriée, dont ${formatSurface(data.vegetation.treesSurfaceM2)} de strate haute`
     },
     {
       label: "03 Contraintes",
-      value: oneDecimal((data.lcz.buildingRate ?? 0) + (data.lcz.impermeableSurfaceRate ?? 0)),
+      value: formatNumber((data.lcz.buildingRate ?? 0) + (data.lcz.impermeableSurfaceRate ?? 0)),
       unit: "%",
       description: "De surfaces minérales imperméables"
     },
     {
       label: "04 Vulnérabilité",
-      value: oneDecimal(data.vulnerability.averageDay),
+      value: formatNumber(data.vulnerability.averageDay),
       unit: "/9",
-      description: `Vulnérabilité à la chaleur de jour, ${oneDecimal(data.vulnerability.averageNight)}/9 de nuit`
+      description: `Vulnérabilité à la chaleur de jour, ${formatNumber(data.vulnerability.averageNight)}/9 de nuit`
     }
   ]
 })
@@ -142,6 +139,56 @@ const riskInterpretation = computed(() => {
   </div>
 
   <div v-else-if="hasData" class="flex flex-col gap-10 print:gap-0">
+    <section
+      v-if="props.printMode"
+      class="flex h-[208mm] w-[297mm] break-before-page flex-col overflow-hidden px-[18mm] pt-[16mm] pb-[12mm]"
+    >
+      <h2 class="text-xl font-bold text-gray-900">Synthèse du territoire</h2>
+      <p class="text-sm italic text-gray-500">Les quatre indicateurs clés en une lecture.</p>
+
+      <div class="mt-6 flex min-h-0 flex-1 gap-10">
+        <div class="grid flex-[3] grid-cols-2 gap-5">
+          <div
+            v-for="card in summaryCards"
+            :key="card.label"
+            class="flex flex-col gap-2 rounded-xl border border-gray-200 p-5"
+          >
+            <span
+              class="text-[0.625rem] font-semibold uppercase tracking-widest text-primary-500"
+              >{{ card.label }}</span
+            >
+            <p class="text-4xl font-bold leading-none text-primary-600 tabular-nums">
+              {{ card.value
+              }}<span class="ml-0.5 text-base font-semibold text-primary-400">{{ card.unit }}</span>
+            </p>
+            <p class="text-xs leading-snug text-gray-500">{{ card.description }}</p>
+          </div>
+        </div>
+        <IconMetropoleMap class="h-full min-w-0 flex-[2] text-primary-300" />
+      </div>
+
+      <div class="mt-8 grid grid-cols-2 gap-12 border-t border-gray-200 pt-8">
+        <div>
+          <h3 class="mb-3 text-sm font-bold text-gray-900">Ce que disent les données</h3>
+          <p class="text-sm leading-relaxed text-gray-600">
+            {{ plantabilityInterpretation }} {{ vegetationInterpretation }}
+          </p>
+        </div>
+        <div>
+          <h3 class="mb-3 text-sm font-bold text-gray-900">Sources</h3>
+          <div
+            v-for="source in summarySources"
+            :key="source.label"
+            class="flex items-baseline gap-2 py-1.5"
+          >
+            <span class="shrink-0 text-xs text-gray-600">{{ source.label }}</span>
+            <span class="flex-1 border-b border-dotted border-gray-300" />
+            <span class="shrink-0 text-xs font-semibold text-gray-700">{{ source.origin }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <NarrativeSection
       section-number="01"
       title="Potentiel de végétalisation"
@@ -179,7 +226,7 @@ const riskInterpretation = computed(() => {
       question="Qu'est ce qui freine l'aménagement et les transformations du territoire ?"
       :finding="constraintsFinding"
       :interpretation="constraintsInterpretation"
-      description="Les zones imperméabilisés sont une contrainte pour la plantation d'arbre en pleine terre, mais aussi un endroit où la chaleur va plus se stocker et augmenter les ruissellements de l'eau de pluie au détriment de l'infiltration. Néanmoins des zones de bâtie dense peuvent avoir une effet positif sur l'ombre en journée et améliorer le confort thermique dans la rue."
+      description="Les zones imperméabilisées sont une contrainte pour la plantation d'arbre en pleine terre, mais aussi un endroit où la chaleur va plus se stocker et augmenter les ruissellements de l'eau de pluie au détriment de l'infiltration. Néanmoins des zones de bâti dense peuvent avoir un effet positif sur l'ombre en journée et améliorer le confort thermique dans la rue."
       source="Les données proviennent de la caractérisation des sols par le CEREMA au cours de leur étude de Zones Climatiques Locales de 2023."
       source-link="https://www.cerema.fr/fr/actualites/cerema-publie-nouvelles-donnees-surchauffe-urbaine"
     >
@@ -204,52 +251,6 @@ const riskInterpretation = computed(() => {
     >
       <HeatWidget :data="store.dashboardData!.vulnerability" />
     </NarrativeSection>
-
-    <section
-      v-if="props.printMode"
-      class="flex h-[208mm] w-[297mm] break-before-page flex-col overflow-hidden px-[18mm] pt-[16mm] pb-[12mm]"
-    >
-      <h2 class="text-xl font-bold text-gray-900">Synthèse du territoire</h2>
-      <p class="text-sm italic text-gray-500">Les quatre indicateurs clés en une lecture.</p>
-
-      <div class="mt-8 grid grid-cols-4 gap-6">
-        <div
-          v-for="card in summaryCards"
-          :key="card.label"
-          class="flex flex-col gap-2 rounded-xl border border-gray-200 p-5"
-        >
-          <span class="text-[0.625rem] font-semibold uppercase tracking-widest text-primary-500">{{
-            card.label
-          }}</span>
-          <p class="text-4xl font-bold leading-none text-primary-600 tabular-nums">
-            {{ card.value
-            }}<span class="ml-0.5 text-base font-semibold text-primary-400">{{ card.unit }}</span>
-          </p>
-          <p class="text-xs leading-snug text-gray-500">{{ card.description }}</p>
-        </div>
-      </div>
-
-      <div class="mt-auto grid grid-cols-2 gap-12 border-t border-gray-200 pt-8">
-        <div>
-          <h3 class="mb-3 text-sm font-bold text-gray-900">Ce que disent les données</h3>
-          <p class="text-sm leading-relaxed text-gray-600">
-            {{ plantabilityInterpretation }} {{ vegetationInterpretation }}
-          </p>
-        </div>
-        <div>
-          <h3 class="mb-3 text-sm font-bold text-gray-900">Sources</h3>
-          <div
-            v-for="source in summarySources"
-            :key="source.label"
-            class="flex items-baseline gap-2 py-1.5"
-          >
-            <span class="shrink-0 text-xs text-gray-600">{{ source.label }}</span>
-            <span class="flex-1 border-b border-dotted border-gray-300" />
-            <span class="shrink-0 text-xs font-semibold text-gray-700">{{ source.origin }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <DashboardFooter v-if="!props.printMode" />
   </div>

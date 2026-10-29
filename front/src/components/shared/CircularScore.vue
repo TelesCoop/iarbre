@@ -3,10 +3,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue"
 import * as d3 from "d3"
 import ContextDataCompactScore from "@/components/contextData/shared/ContextDataCompactScore.vue"
 import type { ContextDataColorScheme, CircularScoreSize } from "@/types/contextData"
-import { getPlantabilityTextColor, getVulnerabilityTextColor } from "@/utils/color"
 import { PLANTABILITY_COLOR_MAP } from "@/utils/plantability"
 import { getVulnerabilityColor } from "@/utils/vulnerability"
-import { BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP } from "@/utils/biosphere_functional_integrity"
 
 interface CircularScoreProps {
   score: number
@@ -46,16 +44,6 @@ const arcColor = computed(() => {
       return getVulnerabilityColor(props.score)
     case "climate":
       return "text-primary-600"
-    case "biosphereIntegrity": {
-      const map = BIOSPHERE_FUNCTIONAL_INTEGRITY_COLOR_MAP
-      let color = String(map[0])
-      for (let i = 1; i < map.length - 1; i += 2) {
-        if (props.percentage >= (map[i] as number)) {
-          color = String(map[i + 1])
-        }
-      }
-      return color
-    }
     default:
       return "#9CA3AF"
   }

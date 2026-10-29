@@ -1,4 +1,12 @@
 /// <reference types="cypress" />
+import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
+
+const DEFAULT_MAP_PATH = "/plantability/13/45.07126/5.55430"
+
+const getMapStore = (win: Window) =>
+  (win.document.querySelector("#app") as any).__vue_app__.config.globalProperties.$pinia._s.get(
+    "map"
+  )
 
 /**
  * Custom command to get element by data-cy attribute
@@ -36,6 +44,31 @@ Cypress.Commands.add("mapZoomTo", (zoom: number) => {
 })
 
 /**
+ * Opens the map past the welcome message, once its plantability layer is loaded
+ */
+Cypress.Commands.add(
+  "visitMap",
+  (viewport: { width: number; height: number }, path: string = DEFAULT_MAP_PATH) => {
+    cy.viewport(viewport.width, viewport.height)
+    LocalStorageHandler.setItem("hasVisitedBefore", true)
+    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
+    cy.intercept("GET", "**/api/public-buildings/", { fixture: "public_buildings.json" }).as(
+      "publicBuildingsData"
+    )
+    cy.visit(path)
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."
+    )
+  }
+)
+
+/**
+ * Yields the map Pinia store of the running app, the single place tests reach into app internals
+ */
+Cypress.Commands.add("mapStore", () => cy.window().then(getMapStore))
+
+/**
  * Custom command to check QPV layer status via console logs
  */
 Cypress.Commands.add("mapCheckQPVLayer", (shouldExist: boolean) => {
@@ -48,4 +81,25 @@ Cypress.Commands.add("mapCheckCadastreLayer", (shouldExist: boolean) => {
     ? "cypress: cadastre data loaded"
     : "cypress: cadastre data removed"
   cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
+})
+
+Cypress.Commands.add("mapCheckPublicBuildingsLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist
+    ? "cypress: public buildings data loaded"
+    : "cypress: public buildings data removed"
+  cy.get("@consoleInfo").should("have.been.calledWith", expectedMessage)
+})
+
+Cypress.Commands.add("mapCheckPanoramaxLayer", (shouldExist: boolean) => {
+  const expectedMessage = shouldExist
+    ? "cypress: panoramax data loaded"
+    : "cypress: panoramax data removed"
+  cy.get("@consoleInfo").should((spy: any) => {
+    const messages: string[] = spy.args
+      .map((args: unknown[]) => args[0])
+      .filter((message: unknown): message is string =>
+        typeof message === "string" ? message.startsWith("cypress: panoramax data") : false
+      )
+    expect(messages[messages.length - 1]).to.equal(expectedMessage)
+  })
 })

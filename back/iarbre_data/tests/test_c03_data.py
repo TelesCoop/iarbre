@@ -107,7 +107,7 @@ class C03DataTestCase(TestCase):
 
     def test_save_geometries(self):
         save_geometries(self.datas, self.data_config)
-        self.assertNotEquals(Data.objects.count(), 0)
+        self.assertNotEqual(Data.objects.count(), 0)
 
     def test_read_data_with_layer_name(self):
         """Test read_data function with layer_name parameter."""

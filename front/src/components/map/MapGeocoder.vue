@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onUnmounted } from "vue"
 import { useDebounceFn, onClickOutside } from "@vueuse/core"
-import maplibregl from "maplibre-gl"
+import { Marker } from "maplibre-gl"
 import { fetchGeocode, ZOOM_BY_TYPE, type GeocoderFeature } from "@/utils/geocoder"
 import { useMapStore } from "@/stores/map"
 import AppSpinner from "@/components/shared/AppSpinner.vue"
@@ -14,7 +14,7 @@ const results = ref<GeocoderFeature[]>([])
 const loading = ref(false)
 const focused = ref(false)
 const activeIndex = ref(-1)
-let searchMarker: maplibregl.Marker | null = null
+let searchMarker: Marker | null = null
 
 const div = (className: string): HTMLDivElement =>
   Object.assign(document.createElement("div"), { className })
@@ -50,7 +50,7 @@ const selectResult = (feature: GeocoderFeature) => {
   if (!map) return
 
   searchMarker?.remove()
-  searchMarker = new maplibregl.Marker({ element: createPulseElement(), anchor: "center" })
+  searchMarker = new Marker({ element: createPulseElement(), anchor: "center" })
     .setLngLat(feature.center)
     .addTo(map)
 

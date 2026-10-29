@@ -3,13 +3,18 @@ import json
 import numpy as np
 import rasterio
 import tempfile
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.contrib.gis.geos import Polygon
 from rasterio.transform import from_origin
 
+from iarbre_data.data_config import FACTORS, META_FACTORS_MAPPING
 from iarbre_data.settings import SRID_DB
 from iarbre_data.models import Tile
-from iarbre_data.management.commands.raster_to_land_use import process_tile_batch
+from iarbre_data.management.commands.raster_to_land_use import (
+    get_batch_bounds,
+    process_tile_batch,
+    raster_to_top5_land_use,
+)
 
 
 class RasterToLandUse(TestCase):
@@ -134,3 +139,67 @@ class RasterToLandUse(TestCase):
                         for value in meta_factors_data["meta_factors"].values()
                     )
                 )
+
+    def test_get_batch_bounds(self):
+        """Batches cover every tile once, in id order, with at most batch_size tiles."""
+        bounds = list(get_batch_bounds(batch_size=2))
+
+        self.assertEqual(len(bounds), 3)
+        ids = []
+        for first, last in bounds:
+            batch_ids = list(
+                Tile.objects.filter(id__range=(first, last)).values_list(
+                    "id", flat=True
+                )
+            )
+            self.assertLessEqual(len(batch_ids), 2)
+            ids.extend(batch_ids)
+        self.assertEqual(sorted(ids), sorted(self.tiles.values_list("id", flat=True)))
+        self.assertEqual(len(ids), len(set(ids)))
+
+    def assert_all_tiles_processed(self):
+        tiles = {tile.id: tile for tile in Tile.objects.all()}
+        self.assertEqual(len(tiles), 5)
+        for tile in tiles.values():
+            self.assertIn("top5_land_use", json.loads(tile.details))
+            self.assertIn("meta_factors", json.loads(tile.meta_factors))
+        # Tile at (40, 40, 45, 45) is only in "Bâtiments"
+        tile2 = min(tiles.values(), key=lambda t: abs(t.geometry.centroid.x - 42.5))
+        self.assertEqual(
+            json.loads(tile2.details)["top5_land_use"], {"Bâtiments": 60.0}
+        )
+        # Outside tile (5, 5, 10, 10)
+        tile5 = min(tiles.values(), key=lambda t: t.geometry.centroid.x)
+        self.assertEqual(json.loads(tile5.details)["top5_land_use"], {})
+
+    def test_raster_to_top5_land_use(self):
+        """Whole command in the main process, in several batches."""
+        raster_to_top5_land_use(self.raster_path, batch_size=2)
+        self.assert_all_tiles_processed()
+
+
+class RasterToLandUseThreads(TransactionTestCase):
+    """Threads use their own DB connection: data must be committed to be visible."""
+
+    setUp = RasterToLandUse.setUp
+    tearDown = RasterToLandUse.tearDown
+    create_test_rasters = RasterToLandUse.create_test_rasters
+    create_test_tiles = RasterToLandUse.create_test_tiles
+    assert_all_tiles_processed = RasterToLandUse.assert_all_tiles_processed
+
+    def test_raster_to_top5_land_use_threads(self):
+        raster_to_top5_land_use(
+            self.raster_path, batch_size=2, number_of_threads_by_worker=2
+        )
+        self.assert_all_tiles_processed()
+
+
+class MetaFactorsMappingTest(TestCase):
+    def test_all_mapped_factors_exist(self):
+        missing = [
+            f
+            for factors in META_FACTORS_MAPPING.values()
+            for f in factors
+            if f not in FACTORS
+        ]
+        self.assertEqual(missing, [])

@@ -20,21 +20,26 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ./front/.nvmrc
+
       - name: Cache Node.js dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -52,16 +57,16 @@ jobs:
         working-directory: ./front
 
   pre-commit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: setup
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
@@ -69,6 +74,7 @@ jobs:
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
         with:
+          postgres-version: "16"
           username: myuser
           password: securepassword
           database: mydatabase
@@ -85,8 +91,13 @@ jobs:
           password=securepassword
           EOF
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ./front/.nvmrc
+
       - name: Restore Node.js cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -122,7 +133,8 @@ jobs:
           fi
 
       - name: Create coverage badge
-        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.event_name == 'push'
+        uses: schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 86d9b33a236f4e03bca8799858fc7f6d
@@ -132,18 +144,18 @@ jobs:
           color: ${{ env.BADGE_COLOR }}
 
   node-setup:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: setup
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
           cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -153,18 +165,21 @@ jobs:
         working-directory: ./front
 
   frontend-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [setup, node-setup]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
           cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -221,17 +236,43 @@ jobs:
           fi
         working-directory: ./front
 
+      - name: Store frontend coverage as base for future PRs
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p base-coverage
+          cp coverage/coverage-summary.json base-coverage/coverage-summary.json
+        working-directory: ./front
+
+      - name: Save frontend base coverage
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v6
+        with:
+          path: ./front/base-coverage/coverage-summary.json
+          key: frontend-coverage-${{ github.ref_name }}-${{ github.sha }}
+
+      - name: Restore frontend base coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v6
+        with:
+          path: ./front/base-coverage/coverage-summary.json
+          key: frontend-coverage-${{ github.event.pull_request.base.ref }}-${{ github.event.pull_request.base.sha }}
+          restore-keys: |
+            frontend-coverage-${{ github.event.pull_request.base.ref }}-
+
       - name: Report NYC coverage
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: sidx1024/report-nyc-coverage-github-action@v1.2.7
         with:
           coverage_file: "front/coverage/coverage-summary.json"
-          sources_base_path: "${{ github.workspace }}/front/"
+          base_coverage_file: "front/base-coverage/coverage-summary.json"
+          sources_base_path: "${{ github.workspace }}/"
           files_coverage_table_output_type_order: "SBFL"
           comment_template_file: ".github/nyc-comment-template.md"
           comment_mode: "replace"
 
       - name: Create frontend coverage badge
-        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.event_name == 'push'
+        uses: schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 767df5613fc8e7b99ac2a773f5253463
@@ -241,20 +282,21 @@ jobs:
           color: ${{ env.FRONTEND_BADGE_COLOR }}
 
   e2e-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: setup
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: "pip"
       - run: pip install -r back/requirements.txt
 
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
         with:
+          postgres-version: "16"
           username: myuser
           password: securepassword
           database: mydatabase
@@ -280,13 +322,13 @@ jobs:
         run: python manage.py runserver localhost:8000 &
         working-directory: ./back
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: ./front/.nvmrc
           cache: "npm"
           cache-dependency-path: ./front/package-lock.json
       - name: Restore Node.js cache from node-setup
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ./front/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('front/package-lock.json') }}
@@ -298,7 +340,7 @@ jobs:
         run: npm run build
         working-directory: "./front"
       - name: Run e2e tests
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           start: npm run preview
           browser: chrome
@@ -307,7 +349,7 @@ jobs:
         env:
           CYPRESS_COVERAGE: true
       - name: Upload cypress screenshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshot
@@ -316,16 +358,18 @@ jobs:
           retention-days: 10
 
   doc-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [setup]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Python doc
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: "pip"
       - run: pip install -r mkdocs-requirements.txt
       - name: Run documentation validation

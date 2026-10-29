@@ -6,6 +6,7 @@ import AccordionSection from "./apiDoc/AccordionSection.vue"
 import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
 import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
 import type { RequestParam } from "./apiDoc/types"
+import { formatNumber } from "@/utils/format"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
@@ -14,6 +15,7 @@ const expanded = ref<"wfs" | "wms" | "raster" | null>(null)
 
 const toggle = (service: "wfs" | "wms" | "raster") => {
   expanded.value = expanded.value === service ? null : service
+  if (expanded.value === "raster") loadRasterSizes()
 }
 
 const origin = window.location.origin
@@ -33,21 +35,25 @@ const wfsParams: RequestParam[] = [
     value: defaultTypename,
     desc: "Jeu de données à récupérer — voir GetTypes pour la liste complète"
   },
-  { key: "OUTPUTFORMAT", value: "geojson", desc: "Format de sortie — geojson, csv, gml" },
   {
-    key: "CRS",
-    value: "EPSG:4326",
-    desc: "Système de coordonnées — ex. EPSG:4326, EPSG:2154, EPSG:3857"
+    key: "OUTPUTFORMAT",
+    value: "geojson",
+    desc: "Format de sortie - geojson, csv, application/gml+xml (défaut si absent)"
+  },
+  {
+    key: "SRSNAME",
+    value: "EPSG:2154",
+    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut) ou EPSG:3857"
   },
   {
     key: "BBOX",
-    value: "minLat,minLon,maxLat,maxLon",
-    desc: "Emprise géographique en degrés décimaux"
+    value: "minX,minY,maxX,maxY",
+    desc: "Emprise en EPSG:2154. En EPSG:3857 : minX,minY,maxX,maxY,EPSG:3857"
   },
   {
-    key: "CQL_FILTER",
-    value: "city_code='69123'",
-    desc: "Filtre par commune (code INSEE) — réduit le volume de données"
+    key: "CITY_CODE",
+    value: "69381",
+    desc: "Filtre par commune (code INSEE), couche plantabilité uniquement - réduit le volume de données. Pour Lyon, code d'arrondissement 69381 à 69389 (69123 ne renvoie rien)"
   }
 ]
 
@@ -58,33 +64,22 @@ interface RasterDataset {
 
 const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
 
-type DownloadStatus = "idle" | "loading" | "success" | "error"
-const downloadStatus = ref<Record<string, DownloadStatus>>({})
+const rasterSizes = ref<Record<string, number>>({})
 
-const downloadRaster = async (url: string) => {
-  downloadStatus.value[url] = "loading"
-  try {
-    const response = await fetch(url)
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const disposition = response.headers.get("Content-Disposition")
-    let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
-    const match = disposition?.match(/filename="?([^"]+)"?/)
-    if (match) filename = match[1]
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = blobUrl
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(blobUrl)
-    downloadStatus.value[url] = "success"
-  } catch {
-    downloadStatus.value[url] = "error"
-    return
-  }
-  setTimeout(() => {
-    if (downloadStatus.value[url] === "success") downloadStatus.value[url] = "idle"
-  }, 2000)
+const formatBytes = (bytes: number) =>
+  bytes >= 1e9 ? `${formatNumber(bytes / 1e9)} Go` : `${formatNumber(bytes / 1e6, 0)} Mo`
+
+const loadRasterSizes = () => {
+  rasterDatasets.forEach(async ({ url }) => {
+    if (rasterSizes.value[url]) return
+    try {
+      const response = await fetch(url, { method: "HEAD" })
+      const size = Number(response.headers.get("Content-Length"))
+      if (response.ok && size) rasterSizes.value[url] = size
+    } catch {
+      return
+    }
+  })
 }
 
 const rasterDatasets: RasterDataset[] = [
@@ -182,7 +177,7 @@ const wmsParams: RequestParam[] = [
           <div class="bg-amber-50 px-3 py-3 rounded-md">
             <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
             <p class="text-xs text-amber-800">
-              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CQL_FILTER
+              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CITY_CODE
               (voir paramètres avancés) pour limiter le volume. Pour une consultation rapide,
               préférez le téléchargement raster ci-dessous.
             </p>
@@ -262,32 +257,20 @@ const wmsParams: RequestParam[] = [
             :key="dataset.url"
             class="py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
           >
-            <div class="flex items-center justify-between gap-2 mb-1">
-              <span class="text-sm text-gray-700">{{ dataset.label }}</span>
-              <button
-                type="button"
-                :disabled="downloadStatus[dataset.url] === 'loading'"
-                :class="[
-                  'text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0',
-                  downloadStatus[dataset.url] === 'loading'
-                    ? 'bg-primary-300 cursor-wait'
-                    : downloadStatus[dataset.url] === 'error'
-                      ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
-                      : downloadStatus[dataset.url] === 'success'
-                        ? 'bg-green-600 cursor-pointer'
-                        : 'bg-primary-500 hover:bg-primary-600 cursor-pointer'
-                ]"
-                @click="downloadRaster(dataset.url)"
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-sm text-gray-700">
+                {{ dataset.label }}
+                <span v-if="rasterSizes[dataset.url]" class="text-xs text-gray-400">
+                  ({{ formatBytes(rasterSizes[dataset.url]) }})
+                </span>
+              </span>
+              <a
+                :href="dataset.url"
+                download
+                class="text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0 bg-primary-500 hover:bg-primary-600"
+                >Télécharger</a
               >
-                <span v-if="downloadStatus[dataset.url] === 'loading'">Téléchargement…</span>
-                <span v-else-if="downloadStatus[dataset.url] === 'success'">Téléchargé ✓</span>
-                <span v-else-if="downloadStatus[dataset.url] === 'error'">Échec</span>
-                <span v-else>Télécharger</span>
-              </button>
             </div>
-            <p v-if="downloadStatus[dataset.url] === 'error'" class="text-2xs text-red-600">
-              Le téléchargement a échoué. Vérifiez votre connexion ou réessayez.
-            </p>
           </div>
         </AccordionSection>
       </div>

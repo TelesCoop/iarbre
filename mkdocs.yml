@@ -82,6 +82,7 @@ nav:
   - Backend:
       - Instructions: back/backend.md
       - Données de test: back/testing-data.md
+      - API REST: back/api-rest.md
       - Backend docstrings documentation:
           - Insert Cities and IRIS: api/c01_insert_cities_and_iris.md
           - Import Data: api/c03_import_data.md
@@ -97,6 +98,9 @@ nav:
           - Clean MVT: api/clean_mvt.md
   - Frontend: front.md
   - Déploiement: deploy.md
+  - Maintien en conditions opérationnelles:
+      - Dispositif: mco.md
+      - Dépannage: mco/depannage.md
   - Documentation: docs.md
 
 theme:

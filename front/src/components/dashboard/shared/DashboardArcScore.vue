@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { ref, computed } from "vue"
 import * as d3 from "d3"
 import { useD3Chart, type D3ChartContext } from "@/composables/useD3Chart"
@@ -29,7 +30,7 @@ const targetAngle = computed(() => {
 
 const centerText = computed(() => {
   if (props.displayValue) return props.displayValue
-  return `${props.value.toFixed(1)}/${props.maxValue}`
+  return `${formatNumber(props.value)}/${props.maxValue}`
 })
 
 const { svgRef } = useD3Chart(

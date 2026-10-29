@@ -1,25 +1,30 @@
 import rasterio
+from rasterio.transform import rowcol
 from rasterio.windows import Window
 from django.core.management import BaseCommand
 from django.contrib.gis.db.models import Extent
-from typing import List, Iterator
+from django.db import connection
+from django.db.models import Max, Min
+from typing import List, Iterator, Tuple
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import os
 import json
+import numpy as np
 from typing import Dict
 
 from iarbre_data.models import Tile
 from iarbre_data.settings import BASE_DIR
 from iarbre_data.utils.database import log_progress
-from iarbre_data.data_config import META_FACTORS_MAPPING
+from iarbre_data.data_config import FACTORS, META_FACTORS_MAPPING
 
 BATCH_SIZE = 5_000
 
 
-def get_tile_batches(batch_size: int) -> Iterator[List[Tile]]:
+def get_batch_bounds(batch_size: int) -> Iterator[Tuple[int, int]]:
     """
-    Yields batches of tiles from the database without loading all tiles into memory.
+    Yields (first_id, last_id) of consecutive batches of tiles, ordered by id.
+    Only ids are passed to workers, which fetch their own tiles.
 
     Parameters:
     -----------
@@ -28,17 +33,21 @@ def get_tile_batches(batch_size: int) -> Iterator[List[Tile]]:
 
     Yields:
     -------
-    List[Tile]
-        A batch of tiles.
+    Tuple[int, int]
+        First and last tile id of a batch (inclusive).
     """
     last_id = 0
     while True:
         # https://docs.djangoproject.com/en/5.2/ref/models/querysets/#gt
-        batch = Tile.objects.filter(id__gt=last_id).order_by("id")[:batch_size]
-        if not batch:
+        bounds = (
+            Tile.objects.filter(id__gt=last_id)
+            .order_by("id")[:batch_size]
+            .aggregate(first=Min("id"), last=Max("id"))
+        )
+        if bounds["first"] is None:
             break
-        yield batch
-        last_id = list(batch)[-1].id
+        yield bounds["first"], bounds["last"]
+        last_id = bounds["last"]
 
 
 def compute_meta_factors(land_uses: Dict[str, float]) -> Dict[str, float]:
@@ -84,10 +93,15 @@ def process_tile_batch(
     tile_land_use = {tile.id: {} for tile in tiles}
     min_x, min_y, max_x, max_y = tiles.aggregate(Extent("geometry"))["geometry__extent"]
 
+    # Centroids are computed once, then looked up in every raster with numpy
+    tile_ids = [tile.id for tile in tiles]
+    centroids = [tile.geometry.centroid for tile in tiles]
+    xs = np.fromiter((c.x for c in centroids), float, len(centroids))
+    ys = np.fromiter((c.y for c in centroids), float, len(centroids))
+
     for raster_file in raster_files:
         raster_file_path = os.path.join(raster_path, raster_file)
         land_use_type = os.path.splitext(raster_file)[0]
-        log_progress(f"Processing {land_use_type}")
 
         with rasterio.open(raster_file_path) as src:
             top, left = src.index(min_x, max_y)
@@ -96,22 +110,27 @@ def process_tile_batch(
             bottom = min(src.height, bottom)
             left = max(0, left)
             right = min(src.width, right)
+            if bottom <= top or right <= left:
+                continue
             # Read the data only within the window
             window = Window.from_slices((top, bottom), (left, right))
             data = src.read(1, window=window)
-            for tile in tiles:
-                x, y = tile.geometry.centroid.x, tile.geometry.centroid.y
-                row, col = src.index(x, y)
-                if 0 <= row < src.height and 0 <= col < src.width:
-                    # Adjust row and col to the window's coordinate system
-                    row -= window.row_off
-                    col -= window.col_off
-                    if 0 <= row < window.height and 0 <= col < window.width:
-                        pixel_value = float(data[row, col])
-                        if pixel_value > 0:
-                            tile_land_use[tile.id][land_use_type] = pixel_value
+            # Same as src.index, which does not accept arrays
+            rows, cols = (np.asarray(a) for a in rowcol(src.transform, xs, ys))
+            # Adjust rows and cols to the window's coordinate system
+            rows -= window.row_off
+            cols -= window.col_off
+            in_window = (
+                (rows >= 0)
+                & (rows < window.height)
+                & (cols >= 0)
+                & (cols < window.width)
+            )
+            pixel_values = np.zeros(len(tile_ids))
+            pixel_values[in_window] = data[rows[in_window], cols[in_window]]
+            for i in np.flatnonzero(pixel_values > 0):
+                tile_land_use[tile_ids[i]][land_use_type] = float(pixel_values[i])
 
-    log_progress("Top 5 land use and meta-factors.")
     tiles_to_update = []
     for tile in tiles:
         land_uses_raw = tile_land_use[tile.id].copy()
@@ -149,13 +168,58 @@ def process_tile_batch(
         meta_factors_field["meta_factors"] = meta_factors
         tile.meta_factors = json.dumps(meta_factors_field)
         tiles_to_update.append(tile)
-    log_progress("Bulk update in the DB.")
     Tile.objects.bulk_update(
         tiles_to_update, ["details", "meta_factors"], batch_size=1000
     )
 
 
-def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> None:
+def process_batch_bounds(
+    bounds: Tuple[int, int], raster_files: List[str], raster_path: str
+) -> None:
+    """Fetch the tiles between bounds (inclusive) and process them."""
+    tiles = Tile.objects.filter(id__range=bounds).order_by("id")
+    process_tile_batch(tiles, raster_files, raster_path)
+
+
+def process_batch_bounds_in_thread(
+    bounds: Tuple[int, int], raster_files: List[str], raster_path: str
+) -> None:
+    try:
+        process_batch_bounds(bounds, raster_files, raster_path)
+    finally:
+        # Each thread has its own connection, do not leave it open
+        connection.close()
+
+
+def process_batches(
+    batches: List[Tuple[int, int]],
+    raster_files: List[str],
+    raster_path: str,
+    number_of_threads: int,
+) -> int:
+    """Process several batches in a worker, using a pool of threads."""
+    if number_of_threads == 1:
+        for bounds in batches:
+            process_batch_bounds(bounds, raster_files, raster_path)
+    else:
+        with ThreadPoolExecutor(max_workers=number_of_threads) as executor:
+            futures = [
+                executor.submit(
+                    process_batch_bounds_in_thread, bounds, raster_files, raster_path
+                )
+                for bounds in batches
+            ]
+            for future in as_completed(futures):
+                future.result()
+    return len(batches)
+
+
+def raster_to_top5_land_use(
+    raster_path: str,
+    batch_size: int = BATCH_SIZE,
+    number_of_workers: int = 1,
+    number_of_threads_by_worker: int = 1,
+) -> None:
     """
     Using raster files of land use, pick the top 5 and save them as JSON in the `details` field in the Tile model.
     Land use is described by the values of the pixels in raster, between 0 (not present) and 100 (100% of the surface).
@@ -166,33 +230,55 @@ def raster_to_top5_land_use(raster_path: str, batch_size: int = BATCH_SIZE) -> N
         Path to the input raster files (30 factors).
     batch_size : int, optional
         Number of tiles to update in a batch. Default is BATCH_SIZE.
+    number_of_workers : int, optional
+        Number of processes.
+    number_of_threads_by_worker : int, optional
+        Number of threads in each process.
     """
     raster_files = [
         f
         for f in os.listdir(raster_path)
-        if f.endswith(".tif") and "plantability" not in f
+        if f.endswith(".tif") and os.path.splitext(f)[0] in FACTORS
     ]
     log_progress(f"Found {len(raster_files)} raster files to process")
-    total_tiles = Tile.objects.count()
-    log_progress(f"Processing {total_tiles} tiles in batches of {batch_size}")
+    batches = list(get_batch_bounds(batch_size))
+    log_progress(f"Processing {len(batches)} batches of {batch_size} tiles")
 
-    batch_count = (total_tiles + batch_size - 1) // batch_size
+    # Each worker task gets one batch per thread
+    tasks = [
+        batches[i : i + number_of_threads_by_worker]
+        for i in range(0, len(batches), number_of_threads_by_worker)
+    ]
+    progress = 0
 
-    with ThreadPoolExecutor(max_workers=6) as executor:
-        future_to_batch = {
-            executor.submit(
-                process_tile_batch,
-                tiles=tile_batch,
-                raster_files=raster_files,
-                raster_path=raster_path,
-            ): i
-            for i, tile_batch in enumerate(get_tile_batches(batch_size))
-        }
-
-        for future in as_completed(future_to_batch):
-            batch_index = future_to_batch.pop(future)
-            future.result()
-            log_progress(f"Completed batch {batch_index + 1} of {batch_count}")
+    # Same as MVTGenerator: run in the main process for tests,
+    # a child process would destroy the testing database on close
+    if number_of_workers == 1:
+        for task in tasks:
+            progress += process_batches(
+                task, raster_files, raster_path, number_of_threads_by_worker
+            )
+            log_progress(f"Completed {progress} / {len(batches)} batches")
+    else:
+        with ProcessPoolExecutor(
+            max_workers=number_of_workers,
+            # avoid using same connexion as previous worker to avoid timeouts
+            initializer=connection.close,
+        ) as executor:
+            futures = [
+                executor.submit(
+                    process_batches,
+                    task,
+                    raster_files,
+                    raster_path,
+                    number_of_threads_by_worker,
+                )
+                for task in tasks
+            ]
+            for future in as_completed(futures):
+                progress += future.result()
+                log_progress(f"Completed {progress} / {len(batches)} batches")
+        connection.close()
     log_progress("Successfully processed all tiles")
 
 
@@ -212,8 +298,25 @@ class Command(BaseCommand):
             default=BATCH_SIZE,
             help="Number of tiles to process in each batch",
         )
+        parser.add_argument(
+            "--number_of_workers",
+            "-nw",
+            type=int,
+            default=1,
+            help="Number of processes",
+        )
+        parser.add_argument(
+            "--number_of_threads_by_worker",
+            "-ntw",
+            type=int,
+            default=1,
+            help="Number of threads by process",
+        )
 
     def handle(self, *args, **options):
-        raster_path = options["raster_path"]
-        batch_size = options["batch_size"]
-        raster_to_top5_land_use(raster_path, batch_size)
+        raster_to_top5_land_use(
+            options["raster_path"],
+            options["batch_size"],
+            options["number_of_workers"],
+            options["number_of_threads_by_worker"],
+        )

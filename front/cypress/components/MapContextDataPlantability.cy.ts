@@ -29,7 +29,7 @@ describe("MapContextData", () => {
       store.contextData.data = null
       store.selectedDataType = DataType.PLANTABILITY
     })
-    cy.contains("Zommez et cliquez sur un carreau").should("be.visible")
+    cy.contains("Zoomez et cliquez sur un carreau").should("be.visible")
   })
 
   it("should display informations correctly", () => {
@@ -58,5 +58,14 @@ describe("MapContextData", () => {
       .find(".accordion-header")
       .click()
     cy.contains("Proximité façade").should("be.visible")
+  })
+
+  it("should display the plantability limits", () => {
+    cy.window().then(() => {
+      const store = useMapStore()
+      store.contextData.data = { plantabilityNormalizedIndice: 8.5 }
+      store.selectedDataType = DataType.PLANTABILITY
+    })
+    cy.get('[data-cy="plantability-limits"]').should("be.visible")
   })
 })

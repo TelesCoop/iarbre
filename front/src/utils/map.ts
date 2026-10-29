@@ -1,20 +1,163 @@
+import {
+  Map,
+  type DataDrivenPropertyValueSpecification,
+  type StyleSpecification
+} from "maplibre-gl"
+import { TERRA_DRAW_ID_PREFIX, TERRA_DRAW_POLYGON_LAYER } from "@/utils/constants"
 import { DataType, GeoLevel } from "@/utils/enum"
-import { Map } from "maplibre-gl"
 
-export const highlightFeature = (map: Map, layerId: string, featureId: string) => {
-  map.setPaintProperty(`${layerId}-border`, "line-width", ["match", ["get", "id"], featureId, 3, 0])
-  map.setPaintProperty(`${layerId}-border`, "line-color", [
-    "match",
-    ["get", "id"],
-    featureId,
-    "#FFFFFF",
-    "#00000000"
-  ])
+/** Anchor that keeps a layer under the Terra Draw ones, so drawn shapes stay visible and clickable. */
+export const getTerraDrawBeforeId = (map: Map): string | undefined =>
+  map.getLayer(TERRA_DRAW_POLYGON_LAYER) ? TERRA_DRAW_POLYGON_LAYER : undefined
+
+/** setStyle transformStyle that carries the Terra Draw sources and layers over to the new style. */
+export const keepTerraDrawLayers = (
+  previous: StyleSpecification | undefined,
+  next: StyleSpecification
+): StyleSpecification => {
+  if (!previous) return next
+  const isTerraDraw = (id: string) => id.startsWith(TERRA_DRAW_ID_PREFIX)
+  return {
+    ...next,
+    sources: {
+      ...next.sources,
+      ...Object.fromEntries(Object.entries(previous.sources).filter(([id]) => isTerraDraw(id)))
+    },
+    layers: [...next.layers, ...previous.layers.filter((layer) => isTerraDraw(layer.id))]
+  }
 }
 
-export const clearHighlight = (map: Map, layerId: string) => {
-  map.setPaintProperty(`${layerId}-border`, "line-width", 0)
-  map.setPaintProperty(`${layerId}-border`, "line-color", "#00000000")
+// fill-extrusion has no stroke/outline paint property. To fake one, turn each
+// edge of the polygon into a thin quad straddling that edge, then render all
+// the quads as their own white fill-extrusion layer at the tile's height: a
+// ring of thin vertical walls around the tile, with no flat top to read as a cap.
+export const METERS_PER_DEGREE_LAT = 111320
+
+export const buildSelectionWallPolygons = (
+  geometry: { type: string; coordinates: any },
+  halfWidthMeters: number
+): number[][][][] => {
+  const rings: number[][][] =
+    geometry.type === "Polygon"
+      ? geometry.coordinates
+      : geometry.type === "MultiPolygon"
+        ? geometry.coordinates.flat()
+        : []
+
+  const quads: number[][][][] = []
+
+  for (const ring of rings) {
+    for (let i = 0; i < ring.length - 1; i++) {
+      const [lng1, lat1] = ring[i]
+      const [lng2, lat2] = ring[i + 1]
+      const latRef = (lat1 + lat2) / 2
+      const lngPerMeter = 1 / (METERS_PER_DEGREE_LAT * Math.cos((latRef * Math.PI) / 180))
+      const latPerMeter = 1 / METERS_PER_DEGREE_LAT
+
+      const dx = (lng2 - lng1) / lngPerMeter
+      const dy = (lat2 - lat1) / latPerMeter
+      const length = Math.hypot(dx, dy)
+      if (length === 0) continue
+
+      const nx = (-dy / length) * halfWidthMeters
+      const ny = (dx / length) * halfWidthMeters
+      const offsetLng = nx * lngPerMeter
+      const offsetLat = ny * latPerMeter
+
+      const p1a = [lng1 + offsetLng, lat1 + offsetLat]
+      const p2a = [lng2 + offsetLng, lat2 + offsetLat]
+      const p2b = [lng2 - offsetLng, lat2 - offsetLat]
+      const p1b = [lng1 - offsetLng, lat1 - offsetLat]
+
+      quads.push([[p1a, p2a, p2b, p1b, p1a]])
+    }
+  }
+
+  return quads
+}
+
+const SELECTION_WALL_SOURCE = "ifb-selection-wall-source"
+const SELECTION_WALL_LAYER = "ifb-selection-wall-layer"
+const SELECTION_WALL_HALF_WIDTH_M = 1
+
+export const showSelectionWall3D = (
+  map: Map,
+  geometry: any,
+  properties: Record<string, any>,
+  heightExpression: DataDrivenPropertyValueSpecification<number>
+) => {
+  if (!geometry) return
+
+  const wallCollection = {
+    type: "FeatureCollection" as const,
+    features: buildSelectionWallPolygons(geometry, SELECTION_WALL_HALF_WIDTH_M).map(
+      (coordinates) => ({
+        type: "Feature" as const,
+        geometry: { type: "Polygon" as const, coordinates },
+        properties: { ...properties }
+      })
+    )
+  }
+
+  map.addSource(SELECTION_WALL_SOURCE, { type: "geojson", data: wallCollection })
+  map.addLayer(
+    {
+      id: SELECTION_WALL_LAYER,
+      type: "fill-extrusion",
+      source: SELECTION_WALL_SOURCE,
+      paint: {
+        "fill-extrusion-color": "#FFFFFF",
+        "fill-extrusion-height": heightExpression,
+        "fill-extrusion-base": 0,
+        "fill-extrusion-opacity": 1,
+        "fill-extrusion-vertical-gradient": false
+      }
+    },
+    getTerraDrawBeforeId(map)
+  )
+}
+
+export const clearSelectionWall3D = (map: Map) => {
+  if (map.getLayer(SELECTION_WALL_LAYER)) {
+    map.removeLayer(SELECTION_WALL_LAYER)
+  }
+  if (map.getSource(SELECTION_WALL_SOURCE)) {
+    map.removeSource(SELECTION_WALL_SOURCE)
+  }
+}
+
+const SELECTION_OUTLINE_SOURCE = "ifb-selection-outline-source"
+const SELECTION_OUTLINE_LAYER = "ifb-selection-outline-layer"
+
+// Draws the white outline around a selected 2D tile, straight from its
+// stored geometry (own source + layer, same idea as the 3D wall above).
+export const showSelectionOutline2D = (map: Map, geometry: any) => {
+  if (!geometry) return
+
+  const outline = { type: "Feature" as const, geometry, properties: {} }
+
+  map.addSource(SELECTION_OUTLINE_SOURCE, { type: "geojson", data: outline })
+  map.addLayer(
+    {
+      id: SELECTION_OUTLINE_LAYER,
+      type: "line",
+      source: SELECTION_OUTLINE_SOURCE,
+      paint: {
+        "line-color": "#FFFFFF",
+        "line-width": 4
+      }
+    },
+    getTerraDrawBeforeId(map)
+  )
+}
+
+export const clearSelectionOutline2D = (map: Map) => {
+  if (map.getLayer(SELECTION_OUTLINE_LAYER)) {
+    map.removeLayer(SELECTION_OUTLINE_LAYER)
+  }
+  if (map.getSource(SELECTION_OUTLINE_SOURCE)) {
+    map.removeSource(SELECTION_OUTLINE_SOURCE)
+  }
 }
 
 export const getSourceId = (datatype: DataType, geolevel: GeoLevel) => {

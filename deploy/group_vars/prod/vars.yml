@@ -12,6 +12,9 @@ redirect_hostnames: []
 
 all_hostnames: "{{ public_hostnames + redirect_hostnames }}"
 
+cors_allowed_origins:
+  - "https://maquette.datagora.erasme.org"
+
 project_dir: "{{project_base_dir}}{{ environment_suffix }}"
 backend_static_path: "{{ project_dir }}/backend_static"
 backend_media_path: "{{ project_dir }}/backend/back/media"

@@ -3,6 +3,7 @@ import { computed } from "vue"
 import { type PlantabilityData } from "@/types/plantability"
 import ContextDataMainContainer from "@/components/contextData/shared/ContextDataMainContainer.vue"
 import PlantabilityContextDataScore from "@/components/contextData/plantability/PlantabilityContextDataScore.vue"
+import PlantabilityContextDataLimits from "@/components/contextData/plantability/PlantabilityContextDataLimits.vue"
 import PlantabilityContextDataList from "@/components/contextData/plantability/PlantabilityContextDataList.vue"
 import { useMapStore } from "@/stores/map"
 
@@ -47,7 +48,7 @@ const tileCount = computed(() => {
         : 'Calcul basé sur la pondération de +37 paramètres.'
     "
     :data="currentData"
-    empty-message="Zommez et cliquez sur un carreau."
+    empty-message="Zoomez et cliquez sur un carreau."
     :zoom-level="zoomLevel"
   >
     <template #score="{ data: plantabilityData }">
@@ -56,6 +57,7 @@ const tileCount = computed(() => {
         :percentage="scorePercentage"
         :score="plantabilityData.plantabilityNormalizedIndice"
       />
+      <PlantabilityContextDataLimits />
     </template>
     <template #content="{ data: plantabilityData }">
       <PlantabilityContextDataList :data="plantabilityData" />

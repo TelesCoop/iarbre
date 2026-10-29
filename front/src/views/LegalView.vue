@@ -6,6 +6,10 @@ import IconLegal from "@/components/icons/IconLegal.vue"
 type Tab = "mentions" | "privacy"
 
 const activeTab = ref<Tab>("mentions")
+
+function openCookiePanel() {
+  window.tarteaucitron?.userInterface.openPanel()
+}
 </script>
 
 <template>
@@ -136,16 +140,24 @@ const activeTab = ref<Tab>("mentions")
               <li><strong>Durée de conservation</strong> : 12 mois après réception</li>
             </ul>
 
-            <h4 class="sub-block-title">Analytics (Plausible)</h4>
+            <h4 class="sub-block-title">Analytics (Matomo)</h4>
             <ul class="legal-list">
               <li>
-                Nous utilisons <strong>Plausible Analytics</strong>, une solution d'analyse
-                respectueuse de la vie privée
+                Nous utilisons <strong>Matomo</strong>, une solution d'analyse d'audience
+                auto-hébergée
               </li>
-              <li>Aucun cookie n'est déposé</li>
-              <li>Aucune donnée personnelle n'est collectée</li>
-              <li>Les données sont agrégées et anonymes</li>
-              <li>Conforme au RGPD sans nécessité de consentement (exempté par la CNIL)</li>
+              <li><strong>Base légale</strong> : consentement (article 6.1.a du RGPD)</li>
+              <li>Des cookies de mesure d'audience sont déposés après votre consentement</li>
+              <li>
+                Vous pouvez à tout moment accepter, refuser ou modifier votre choix via le bouton
+                <button
+                  type="button"
+                  class="legal-link bg-transparent border-0 p-0 cursor-pointer [font:inherit]"
+                  @click="openCookiePanel"
+                >
+                  gérer mes préférences de cookies
+                </button>
+              </li>
             </ul>
 
             <h4 class="sub-block-title">Cookie technique (CSRF)</h4>

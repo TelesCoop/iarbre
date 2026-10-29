@@ -1,5 +1,110 @@
 # Journal des changements
 
+## 🔖 0.43.0 (2026-10-28) : Améliorations API et correctifs de sécurité
+
+### 🐛 fix: Sécurité mise à jour de certify et de pip
+
+Suite à la faille sur les certificats.
+
+&rarr; Commit [2ea54dc](https://github.com/TelesCoop/iarbre/commit/2ea54dcc6ea883fc56f8d42912e7331da524cecb)
+
+### 🛠️ enhance : Accélérations pour servir les données
+
+- Ajout d'un overview sur les rasters, pour un préchargement plus léger sur QGIS
+- Au passage changement des valeurs encodées dans les .mvt (enlever JSON) pour alléger le load
+- Fix du bug terradraw au moment du changement de base alyer
+- Correction d'un bug qui recréait une nouvelle map à chaque passage par le dashboard (et donc un memory leak)
+
+&rarr; PR [#841](https://github.com/TelesCoop/iarbre/pull/841)
+
+### 🛠️ enhance : Ajout d'un city code dans le flux WFS
+
+- [x] Permettre de filter le flux sur des city code INSEE
+- [x] Enlever les mentions de filtrage CQL dans le front parce que ce n'est pas possible
+- [x] Enlever les mentions sur le CRS84 vu que c'est cassé
+- [x] Repointer dans le flux WMS vers la plantabilité couleur
+
+&rarr; PR [#856](https://github.com/TelesCoop/iarbre/pull/856)
+
+## 🔖 0.42.0 (2026-10-21) : Etablissements publics et export PNG
+
+### ✨ feat : Affichage des établissements publics
+
+- Il est maintenant possible d'afficher les établissements publics avec quelques donnéées de base en sur-impression des cartes
+
+&rarr; PR [#835](https://github.com/TelesCoop/iarbre/pull/835)
+
+### ✨ feat : Export de la carte en PNG
+
+- Il y a maintenant un bouton permettant de récupérer une capture PNG de la carte que l'on a sous les yeux, avec les filtrages et traçage.
+
+&rarr; PR [#829](https://github.com/TelesCoop/iarbre/pull/829)
+
+## 🔖 0.41.0 (2026-10-14) : Nombreuses corrections et petites améliorations
+
+### 🐛 fix: Carte et tableau de bord
+
+De nombreuses petites inconsistences et bugs ont été corrigées, à la fois sur la carte et sur le tableau de bord.
+
+&rarr; PR [#809](https://github.com/TelesCoop/iarbre/pull/809)
+&rarr; PR [#810](https://github.com/TelesCoop/iarbre/pull/810)
+
+### 🛠️ enhance : Frontières et gradients de biodiversité
+
+Un nouveau comportement a été ajouté aquand le zoom se rapproche pour le calque de biodiversité afin d'afficher plus de détails sur les transitions entre zone
+
+&rarr; PR [#813](https://github.com/TelesCoop/iarbre/pull/813)
+
+### ✨ feat : URLs courtes
+
+Une table a été ajoutée dans la DB afin de pouvoir partager des urls courtes, qui contiennent tous les paramètres d'affichage et de filtrage des calques.
+
+&rarr; PR [#811](https://github.com/TelesCoop/iarbre/pull/811)
+
+## 🔖 0.40.0 (2026-10-07) : Montées de version
+
+Tout un travail a été mené pour mettre à jour la version de la DB Postgres de 14 vers 16, ainsi que les packages du back (pip) et du front (npm).
+Les propositions de mise à jour se font avec dependabot.
+
+## 🔖 0.39.0 (2026-10-01) : Dashboard export et Panoramax
+
+### ✨ feat : Ajout de Panoramax sur la carte
+
+Il est maintenant possible d'avoir une vue rue, à l'aide d'image Panoramax
+
+&rarr; PR [#761](https://github.com/TelesCoop/iarbre/pull/761)
+
+### 🛠️ enhance : Des améliorations de la mise en page de l'export dashboard
+
+L'export est maintenant mieux éditorialisé avec l'ajout notamment de pictos.
+
+&rarr; PR [#766](https://github.com/TelesCoop/iarbre/pull/766)
+&rarr; PR [#767](https://github.com/TelesCoop/iarbre/pull/767)
+
+### 🧹 chore: Passage de la CI sur Python 3.12 et Ubuntu 24.04 en prévision de la MAJ serveur
+
+&rarr; Commit [dbc5bb9](https://github.com/TelesCoop/iarbre/commit/dbc5bb924d219c7e7043464c587bc8a4cb58ef00)
+
+### 🛠️ enhance : Lien vers les expérimentations
+
+Ajout d'un emplacement pour des liens vers les expérimentations en cours dont celles sur les données liées au confort thermique à l'échelle de la rue.
+
+&rarr; PR [#759](https://github.com/TelesCoop/iarbre/pull/759)
+&rarr; Commit [7b3c2f5](https://github.com/TelesCoop/iarbre/commit/7b3c2f5f872e61e0ee43c4efb3c2e21f6b569efc)
+
+## 🔖 0.38.0 (2026-09-09) : Matomo et résolutions de bugs
+
+### ✨ feat : Matomo
+
+Pour mieux comprendre et suivre les usages nous avons remplacé le compteur de visite Plausible par Matomo qui nous permeterra par exemple de savoir si les personnes reviennent et le temps passé pour chaque visite et où.
+
+&rarr; PR [#746](https://github.com/TelesCoop/iarbre/pull/746)
+
+### 🐛 fix: petits bugs liés à l'affichage du 3D et multi-threading dans le backend
+
+&rarr; PR [#745](https://github.com/TelesCoop/iarbre/pull/745)
+&rarr; PR [#739](https://github.com/TelesCoop/iarbre/pull/739)
+
 ## 🔖 0.37.0 (2026-09-02) : Dashboard d'export et bouton de partage
 
 ### 🛠️ enhance : Refonte de la mise en page de l'export de dashboard

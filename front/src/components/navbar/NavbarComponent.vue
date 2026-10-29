@@ -69,7 +69,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
           size="sm"
           @click="appStore.feedbackVisible = true"
         >
-          Envoyer votre avis
+          Donner mon avis
         </AppButton>
       </li>
     </ul>
@@ -135,7 +135,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
               }
             "
           >
-            Envoyer votre avis
+            Donner mon avis
           </AppButton>
         </li>
       </ul>

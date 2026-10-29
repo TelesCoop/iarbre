@@ -1,16 +1,19 @@
 <script lang="ts" setup>
-import { onMounted, computed, nextTick } from "vue"
-import { useRoute } from "vue-router"
+import { onMounted, computed, nextTick, watch } from "vue"
+import { useRoute, useRouter } from "vue-router"
 import SidebarComponent from "@/components/sidebar/SidebarComponent.vue"
 import DashboardHeader from "@/components/dashboard/DashboardHeader.vue"
 import DashboardNarrative from "@/components/dashboard/DashboardNarrative.vue"
 import { useDashboardStore } from "@/stores/dashboard"
 import { setPrintMode } from "@/utils/printMode"
 import { fetchExportScope } from "@/services/pdfExportService"
-import type { ZonePolygon } from "@/stores/zone"
+import { useZoneStore, type ZonePolygon } from "@/stores/zone"
+import { decodeZone, encodeZone } from "@/utils/zoneUrl"
 
 const store = useDashboardStore()
+const zoneStore = useZoneStore()
 const route = useRoute()
+const router = useRouter()
 const printMode = computed(() => route.query.print === "1")
 
 async function initPrintScope() {
@@ -44,13 +47,35 @@ async function initPrintScope() {
   )
 }
 
-onMounted(() => {
-  if (printMode.value) {
-    initPrintScope()
+async function initScopeFromUrl() {
+  const zone = typeof route.query.zone === "string" ? decodeZone(route.query.zone) : null
+  const cityCode = route.query.city_code as string | undefined
+  if (zone) {
+    await store.setScopeExplicit({ scale: "zone", geometry: zone })
+  } else if (cityCode) {
+    await store.setScopeExplicit({ scale: "commune", cityCode })
   } else if (store.hasZone) {
     store.setScale("zone")
   } else {
     store.fetchDashboardData()
+  }
+  watch(
+    () => [store.selectedScale, store.selectedCityCode, zoneStore.drawnGeometry] as const,
+    ([scale, cityCode, geometry]) => {
+      const query: Record<string, string> = {}
+      if (scale === "commune" && cityCode) query.city_code = cityCode
+      if (scale === "zone" && geometry) query.zone = encodeZone(geometry)
+      router.replace({ query })
+    },
+    { immediate: true }
+  )
+}
+
+onMounted(() => {
+  if (printMode.value) {
+    initPrintScope()
+  } else {
+    initScopeFromUrl()
   }
 })
 </script>

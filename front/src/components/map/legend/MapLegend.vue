@@ -1,24 +1,30 @@
 <script lang="ts" setup>
-import { ref, watch } from "vue"
+import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
-import { DataType, getDataTypeAttributionSource } from "@/utils/enum"
+import { DataType, DataTypeToAttributionSource } from "@/utils/enum"
 
 const mapStore = useMapStore()
-const attributionHTML = ref("")
-
-watch(
-  () => mapStore.selectedDataType,
-  async (dataType) => {
-    if (dataType) {
-      attributionHTML.value = await getDataTypeAttributionSource(dataType)
-    }
-  },
-  { immediate: true }
+const FIXED_HEIGHT_DATA_TYPES = [
+  DataType.PLANTABILITY,
+  DataType.VULNERABILITY,
+  DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+]
+const FIXED_WIDTH_DATA_TYPES = [...FIXED_HEIGHT_DATA_TYPES, DataType.CLIMATE_ZONE]
+const hasFixedWidth = computed(() => FIXED_WIDTH_DATA_TYPES.includes(mapStore.selectedDataType))
+const hasFixedHeight = computed(() => FIXED_HEIGHT_DATA_TYPES.includes(mapStore.selectedDataType))
+const attribution = computed(() =>
+  mapStore.selectedDataType ? DataTypeToAttributionSource[mapStore.selectedDataType] : null
 )
 </script>
 
 <template>
-  <div v-if="mapStore.selectedDataType" class="legend-panel">
+  <div
+    v-if="mapStore.selectedDataType"
+    :class="[
+      'legend-panel',
+      { 'legend-panel-fixed-width': hasFixedWidth, 'legend-panel-fixed-height': hasFixedHeight }
+    ]"
+  >
     <PlantabilityLegend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" class="w-full" />
     <ClimateZoneLegend
       v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
@@ -42,8 +48,15 @@ watch(
     />
     <MapFiltersStatus />
 
-    <p v-if="attributionHTML" class="legend-attribution">
-      Source : <span v-html="attributionHTML" />
+    <p v-if="attribution" class="legend-attribution">
+      Source :
+      <a
+        :href="attribution.url"
+        class="text-primary-500"
+        rel="noopener noreferrer"
+        target="_blank"
+        >{{ attribution.label }}</a
+      >
     </p>
   </div>
 </template>

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /s/
+
+Sitemap: https://carte.iarbre.fr/sitemap.xml

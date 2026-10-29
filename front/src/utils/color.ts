@@ -108,7 +108,7 @@ export function getAdaptativeColorClass(
     // Return the color with the better contrast ratio
     // WCAG AA requires a minimum contrast ratio of 4.5:1 for normal text
     return blackContrast >= whiteContrast ? getCssClass("black") : getCssClass("white")
-  } catch (error) {
+  } catch {
     // Fallback if color parsing fails
     return getCssClass("black") // Default fallback
   }

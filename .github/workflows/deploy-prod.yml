@@ -15,9 +15,9 @@ concurrency:
 jobs:
   deploy-prod:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }} # Fetch depth 2 for PRs, full history for pushes
       - name: Set environment
@@ -83,7 +83,7 @@ jobs:
 
       - name: Deploy backend
         if: steps.check_changes.outputs.backend_changed == 'true'
-        uses: dawidd6/action-ansible-playbook@v2
+        uses: dawidd6/action-ansible-playbook@v9
         with:
           playbook: backend.yml
           directory: deploy
@@ -93,7 +93,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Deploy frontend
         if: steps.check_changes.outputs.frontend_changed == 'true'
-        uses: dawidd6/action-ansible-playbook@v2
+        uses: dawidd6/action-ansible-playbook@v9
         with:
           playbook: frontend.yml
           directory: deploy

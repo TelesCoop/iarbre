@@ -7,6 +7,7 @@ import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import IconChevron from "@/components/icons/IconChevron.vue"
 import type { Feedback } from "@/types/map"
 import { useToast } from "@/composables/useToast"
+import { useMapRoute } from "@/composables/useMapRoute"
 import { useAppStore } from "@/stores/app"
 
 const router = useRouter()
@@ -14,6 +15,7 @@ const route = useRoute()
 const appStore = useAppStore()
 const welcomeIsVisible = ref(false)
 const toast = useToast()
+const mapRoute = useMapRoute()
 
 const isDashboard = computed(() => route.name === "dashboard")
 
@@ -30,7 +32,7 @@ const handleGithubClick = () => {
 }
 
 const handleMapClick = () => {
-  router.push({ name: "map" })
+  router.push(mapRoute.value)
 }
 
 const handleDashboardClick = () => {
@@ -667,7 +669,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply bg-primary-500;
   @apply mt-auto;
   gap: 1rem;
-  padding: 1.5rem 0;
+  padding: 1.5rem 0 5rem;
   flex-shrink: 0;
 }
 
@@ -725,7 +727,7 @@ const sendFeedbackToAPI = async (data: Feedback) => {
   @apply fixed bottom-0 left-0 right-0 z-50;
   @apply flex items-center justify-between px-4;
   @apply bg-[#426A45];
-  height: 3.5rem;
+  height: var(--mobile-bar-height);
 }
 
 .mobile-bar-logo {

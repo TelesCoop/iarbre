@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
@@ -97,7 +98,7 @@ const { svgRef } = useD3Chart(
       <div class="donut-wrapper">
         <svg ref="svgRef" width="100%" height="100%" />
         <div class="donut-center">
-          <span class="donut-val">{{ primaryVal.toFixed(1) }}%</span>
+          <span class="donut-val">{{ formatNumber(primaryVal) }}%</span>
         </div>
       </div>
       <div class="legend">
@@ -105,7 +106,7 @@ const { svgRef } = useD3Chart(
           <span class="legend-dot" :style="{ backgroundColor: s.color }" />
           <div class="legend-text">
             <span class="legend-label">{{ s.label }}</span>
-            <span class="legend-value">{{ s.value.toFixed(1) }} %</span>
+            <span class="legend-value">{{ formatNumber(s.value) }} %</span>
           </div>
         </div>
       </div>

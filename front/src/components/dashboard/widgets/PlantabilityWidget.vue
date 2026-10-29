@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import * as d3 from "d3"
 import DashboardWidgetCard from "@/components/dashboard/shared/DashboardWidgetCard.vue"
@@ -61,7 +62,7 @@ const metaFactorBars = computed(() => {
       value,
       color,
       textColor: getContrastTextHex(color),
-      display: `${value.toFixed(1)}%`
+      display: `${formatNumber(value)}%`
     }
   })
 })
@@ -213,7 +214,7 @@ const { svgRef } = useD3Chart(
 }
 
 .bar-track {
-  @apply w-full h-6 bg-gray-100 rounded-md overflow-hidden;
+  @apply w-full h-6 print:h-4 bg-gray-100 rounded-md overflow-hidden;
 }
 
 .bar-fill {

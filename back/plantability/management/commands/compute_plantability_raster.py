@@ -1,3 +1,5 @@
+import os
+
 from django.core.management import BaseCommand
 import rasterio
 from rasterio import features
@@ -139,11 +141,19 @@ def threshold_and_convert_to_colors(
 class Command(BaseCommand):
     help = "Compute and save factors data."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--raster-dir",
+            type=str,
+            default=str(BASE_DIR) + "/media/rasters/",
+            help="Directory containing factor rasters, outputs are written there",
+        )
+
     def handle(self, *args, **options):
         """Compute and save factor data for the selected city."""
-        raster_directory = str(BASE_DIR) + "/media/rasters/"
-        output_file = str(BASE_DIR) + "/media/rasters/plantability.tif"
-        output_color_file = str(BASE_DIR) + "/media/rasters/plantability_colors.tif"
+        raster_directory = os.path.join(options["raster_dir"], "")
+        output_file = raster_directory + "plantability.tif"
+        output_color_file = raster_directory + "plantability_colors.tif"
 
         file_path = raster_directory + list(FACTORS.keys())[0] + ".tif"
         with rasterio.open(file_path) as ref_src:

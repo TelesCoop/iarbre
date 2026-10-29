@@ -16,6 +16,16 @@ upstream app_frontend_{{ project_slug }} {
 }
 {% endif %}
 
+{% set cors_origin_var = "$cors_origin_" ~ (project_slug | replace('-', '_')) %}
+{% if cors_allowed_origins %}
+map $http_origin {{ cors_origin_var }} {
+    default "";
+    {% for origin in cors_allowed_origins -%}
+    "{{ origin }}" $http_origin;
+    {% endfor %}
+}
+{% endif %}
+
 server {
 
     listen 443 ssl;
@@ -47,6 +57,15 @@ server {
         return 444;
     }
 
+    error_page 503 @maintenance;
+    if (-f {{ project_dir }}/maintenance.on) {
+        return 503;
+    }
+    location @maintenance {
+        root {{ project_dir }};
+        rewrite ^ /maintenance.html break;
+    }
+
     # gzip compression
     gzip on;
     gzip_vary on;
@@ -54,7 +73,7 @@ server {
     gzip_comp_level 6;
     gzip_buffers 16 32k;
     gzip_min_length 1000;
-    gzip_types application/json application/javascript application/xml application/gml+xml application/geo+json text/css text/javascript text/plain text/xml image/svg+xml;
+    gzip_types application/json application/javascript application/xml application/gml+xml application/geo+json application/x-protobuf application/vnd.mapbox-vector-tile text/css text/javascript text/plain text/xml image/svg+xml;
 
     {% if has_backend is defined and has_backend %}
     # backend static stuff
@@ -115,7 +134,7 @@ server {
 
         proxy_cache        api_cache;
         proxy_cache_valid  200 30d;
-        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_key    "$host$uri$is_args$args";
         proxy_cache_lock   on;
         add_header         X-Cache-Status $upstream_cache_status;
     }
@@ -141,10 +160,14 @@ server {
 
         proxy_cache        api_cache;
         proxy_cache_valid  200 30d;
-        proxy_cache_key    "$uri$is_args$args";
+        proxy_cache_key    "$host$uri$is_args$args";
         proxy_cache_lock   on;
         proxy_cache_methods GET HEAD;
         add_header         X-Cache-Status $upstream_cache_status;
+        {% if cors_allowed_origins -%}
+        add_header         Access-Control-Allow-Origin {{ cors_origin_var }} always;
+        add_header         Vary Origin always;
+        {% endif %}
     }
 
     {% for uri in server_uris_passed_to_backend -%}

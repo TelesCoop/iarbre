@@ -1,15 +1,23 @@
 # 📊 Frontend Coverage Report
 
-**Commit:** {{short_commit_sha}}
-**Base:** {{base_ref}}@{{base_short_commit_sha}}
+**Commit:** [{{short_commit_sha}}]({{commit_link}})
+**Base:** [{{base_ref}}@{{base_short_commit_sha}}]({{base_commit_link}})
 
 ## Overall Coverage
 
 | Type           | Base                                       | This PR                               | Diff                                       |
 | -------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------------ |
 | **Statements** | {{base_total_statements_coverage_percent}} | {{total_statements_coverage_percent}} | {{total_statements_coverage_percent_diff}} |
+| **Branches**   | {{base_total_branches_coverage_percent}}   | {{total_branches_coverage_percent}}   | {{total_branches_coverage_percent_diff}}   |
 | **Functions**  | {{base_total_functions_coverage_percent}}  | {{total_functions_coverage_percent}}  | {{total_functions_coverage_percent_diff}}  |
 | **Lines**      | {{base_total_lines_coverage_percent}}      | {{total_lines_coverage_percent}}      | {{total_lines_coverage_percent_diff}}      |
+
+<details open>
+<summary>📝 Changed Files Coverage</summary>
+
+{{changed_files_coverage_table}}
+
+</details>
 
 <details>
 <summary>📁 All Files Coverage</summary>

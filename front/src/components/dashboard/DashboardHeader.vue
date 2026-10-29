@@ -1,14 +1,18 @@
 <script lang="ts" setup>
+import { formatNumber } from "@/utils/format"
 import { computed } from "vue"
 import { RouterLink } from "vue-router"
 import AppSelect from "@/components/shared/AppSelect.vue"
 import AppBadge from "@/components/shared/AppBadge.vue"
+import MapCopyLinkButton from "@/components/map/MapCopyLinkButton.vue"
+import { useMapRoute } from "@/composables/useMapRoute"
 import { useDashboardStore } from "@/stores/dashboard"
 import type { DashboardScale } from "@/types/dashboard"
 
 const props = defineProps<{ printMode?: boolean }>()
 
 const store = useDashboardStore()
+const mapRoute = useMapRoute()
 
 const COVER_SECTIONS = [
   {
@@ -57,7 +61,7 @@ const handleCityChange = (value: string | number) => {
 const areaDisplay = computed(() => {
   if (!store.dashboardData) return null
   const km2 = store.dashboardData.areaKm2
-  if (km2 >= 1) return `${km2.toFixed(1)} km²`
+  if (km2 >= 1) return `${formatNumber(km2)} km²`
   return `${Math.round(km2 * 1_000_000).toLocaleString("fr-FR")} m²`
 })
 
@@ -113,24 +117,27 @@ const currentLabel = computed(() => {
           <AppBadge variant="secondary">{{ areaDisplay }}</AppBadge>
         </div>
       </div>
-      <RouterLink :to="{ name: 'map' }" class="back-to-map">
-        <svg
-          fill="none"
-          height="16"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-          <line x1="8" x2="8" y1="2" y2="18" />
-          <line x1="16" x2="16" y1="6" y2="22" />
-        </svg>
-        <span>Retourner sur la carte</span>
-      </RouterLink>
+      <div class="flex items-center gap-2">
+        <MapCopyLinkButton />
+        <RouterLink :to="mapRoute" class="back-to-map">
+          <svg
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" x2="8" y1="2" y2="18" />
+            <line x1="16" x2="16" y1="6" y2="22" />
+          </svg>
+          <span>Retourner sur la carte</span>
+        </RouterLink>
+      </div>
     </div>
 
     <div class="header-controls">
