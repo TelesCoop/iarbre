@@ -42,6 +42,42 @@ FACTORS = {
     "QPV": 0,
 }
 
+BLOCKING_SCORE = float(min(FACTORS.values()))
+
+VEGESTRATE_LAYERS = [
+    ("vegestrate", "arborescent"),
+    ("vegestrate", "arbustif"),
+    ("vegestrate", "herbacee"),
+]
+
+FINE_GRID_FACTORS = {
+    "Strate arborée": {"include": [("vegestrate", "arborescent")], "uncertainty": 0.5},
+    "Strate basse et pelouse": {
+        "include": [
+            ("vegestrate", "arbustif"),
+            ("vegestrate", "herbacee"),
+            ("data", "EVA sols nus, friches et milieux herbeux"),
+        ],
+        "exclude": [("vegestrate", "arborescent")],
+        "uncertainty": 0.5,
+    },
+    "Espaces agricoles": {
+        "include": [("data", "EVA espaces agricoles")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+    "Forêts": {
+        "include": [("data", "EVA forêts")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+    "Espaces artificialisés": {
+        "include": [("data", "EVA espaces artificialisés")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": None,
+    },
+}
+
 META_FACTORS_MAPPING = {
     "Réseaux et infrastructures": [
         "Assainissement",
@@ -102,9 +138,33 @@ UPDATES = [
     },
 ]
 
+EVA_AGRICULTURAL_CODES = [211, 212, 213, 214, 215, 221, 222, 223, 224, 225, 231, 241]
+EVA_FOREST_CODES = [311, 312, 322, 331, 341, 342, 351, 371, 372, 374, 411, 412]
+EVA_OPEN_GROUND_CODES = [14, 16, 17, 361, 362]
+EVA_ARTIFICIAL_CODES = [15]
+EVA_LAND_COVER_CODES = [
+    EVA_OPEN_GROUND_CODES,
+    EVA_AGRICULTURAL_CODES,
+    EVA_FOREST_CODES,
+    EVA_ARTIFICIAL_CODES,
+]
+
+
+def eva_actions(code_groups: list[list[int]], **extra) -> list[dict]:
+    return [
+        {
+            "filters": [{"name": "gl_2015", "value": code} for code in codes],
+            "explode": True,
+            **extra,
+        }
+        for codes in code_groups
+    ]
+
+
 DATA_FILES = [
     {
         "name": "Parkings surfacique",
+        "uncertainty": 1,
         "file": "parkingsurfacique.geojson",
         "scripts": None,
         "factors": ["Parkings"],
@@ -112,6 +172,7 @@ DATA_FILES = [
     },
     {
         "name": "SLT",
+        "uncertainty": 0.5,
         "file": "voirie.gpkg",
         "scripts": ["slt.py"],
         "layer_name": "pub_patrimoinevoirie.sltmateriel",
@@ -123,6 +184,7 @@ DATA_FILES = [
     },
     {
         "name": "Assainissement",
+        "uncertainty": None,
         "file": "assainissement.geojson",
         "scripts": ["assainissement.py"],
         "actions": [{"buffer_size": 1, "explode": True, "union": True}],
@@ -131,6 +193,7 @@ DATA_FILES = [
     },
     {
         "name": "Espaces publics",
+        "uncertainty": 0.5,
         "file": "espacepublic2025.geojson",
         "actions": [
             {
@@ -175,69 +238,12 @@ DATA_FILES = [
     },
     {
         "name": "EVA 2015",
+        "uncertainty": 3,
         "file": "new_all_eva.shp",
-        "actions": [
-            {
-                "filter": {"name": "gl_2015", "value": 11},
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [12, 13, 14, 16, 17, 361, 362]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [
-                        211,
-                        212,
-                        213,
-                        214,
-                        215,
-                        221,
-                        222,
-                        223,
-                        224,
-                        225,
-                        231,
-                        241,
-                    ]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filters": [
-                    {"name": "gl_2015", "value": value}
-                    for value in [
-                        311,
-                        312,
-                        322,
-                        331,
-                        341,
-                        342,
-                        351,
-                        371,
-                        372,
-                        374,
-                        411,
-                        412,
-                    ]
-                ],
-                "explode": True,
-                "simplify": 3,
-            },
-            {
-                "filter": {"name": "gl_2015", "value": 15},
-                "explode": True,
-                "simplify": 3,
-            },
-        ],
+        "actions": eva_actions(
+            [[11], [12, 13] + EVA_OPEN_GROUND_CODES, *EVA_LAND_COVER_CODES[1:]],
+            simplify=3,
+        ),
         "scripts": [
             "strate_arboree.py",
             "strate_basse.py",
@@ -255,7 +261,21 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
+        "name": "EVA 2015 1m",
+        "uncertainty": None,
+        "file": "new_all_eva.shp",
+        "actions": eva_actions(EVA_LAND_COVER_CODES),
+        "factors": [
+            "EVA sols nus, friches et milieux herbeux",
+            "EVA espaces agricoles",
+            "EVA forêts",
+            "EVA espaces artificialisés",
+        ],
+        "output_type": "POLYGON",
+    },
+    {
         "name": "Place PMR",
+        "uncertainty": 0.5,
         "file": "voirie.gpkg",
         "layer_name": "pub_patrimoinevoirie.emplacementpmr",
         "actions": [{"buffer_size": 3}],
@@ -264,6 +284,7 @@ DATA_FILES = [
     },
     {
         "name": "Auto-partage",
+        "uncertainty": 0.5,
         "file": "voirie.gpkg",
         "layer_name": "pub_patrimoinevoirie.stationautopartage",
         "actions": [{"buffer_size": 3}],
@@ -274,7 +295,9 @@ DATA_FILES = [
 URL_FILES = [
     {
         "name": "Entrée parking",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/lyon-parc-auto/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=lyon-parc-auto:lpa_mobilite.entree_parking&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0",
+        "layer_name": "lpa_mobilite.entree_parking",
         "actions": [{"buffer_size": 5}],
         "scripts": [],
         "factors": ["Entrée parking"],
@@ -282,6 +305,7 @@ URL_FILES = [
     },
     {
         "name": "Réseaux gaz",
+        "uncertainty": 1,
         "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/infrastructures-reseau-gaz/lines",
         "actions": [{"buffer_size": 2, "union": True}],
         "scripts": ["gaz.py"],
@@ -290,6 +314,7 @@ URL_FILES = [
     },
     {
         "name": "Réseaux souterrains Enedis",
+        "uncertainty": None,
         "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-souterrain-basse-tension-bt/lines",
         "actions": [{"buffer_size": 2, "union": True}],
         "scripts": ["souterrain_enedis.py"],
@@ -298,6 +323,7 @@ URL_FILES = [
     },
     {
         "name": "Réseaux aériens Enedis",
+        "uncertainty": None,
         "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-aerien-basse-tension-bt/lines",
         "actions": [{"buffer_size": 1, "union": True}],
         "scripts": ["aerien_enedis.py"],
@@ -306,6 +332,7 @@ URL_FILES = [
     },
     {
         "name": "Quartiers prioritaires de la ville",
+        "uncertainty": None,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:ter_territoire.quartier_prioritaire_2024_2030&outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortby=gid",
         "scripts": [""],
         "layer_name": "ter_territoire.quartier_prioritaire_2024_2030",
@@ -314,18 +341,20 @@ URL_FILES = [
     },
     {
         "name": "Réseau Fibre",
+        "uncertainty": None,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
         "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
-        "typename=metropole-de-lyon:tel_telecom.telfibreripthd_1&"
+        "typename=metropole-de-lyon:tel_telecom.fibre_rip_thd&"
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "scripts": ["fibre.py"],
-        "layer_name": "tel_telecom.telfibreripthd_1",
+        "layer_name": "tel_telecom.fibre_rip_thd",
         "actions": [{"buffer_size": 2, "union": True}],
         "factors": ["Réseau Fibre"],
         "output_type": "LINESTRING",
     },
     {
         "name": "Plan eau",
+        "uncertainty": 0.5,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/ows"
         "?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:fpc_fond_plan_communaut.fpcplandeau&"
@@ -338,6 +367,7 @@ URL_FILES = [
     },
     {
         "name": "Ponts",
+        "uncertainty": 0.5,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:fpc_fond_plan_communaut.fpcpont&"
@@ -350,6 +380,7 @@ URL_FILES = [
     },
     {
         "name": "Arbres alignements Métropole",
+        "uncertainty": 0.5,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:"
@@ -382,6 +413,7 @@ URL_FILES = [
     },
     {
         "name": "Marchés forains",
+        "uncertainty": None,
         "url": "https://download.data.grandlyon.com/wfs/grandlyon",
         "layer_name": "gin_nettoiement.ginmarche",
         "scripts": [],
@@ -390,6 +422,7 @@ URL_FILES = [
     },
     {
         "name": "Voies ferrées",
+        "uncertainty": 0.5,
         "url": "https://download.data.grandlyon.com/wfs/grandlyon",
         "layer_name": "fpc_fond_plan_communaut.fpcvoieferree",
         "actions": [{"buffer_size": 1, "union": True}],
@@ -399,6 +432,7 @@ URL_FILES = [
     },
     {
         "name": "Velov",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:"
@@ -415,6 +449,7 @@ URL_FILES = [
     },
     {
         "name": "Aerodrome",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:adr_voie_lieu.adraerodrome&"
@@ -428,6 +463,7 @@ URL_FILES = [
     },
     {
         "name": "Arrêts transport en",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/sytral/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature"
         "&typename=sytral:tcl_sytral.tclarret&outputFormat=GML3"
@@ -442,6 +478,7 @@ URL_FILES = [
     },
     {
         "name": "Pistes cyclables",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:"
@@ -456,6 +493,7 @@ URL_FILES = [
     },
     {
         "name": "Tracé de métro",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/sytral/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=sytral:tcl_sytral.tcllignemf_2_0_0&"
@@ -469,6 +507,7 @@ URL_FILES = [
     },
     {
         "name": "Tracé de tramway",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/sytral/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=sytral:tcl_sytral.tcllignetram_2_0_0&"
@@ -482,6 +521,7 @@ URL_FILES = [
     },
     {
         "name": "Tracé de bus",
+        "uncertainty": 1,
         "url": "https://data.grandlyon.com/geoserver/sytral/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=sytral:tcl_sytral.tcllignebus_2_0_0&"
@@ -495,6 +535,7 @@ URL_FILES = [
     },
     {
         "name": "Réseau chaleur urbain",
+        "uncertainty": None,
         "url": "https://data.grandlyon.com/geoserver/metropole-de-lyon/"
         "ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&"
         "typename=metropole-de-lyon:nrj_energie.rcu_canalisation&"
@@ -507,6 +548,7 @@ URL_FILES = [
     },
     {
         "name": "Friches",
+        "uncertainty": None,
         "url": "https://apidf-preprod.cerema.fr/cartofriches/geofriches/",
         "layer_name": "",
         "scripts": None,
@@ -515,6 +557,7 @@ URL_FILES = [
     },
     {
         "name": "Bâtiments",
+        "uncertainty": 1,
         "url": "https://data.geopf.fr/wfs/ows",
         "layer_name": "",
         "scripts": ["batiment.py", "facade.py"],
@@ -527,6 +570,7 @@ URL_FILES = [
     },
     {
         "name": "Local Climate Zone",
+        "uncertainty": None,
         "url": "https://www.data.gouv.fr/fr/datasets/r/e0c0f5e4-c8bb-4d33-aec9-ba16b5736102",
         "output_type": "POLYGON",
         "factors": "",

@@ -11,6 +11,8 @@ class PlantabilityNormalizedThreshold(IntEnum):
 
 
 PLANTABILITY_THRESHOLDS = [-5, -2, -0.75, 0.15, 2.5, 5]
+BLOCKED_SCORE = -100
+MIN_PLANTING_SIZE = 4
 PLANTABILITY_NORMALIZED = PLANTABILITY_NORMALIZED = [
     threshold.value for threshold in PlantabilityNormalizedThreshold
 ]
