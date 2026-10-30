@@ -1,6 +1,6 @@
-boto3==1.43.114
-certifi==2026.10.19
-coverage==7.16.2
+boto3==1.43.118
+certifi==2026.10.23
+coverage==7.17.0
 Django==5.2.17
 django-anymail[mailgun]==15.2
 django-cors-headers==4.9.0
@@ -23,7 +23,7 @@ mercantile==1.2.1
 numpy==2.5.4
 openpyxl==3.1.5
 pillow==12.3.0
-playwright==1.64.0
+playwright==1.64.1
 protobuf==6.33.6
 psycopg2==2.9.13
 pyproj==3.8.0
