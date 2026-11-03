@@ -3,6 +3,7 @@ import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import VulnerabilityContextTool from "@/components/contextTools/VulnerabilityContextTool.vue"
 import VegestrateContextTool from "@/components/contextTools/VegestrateContextTool.vue"
+import PetContextTool from "@/components/contextTools/PetContextTool.vue"
 import { computed } from "vue"
 
 const mapStore = useMapStore()
@@ -10,7 +11,8 @@ const show = computed(() => {
   return [
     DataType.VULNERABILITY,
     DataType.PLANTABILITY_VULNERABILITY,
-    DataType.VEGESTRATE
+    DataType.VEGESTRATE,
+    DataType.PET
   ].includes(mapStore.selectedDataType)
 })
 </script>
@@ -29,5 +31,6 @@ const show = computed(() => {
       "
     />
     <VegestrateContextTool v-if="mapStore.selectedDataType === DataType.VEGESTRATE" />
+    <PetContextTool v-if="mapStore.selectedDataType === DataType.PET" />
   </div>
 </template>

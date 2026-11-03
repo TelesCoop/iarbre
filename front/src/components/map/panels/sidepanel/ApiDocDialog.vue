@@ -87,6 +87,8 @@ const rasterDatasets: RasterDataset[] = [
   { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
   { label: "Végéstrate", url: rasterUrl("vegestrate") },
   { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
+  { label: "Indice PET 2020 (une bande par heure)", url: rasterUrl("pet_2020") },
+  { label: "Indice PET 2090 (une bande par heure)", url: rasterUrl("pet_2090") },
   { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
   { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
   { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },

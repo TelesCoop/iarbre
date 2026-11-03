@@ -221,7 +221,7 @@ export function useShapeDrawing() {
   ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
     if (!terraDraw.value) return null
 
-    if (dataType === DataType.CLIMATE_ZONE) return null
+    if (dataType === DataType.CLIMATE_ZONE || dataType === DataType.PET) return null
 
     // Pick the drawn polygon explicitly; select mode also injects helper Point features.
     const polygon = terraDraw.value

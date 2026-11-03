@@ -4,6 +4,8 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
+from api.constants import PET_RASTERS
+
 
 def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
     """Build a ``(path, filename)`` tuple, defaulting filename to basename."""
@@ -20,6 +22,10 @@ RASTER_MAP: dict[str, tuple[str, str]] = {
     "vulnerability_colors": _entry(base_dir + "vulnerability_colors.tif"),
     "lcz": _entry(base_dir + "lcz.tif"),
     "lcz_colors": _entry(base_dir + "lcz_colors.tif"),
+    **{
+        f"pet_{year}": _entry(f"{base_dir}{name}.tif")
+        for year, name in PET_RASTERS.items()
+    },
 }
 
 
