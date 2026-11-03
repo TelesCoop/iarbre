@@ -35,6 +35,10 @@ const options = [
   {
     label: DataTypeToLabel[DataType.VEGESTRATE],
     value: DataType.VEGESTRATE
+  },
+  {
+    label: DataTypeToLabel[DataType.PET],
+    value: DataType.PET
   }
 ]
 </script>
