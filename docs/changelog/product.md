@@ -1,5 +1,13 @@
 # Journal des changements
 
+## 🔖 0.44.0 (2026-11-03) : Affichage du calque de confort thermique
+
+### ✨ feat : Le calque de confort thermique (PET)
+
+On affiche le raster de manière assez simple pour permettre une première diffusion large
+
+&rarr; PR [#866](https://github.com/TelesCoop/iarbre/pull/866)
+
 ## 🔖 0.43.0 (2026-10-28) : Améliorations API et correctifs de sécurité
 
 ### 🐛 fix: Sécurité mise à jour de certify et de pip
