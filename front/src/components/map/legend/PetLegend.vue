@@ -3,7 +3,6 @@ import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
 import { PET_LEGEND, formatHour } from "@/utils/pet"
-import LegendItem from "@/components/map/legend/LegendItem.vue"
 
 const mapStore = useMapStore()
 
@@ -17,15 +16,29 @@ const title = computed(
     <div class="legend-header">
       <span class="legend-title">{{ title }}</span>
     </div>
-    <div class="strate-list" role="list">
-      <div
-        v-for="item in PET_LEGEND"
-        :key="item.value"
-        class="strate-item"
-        role="listitem"
-        :title="item.detail"
-      >
-        <LegendItem :label="item.label" :color="item.color" />
+    <div class="legend-content">
+      <div class="legend-label">
+        <span class="legend-axis-indicator">−</span>
+        <span class="legend-axis-text">Frais</span>
+      </div>
+      <div class="legend-scale" role="list">
+        <ScoreLabel
+          v-for="(item, index) in PET_LEGEND"
+          :key="item.value"
+          :background-color="item.color"
+          :class="[
+            index === 0 ? 'rounded-l' : '',
+            index === PET_LEGEND.length - 1 ? 'rounded-r' : ''
+          ]"
+          :label="item.label"
+          :score="item.value"
+          :title="`${item.label} : ${item.detail}`"
+          role="listitem"
+        />
+      </div>
+      <div class="legend-label">
+        <span class="legend-axis-text">Chaud</span>
+        <span class="legend-axis-indicator">+</span>
       </div>
     </div>
   </div>

@@ -7,7 +7,8 @@ const mapStore = useMapStore()
 const FIXED_HEIGHT_DATA_TYPES = [
   DataType.PLANTABILITY,
   DataType.VULNERABILITY,
-  DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
+  DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY,
+  DataType.PET
 ]
 const FIXED_WIDTH_DATA_TYPES = [...FIXED_HEIGHT_DATA_TYPES, DataType.CLIMATE_ZONE]
 const hasFixedWidth = computed(() => FIXED_WIDTH_DATA_TYPES.includes(mapStore.selectedDataType))
