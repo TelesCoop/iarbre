@@ -7,7 +7,6 @@ from rest_framework.exceptions import ValidationError
 from api.constants import PET_RASTERS
 from api.views.raster_tile_views import RasterTileView
 from iarbre_data.utils.hourly_rasters import hour_raster_path, is_up_to_date
-from iarbre_data.utils.palettes import PET_COLOR_MAP
 
 PET_HOURS = range(25)
 
@@ -33,4 +32,4 @@ class PetTileView(RasterTileView):
         return hour_path
 
     def render(self, data, nodata, request):
-        return self.colorize(data, PET_COLOR_MAP)
+        return self.encode_terrarium(data, nodata)

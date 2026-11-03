@@ -20,7 +20,7 @@ const title = computed(
     <div class="strate-list" role="list">
       <div
         v-for="item in PET_LEGEND"
-        :key="item.color"
+        :key="item.value"
         class="strate-item"
         role="listitem"
         :title="item.detail"

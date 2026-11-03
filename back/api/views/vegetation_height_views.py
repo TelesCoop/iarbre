@@ -2,7 +2,6 @@ import logging
 import os
 from pathlib import Path
 
-import numpy as np
 import rasterio
 from django.conf import settings
 from django.http import Http404
@@ -15,10 +14,6 @@ from api.views.raster_tile_views import RasterTileView
 from iarbre_data.utils.palettes import VEGESTRATE_COLOR_MAP
 
 logger = logging.getLogger(__name__)
-
-# Height given to nodata pixels in the DEM-encoded tiles, rendered transparent
-# by the front-end color ramp (any value below 0).
-NODATA_HEIGHT = -1.0
 
 
 class VegetationHeightTileView(RasterTileView):
@@ -36,26 +31,8 @@ class VegetationHeightTileView(RasterTileView):
 
     def render(self, data, nodata, request):
         if request.query_params.get("kind", "class") == "raw":
-            rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
-            self._encode_terrarium(data, nodata, rgba_data)
-            return rgba_data
+            return self.encode_terrarium(data, nodata)
         return self.colorize(data, VEGESTRATE_COLOR_MAP)
-
-    @staticmethod
-    def _encode_terrarium(data, nodata, rgba_data):
-        """Encode heights in-place into `rgba_data` as terrarium RGB.
-
-        Decoded client-side as `R * 256 + G + B / 256 - 32768`, so the front-end
-        can classify heights itself instead of receiving pre-colored pixels.
-        """
-        heights = data.astype(np.float64)
-        if nodata is not None:
-            heights[data == nodata] = NODATA_HEIGHT
-        shifted = heights + 32768.0
-        rgba_data[..., 0] = (shifted // 256).astype(np.uint8)
-        rgba_data[..., 1] = (shifted % 256).astype(np.uint8)
-        rgba_data[..., 2] = ((shifted % 1) * 256).astype(np.uint8)
-        rgba_data[..., 3] = 255
 
 
 class VegetationHeightAtPointView(APIView):

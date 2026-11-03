@@ -12,7 +12,7 @@ import {
   type ExpressionSpecification,
   type FilterSpecification,
   type PointLike,
-  type RasterTileSource
+  type RasterDEMTileSource
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -70,6 +70,7 @@ import {
 import {
   DEFAULT_PET_HOUR,
   DEFAULT_PET_YEAR,
+  buildPetColorRamp,
   buildPetTileUrl,
   type PetHour,
   type PetYear
@@ -345,9 +346,9 @@ export const useMapStore = defineStore("map", () => {
       return [
         {
           id: layerId,
-          type: "raster",
+          type: "color-relief",
           source: sourceId,
-          paint: { "raster-opacity": 0.6 }
+          paint: { "color-relief-opacity": 0.6, "color-relief-color": buildPetColorRamp() }
         }
       ]
     }
@@ -735,7 +736,8 @@ export const useMapStore = defineStore("map", () => {
 
     if (datatype === DataType.PET) {
       map.addSource(sourceId, {
-        type: "raster",
+        type: "raster-dem",
+        encoding: "terrarium",
         tiles: [buildPetTileUrl(fullBaseApiUrl, petYear.value, petHour.value)],
         tileSize: 256,
         minzoom: MIN_ZOOM
@@ -850,12 +852,19 @@ export const useMapStore = defineStore("map", () => {
     refreshDatatype()
   }
 
-  const refreshPetTiles = () => {
-    const tileUrl = buildPetTileUrl(getFullBaseApiUrl(), petYear.value, petHour.value)
+  const applyPetTilesOnceLoaded = (mapInstance: Map) => {
     const sourceId = getSourceId(DataType.PET, DataTypeToGeolevel[DataType.PET])
-    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
-      mapInstance.getSource<RasterTileSource>(sourceId)?.setTiles([tileUrl])
-    })
+    const source = mapInstance.getSource<RasterDEMTileSource>(sourceId)
+    const tileUrl = buildPetTileUrl(getFullBaseApiUrl(), petYear.value, petHour.value)
+    if (!source || source.tiles[0] === tileUrl) return
+    if (!mapInstance.isSourceLoaded(sourceId)) {
+      mapInstance.once("idle", () => applyPetTilesOnceLoaded(mapInstance))
+      return
+    }
+    source.setTiles([tileUrl])
+  }
+  const refreshPetTiles = () => {
+    Object.values(mapInstancesByIds.value).forEach(applyPetTilesOnceLoaded)
   }
 
   const setPetYear = (year: PetYear) => {

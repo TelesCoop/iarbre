@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 TILE_SIZE = 256
 
+# Height given to nodata pixels in the DEM-encoded tiles, rendered transparent
+# by the front-end color ramp (any value below 0).
+NODATA_HEIGHT = -1.0
+
 
 def read_tile(
     raster_path: Path, tile: mercantile.Tile
@@ -63,6 +67,24 @@ class RasterTileView(APIView):
         rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
         for value, color in color_map.items():
             rgba_data[data == value] = color
+        return rgba_data
+
+    @staticmethod
+    def encode_terrarium(data: np.ndarray, nodata) -> np.ndarray:
+        """Encode values as terrarium RGB.
+
+        Decoded client-side as `R * 256 + G + B / 256 - 32768`, so the front-end
+        can classify values itself instead of receiving pre-colored pixels.
+        """
+        values = data.astype(np.float64)
+        if nodata is not None:
+            values[data == nodata] = NODATA_HEIGHT
+        shifted = values + 32768.0
+        rgba_data = np.zeros((*data.shape, 4), dtype=np.uint8)
+        rgba_data[..., 0] = (shifted // 256).astype(np.uint8)
+        rgba_data[..., 1] = (shifted % 256).astype(np.uint8)
+        rgba_data[..., 2] = ((shifted % 1) * 256).astype(np.uint8)
+        rgba_data[..., 3] = 255
         return rgba_data
 
     @method_decorator(cache_page(60 * 60 * 24))
