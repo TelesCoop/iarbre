@@ -16,7 +16,8 @@ const mapStore = useMapStore()
       </h3>
       <div class="flex flex-col gap-2 text-sm text-gray-700">
         <p>
-          C'est une température ressentie (PET), en journée, obtenue à l'aide d'un modélisation du climat urbain pour une journée (légèrement chaude) le 14 juillet
+          C'est une température ressentie (PET), en journée, obtenue à l'aide d'un modélisation du
+          climat urbain pour une journée (légèrement chaude) le 14 juillet
           {{ mapStore.petYear }}. Nous répliquons, avec son aide, une
           <a
             class="text-primary-700 underline"
@@ -30,8 +31,8 @@ const mapStore = useMapStore()
         <p>
           Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le
           confort/inconfort d'une personne selon les caractéristiques d'ambiance : température de
-          l'air, ombre ou soleil, circulation d'air/vent, rayonnement secondaire des bâtiments et du sol. Ici, la
-          personne est simulée assise et immobile.
+          l'air, ombre ou soleil, circulation d'air/vent, rayonnement secondaire des bâtiments et du
+          sol. Ici, la personne est simulée assise et immobile.
         </p>
         <p>Les données d'entrée sont :</p>
         <ul class="list-disc pl-5">
