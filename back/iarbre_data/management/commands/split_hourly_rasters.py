@@ -4,9 +4,10 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 
+from api.constants import PET_RASTERS
 from iarbre_data.utils.hourly_rasters import split_hours
 
-HOURLY_RASTERS = ["PET_index_1m_2090", "PET_index_2020", "Shadow"]
+HOURLY_RASTERS = [*PET_RASTERS.values(), "Shadow"]
 
 
 class Command(BaseCommand):
