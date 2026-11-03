@@ -70,7 +70,7 @@
     "vite-plugin-vue-devtools": "^8.2.1",
     "vitest": "^5.0.5",
     "vue-eslint-parser": "^10.4.1",
-    "vue-tsc": "^3.3.14"
+    "vue-tsc": "3.3.13"
   },
   "lavamoat": {
     "allowScripts": {
