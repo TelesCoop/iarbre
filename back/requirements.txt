@@ -1,6 +1,6 @@
-boto3==1.43.114
-certifi==2026.10.19
-coverage==7.16.2
+boto3==1.43.122
+certifi==2026.10.23
+coverage==7.17.0
 Django==5.2.17
 django-anymail[mailgun]==15.2
 django-cors-headers==4.9.0
@@ -17,7 +17,7 @@ geopandas==1.2.0
 getconf==1.11.1
 gunicorn==26.2.0
 humanize==4.16.0
-ipython==9.17.1
+ipython==9.18.0
 mapbox_vector_tile==2.2.0
 mercantile==1.2.1
 numpy==2.5.4
