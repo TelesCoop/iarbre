@@ -11,7 +11,8 @@ import {
   type DataDrivenPropertyValueSpecification,
   type ExpressionSpecification,
   type FilterSpecification,
-  type PointLike
+  type PointLike,
+  type RasterDEMTileSource
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -66,6 +67,14 @@ import {
   normalizeHeightRanges,
   type HeightRange
 } from "@/utils/vegetation"
+import {
+  DEFAULT_PET_HOUR,
+  DEFAULT_PET_YEAR,
+  buildPetColorRamp,
+  buildPetTileUrl,
+  type PetHour,
+  type PetYear
+} from "@/utils/pet"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
@@ -193,6 +202,8 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
+  const petYear = ref<PetYear>(DEFAULT_PET_YEAR)
+  const petHour = ref<PetHour>(DEFAULT_PET_HOUR)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
   const heightMapZoomHandler = ref<(() => void) | null>(null)
 
@@ -330,6 +341,21 @@ export const useMapStore = defineStore("map", () => {
     sourceId: string
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
+
+    if (datatype === DataType.PET) {
+      return [
+        {
+          id: layerId,
+          type: "color-relief",
+          source: sourceId,
+          paint: {
+            "color-relief-opacity": 0.6,
+            "color-relief-color": buildPetColorRamp(),
+            resampling: "nearest"
+          }
+        }
+      ]
+    }
 
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       return [
@@ -535,7 +561,7 @@ export const useMapStore = defineStore("map", () => {
     if (!selection) return
     if (use3D.value) {
       const heightExpression = EXTRUSION_HEIGHT_MAP.value[
-        selection.datatype
+        selection.datatype as Exclude<DataType, DataType.PET>
       ] as DataDrivenPropertyValueSpecification<number>
       showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
     } else {
@@ -712,6 +738,17 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
+    if (datatype === DataType.PET) {
+      map.addSource(sourceId, {
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [buildPetTileUrl(fullBaseApiUrl, petYear.value, petHour.value)],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
       map.addSource(sourceId, {
@@ -817,6 +854,31 @@ export const useMapStore = defineStore("map", () => {
   const toggleVegestrateHeight = () => {
     showVegestrateHeight.value = !showVegestrateHeight.value
     refreshDatatype()
+  }
+
+  const applyPetTilesOnceLoaded = (mapInstance: Map) => {
+    const sourceId = getSourceId(DataType.PET, DataTypeToGeolevel[DataType.PET])
+    const source = mapInstance.getSource<RasterDEMTileSource>(sourceId)
+    const tileUrl = buildPetTileUrl(getFullBaseApiUrl(), petYear.value, petHour.value)
+    if (!source || source.tiles[0] === tileUrl) return
+    if (!mapInstance.isSourceLoaded(sourceId)) {
+      mapInstance.once("idle", () => applyPetTilesOnceLoaded(mapInstance))
+      return
+    }
+    source.setTiles([tileUrl])
+  }
+  const refreshPetTiles = () => {
+    Object.values(mapInstancesByIds.value).forEach(applyPetTilesOnceLoaded)
+  }
+
+  const setPetYear = (year: PetYear) => {
+    petYear.value = year
+    refreshPetTiles()
+  }
+
+  const setPetHour = (hour: PetHour) => {
+    petHour.value = hour
+    refreshPetTiles()
   }
 
   const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
@@ -1972,6 +2034,10 @@ export const useMapStore = defineStore("map", () => {
     toggleVegestrateHeight,
     vegestrateHeightRanges,
     setVegestrateHeightRanges,
-    vegetationHeightAtPoint
+    vegetationHeightAtPoint,
+    petYear,
+    petHour,
+    setPetYear,
+    setPetHour
   }
 })

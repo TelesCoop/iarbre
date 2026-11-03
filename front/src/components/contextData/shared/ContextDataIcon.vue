@@ -80,6 +80,10 @@ withDefaults(
     <template v-else-if="name === 'tool'">
       <path d="M14.7 6.3a4 4 0 0 0-5 5L3 18v3h3l6.7-6.7a4 4 0 0 0 5-5l-2.4 2.4-2-2 2.4-2.4Z" />
     </template>
+    <template v-else-if="name === 'video'">
+      <rect height="12" rx="2" width="14" x="2" y="6" />
+      <path d="M16 10l6-3v10l-6-3" />
+    </template>
     <template v-else>
       <circle cx="12" cy="12" r="8" />
       <path d="M12 8v4l3 2" />

@@ -47,8 +47,20 @@ describe("Map legends", () => {
       useMapStore().selectedDataType = DataType.PLANTABILITY
     })
     cy.get(".legend-attribution a")
-      .should("contain.text", "ERASME")
+      .should("contain.text", "IArbre")
       .and("have.attr", "href")
       .and("include", "notice_utilisation_calque_plantabilite")
+  })
+
+  it("renders the PET legend with year and hour", () => {
+    cy.mount(MapLegend)
+    cy.window().then(() => {
+      useMapStore().selectedDataType = DataType.PET
+    })
+    cy.contains("Indice PET - 2090 - 16h")
+    cy.get('[data-cy="pet-legend"] [role="listitem"]').should("have.length", 6)
+    cy.get('[data-cy="pet-legend"] [role="listitem"]')
+      .first()
+      .should("have.attr", "title", "13 - 18 °C - Légèrement frais : Léger stress dû au froid")
   })
 })

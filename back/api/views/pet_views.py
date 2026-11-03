@@ -1,0 +1,31 @@
+from pathlib import Path
+
+from django.conf import settings
+from rest_framework.exceptions import ValidationError
+
+from api.constants import PET_RASTERS
+from api.views.raster_tile_views import RasterTileView
+from iarbre_data.utils.hourly_rasters import hour_raster_path
+
+PET_HOURS = range(25)
+
+
+def _int_param(request, name: str, allowed) -> int:
+    try:
+        value = int(request.query_params.get(name, ""))
+    except ValueError:
+        value = None
+    if value not in allowed:
+        raise ValidationError({name: f"Must be one of {', '.join(map(str, allowed))}."})
+    return value
+
+
+class PetTileView(RasterTileView):
+    def raster_path(self, request) -> Path:
+        year = _int_param(request, "year", list(PET_RASTERS))
+        hour = _int_param(request, "hour", PET_HOURS)
+        source = Path(settings.MEDIA_ROOT) / "rasters/WMS" / f"{PET_RASTERS[year]}.tif"
+        return hour_raster_path(source, hour)
+
+    def render(self, data, nodata, request):
+        return self.encode_terrarium(data, nodata)

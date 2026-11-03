@@ -71,6 +71,7 @@ defineProps({
         v-if="mapStore.selectedDataType === DataType.VEGESTRATE"
         :data="mapStore.contextData.data as VegetationData"
       />
+      <MapContextDataPet v-else-if="mapStore.selectedDataType === DataType.PET" />
     </template>
   </div>
 </template>

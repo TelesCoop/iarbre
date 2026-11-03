@@ -13,10 +13,6 @@ def hour_raster_path(src_path: Path, hour: int) -> Path:
     return src_path.parent / src_path.stem / f"{src_path.stem}_h{hour:02d}.tif"
 
 
-def is_up_to_date(src_path: Path, dst_path: Path) -> bool:
-    return dst_path.exists() and dst_path.stat().st_mtime >= src_path.stat().st_mtime
-
-
 def extract_band(src_path: Path, band: int, dst_path: Path) -> None:
     dst_path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(suffix=".tif.part", dir=dst_path.parent)
@@ -43,7 +39,7 @@ def split_hours(src_path: Path, force: bool = False) -> Iterator[tuple[Path, boo
         band_count = src.count
     for hour in range(band_count):
         dst_path = hour_raster_path(src_path, hour)
-        if not force and is_up_to_date(src_path, dst_path):
+        if not force and dst_path.exists():
             yield dst_path, False
             continue
         extract_band(src_path, hour + 1, dst_path)
