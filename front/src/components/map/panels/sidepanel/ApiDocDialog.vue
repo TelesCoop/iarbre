@@ -43,7 +43,7 @@ const wfsParams: RequestParam[] = [
   {
     key: "SRSNAME",
     value: "EPSG:2154",
-    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut) ou EPSG:3857"
+    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut), EPSG:3857 ou EPSG:4326 (WGS84 lon/lat)"
   },
   {
     key: "BBOX",
