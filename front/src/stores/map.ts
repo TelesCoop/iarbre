@@ -348,7 +348,11 @@ export const useMapStore = defineStore("map", () => {
           id: layerId,
           type: "color-relief",
           source: sourceId,
-          paint: { "color-relief-opacity": 0.6, "color-relief-color": buildPetColorRamp() }
+          paint: {
+            "color-relief-opacity": 0.6,
+            "color-relief-color": buildPetColorRamp(),
+            resampling: "nearest"
+          }
         }
       ]
     }

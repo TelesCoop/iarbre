@@ -5,7 +5,7 @@ import mercantile
 import numpy as np
 from PIL import Image
 
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from api.views.raster_tile_views import NODATA_HEIGHT
@@ -22,6 +22,9 @@ def pet_classes(response):
     return set(values.tolist()) - {NODATA_HEIGHT}
 
 
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+)
 class PetTileViewTest(TestCase):
     def setUp(self):
         self.client = Client()
