@@ -26,7 +26,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--force",
             action="store_true",
-            help="Regenerate hour files even if they are up to date.",
+            help="Regenerate hour files even if they already exist.",
         )
 
     def handle(self, *args, **options):
