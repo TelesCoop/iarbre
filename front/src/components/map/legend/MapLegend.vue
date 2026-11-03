@@ -46,6 +46,7 @@ const attribution = computed(() =>
       v-else-if="mapStore.selectedDataType === DataType.VEGESTRATE"
       class="w-full"
     />
+    <PetLegend v-else-if="mapStore.selectedDataType === DataType.PET" class="w-full" />
     <MapFiltersStatus />
 
     <p v-if="attribution" class="legend-attribution">
