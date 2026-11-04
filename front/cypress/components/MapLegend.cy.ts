@@ -57,7 +57,7 @@ describe("Map legends", () => {
     cy.window().then(() => {
       useMapStore().selectedDataType = DataType.PET
     })
-    cy.contains("Indice PET - 2090 - 16h")
+    cy.contains("Confort thermique dans la rue - 2090 - 16h")
     cy.get('[data-cy="pet-legend"] [role="listitem"]').should("have.length", 6)
     cy.get('[data-cy="pet-legend"] [role="listitem"]')
       .first()

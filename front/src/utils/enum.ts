@@ -70,7 +70,7 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
   [DataType.VEGESTRATE]: "Strates végétales",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
-  [DataType.PET]: "Indice PET"
+  [DataType.PET]: "Confort thermique dans la rue"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
