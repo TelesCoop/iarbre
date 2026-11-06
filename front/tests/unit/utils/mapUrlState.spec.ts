@@ -53,6 +53,12 @@ describe("parseMapDisplayState", () => {
     expect(state.filters).toEqual([3, 5])
   })
 
+  it("reads PET filters as numbers", () => {
+    const state = parseMapDisplayState({ filters: "5,8" }, DataType.PET)
+
+    expect(state.filters).toEqual([5, 8])
+  })
+
   it("drops numeric filters that are not numbers", () => {
     const state = parseMapDisplayState({ filters: "2,abc" }, DataType.PLANTABILITY)
 

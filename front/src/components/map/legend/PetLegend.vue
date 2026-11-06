@@ -35,7 +35,7 @@ const title = computed(
           :is-selected="mapStore.isFiltered(item.value)"
           :label="item.label"
           :score="item.value"
-          :title="`${item.label} : ${item.detail}`"
+          :title="`${item.label} : ${item.detail} - Cliquez pour ${mapStore.isFiltered(item.value) ? 'désactiver' : 'activer'} le filtre`"
           role="listitem"
           @click="mapStore.toggleAndApplyFilter"
         />
