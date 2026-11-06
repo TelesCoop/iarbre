@@ -38,7 +38,7 @@ describe("MapContextData states", () => {
     cy.contains("14 juillet 2090")
 
     cy.window().then(() => {
-      useMapStore().petYear = 2020
+      useMapStore().rasterYear = 2020
     })
     cy.contains("14 juillet 2020")
   })
