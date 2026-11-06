@@ -61,6 +61,18 @@ describe("Map legends", () => {
     cy.get('[data-cy="hourly-raster-legend"] [role="listitem"]').should("have.length", 6)
     cy.get('[data-cy="hourly-raster-legend"] [role="listitem"]')
       .first()
-      .should("have.attr", "title", "13 - 18 °C - Légèrement frais : Léger stress dû au froid")
+      .should(
+        "have.attr",
+        "title",
+        "13 - 18 °C - Légèrement frais : Léger stress dû au froid - Cliquez pour activer le filtre"
+      )
+      .click()
+    cy.get('[data-cy="hourly-raster-legend"] [role="listitem"]')
+      .first()
+      .should(
+        "have.attr",
+        "title",
+        "13 - 18 °C - Légèrement frais : Léger stress dû au froid - Cliquez pour désactiver le filtre"
+      )
   })
 })
