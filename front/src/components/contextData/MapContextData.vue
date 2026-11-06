@@ -74,6 +74,7 @@ defineProps({
       />
       <MapContextDataHourlyRaster v-else-if="isHourlyRaster(mapStore.selectedDataType)">
         <PetDescription v-if="mapStore.selectedDataType === DataType.PET" />
+        <ShadowDescription v-else-if="mapStore.selectedDataType === DataType.SHADOW" />
       </MapContextDataHourlyRaster>
     </template>
   </div>

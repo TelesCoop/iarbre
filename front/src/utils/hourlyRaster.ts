@@ -1,6 +1,7 @@
 import type { ExpressionSpecification } from "maplibre-gl"
 import { DataType } from "@/utils/enum"
 import { PET_RASTER } from "@/utils/pet"
+import { SHADOW_RASTER } from "@/utils/shadow"
 
 export interface RasterClass {
   value: number
@@ -19,7 +20,8 @@ export interface HourlyRaster {
 }
 
 export const HOURLY_RASTERS: Partial<Record<DataType, HourlyRaster>> = {
-  [DataType.PET]: PET_RASTER
+  [DataType.PET]: PET_RASTER,
+  [DataType.SHADOW]: SHADOW_RASTER
 }
 
 export const isHourlyRaster = (dataType: DataType): boolean => dataType in HOURLY_RASTERS

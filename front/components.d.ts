@@ -152,6 +152,7 @@ declare module 'vue' {
     ScoreLabel: typeof import('./src/components/map/score/ScoreLabel.vue')['default']
     ScoreTag: typeof import('./src/components/map/score/ScoreTag.vue')['default']
     SelectionModeButton: typeof import('./src/components/map/controls/SelectionModeButton.vue')['default']
+    ShadowDescription: typeof import('./src/components/contextData/ShadowDescription.vue')['default']
     ShapeLiveChip: typeof import('./src/components/map/ShapeLiveChip.vue')['default']
     ShapeModePicker: typeof import('./src/components/map/ShapeModePicker.vue')['default']
     ShapeToolbar: typeof import('./src/components/map/ShapeToolbar.vue')['default']

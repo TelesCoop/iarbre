@@ -22,4 +22,15 @@ describe("HourlyRasterContextTool", () => {
     cy.contains("9h")
     cy.window().should(() => expect(useMapStore().rasterHour).to.eq(9))
   })
+
+  it("keeps the hour and hides the years when switching to shadow", () => {
+    cy.get('[data-cy="raster-hour-slider"]').invoke("val", 9).trigger("input")
+    cy.window().should(() => expect(useMapStore().rasterHour).to.eq(9))
+    cy.window().then(() => {
+      useMapStore().selectedDataType = DataType.SHADOW
+    })
+    cy.get('[data-cy="raster-year-2020"]').should("not.exist")
+    cy.get('[data-cy="raster-hour-slider"]').should("have.value", "9")
+    cy.contains("9h")
+  })
 })
