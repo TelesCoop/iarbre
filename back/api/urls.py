@@ -28,6 +28,7 @@ from .views import (
     VegetationHeightTileView,
     VegetationHeightAtPointView,
     PetTileView,
+    ShadowTileView,
 )
 
 router = routers.DefaultRouter()
@@ -60,6 +61,11 @@ urlpatterns = [
         "tiles/pet/<int:z>/<int:x>/<int:y>.png",
         PetTileView.as_view(),
         name="pet-tile",
+    ),
+    path(
+        "tiles/shadow/<int:z>/<int:x>/<int:y>.png",
+        ShadowTileView.as_view(),
+        name="shadow-tile",
     ),
     path(
         "tiles/<datatype>/<id>/",

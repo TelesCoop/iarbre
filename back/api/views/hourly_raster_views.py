@@ -3,7 +3,7 @@ from pathlib import Path
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
-from api.constants import PET_RASTERS
+from api.constants import PET_RASTERS, SHADOW_RASTER
 from api.views.raster_tile_views import RasterTileView
 from iarbre_data.utils.hourly_rasters import hour_raster_path
 
@@ -40,3 +40,8 @@ class HourlyRasterTileView(RasterTileView):
 class PetTileView(HourlyRasterTileView):
     def raster_name(self, request) -> str:
         return PET_RASTERS[_int_param(request, "year", list(PET_RASTERS))]
+
+
+class ShadowTileView(HourlyRasterTileView):
+    def raster_name(self, request) -> str:
+        return SHADOW_RASTER

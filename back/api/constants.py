@@ -44,6 +44,7 @@ class FrontendDataType(TextChoices):
 
 
 PET_RASTERS: dict[int, str] = {2020: "PET_index_2020", 2090: "PET_index_1m_2090"}
+SHADOW_RASTER = "Shadow"
 
 
 # Score ranges for different data types
