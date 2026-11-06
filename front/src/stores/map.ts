@@ -350,7 +350,7 @@ export const useMapStore = defineStore("map", () => {
           source: sourceId,
           paint: {
             "color-relief-opacity": 0.6,
-            "color-relief-color": buildPetColorRamp(),
+            "color-relief-color": buildPetColorRamp(filteredValues.value as number[]),
             resampling: "nearest"
           }
         }

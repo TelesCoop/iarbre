@@ -52,19 +52,22 @@ const TRANSPARENT = "rgba(0,0,0,0)"
 const CLASS_HALF_WIDTH = 0.5
 const RAMP_EPSILON = 0.01
 
-export const buildPetColorRamp = (): ExpressionSpecification =>
+export const buildPetColorRamp = (visibleValues: number[] = []): ExpressionSpecification =>
   [
     "interpolate",
     ["linear"],
     ["elevation"],
-    ...PET_LEGEND.flatMap(({ value, color }) => [
-      value - CLASS_HALF_WIDTH,
-      TRANSPARENT,
-      value - CLASS_HALF_WIDTH + RAMP_EPSILON,
-      color,
-      value + CLASS_HALF_WIDTH - RAMP_EPSILON,
-      color
-    ]),
+    ...PET_LEGEND.flatMap(({ value, color }) => {
+      const shown = !visibleValues.length || visibleValues.includes(value) ? color : TRANSPARENT
+      return [
+        value - CLASS_HALF_WIDTH,
+        TRANSPARENT,
+        value - CLASS_HALF_WIDTH + RAMP_EPSILON,
+        shown,
+        value + CLASS_HALF_WIDTH - RAMP_EPSILON,
+        shown
+      ]
+    }),
     PET_LEGEND[PET_LEGEND.length - 1].value + CLASS_HALF_WIDTH,
     TRANSPARENT
   ] as unknown as ExpressionSpecification

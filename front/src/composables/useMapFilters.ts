@@ -4,6 +4,7 @@ import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
 import { calculateMixedIndice } from "@/utils/plantability_vulnerability"
 import { BIOSPHERE_INTEGRITY_ALL_RANGES } from "@/utils/biosphere_functional_integrity"
+import { buildPetColorRamp } from "@/utils/pet"
 
 export function useMapFilters() {
   const filteredValues = ref<(number | string)[]>([])
@@ -35,6 +36,15 @@ export function useMapFilters() {
     selectedDataType: Ref<DataType>,
     vulnerabilityMode?: Ref<string>
   ) => {
+    if (selectedDataType.value === DataType.PET) {
+      const layerId = getLayerId(DataType.PET, DataTypeToGeolevel[DataType.PET])
+      const ramp = buildPetColorRamp(filteredValues.value as number[])
+      Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+        mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
+      })
+      return
+    }
+
     if (filteredValues.value.length === 0) {
       Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
         const geoLevel = DataTypeToGeolevel[selectedDataType.value!]
