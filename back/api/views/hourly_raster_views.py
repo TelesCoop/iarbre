@@ -7,7 +7,7 @@ from api.constants import PET_RASTERS
 from api.views.raster_tile_views import RasterTileView
 from iarbre_data.utils.hourly_rasters import hour_raster_path
 
-PET_HOURS = range(25)
+HOURS = range(25)
 
 
 def _int_param(request, name: str, allowed) -> int:
@@ -20,12 +20,23 @@ def _int_param(request, name: str, allowed) -> int:
     return value
 
 
-class PetTileView(RasterTileView):
+class HourlyRasterTileView(RasterTileView):
+    def raster_name(self, request) -> str:
+        raise NotImplementedError
+
     def raster_path(self, request) -> Path:
-        year = _int_param(request, "year", list(PET_RASTERS))
-        hour = _int_param(request, "hour", PET_HOURS)
-        source = Path(settings.MEDIA_ROOT) / "rasters/WMS" / f"{PET_RASTERS[year]}.tif"
+        hour = _int_param(request, "hour", HOURS)
+        source = (
+            Path(settings.MEDIA_ROOT)
+            / "rasters/WMS"
+            / f"{self.raster_name(request)}.tif"
+        )
         return hour_raster_path(source, hour)
 
     def render(self, data, nodata, request):
         return self.encode_terrarium(data, nodata)
+
+
+class PetTileView(HourlyRasterTileView):
+    def raster_name(self, request) -> str:
+        return PET_RASTERS[_int_param(request, "year", list(PET_RASTERS))]

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
+import { isHourlyRaster } from "@/utils/hourlyRaster"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
@@ -71,7 +72,9 @@ defineProps({
         v-if="mapStore.selectedDataType === DataType.VEGESTRATE"
         :data="mapStore.contextData.data as VegetationData"
       />
-      <MapContextDataPet v-else-if="mapStore.selectedDataType === DataType.PET" />
+      <MapContextDataHourlyRaster v-else-if="isHourlyRaster(mapStore.selectedDataType)">
+        <PetDescription v-if="mapStore.selectedDataType === DataType.PET" />
+      </MapContextDataHourlyRaster>
     </template>
   </div>
 </template>

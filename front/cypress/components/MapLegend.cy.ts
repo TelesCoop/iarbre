@@ -58,8 +58,8 @@ describe("Map legends", () => {
       useMapStore().selectedDataType = DataType.PET
     })
     cy.contains("Confort thermique dans la rue - 2090 - 16h")
-    cy.get('[data-cy="pet-legend"] [role="listitem"]').should("have.length", 6)
-    cy.get('[data-cy="pet-legend"] [role="listitem"]')
+    cy.get('[data-cy="hourly-raster-legend"] [role="listitem"]').should("have.length", 6)
+    cy.get('[data-cy="hourly-raster-legend"] [role="listitem"]')
       .first()
       .should("have.attr", "title", "13 - 18 °C - Légèrement frais : Léger stress dû au froid")
   })

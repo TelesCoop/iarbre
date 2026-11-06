@@ -1,10 +1,13 @@
 import { describe, it, expect } from "vitest"
-import { PET_LEGEND, buildPetColorRamp, buildPetTileUrl } from "@/utils/pet"
+import { buildColorRamp, buildTileUrl } from "@/utils/hourlyRaster"
+import { PET_RASTER } from "@/utils/pet"
+
+const PET_LEGEND = PET_RASTER.classes
 
 const TRANSPARENT = "rgba(0,0,0,0)"
 
 const rampStops = (visibleValues: number[] = []) => {
-  const [, , , ...flat] = buildPetColorRamp(visibleValues) as unknown as unknown[]
+  const [, , , ...flat] = buildColorRamp(PET_LEGEND, visibleValues) as unknown as unknown[]
   const stops: { value: number; color: string }[] = []
   for (let i = 0; i < flat.length; i += 2) {
     stops.push({ value: flat[i] as number, color: flat[i + 1] as string })
@@ -20,9 +23,9 @@ const colorAt = (value: number, visibleValues: number[] = []) => {
   return stops[index - 1].color === stops[index].color ? stops[index].color : "blend"
 }
 
-describe("pet", () => {
+describe("hourlyRaster", () => {
   it("requests the tiles of the selected year and hour", () => {
-    expect(buildPetTileUrl("https://x/api", 2020, 7)).toBe(
+    expect(buildTileUrl("https://x/api", PET_RASTER, 7, 2020)).toBe(
       "https://x/api/tiles/pet/{z}/{x}/{y}.png?year=2020&hour=7"
     )
   })
