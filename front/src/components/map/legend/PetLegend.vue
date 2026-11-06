@@ -28,12 +28,16 @@ const title = computed(
           :background-color="item.color"
           :class="[
             index === 0 ? 'rounded-l' : '',
-            index === PET_LEGEND.length - 1 ? 'rounded-r' : ''
+            index === PET_LEGEND.length - 1 ? 'rounded-r' : '',
+            mapStore.isFiltered(item.value) ? 'z-10 relative' : ''
           ]"
+          :clickable="true"
+          :is-selected="mapStore.isFiltered(item.value)"
           :label="item.label"
           :score="item.value"
-          :title="`${item.label} : ${item.detail}`"
+          :title="`${item.label} : ${item.detail} - Cliquez pour ${mapStore.isFiltered(item.value) ? 'désactiver' : 'activer'} le filtre`"
           role="listitem"
+          @click="mapStore.toggleAndApplyFilter"
         />
       </div>
       <div class="legend-label">

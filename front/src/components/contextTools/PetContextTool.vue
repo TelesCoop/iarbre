@@ -34,7 +34,7 @@ const onHourInput = (event: Event) => {
     </div>
   </div>
 
-  <label class="map-control-panel w-full border-0 flex items-center gap-2 text-sm">
+  <label class="w-full flex items-center gap-2 px-2 py-3 bg-white rounded-lg text-sm">
     <span class="shrink-0">Heure</span>
     <input
       :value="hour"
