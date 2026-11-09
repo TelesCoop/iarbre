@@ -146,6 +146,13 @@ class DataToRasterTestCase(TestCase):
         with rasterio.open(output_path, "r") as src:
             holed = src.read(1).astype(int).sum()
         self.assertLess(holed, full)
+        rasterize_data_across_all_cities(
+            **kwargs,
+            include=[("data", self.factor_name), ("data", "Hole")],
+            exclude=[("data", "Hole")],
+        )
+        with rasterio.open(output_path, "r") as src:
+            self.assertEqual(src.read(1).astype(int).sum(), full)
 
     def test_command_bbox(self):
         minx, miny, maxx, maxy = self.cities[0].geometry.extent

@@ -51,7 +51,11 @@ VEGESTRATE_LAYERS = [
 ]
 
 FINE_GRID_FACTORS = {
-    "Strate arborée": {"include": [("vegestrate", "arborescent")], "uncertainty": 0.5},
+    "Strate arborée": {
+        "include": [("vegestrate", "arborescent"), ("data", "EVA strate arborée")],
+        "exclude": VEGESTRATE_LAYERS,
+        "uncertainty": 0.5,
+    },
     "Strate basse et pelouse": {
         "include": [
             ("vegestrate", "arbustif"),
@@ -138,6 +142,7 @@ UPDATES = [
     },
 ]
 
+EVA_TREE_CODES = [111, 321]
 EVA_AGRICULTURAL_CODES = [211, 212, 213, 214, 215, 221, 222, 223, 224, 225, 231, 241]
 EVA_FOREST_CODES = [311, 312, 322, 331, 341, 342, 351, 371, 372, 374, 411, 412]
 EVA_OPEN_GROUND_CODES = [114, 115, 122, 361, 362, 381, 382]
@@ -241,7 +246,11 @@ DATA_FILES = [
         "uncertainty": 3,
         "file": "EVA2023.gpkg",
         "actions": eva_actions(
-            [[111, 321], [112, 113] + EVA_OPEN_GROUND_CODES, *EVA_LAND_COVER_CODES[1:]],
+            [
+                EVA_TREE_CODES,
+                [112, 113] + EVA_OPEN_GROUND_CODES,
+                *EVA_LAND_COVER_CODES[1:],
+            ],
             simplify=3,
         ),
         "scripts": [
@@ -264,8 +273,9 @@ DATA_FILES = [
         "name": "EVA 2023 1m",
         "uncertainty": None,
         "file": "EVA2023.gpkg",
-        "actions": eva_actions(EVA_LAND_COVER_CODES),
+        "actions": eva_actions([EVA_TREE_CODES, *EVA_LAND_COVER_CODES]),
         "factors": [
+            "EVA strate arborée",
             "EVA sols nus, friches et milieux herbeux",
             "EVA espaces agricoles",
             "EVA forêts",

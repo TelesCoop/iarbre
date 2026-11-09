@@ -111,7 +111,7 @@ def rasterize_data_across_all_cities(
         allow_blank (bool, optional): Write an all-zero raster instead of raising when the factor has no data. Defaults to False.
         margin (float, optional): Buffer in meters applied to the geometries before rasterizing. Defaults to 0.
         include (list, optional): Layers whose union forms the factor. Defaults to the factor's Data rows.
-        exclude (list, optional): Layers removed from the factor. Defaults to None.
+        exclude (list, optional): Layers removed from the factor. An excluded layer that is also included is kept whole. Defaults to None.
         blur (float, optional): Gaussian sigma in meters for the position uncertainty. Negative factors only grow, positive ones only shrink. Defaults to 0.
         rasterizer (LayerRasterizer, optional): Rasterizes the layers, keeping those shared by several factors. Defaults to a rasterizer without cache.
 
@@ -127,11 +127,17 @@ def rasterize_data_across_all_cities(
 
     log_progress(f"Rasterizing {factor_name}")
     # Rasterize the shapes
+    include = include or [("data", factor_name)]
+    exclude = exclude or []
     raster = np.zeros((height, width), dtype=np.uint8)
-    for layer in include or [("data", factor_name)]:
-        raster |= rasterizer(layer, margin)
-    for layer in exclude or []:
+    for layer in include:
+        if layer not in exclude:
+            raster |= rasterizer(layer, margin)
+    for layer in exclude:
         raster[rasterizer(layer) > 0] = 0
+    for layer in include:
+        if layer in exclude:
+            raster |= rasterizer(layer, margin)
     if not raster.any():
         if not allow_blank:
             raise ValueError(f"{factor_name} is producing a blank tif.")
