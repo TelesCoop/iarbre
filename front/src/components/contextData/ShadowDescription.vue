@@ -11,6 +11,7 @@
   <p>Les données d'entrée sont :</p>
   <ul class="list-disc pl-5">
     <li>Les bâtiments,</li>
+    <li>Le modèle numérique de terrain (reliefs et collines),</li>
     <li>Le modèle de hauteur de la végétation.</li>
   </ul>
   <p>

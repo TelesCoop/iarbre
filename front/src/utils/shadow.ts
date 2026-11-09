@@ -10,7 +10,7 @@ export const SHADOW_RASTER: HourlyRaster = {
       value: 0,
       color: "#00008b",
       label: "Ombre complète",
-      detail: "Bâtiments principalement"
+      detail: "Bâtiments et reliefs"
     },
     { value: 0.03, color: "#41ab5d", label: "Ombre des arbres", detail: "Feuillage des arbres" }
   ]

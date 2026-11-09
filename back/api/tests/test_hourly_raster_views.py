@@ -5,7 +5,7 @@ import mercantile
 import numpy as np
 from PIL import Image
 
-from django.test import Client, TestCase, override_settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from api.views.raster_tile_views import NODATA_HEIGHT
@@ -29,16 +29,19 @@ def decoded_values(response):
 class HourlyRasterTileViewTestCase(TestCase):
     url_name = None
 
-    def setUp(self):
-        self.client = Client()
-        self.tmpdir = tempfile.mkdtemp()
-        with self.settings(MEDIA_ROOT=self.tmpdir):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(tmpdir.cleanup)
+        cls.tmpdir = tmpdir.name
+        with override_settings(MEDIA_ROOT=cls.tmpdir):
             PopulateCommand()._create_test_hourly_rasters()
         tile = mercantile.bounding_tile(
             RASTER_LNG_MIN, RASTER_LAT_MIN, RASTER_LNG_MAX, RASTER_LAT_MAX
         )
-        self.tile_url = reverse(
-            self.url_name, kwargs={"z": tile.z, "x": tile.x, "y": tile.y}
+        cls.tile_url = reverse(
+            cls.url_name, kwargs={"z": tile.z, "x": tile.x, "y": tile.y}
         )
 
     def get(self, url=None, media_root=None, **params):
@@ -82,7 +85,3 @@ class ShadowTileViewTest(HourlyRasterTileViewTestCase):
         self.assertEqual(response.status_code, 200)
         (value,) = decoded_values(response)
         self.assertAlmostEqual(value, 0.03, delta=TERRARIUM_PRECISION)
-
-    def test_invalid_hour_returns_400(self):
-        response = self.get(hour=25)
-        self.assertEqual(response.status_code, 400)

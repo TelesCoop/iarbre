@@ -25,7 +25,7 @@ const onDescriptionToggle = () => {
 </script>
 
 <template>
-  <div class="flex flex-col flex-1 min-h-0 gap-3 px-2 py-4 overflow-y-auto">
+  <div class="flex flex-col flex-1 min-h-0 gap-3 px-2 py-3 md:py-4 overflow-y-auto">
     <div
       ref="scale"
       class="flex flex-col gap-1 bg-white border border-gray-200 rounded-lg p-3"
@@ -34,15 +34,18 @@ const onDescriptionToggle = () => {
       <h3 class="text-sm font-bold text-primary-900">{{ title }}</h3>
       <table class="w-full text-sm text-gray-700">
         <thead>
-          <tr class="text-left text-primary-900">
-            <th class="w-4 pb-1"></th>
-            <th class="pb-1 pl-2 font-bold">{{ raster.columnLabels[0] }}</th>
-            <th class="pb-1 pl-2 font-bold">{{ raster.columnLabels[1] }}</th>
+          <tr class="text-primary-900">
+            <th class="pb-1 text-left align-bottom font-bold" colspan="2">
+              {{ raster.columnLabels[0] }}
+            </th>
+            <th class="pb-1 pl-2 text-left align-bottom font-bold">
+              {{ raster.columnLabels[1] }}
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in raster.classes" :key="item.value" class="border-t border-gray-100">
-            <td class="py-1">
+            <td class="w-4 py-1">
               <span
                 :style="{ backgroundColor: item.color }"
                 aria-hidden="true"
