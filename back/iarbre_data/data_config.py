@@ -140,8 +140,8 @@ UPDATES = [
 
 EVA_AGRICULTURAL_CODES = [211, 212, 213, 214, 215, 221, 222, 223, 224, 225, 231, 241]
 EVA_FOREST_CODES = [311, 312, 322, 331, 341, 342, 351, 371, 372, 374, 411, 412]
-EVA_OPEN_GROUND_CODES = [14, 16, 17, 361, 362]
-EVA_ARTIFICIAL_CODES = [15]
+EVA_OPEN_GROUND_CODES = [114, 115, 122, 361, 362, 381, 382]
+EVA_ARTIFICIAL_CODES = [121]
 EVA_LAND_COVER_CODES = [
     EVA_OPEN_GROUND_CODES,
     EVA_AGRICULTURAL_CODES,
@@ -153,7 +153,7 @@ EVA_LAND_COVER_CODES = [
 def eva_actions(code_groups: list[list[int]], **extra) -> list[dict]:
     return [
         {
-            "filters": [{"name": "gl_2015", "value": code} for code in codes],
+            "filters": [{"name": "COD3", "value": code} for code in codes],
             "explode": True,
             **extra,
         }
@@ -237,11 +237,11 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "EVA 2015",
+        "name": "EVA 2023",
         "uncertainty": 3,
-        "file": "new_all_eva.shp",
+        "file": "EVA2023.gpkg",
         "actions": eva_actions(
-            [[11], [12, 13] + EVA_OPEN_GROUND_CODES, *EVA_LAND_COVER_CODES[1:]],
+            [[111, 321], [112, 113] + EVA_OPEN_GROUND_CODES, *EVA_LAND_COVER_CODES[1:]],
             simplify=3,
         ),
         "scripts": [
@@ -261,9 +261,9 @@ DATA_FILES = [
         "output_type": "POLYGON",
     },
     {
-        "name": "EVA 2015 1m",
+        "name": "EVA 2023 1m",
         "uncertainty": None,
-        "file": "new_all_eva.shp",
+        "file": "EVA2023.gpkg",
         "actions": eva_actions(EVA_LAND_COVER_CODES),
         "factors": [
             "EVA sols nus, friches et milieux herbeux",

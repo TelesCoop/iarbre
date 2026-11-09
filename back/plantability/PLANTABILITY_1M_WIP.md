@@ -108,7 +108,7 @@ For each factor, the 5 m mean coverage equals the 1 m footprint.
   - At 1 m this is lost, and 13 % of the area becomes unblocked.
   - Should blocking factors be grown by about 2-3 m at 1 m to keep that pessimism, or should the shift be accepted?
 - [ ] **Q2 Vegetation strata** (Strate arborée +1, Strate basse +3, Espaces agricoles, Forêts, Espaces artificialisés).
-  - They come from `new_all_eva.shp` (2015), simplified with a 3 m tolerance in the pipeline.
+  - They come from `EVA2023.gpkg` (2023), simplified with a 3 m tolerance in the pipeline.
   - They are positive factors, so they risk optimism at 1 m.
   - Shrink them, or replace them with `vegestrate_lyonmetro_02m` (0.2 m, more recent)?
 - [ ] **Q3 Reliability table** for every factor, to validate. Draft:
