@@ -21,7 +21,9 @@ const DataTypeToDescription: Record<DataType, string> = {
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     "Intégrité fonctionnelle de la biosphère dans la Métropole de Lyon : un indicateur de biodiversité en ville.",
   [DataType.PET]:
-    "Confort thermique dans la rue (PET) heure par heure à 1 m sur la Métropole de Lyon, pour une journée chaude du 14 juillet en 2020 et en 2090."
+    "Confort thermique dans la rue (PET) heure par heure à 1 m sur la Métropole de Lyon, pour une journée chaude du 14 juillet en 2020 et en 2090.",
+  [DataType.SHADOW]:
+    "Ombre des arbres et des bâtiments dans la rue heure par heure à 1 m sur la Métropole de Lyon."
 }
 
 interface PageMeta {

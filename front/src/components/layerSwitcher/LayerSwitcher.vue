@@ -39,6 +39,10 @@ const options = [
   {
     label: DataTypeToLabel[DataType.PET],
     value: DataType.PET
+  },
+  {
+    label: DataTypeToLabel[DataType.SHADOW],
+    value: DataType.SHADOW
   }
 ]
 </script>

@@ -6,7 +6,7 @@ import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
 import { useApiGet } from "@/api"
 import { updatePageMeta } from "@/utils/seo"
 
-const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE}|${DataType.PET})`
+const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE}|${DataType.PET}|${DataType.SHADOW})`
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
