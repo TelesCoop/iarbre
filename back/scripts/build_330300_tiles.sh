@@ -16,6 +16,7 @@ to_4326 -select "" -where "color = '#2ecc71'" "$TMP/isochrones.geojson" "$SRC/is
 to_4326 -select "" "$TMP/trees.geojson" "$SRC/arbres_complets_mdl.geojson"
 
 tippecanoe -e "$OUT" --force -Z10 -z15 --no-tile-compression --drop-densest-as-needed --quiet \
+    -j '{"buildings": [">=", "$zoom", 14], "trees": [">=", "$zoom", 15]}' \
     -L buildings:"$TMP/buildings.geojson" \
     -L quartiers:"$TMP/quartiers.geojson" \
     -L parks:"$TMP/parks.geojson" \

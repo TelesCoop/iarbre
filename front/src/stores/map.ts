@@ -17,10 +17,15 @@ import { getCityBoundaries } from "@/services/boundaryService"
 import {
   DEFAULT_HOUR,
   DEFAULT_LAYER_KEY,
+  buildMediaTileUrl,
   buildTileUrl,
+  defaultHiddenToggles,
   getRasterLayer,
+  layerToggles,
+  type LayerToggle,
   type RasterLayer
 } from "@/utils/rasterLayers"
+import { VECTOR_SOURCE_ID } from "@/utils/layers330300"
 import {
   QPV_CASING_COLOR,
   QPV_CASING_WIDTH,
@@ -72,6 +77,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedLayer = shallowRef<RasterLayer>(getRasterLayer(DEFAULT_LAYER_KEY))
   const selectedHour = ref<number>(DEFAULT_HOUR)
   const hiddenClasses = ref<number[]>([])
+  const hiddenToggles = ref<string[]>(defaultHiddenToggles(selectedLayer.value))
   const selectedMapStyle = ref<MapStyle>(MapStyle.ORTHOPHOTO)
   const currentZoom = ref<number>(14)
   const showQPVLayer = ref<boolean>(false)
@@ -136,6 +142,50 @@ export const useMapStore = defineStore("map", () => {
     }
   }
 
+  const addVectorLayers = (mapInstance: Map) => {
+    const layer = selectedLayer.value
+    if (!layer.vectorSource) return
+    const { tilesPath, maxzoom, bounds } = layer.vectorSource
+    if (!mapInstance.getSource(VECTOR_SOURCE_ID)) {
+      mapInstance.addSource(VECTOR_SOURCE_ID, {
+        type: "vector",
+        tiles: [buildMediaTileUrl(getFullBaseApiUrl(), tilesPath)],
+        minzoom: MIN_ZOOM,
+        maxzoom,
+        bounds
+      })
+    }
+    const hiddenLayerIds = layerToggles(layer)
+      .filter((toggle) => hiddenToggles.value.includes(toggle.key))
+      .flatMap((toggle) => toggle.layerIds)
+    layer.styleLayers?.forEach((styleLayer) => {
+      if (mapInstance.getLayer(styleLayer.id)) return
+      mapInstance.addLayer(styleLayer)
+      mapInstance.setLayoutProperty(
+        styleLayer.id,
+        "visibility",
+        hiddenLayerIds.includes(styleLayer.id) ? "none" : "visible"
+      )
+    })
+  }
+
+  const addDataLayer = (mapInstance: Map) =>
+    selectedLayer.value.vectorSource ? addVectorLayers(mapInstance) : addRasterLayer(mapInstance)
+
+  const toggleLayerGroup = (toggle: LayerToggle) => {
+    const hidden = !hiddenToggles.value.includes(toggle.key)
+    hiddenToggles.value = hidden
+      ? [...hiddenToggles.value, toggle.key]
+      : hiddenToggles.value.filter((key) => key !== toggle.key)
+    Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
+      toggle.layerIds
+        .filter((id) => mapInstance.getLayer(id))
+        .forEach((id) =>
+          mapInstance.setLayoutProperty(id, "visibility", hidden ? "none" : "visible")
+        )
+    })
+  }
+
   const updateRasterTiles = () => {
     const tileUrl = getTileUrl()
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
@@ -146,6 +196,7 @@ export const useMapStore = defineStore("map", () => {
   const setLayer = (key: string) => {
     selectedLayer.value = getRasterLayer(key)
     hiddenClasses.value = []
+    hiddenToggles.value = defaultHiddenToggles(selectedLayer.value)
     updateRasterTiles()
   }
 
@@ -180,7 +231,7 @@ export const useMapStore = defineStore("map", () => {
     Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
       removeOverlays(mapInstance)
       mapInstance.setStyle(loadMapStyle(mapstyle))
-      addRasterLayer(mapInstance)
+      addDataLayer(mapInstance)
       addOverlays(mapInstance)
       mapInstance.fire("moveend")
     })
@@ -670,6 +721,7 @@ export const useMapStore = defineStore("map", () => {
 
   const initMap = (mapId: string, layerKey: string) => {
     selectedLayer.value = getRasterLayer(layerKey)
+    hiddenToggles.value = defaultHiddenToggles(selectedLayer.value)
 
     // markRaw: a reactive proxy around a maplibre Map breaks paint updates.
     // Style expressions read Color.rgb, a non-writable non-configurable property,
@@ -692,7 +744,7 @@ export const useMapStore = defineStore("map", () => {
         MAP_CONTROL_POSITION
       )
       mapInstance.addControl({ onAdd: addCenterControl, onRemove: () => {} }, MAP_CONTROL_POSITION)
-      addRasterLayer(mapInstance)
+      addDataLayer(mapInstance)
       mapInstance.once("render", () => {
         console.info(`cypress: map data ${selectedMapStyle.value} loaded`)
         console.info(`cypress: layer ${selectedLayer.value.key} loaded`)
@@ -717,6 +769,8 @@ export const useMapStore = defineStore("map", () => {
     setHour,
     hiddenClasses,
     toggleClass,
+    hiddenToggles,
+    toggleLayerGroup,
     selectedMapStyle,
     changeMapStyle,
     currentZoom,

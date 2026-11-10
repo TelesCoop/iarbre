@@ -61,7 +61,7 @@ const downloadRaster = async (url: string) => {
 
 const rasterDatasets = computed<RasterDataset[]>(() => {
   const baseApiUrl = getFullBaseApiUrl()
-  return RASTER_LAYERS.flatMap((layer) =>
+  return RASTER_LAYERS.filter((layer) => !layer.vectorSource).flatMap((layer) =>
     layer.hourly
       ? [
           {
@@ -169,7 +169,7 @@ const wmsParams: RequestParam[] = [
         </AccordionSection>
       </div>
 
-      <div>
+      <div v-if="rasterDatasets.length">
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT RASTER</p>
         <AccordionSection
           :open="expanded === 'raster'"

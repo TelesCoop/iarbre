@@ -29,7 +29,11 @@ export interface RasterLayer {
   hourly: boolean
   legend: LegendItem[]
   cards?: LegendCard[]
-  tilesPath?: string
+  vectorSource?: {
+    tilesPath: string
+    maxzoom: number
+    bounds: [number, number, number, number]
+  }
   styleLayers?: LayerSpecification[]
 }
 
@@ -71,8 +75,10 @@ export const buildRasterUrl = (baseApiUrl: string, layer: RasterLayer, hour?: nu
 export const buildMediaTileUrl = (baseApiUrl: string, tilesPath: string): string =>
   `${baseApiUrl.replace(/\/api\/?$/, "")}/media/${tilesPath}/{z}/{x}/{y}.pbf`
 
+export const layerToggles = (layer: RasterLayer): LayerToggle[] =>
+  (layer.cards ?? []).flatMap((card) => [card, ...(card.subToggles ?? [])])
+
 export const defaultHiddenToggles = (layer: RasterLayer): string[] =>
-  (layer.cards ?? [])
-    .flatMap((card) => [card, ...(card.subToggles ?? [])])
+  layerToggles(layer)
     .filter((toggle) => toggle.defaultHidden)
     .map((toggle) => toggle.key)

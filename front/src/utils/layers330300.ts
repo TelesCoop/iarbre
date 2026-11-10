@@ -4,8 +4,11 @@ export const VECTOR_SOURCE_ID = "vector-source"
 
 const PARK_RGB = "119, 123, 198"
 const PARK_COLOR = `rgb(${PARK_RGB})`
-const PARK_OPACITY = 0.693
-const ISOCHRONE_OPACITY = 0.22
+const PARK_OPACITY = 0.75
+const ISOCHRONE_OPACITY = 0.35
+const PARK_EDGE_COLOR = "#3a3d8f"
+const CASING_COLOR = "#ffffff"
+const ISOCHRONE_DASH = [2, 1.5]
 
 const BUILDING_COLORS = {
   none: "#c97a7a",
@@ -27,18 +30,34 @@ export const LAYER_330300: RasterLayer = {
   attribution: "Métropole de Lyon, OpenStreetMap",
   hourly: false,
   legend: [],
-  tilesPath: "330300",
+  vectorSource: {
+    tilesPath: "330300",
+    maxzoom: 15,
+    bounds: [4.69176, 45.55707, 5.062045, 45.939183]
+  },
   styleLayers: [
     {
       id: "330300-isochrones",
       type: "fill",
       source: VECTOR_SOURCE_ID,
       "source-layer": "isochrones",
-      paint: {
-        "fill-color": PARK_COLOR,
-        "fill-opacity": ISOCHRONE_OPACITY,
-        "fill-outline-color": "#265980"
-      }
+      paint: { "fill-color": PARK_COLOR, "fill-opacity": ISOCHRONE_OPACITY }
+    },
+    {
+      id: "330300-isochrones-casing",
+      type: "line",
+      minzoom: 13,
+      source: VECTOR_SOURCE_ID,
+      "source-layer": "isochrones",
+      paint: { "line-color": CASING_COLOR, "line-width": 4, "line-opacity": 0.8 }
+    },
+    {
+      id: "330300-isochrones-outline",
+      type: "line",
+      minzoom: 13,
+      source: VECTOR_SOURCE_ID,
+      "source-layer": "isochrones",
+      paint: { "line-color": PARK_EDGE_COLOR, "line-width": 2, "line-dasharray": ISOCHRONE_DASH }
     },
     {
       id: "330300-parks",
@@ -46,6 +65,13 @@ export const LAYER_330300: RasterLayer = {
       source: VECTOR_SOURCE_ID,
       "source-layer": "parks",
       paint: { "fill-color": PARK_COLOR, "fill-opacity": PARK_OPACITY }
+    },
+    {
+      id: "330300-parks-outline",
+      type: "line",
+      source: VECTOR_SOURCE_ID,
+      "source-layer": "parks",
+      paint: { "line-color": PARK_EDGE_COLOR, "line-width": 1.5 }
     },
     {
       id: "330300-buildings",
@@ -92,7 +118,7 @@ export const LAYER_330300: RasterLayer = {
           30,
           QUARTIER_COLORS.high
         ],
-        "line-width": 4,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 1.5, 15, 4],
         "line-opacity": 0.662
       }
     }
@@ -139,7 +165,13 @@ export const LAYER_330300: RasterLayer = {
         { color: `rgba(${PARK_RGB}, ${PARK_OPACITY})`, label: "Emprise des parcs" },
         { color: `rgba(${PARK_RGB}, ${ISOCHRONE_OPACITY})`, label: "Zone d’influence des parcs" }
       ],
-      layerIds: ["330300-parks", "330300-isochrones"]
+      layerIds: [
+        "330300-parks",
+        "330300-parks-outline",
+        "330300-isochrones",
+        "330300-isochrones-casing",
+        "330300-isochrones-outline"
+      ]
     }
   ]
 }
