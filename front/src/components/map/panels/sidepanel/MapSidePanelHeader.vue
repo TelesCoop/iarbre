@@ -3,7 +3,7 @@ import { ref } from "vue"
 import IconIarbreLogo from "@/components/icons/IconIarbreLogo.vue"
 
 const isPopoverVisible = ref(false)
-const attributionText = ref("1.44M habitants. 534 km² superficie")
+const attributionHTML = ref("1.44M habitants. 534 km² superficie")
 const infoButtonRef = ref<HTMLButtonElement | null>(null)
 
 const popoverStyle = () => {
@@ -48,7 +48,8 @@ const popoverStyle = () => {
           data-cy="attribution-popover"
           @click.stop
         >
-          <div v-if="attributionText">{{ attributionText }}</div>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div v-if="attributionHTML" v-html="attributionHTML"></div>
         </div>
       </div>
     </Teleport>

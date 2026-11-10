@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, watch } from "vue"
-import { useTapOutside } from "@/composables/useTapOutside"
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue"
 import { useMapStore } from "@/stores/map"
 import { MapStyle } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS, getMapStyleOption } from "@/utils/mapStyleOptions"
@@ -47,14 +46,25 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 }
 
-useTapOutside(wrapperRef, () => {
-  isExpanded.value = false
-  isSourceOpen.value = false
-})
+const handleClickOutside = (event: MouseEvent) => {
+  if (!isSourceOpen.value) return
+  const target = event.target as Node | null
+  if (target && wrapperRef.value && !wrapperRef.value.contains(target)) {
+    isSourceOpen.value = false
+  }
+}
 
 // Close the popover whenever the user picks a different background.
 watch(currentStyle, () => {
   isSourceOpen.value = false
+})
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleClickOutside)
 })
 </script>
 
@@ -90,7 +100,7 @@ watch(currentStyle, () => {
 
         <div
           v-if="isSourceOpen"
-          class="map-popover bg-selector-source-popover"
+          class="bg-selector-source-popover"
           data-cy="bg-selector-source-popover"
           role="dialog"
         >
@@ -136,11 +146,11 @@ watch(currentStyle, () => {
 @reference "@/styles/main.css";
 
 .bg-selector-wrapper {
-  @apply flex flex-col gap-2 max-w-full;
+  @apply flex flex-col gap-2;
 }
 
 .bg-selector-container {
-  @apply flex items-center max-w-full;
+  @apply flex items-center;
   @apply bg-white rounded-lg;
   @apply border border-gray-200;
   padding: 10px;
@@ -166,7 +176,12 @@ watch(currentStyle, () => {
 }
 
 .bg-selector-source-popover {
+  @apply absolute bg-white border border-gray-200 rounded-lg shadow-md;
   @apply font-sans text-xs text-gray-700;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: var(--z-map-floating);
+  padding: 0.5rem 0.75rem;
   min-width: 14rem;
   max-width: 20rem;
 }
@@ -235,14 +250,8 @@ watch(currentStyle, () => {
   border-left-width: 0;
 }
 
-.bg-selector-options > * {
-  flex-shrink: 0;
-}
-
 .bg-selector-options.is-expanded {
   max-width: 25rem;
-  min-width: 0;
-  overflow-x: auto;
   opacity: 1;
   padding-left: 0.5rem;
   margin-left: 1.5rem;

@@ -6,8 +6,16 @@
       class="px-4 w-full flex-1 min-h-0 flex flex-col overflow-hidden"
       data-cy="map-side-panel-content"
     >
-      <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <MapContextData class="w-full flex-1 min-h-0 overflow-hidden" data-cy="map-context-data" />
+      <MapLayerSwitcher
+        :show-methodology="!mapStore.selectedLayer.vectorSource"
+        class="w-full"
+        data-cy="map-layer-switcher"
+      />
+      <MapLegendCards
+        v-if="mapStore.selectedLayer.cards"
+        class="w-full flex-1 min-h-0 overflow-y-auto"
+      />
+      <MapLayerDescription v-else class="w-full flex-1 min-h-0 overflow-y-auto" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
       <div class="w-full" data-cy="map-side-panel-download">
@@ -24,26 +32,27 @@
       </button>
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapLayerToggles />
-        <MapContextTools />
-        <MethodologyButton />
+        <MethodologyButton v-if="!mapStore.selectedLayer.vectorSource" />
+        <HourSlider />
       </div>
     </div>
 
     <div class="mobile-panel-content">
       <div class="mobile-panel-scroll">
-        <MapContextData class="w-full" />
+        <MapLegendCards v-if="mapStore.selectedLayer.cards" class="w-full" />
+        <MapLayerDescription v-else class="w-full" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed } from "vue"
-import { useMapStore } from "@/stores/map"
+import { ref, computed } from "vue"
 import { useAppStore } from "@/stores/app"
+import { useMapStore } from "@/stores/map"
 
-const mapStore = useMapStore()
 const appStore = useAppStore()
+const mapStore = useMapStore()
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 const isPanelOpen = ref(false)
@@ -51,16 +60,6 @@ const isPanelOpen = ref(false)
 const togglePanel = () => {
   isPanelOpen.value = !isPanelOpen.value
 }
-
-// Open panel automatically when context data is set
-watch(
-  () => mapStore.contextData.data,
-  (newData) => {
-    if (newData) {
-      isPanelOpen.value = true
-    }
-  }
-)
 </script>
 <style scoped>
 @reference "@/styles/main.css";
@@ -69,8 +68,7 @@ watch(
   @apply hidden lg:flex h-full flex-col bg-white overflow-hidden;
   @apply rounded-r-xl;
   @apply transition-transform duration-300 ease-out;
-  @apply fixed top-0;
-  z-index: var(--z-map-sidepanel);
+  @apply fixed top-0 z-20;
   left: 4.5rem;
   width: var(--width-sidepanel);
   box-shadow: 8px 0 32px -16px rgba(16, 24, 40, 0.18);
@@ -93,8 +91,8 @@ watch(
   z-index: var(--z-map-sheet);
   @apply rounded-t-xl;
   @apply transition-transform duration-300 ease-out;
-  bottom: var(--mobile-bar-height);
-  transform: translateY(calc(100% - var(--mobile-panel-peek)));
+  bottom: 56px;
+  transform: translateY(calc(100% - 40px));
   box-shadow: 0 -8px 32px -16px rgba(16, 24, 40, 0.18);
 }
 

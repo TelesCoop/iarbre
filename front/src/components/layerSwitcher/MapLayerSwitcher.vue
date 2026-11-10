@@ -3,13 +3,13 @@ import MethodologyButton from "@/components/shared/MethodologyButton.vue"
 
 interface Props {
   withBorder?: boolean
-  showContextTools?: boolean
+  showHourSlider?: boolean
   showMethodology?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   withBorder: true,
-  showContextTools: true,
+  showHourSlider: true,
   showMethodology: true
 })
 </script>
@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
   >
     <LayerSwitcher />
     <MethodologyButton v-if="props.showMethodology" class="self-center" />
-    <MapContextTools v-if="props.showContextTools" />
+    <HourSlider v-if="props.showHourSlider" />
   </div>
 </template>
 

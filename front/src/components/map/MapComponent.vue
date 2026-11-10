@@ -1,17 +1,13 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
-import { onMounted, onBeforeUnmount, ref, computed, type PropType } from "vue"
-import { type MapDisplayState, type MapParams } from "@/types/map"
+import { onMounted, onBeforeUnmount, ref, computed, watch, type PropType } from "vue"
+import { type MapParams } from "@/types/map"
 
 const props = defineProps({
   mapId: {
     required: true,
     type: String
-  },
-  initialDisplayState: {
-    required: true,
-    type: Object as PropType<MapDisplayState>
   }
 })
 
@@ -27,20 +23,16 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 const appStore = useAppStore()
 
-// Mirror the search bar and legend sizes onto CSS vars so the overlays placed
-// below or beside them (shape toolbar card, street view) follow them.
 const topRightControlsEl = ref<HTMLElement | null>(null)
-const legendEl = ref<HTMLElement | null>(null)
-const publishOverlaySizes = (topRight: HTMLElement | null, legend: HTMLElement | null) => {
+const setTopRightSize = (el: HTMLElement | null) => {
   const root = document.documentElement.style
-  root.setProperty("--top-right-controls-height", `${topRight?.offsetHeight ?? 0}px`)
-  root.setProperty("--top-right-controls-width", `${topRight?.offsetWidth ?? 0}px`)
-  root.setProperty("--legend-width", `${legend?.offsetWidth ?? 0}px`)
+  root.setProperty("--top-right-controls-height", `${el?.offsetHeight ?? 0}px`)
+  root.setProperty("--top-right-controls-width", `${el?.offsetWidth ?? 0}px`)
 }
-let overlaySizeObserver: ResizeObserver | null = null
+let topRightObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  mapStore.initMap(props.mapId, model.value.dataType!, props.initialDisplayState)
+  mapStore.initMap(props.mapId, model.value.layer)
   const mapInstance = mapStore.getMapInstance(props.mapId)
 
   mapInstance.jumpTo({
@@ -53,27 +45,25 @@ onMounted(() => {
       zoom: Math.round(mapStore.currentZoom),
       lat: Math.round(100000 * mapInstance.getCenter().lat) / 100000,
       lng: Math.round(100000 * mapInstance.getCenter().lng) / 100000,
-      dataType: mapStore.selectedDataType
+      layer: mapStore.selectedLayer.key
     }
     emit("update:modelValue", params)
   }
 
   mapInstance.on("moveend", updateParams)
+  watch(() => mapStore.selectedLayer, updateParams)
   updateParams()
 
-  const publishCurrentSizes = () => publishOverlaySizes(topRightControlsEl.value, legendEl.value)
-  overlaySizeObserver = new ResizeObserver(publishCurrentSizes)
-  for (const el of [topRightControlsEl.value, legendEl.value]) {
-    if (el) overlaySizeObserver.observe(el)
+  if (topRightControlsEl.value) {
+    topRightObserver = new ResizeObserver(() => setTopRightSize(topRightControlsEl.value))
+    topRightObserver.observe(topRightControlsEl.value)
+    setTopRightSize(topRightControlsEl.value)
   }
-  publishCurrentSizes()
 })
 
 onBeforeUnmount(() => {
-  overlaySizeObserver?.disconnect()
-  overlaySizeObserver = null
-  publishOverlaySizes(null, null)
-  mapStore.destroyMap(props.mapId)
+  topRightObserver?.disconnect()
+  setTopRightSize(null)
 })
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
@@ -88,12 +78,12 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
     <MapGeocoder />
   </div>
 
-  <ShapeToolbar />
-  <ShapeLiveChip />
-
   <div :class="['cadastre-info-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapCadastreParcelInfo />
-    <MapPublicBuildingInfo />
+  </div>
+
+  <div class="panoramax-viewer-container">
+    <MapPanoramaxViewer />
   </div>
 
   <div
@@ -105,26 +95,18 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   </div>
 
   <!-- Stacking these in one flex column keeps the gaps between items equal. -->
-  <div ref="legendEl" :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
+  <div :class="['legend-container', { 'sidepanel-visible': isSidePanelVisible }]">
     <MapLayerSwitcher
       v-if="appStore.isMobileOrTablet"
-      :show-context-tools="false"
+      :show-hour-slider="false"
       :show-methodology="false"
       :with-border="false"
       data-cy="mobile-layer-switcher"
     />
     <MapLegend />
-    <div class="legend-info-row">
-      <MapResolution />
-      <MapCoordinates />
-    </div>
+    <MapCoordinates />
     <MapPanoramaxCredit />
-    <MapShareButton :map-id="mapId" />
-  </div>
-
-  <!-- After the legend: on mobile the street view spans the width and covers it. -->
-  <div :class="['panoramax-viewer-container', { 'sidepanel-visible': isSidePanelVisible }]">
-    <MapPanoramaxViewer />
+    <MapCopyLinkButton />
   </div>
   <WelcomeMessage />
 </template>
@@ -191,7 +173,7 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
   z-index: var(--z-map-overlay);
   left: 50%;
   transform: translateX(-50%);
-  bottom: var(--map-above-bottom-row);
+  bottom: var(--map-cadastre-bottom);
 }
 
 .cadastre-info-container > * {
@@ -205,24 +187,11 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 .panoramax-viewer-container {
-  @apply absolute flex items-start justify-end pointer-events-none;
-  z-index: var(--z-map-overlay);
+  @apply absolute pointer-events-none;
+  @apply transition-all duration-300 ease-out;
+  z-index: var(--z-map-floating);
   top: calc(var(--map-edge-gap) + var(--top-right-controls-height, 0px) + var(--map-edge-gap));
   right: var(--map-edge-gap);
-  bottom: calc(var(--map-ctrl-offset) + var(--map-ctrl-stack-height) + var(--map-edge-gap));
-  left: var(--map-edge-gap);
-  /* Short screens (landscape phones) leave no room above the controls: cover them instead. */
-  min-height: 13rem;
-}
-
-@media (min-width: 1024px) {
-  .panoramax-viewer-container {
-    left: calc(2 * var(--map-edge-gap) + var(--legend-width, 0px));
-  }
-
-  .panoramax-viewer-container.sidepanel-visible {
-    left: calc(var(--width-sidepanel) + 2 * var(--map-edge-gap) + var(--legend-width, 0px));
-  }
 }
 
 .panoramax-viewer-container > * {
@@ -230,32 +199,16 @@ const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 }
 
 .bottom-left-controls {
-  @apply absolute flex flex-col items-start gap-2 pointer-events-none;
+  @apply absolute flex flex-col items-start gap-2;
   @apply transition-all duration-300 ease-out;
   z-index: var(--z-map-overlay);
   left: var(--map-edge-gap);
   bottom: var(--map-overlay-bottom);
-  /* Stops before the draw trigger, which shares the bottom row. */
-  max-width: calc(100% - var(--map-trigger-right) - var(--map-ctrl-size) - 2 * var(--map-edge-gap));
-}
-
-.bottom-left-controls > * {
-  @apply pointer-events-auto;
 }
 
 @media (min-width: 1024px) {
-  .bottom-left-controls {
-    max-width: none;
-  }
-
   .bottom-left-controls.sidepanel-visible {
     left: calc(var(--width-sidepanel) + var(--map-edge-gap));
   }
-}
-
-.legend-info-row {
-  @apply flex flex-row items-center gap-2 pointer-events-auto w-full;
-  min-width: 0;
-  overflow: hidden;
 }
 </style>

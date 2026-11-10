@@ -1,102 +1,80 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
-import { ref } from "vue"
+import { computed, ref } from "vue"
 import { getFullBaseApiUrl } from "@/api"
+import { useMapStore } from "@/stores/map"
+import { RASTER_LAYERS, buildRasterUrl, formatHour } from "@/utils/rasterLayers"
 import AccordionSection from "./apiDoc/AccordionSection.vue"
 import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
 import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
 import type { RequestParam } from "./apiDoc/types"
-import { formatNumber } from "@/utils/format"
 
 defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: "update:visible", value: boolean): void }>()
 
-const expanded = ref<"wfs" | "wms" | "raster" | null>(null)
+const expanded = ref<"wms" | "raster" | null>(null)
 
-const toggle = (service: "wfs" | "wms" | "raster") => {
+const toggle = (service: "wms" | "raster") => {
   expanded.value = expanded.value === service ? null : service
-  if (expanded.value === "raster") loadRasterSizes()
 }
 
 const origin = window.location.origin
-const wfsBase = `${origin}/api/wfs/`
 const wmsBase = `${origin}/api/wms/`
 
-const defaultTypename = "iarbre:plantability"
-
-const wfsFullUrl = `${wfsBase}?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=${defaultTypename}&OUTPUTFORMAT=geojson`
-
-const wfsParams: RequestParam[] = [
-  { key: "SERVICE", value: "WFS", desc: "Type de service", fixed: true },
-  { key: "VERSION", value: "2.0.0", desc: "Version du protocole", fixed: true },
-  { key: "REQUEST", value: "GetFeature", desc: "Type de requête", fixed: true },
-  {
-    key: "TYPENAMES",
-    value: defaultTypename,
-    desc: "Jeu de données à récupérer — voir GetTypes pour la liste complète"
-  },
-  {
-    key: "OUTPUTFORMAT",
-    value: "geojson",
-    desc: "Format de sortie - geojson, csv, application/gml+xml (défaut si absent)"
-  },
-  {
-    key: "SRSNAME",
-    value: "EPSG:2154",
-    desc: "Système de coordonnées de sortie - EPSG:2154 (défaut), EPSG:3857 ou EPSG:4326 (WGS84 lon/lat)"
-  },
-  {
-    key: "BBOX",
-    value: "minX,minY,maxX,maxY",
-    desc: "Emprise en EPSG:2154. En EPSG:3857 : minX,minY,maxX,maxY,EPSG:3857"
-  },
-  {
-    key: "CITY_CODE",
-    value: "69381",
-    desc: "Filtre par commune (code INSEE), couche plantabilité uniquement - réduit le volume de données. Pour Lyon, code d'arrondissement 69381 à 69389 (69123 ne renvoie rien)"
-  }
-]
+const defaultWmsLayer = "iarbre:PET_index_1m_2090_h16"
 
 interface RasterDataset {
   label: string
   url: string
 }
 
-const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
+const mapStore = useMapStore()
 
-const rasterSizes = ref<Record<string, number>>({})
+type DownloadStatus = "idle" | "loading" | "success" | "error"
+const downloadStatus = ref<Record<string, DownloadStatus>>({})
 
-const formatBytes = (bytes: number) =>
-  bytes >= 1e9 ? `${formatNumber(bytes / 1e9)} Go` : `${formatNumber(bytes / 1e6, 0)} Mo`
-
-const loadRasterSizes = () => {
-  rasterDatasets.forEach(async ({ url }) => {
-    if (rasterSizes.value[url]) return
-    try {
-      const response = await fetch(url, { method: "HEAD" })
-      const size = Number(response.headers.get("Content-Length"))
-      if (response.ok && size) rasterSizes.value[url] = size
-    } catch {
-      return
-    }
-  })
+const downloadRaster = async (url: string) => {
+  downloadStatus.value[url] = "loading"
+  try {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const disposition = response.headers.get("Content-Disposition")
+    let filename = url.split("/").filter(Boolean).pop() || "raster.tif"
+    const match = disposition?.match(/filename="?([^"]+)"?/)
+    if (match) filename = match[1]
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = blobUrl
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(blobUrl)
+    downloadStatus.value[url] = "success"
+  } catch {
+    downloadStatus.value[url] = "error"
+    return
+  }
+  setTimeout(() => {
+    if (downloadStatus.value[url] === "success") downloadStatus.value[url] = "idle"
+  }, 2000)
 }
 
-const rasterDatasets: RasterDataset[] = [
-  { label: "Plantabilité (couleurs)", url: rasterUrl("plantability_colors") },
-  { label: "Plantabilité (données brutes)", url: rasterUrl("plantability") },
-  { label: "Végéstrate", url: rasterUrl("vegestrate") },
-  { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
-  { label: "Confort thermique dans la rue 2020 (une bande par heure)", url: rasterUrl("pet_2020") },
-  { label: "Confort thermique dans la rue 2090 (une bande par heure)", url: rasterUrl("pet_2090") },
-  { label: "Ombre dans la rue (une bande par heure)", url: rasterUrl("shadow") },
-  { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
-  { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
-  { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
-  { label: "Zones climatiques locales (données brutes)", url: rasterUrl("lcz") }
-]
+const rasterDatasets = computed<RasterDataset[]>(() => {
+  const baseApiUrl = getFullBaseApiUrl()
+  return RASTER_LAYERS.filter((layer) => !layer.vectorSource).flatMap((layer) =>
+    layer.hourly
+      ? [
+          {
+            label: `${layer.label} (${formatHour(mapStore.selectedHour)})`,
+            url: buildRasterUrl(baseApiUrl, layer, mapStore.selectedHour)
+          },
+          { label: `${layer.label} (toutes les heures)`, url: buildRasterUrl(baseApiUrl, layer) }
+        ]
+      : [{ label: layer.label, url: buildRasterUrl(baseApiUrl, layer) }]
+  )
+})
 
-const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultTypename}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
+const wmsFullUrl = `${wmsBase}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${defaultWmsLayer}&BBOX=45.5,4.7,46.0,5.2&CRS=EPSG:4326&WIDTH=800&HEIGHT=600&FORMAT=image/png`
 
 const wmsParams: RequestParam[] = [
   { key: "SERVICE", value: "WMS", desc: "Type de service", fixed: true },
@@ -109,7 +87,7 @@ const wmsParams: RequestParam[] = [
   },
   {
     key: "LAYERS",
-    value: defaultTypename,
+    value: defaultWmsLayer,
     desc: "Couche à afficher — voir GetLayers pour la liste complète"
   },
   {
@@ -157,52 +135,6 @@ const wmsParams: RequestParam[] = [
         </h3>
       </div>
       <div>
-        <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WFS</p>
-        <AccordionSection :open="expanded === 'wfs'" @toggle="toggle('wfs')">
-          <template #header>
-            <span class="flex-none font-mono font-bold text-xs text-primary-800 w-8">WFS</span>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-800">WEB FEATURE SERVICE (QGIS)</p>
-              <p class="text-xs text-gray-500">
-                Objets géographiques vecteur, interrogeables et filtrables par commune.
-              </p>
-            </div>
-            <div class="flex gap-1 shrink-0">
-              <span
-                v-for="fmt in ['GeoJSON', 'GML', 'CSV']"
-                :key="fmt"
-                class="font-mono font-bold text-2xs text-white bg-primary-800 px-1.5 py-0.5 rounded"
-                >{{ fmt }}</span
-              >
-            </div>
-          </template>
-
-          <div class="bg-amber-50 px-3 py-3 rounded-md">
-            <p class="text-xs font-bold text-amber-700 mb-1">Téléchargement volumineux</p>
-            <p class="text-xs text-amber-800">
-              Le jeu complet contient 21 millions de tuiles. Utilisez un filtre BBOX ou CITY_CODE
-              (voir paramètres avancés) pour limiter le volume. Pour une consultation rapide,
-              préférez le téléchargement raster ci-dessous.
-            </p>
-          </div>
-
-          <QgisConnectionCard
-            :base-url="wfsBase"
-            :steps="[
-              `Onglet &quot;Couche&quot; → &quot;Ajouter une couche&quot; → &quot;WFS&quot;`,
-              `Collez l'URL ci-dessous, puis cliquez sur &quot;Connexion&quot;`
-            ]"
-          />
-
-          <ManualRequestSection
-            url-label="URL du service (exemple)"
-            :url="wfsFullUrl"
-            :params="wfsParams"
-          />
-        </AccordionSection>
-      </div>
-
-      <div>
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">FLUX WMS</p>
         <AccordionSection :open="expanded === 'wms'" @toggle="toggle('wms')">
           <template #header>
@@ -237,7 +169,7 @@ const wmsParams: RequestParam[] = [
         </AccordionSection>
       </div>
 
-      <div>
+      <div v-if="rasterDatasets.length">
         <p class="text-xs font-bold text-gray-400 tracking-wider mb-2">TÉLÉCHARGEMENT RASTER</p>
         <AccordionSection
           :open="expanded === 'raster'"
@@ -260,20 +192,32 @@ const wmsParams: RequestParam[] = [
             :key="dataset.url"
             class="py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-md"
           >
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-sm text-gray-700">
-                {{ dataset.label }}
-                <span v-if="rasterSizes[dataset.url]" class="text-xs text-gray-400">
-                  ({{ formatBytes(rasterSizes[dataset.url]) }})
-                </span>
-              </span>
-              <a
-                :href="dataset.url"
-                download
-                class="text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0 bg-primary-500 hover:bg-primary-600"
-                >Télécharger</a
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="text-sm text-gray-700">{{ dataset.label }}</span>
+              <button
+                type="button"
+                :disabled="downloadStatus[dataset.url] === 'loading'"
+                :class="[
+                  'text-xs font-medium text-white transition-colors rounded px-2 py-1 shrink-0',
+                  downloadStatus[dataset.url] === 'loading'
+                    ? 'bg-primary-300 cursor-wait'
+                    : downloadStatus[dataset.url] === 'error'
+                      ? 'bg-red-500 hover:bg-red-600 cursor-pointer'
+                      : downloadStatus[dataset.url] === 'success'
+                        ? 'bg-green-600 cursor-pointer'
+                        : 'bg-primary-500 hover:bg-primary-600 cursor-pointer'
+                ]"
+                @click="downloadRaster(dataset.url)"
               >
+                <span v-if="downloadStatus[dataset.url] === 'loading'">Téléchargement…</span>
+                <span v-else-if="downloadStatus[dataset.url] === 'success'">Téléchargé ✓</span>
+                <span v-else-if="downloadStatus[dataset.url] === 'error'">Échec</span>
+                <span v-else>Télécharger</span>
+              </button>
             </div>
+            <p v-if="downloadStatus[dataset.url] === 'error'" class="text-2xs text-red-600">
+              Le téléchargement a échoué. Vérifiez votre connexion ou réessayez.
+            </p>
           </div>
         </AccordionSection>
       </div>

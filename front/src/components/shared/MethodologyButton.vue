@@ -1,16 +1,11 @@
 <script lang="ts" setup>
-import { computed } from "vue"
-import { useMapStore } from "@/stores/map"
-import { DataTypeToDocumentationUrl } from "@/utils/enum"
 import AppButton from "@/components/shared/AppButton.vue"
 import IconInfo from "@/components/icons/IconInfo.vue"
 
-const mapStore = useMapStore()
-
-const documentationUrl = computed(() => DataTypeToDocumentationUrl[mapStore.selectedDataType])
+const DOCUMENTATION_URL = "https://github.com/TelesCoop/solweig-gpu/tree/main"
 
 const openMethodology = () => {
-  window.open(documentationUrl.value, "_blank", "noopener,noreferrer")
+  window.open(DOCUMENTATION_URL, "_blank", "noopener,noreferrer")
 }
 </script>
 

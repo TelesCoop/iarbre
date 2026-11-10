@@ -5,11 +5,13 @@ interface Props {
   modelValue: boolean
   labelId?: string
   disabled?: boolean
+  size?: "md" | "sm"
 }
 
 const props = withDefaults(defineProps<Props>(), {
   labelId: undefined,
-  disabled: false
+  disabled: false,
+  size: "md"
 })
 
 const emit = defineEmits<{
@@ -21,7 +23,8 @@ const isActive = computed(() => props.modelValue)
 const toggleClasses = computed(() => [
   "toggle-switch",
   isActive.value ? "toggle-switch-active" : "",
-  props.disabled ? "toggle-switch-disabled" : ""
+  props.disabled ? "toggle-switch-disabled" : "",
+  props.size === "sm" ? "toggle-switch-sm" : ""
 ])
 
 const handleToggle = () => {
@@ -84,5 +87,18 @@ const handleToggle = () => {
 
 .toggle-switch-active .toggle-switch-thumb {
   transform: translateX(16px);
+}
+
+.toggle-switch-sm {
+  @apply w-7 h-4;
+}
+
+.toggle-switch-sm .toggle-switch-thumb {
+  @apply w-3 h-3;
+  left: 1px;
+}
+
+.toggle-switch-sm.toggle-switch-active .toggle-switch-thumb {
+  transform: translateX(12px);
 }
 </style>

@@ -1,80 +1,128 @@
+from django.core.management.base import BaseCommand
+from django.core.management import call_command
+from django.conf import settings
 import os
 import subprocess
 
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from django.core.management.color import no_style
-from django.db import connection
-
-from api.models import Feedback, ShortLink
+from api.models import Feedback
 
 
 class Command(BaseCommand):
-    help = (
-        "Keep user-generated models (Feedback, ShortLink) across a database recovery: "
-        "'backup' dumps their rows before the recovery, 'restore' reloads them after migrate."
-    )
+    help = "Safely recover database, we keep a backup of the models (Feeback, ...) in current database before restoring the remote database."
 
-    models_to_keep = [Feedback, ShortLink]
-    backup_file = os.path.join(
-        settings.BASE_DIR, "tmp/backups", "model_backups", "model_backup.sql"
-    )
+    model_to_backup_before_recovery = [Feedback]
+    backup_dir = os.path.join(settings.BASE_DIR, "tmp/backups", "model_backups")
 
-    def add_arguments(self, parser):
-        parser.add_argument("action", choices=["backup", "restore"])
+    def get_db_settings(self):
+        """Extract and return database settings as a dictionary"""
+        db_settings = settings.DATABASES["default"]
+        return {
+            "NAME": db_settings["NAME"],
+            "USER": db_settings["USER"],
+            "PASSWORD": db_settings.get("PASSWORD", ""),
+            "HOST": db_settings.get("HOST", "localhost"),
+            "PORT": db_settings.get("PORT", "5432"),
+        }
 
-    def run_pg(self, cmd):
-        db = settings.DATABASES["default"]
-        env = {**os.environ, "PGPASSWORD": db.get("PASSWORD", "")}
-        cmd += [
+    def backup_models(self):
+        """Backup specific models using pg_dump"""
+
+        os.makedirs(self.backup_dir, exist_ok=True)
+
+        db_settings = self.get_db_settings()
+        backup_file = os.path.join(self.backup_dir, "model_backup.sql")
+
+        # Build the pg_dump command
+        pg_dump_cmd = [
+            "pg_dump",
             "-h",
-            db.get("HOST") or "localhost",
+            db_settings["HOST"],
             "-p",
-            str(db.get("PORT") or "5432"),
+            db_settings["PORT"],
             "-U",
-            db["USER"],
+            db_settings["USER"],
             "-d",
-            db["NAME"],
+            db_settings["NAME"],
+            "-t",
+            ",".join(
+                [model._meta.db_table for model in self.model_to_backup_before_recovery]
+            ),
+            "-F",
+            "p",  # plain SQL format
+            "-f",
+            backup_file,
         ]
-        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise CommandError(result.stderr)
 
-    def backup(self):
-        existing = set(connection.introspection.table_names())
-        tables = [
-            m._meta.db_table
-            for m in self.models_to_keep
-            if m._meta.db_table in existing
-        ]
-        if os.path.exists(self.backup_file):
+        # Set the password environment variable
+        env = os.environ.copy()
+        env["PGPASSWORD"] = db_settings["PASSWORD"]
+
+        try:
+            # Execute the pg_dump command
+            subprocess.run(
+                pg_dump_cmd,
+                check=True,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.stdout.write(f"Successfully backed up models to {backup_file}")
+        except subprocess.CalledProcessError as e:
+            self.stderr.write(
+                self.style.ERROR(f"Error backing up database: {e.stderr.decode()}")
+            )
+
+    def restore_models(self):
+        """Restore models from SQL backup file"""
+
+        backup_file = os.path.join(self.backup_dir, "model_backup.sql")
+
+        if not os.path.exists(backup_file):
             self.stdout.write(
-                f"{self.backup_file} already exists (previous restore not completed), keeping it"
+                self.style.ERROR(f"No backup file found at {backup_file}")
             )
             return
-        if not tables:
-            self.stdout.write("No table to back up")
-            return
-        os.makedirs(os.path.dirname(self.backup_file), exist_ok=True)
-        table_args = [arg for table in tables for arg in ("-t", table)]
-        self.run_pg(["pg_dump", "--data-only", *table_args, "-f", self.backup_file])
-        self.stdout.write(f"Backed up {', '.join(tables)} to {self.backup_file}")
 
-    def restore(self):
-        if not os.path.exists(self.backup_file):
-            self.stdout.write("No backup file, nothing to restore")
-            return
-        tables = ", ".join(m._meta.db_table for m in self.models_to_keep)
-        with connection.cursor() as cursor:
-            cursor.execute(f"TRUNCATE {tables}")
-        self.run_pg(["psql", "-v", "ON_ERROR_STOP=1", "-f", self.backup_file])
-        with connection.cursor() as cursor:
-            for sql in connection.ops.sequence_reset_sql(
-                no_style(), self.models_to_keep
-            ):
-                cursor.execute(sql)
-        os.remove(self.backup_file)
-        self.stdout.write(f"Restored {tables}")
+        db_settings = self.get_db_settings()
+
+        # Build the psql command for restoration
+        psql_cmd = [
+            "psql",
+            "-h",
+            db_settings["HOST"],
+            "-p",
+            db_settings["PORT"],
+            "-U",
+            db_settings["USER"],
+            "-d",
+            db_settings["NAME"],
+            "-f",
+            backup_file,
+        ]
+
+        # Set the password environment variable
+        env = os.environ.copy()
+        env["PGPASSWORD"] = db_settings["PASSWORD"]
+
+        try:
+            # Execute the psql command
+            subprocess.run(
+                psql_cmd,
+                check=True,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.stdout.write("Successfully restored models from backup")
+        except subprocess.CalledProcessError as e:
+            self.stdout.write(
+                self.style.ERROR(f"Error restoring database: {e.stderr.decode()}")
+            )
 
     def handle(self, *args, **options):
-        getattr(self, options["action"])()
+        # Backup models before recovery to avoid data loss
+        self.backup_models()
+        # Perform python manage.py backup_db recover_db_and_media
+        call_command("backup_db", "recover_db_and_media")
+        # Restore models after recovery
+        self.restore_models()

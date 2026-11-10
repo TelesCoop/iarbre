@@ -1,11 +1,18 @@
 <script lang="ts" setup>
+import { ref } from "vue"
+import { copyToClipboard } from "@/utils/clipboard"
 import IconCheck from "@/components/icons/IconCheck.vue"
 import IconCopy from "@/components/icons/IconCopy.vue"
-import { fetchShortLink, useCopyLink } from "@/composables/useShortLink"
 
-const { isCopied, copyLink } = useCopyLink()
+const isCopied = ref(false)
 
-const handleCopyLink = () => copyLink(fetchShortLink())
+const handleCopyLink = async () => {
+  await copyToClipboard(window.location.href)
+  isCopied.value = true
+  setTimeout(() => {
+    isCopied.value = false
+  }, 2000)
+}
 </script>
 
 <template>

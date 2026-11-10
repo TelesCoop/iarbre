@@ -50,7 +50,6 @@
       vars:
         django_settings_path: /etc/{{ organization_slug }}/{{ project_slug }}/settings.ini
         django_workers: 5
-        dedicated_database: "{{ branch is not defined }}"
         allow_backup: false
         database_password: "{{ vault_database_password }}"
         # If you use custom template, do not name it settings.j2
@@ -87,10 +86,6 @@
           debug:
             msg: "Using recover targets - db: {{ db_recover_target }}, media: {{ media_recover_target }}"
 
-        - name: Back up feedbacks and short links before recovery
-          shell:
-            cmd: "{{ project_slug }}-ctl safe_recovery backup"
-
         - name: Load database and media
           shell:
             cmd: "{{ project_slug }}-ctl backup_db recover_db_and_media {{ db_recover_target }} {{ media_recover_target }}"
@@ -109,10 +104,6 @@
           ansible.builtin.command:
             cmd: "{{ project_slug }}-ctl migrate"
           become: true
-
-        - name: Restore feedbacks and short links after recovery
-          shell:
-            cmd: "{{ project_slug }}-ctl safe_recovery restore"
 
         - name: Remove test fixtures (Villard-de-Lans) from restored database
           shell:

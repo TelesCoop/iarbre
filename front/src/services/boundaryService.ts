@@ -1,8 +1,9 @@
 import { useApiGet } from "@/api"
+import type { FeatureCollection } from "geojson"
 
-export const getCityBoundaries = async (): Promise<GeoJSON.FeatureCollection | null> => {
+export const getCityBoundaries = async (): Promise<FeatureCollection | null> => {
   try {
-    const req = await useApiGet<GeoJSON.FeatureCollection>(
+    const req = await useApiGet<FeatureCollection>(
       "boundaries/cities/",
       "Impossible de récupérer les contours des communes"
     )
