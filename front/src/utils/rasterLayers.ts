@@ -5,6 +5,7 @@ export interface LegendItem {
   color: string
   label: string
   detail?: string
+  border?: { color: string; dashed?: boolean }
 }
 
 export interface LayerToggle {

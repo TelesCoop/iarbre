@@ -27,7 +27,7 @@ export const LAYER_330300: RasterLayer = {
   label: "3-30-300",
   description: `<p>La règle 3-30-300 : voir au moins 3 arbres depuis chaque logement,
       30 % de couverture arborée dans chaque quartier et un parc à moins de 300 m.</p>`,
-  attribution: "Métropole de Lyon, OpenStreetMap",
+  attribution: "IA·rbre",
   hourly: false,
   legend: [],
   vectorSource: {
@@ -71,7 +71,7 @@ export const LAYER_330300: RasterLayer = {
       type: "line",
       source: VECTOR_SOURCE_ID,
       "source-layer": "parks",
-      paint: { "line-color": PARK_EDGE_COLOR, "line-width": 1.5 }
+      paint: { "line-color": PARK_EDGE_COLOR, "line-width": 3 }
     },
     {
       id: "330300-buildings",
@@ -101,7 +101,12 @@ export const LAYER_330300: RasterLayer = {
       "source-layer": "trees",
       minzoom: 16,
       layout: { visibility: "none" },
-      paint: { "circle-color": "#6fc055", "circle-radius": 1.5 }
+      paint: {
+        "circle-color": "#6fc055",
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 16, 2, 19, 5],
+        "circle-stroke-color": CASING_COLOR,
+        "circle-stroke-width": 1
+      }
     },
     {
       id: "330300-quartiers",
@@ -162,8 +167,16 @@ export const LAYER_330300: RasterLayer = {
       description: "Le 300 est représenté par l’emprise des parcs",
       legendStyle: "swatch",
       legend: [
-        { color: `rgba(${PARK_RGB}, ${PARK_OPACITY})`, label: "Emprise des parcs" },
-        { color: `rgba(${PARK_RGB}, ${ISOCHRONE_OPACITY})`, label: "Zone d’influence des parcs" }
+        {
+          color: `rgba(${PARK_RGB}, ${PARK_OPACITY})`,
+          label: "Emprise des parcs",
+          border: { color: PARK_EDGE_COLOR }
+        },
+        {
+          color: `rgba(${PARK_RGB}, ${ISOCHRONE_OPACITY})`,
+          label: "Zone d’influence des parcs",
+          border: { color: PARK_EDGE_COLOR, dashed: true }
+        }
       ],
       layerIds: [
         "330300-parks",

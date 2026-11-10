@@ -5,7 +5,7 @@ const mapStore = useMapStore()
 </script>
 
 <template>
-  <div class="legend-panel">
+  <div v-if="mapStore.selectedLayer.legend.length" class="legend-panel">
     <div
       class="font-accent flex flex-col items-start justify-center text-xs leading-4 gap-2 px-2 py-1 w-full"
       data-cy="raster-legend"

@@ -6,8 +6,16 @@
       class="px-4 w-full flex-1 min-h-0 flex flex-col overflow-hidden"
       data-cy="map-side-panel-content"
     >
-      <MapLayerSwitcher class="w-full" data-cy="map-layer-switcher" />
-      <MapLayerDescription class="w-full flex-1 min-h-0 overflow-y-auto" />
+      <MapLayerSwitcher
+        :show-methodology="!mapStore.selectedLayer.vectorSource"
+        class="w-full"
+        data-cy="map-layer-switcher"
+      />
+      <MapLegendCards
+        v-if="mapStore.selectedLayer.cards"
+        class="w-full flex-1 min-h-0 overflow-y-auto"
+      />
+      <MapLayerDescription v-else class="w-full flex-1 min-h-0 overflow-y-auto" />
     </div>
     <div class="sidebar-footer" data-cy="map-side-panel-footer">
       <div class="w-full" data-cy="map-side-panel-download">
@@ -24,14 +32,15 @@
       </button>
       <div v-if="isPanelOpen" class="mobile-panel-toggles">
         <MapLayerToggles />
-        <MethodologyButton />
+        <MethodologyButton v-if="!mapStore.selectedLayer.vectorSource" />
         <HourSlider />
       </div>
     </div>
 
     <div class="mobile-panel-content">
       <div class="mobile-panel-scroll">
-        <MapLayerDescription class="w-full" />
+        <MapLegendCards v-if="mapStore.selectedLayer.cards" class="w-full" />
+        <MapLayerDescription v-else class="w-full" />
       </div>
     </div>
   </div>
@@ -40,8 +49,10 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
 import { useAppStore } from "@/stores/app"
+import { useMapStore } from "@/stores/map"
 
 const appStore = useAppStore()
+const mapStore = useMapStore()
 
 const isSidePanelVisible = computed(() => appStore.sidePanelVisible)
 const isPanelOpen = ref(false)

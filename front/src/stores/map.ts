@@ -732,6 +732,7 @@ export const useMapStore = defineStore("map", () => {
         style: loadMapStyle(selectedMapStyle.value),
         maxZoom: MAX_ZOOM + 2,
         minZoom: MIN_ZOOM,
+        zoomLevelsToOverscale: undefined,
         attributionControl: false
       })
     )
