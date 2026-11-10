@@ -1,9 +1,11 @@
 <script lang="ts" setup>
+import { useId } from "vue"
 import AppToggleSwitch from "@/components/shared/AppToggleSwitch.vue"
 import { useMapStore } from "@/stores/map"
 import type { LegendItem } from "@/utils/rasterLayers"
 
 const mapStore = useMapStore()
+const uid = useId()
 
 const isVisible = (key: string) => !mapStore.hiddenToggles.includes(key)
 
@@ -25,15 +27,15 @@ const swatchStyle = (item: LegendItem) => ({
     >
       <div class="flex items-center gap-2">
         <AppToggleSwitch
+          :id="`${uid}-${card.key}`"
           size="sm"
           :model-value="isVisible(card.key)"
-          :label-id="`legend-label-${card.key}`"
           :data-cy="`legend-toggle-${card.key}`"
           @update:model-value="mapStore.toggleLayerGroup(card)"
         />
-        <span :id="`legend-label-${card.key}`" class="text-sm font-bold text-gray-800">
+        <label :for="`${uid}-${card.key}`" class="text-sm font-bold text-gray-800 cursor-pointer">
           {{ card.label }}
-        </span>
+        </label>
       </div>
       <p class="text-xs text-gray-600">{{ card.description }}</p>
 
@@ -62,15 +64,15 @@ const swatchStyle = (item: LegendItem) => ({
 
       <div v-for="toggle in card.subToggles" :key="toggle.key" class="flex items-center gap-2">
         <AppToggleSwitch
+          :id="`${uid}-${toggle.key}`"
           size="sm"
           :model-value="isVisible(toggle.key)"
-          :label-id="`legend-label-${toggle.key}`"
           :data-cy="`legend-toggle-${toggle.key}`"
           @update:model-value="mapStore.toggleLayerGroup(toggle)"
         />
-        <span :id="`legend-label-${toggle.key}`" class="text-xs text-gray-700">
+        <label :for="`${uid}-${toggle.key}`" class="text-xs text-gray-700 cursor-pointer">
           {{ toggle.label }}
-        </span>
+        </label>
       </div>
     </section>
     <p class="text-xs text-gray-500">Source : {{ mapStore.selectedLayer.attribution }}</p>
