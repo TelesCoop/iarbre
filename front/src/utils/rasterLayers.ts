@@ -1,7 +1,24 @@
+import type { LayerSpecification } from "maplibre-gl"
+import { LAYER_330300 } from "@/utils/layers330300"
+
 export interface LegendItem {
   color: string
   label: string
   detail?: string
+}
+
+export interface LayerToggle {
+  key: string
+  label: string
+  layerIds: string[]
+  defaultHidden?: boolean
+}
+
+export interface LegendCard extends LayerToggle {
+  description: string
+  legendStyle: "tile" | "outline" | "swatch"
+  legend: LegendItem[]
+  subToggles?: LayerToggle[]
 }
 
 export interface RasterLayer {
@@ -11,69 +28,12 @@ export interface RasterLayer {
   attribution: string
   hourly: boolean
   legend: LegendItem[]
+  cards?: LegendCard[]
+  tilesPath?: string
+  styleLayers?: LayerSpecification[]
 }
 
-const petDescription = (year: number): string =>
-  `<p>L'objectif ici est de simuler une journée typique (légèrement chaude) le 14 juillet ${year}.
-      Nous répliquons, avec son aide, une <a href="https://www.sciencedirect.com/science/article/pii/S0360132325007188" target="_blank" rel="noopener noreferrer">étude</a> menée par le chercheur Damien David du CETHIL.</p>
-      <p>Le PET (Physiological Equivalent Temperature) est un indicateur reflétant le confort/inconfort
-      d'une personne selon les caractéristiques d'ambiance (température de l'air, ombre ou soleil,
-      vent, rayonnement secondaire des bâtiments et du sol). Ici, la personne est simulée assise et immobile.</p>
-      <p>Les données d'entrée sont :</p>
-      <ul>
-        <li>Les bâtiments,</li>
-        <li>Le modèle de hauteur de la végétation,</li>
-        <li>L'occupation des sols (béton, terre, etc.),</li>
-        <li>Projection météo ${year} heure par heure (température, humidité relative, vent).</li>
-      </ul>
-      <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
-      Chaque pixel correspond à une zone de 1mx1m.</p>`
-
-const PET_LEGEND: LegendItem[] = [
-  { color: "#ffffcc", label: "18 - 23 °C - Neutre", detail: "Aucun stress thermique" },
-  {
-    color: "#fed976",
-    label: "23 - 29 °C - Légèrement chaud",
-    detail: "Léger stress thermique"
-  },
-  { color: "#fd8d3c", label: "29 - 35 °C - Chaud", detail: "Stress thermique modéré" },
-  { color: "#e31a1c", label: "35 - 41 °C - Très chaud", detail: "Fort stress thermique" },
-  {
-    color: "#800026",
-    label: "> 41 °C - Extrêmement chaud",
-    detail: "Stress thermique extrême"
-  }
-]
-
-export const RASTER_LAYERS: RasterLayer[] = [
-  {
-    key: "pet_index",
-    label: "Indice PET - 1m - 2090",
-    description: petDescription(2090),
-    attribution: "Métropole de Lyon",
-    hourly: true,
-    legend: PET_LEGEND
-  },
-  {
-    key: "pet_index_2020",
-    label: "Indice PET - 1m - 2020",
-    description: petDescription(2020),
-    attribution: "Métropole de Lyon",
-    hourly: true,
-    legend: PET_LEGEND
-  },
-  {
-    key: "shadow",
-    label: "Ombre - 1m",
-    description: `<p>Zones à l'ombre heure par heure, le 14 juillet, selon les bâtiments et la végétation.
-      Les zones au soleil sont transparentes.</p>
-      <p>Les modélisations sont faites à l'aide du modèle open-source SOLWEIG.
-      Chaque pixel correspond à une zone de 1mx1m.</p>`,
-    attribution: "Métropole de Lyon",
-    hourly: true,
-    legend: [{ color: "rgba(0, 0, 139, 0.7)", label: "Ombre" }]
-  }
-]
+export const RASTER_LAYERS: RasterLayer[] = [LAYER_330300]
 
 export const DEFAULT_LAYER_KEY = RASTER_LAYERS[0].key
 
@@ -107,3 +67,12 @@ export const buildRasterUrl = (baseApiUrl: string, layer: RasterLayer, hour?: nu
   const url = `${baseApiUrl}/rasters/${layer.key}/`
   return layer.hourly && hour !== undefined ? `${url}?hour=${hour}` : url
 }
+
+export const buildMediaTileUrl = (baseApiUrl: string, tilesPath: string): string =>
+  `${baseApiUrl.replace(/\/api\/?$/, "")}/media/${tilesPath}/{z}/{x}/{y}.pbf`
+
+export const defaultHiddenToggles = (layer: RasterLayer): string[] =>
+  (layer.cards ?? [])
+    .flatMap((card) => [card, ...(card.subToggles ?? [])])
+    .filter((toggle) => toggle.defaultHidden)
+    .map((toggle) => toggle.key)

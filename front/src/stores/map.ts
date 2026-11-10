@@ -1,4 +1,4 @@
-import { markRaw, ref } from "vue"
+import { markRaw, ref, shallowRef } from "vue"
 import { defineStore } from "pinia"
 import {
   Map,
@@ -69,7 +69,7 @@ const RASTER_LAYER_ID = "raster-layer"
 
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
-  const selectedLayer = ref<RasterLayer>(getRasterLayer(DEFAULT_LAYER_KEY))
+  const selectedLayer = shallowRef<RasterLayer>(getRasterLayer(DEFAULT_LAYER_KEY))
   const selectedHour = ref<number>(DEFAULT_HOUR)
   const hiddenClasses = ref<number[]>([])
   const selectedMapStyle = ref<MapStyle>(MapStyle.ORTHOPHOTO)
