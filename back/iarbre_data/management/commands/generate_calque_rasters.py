@@ -22,7 +22,7 @@ import rasterio
 from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db.models import Union
-from django.core.management import BaseCommand
+from django.core.management import BaseCommand, call_command
 from rasterio.enums import ColorInterp
 from rasterio.features import rasterize
 
@@ -243,3 +243,5 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(f"  {name} -> {path} in {elapsed:.1f}s")
             )
+
+        call_command("build_wms_overviews")

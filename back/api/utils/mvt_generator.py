@@ -5,6 +5,7 @@ MVT Generator as django-media.
 import logging
 
 import json
+from collections import Counter
 from typing import Dict, Type
 import itertools
 import math
@@ -361,11 +362,6 @@ class MVTGeneratorWorker:
             aggregated["vulnerability_index_night_mean"].fillna(5).round().astype(int)
         )
 
-        # Store source_values in a JSON format to be added in the `details` field
-        aggregated["source_values"] = aggregated["source_values"].apply(
-            lambda x: json.dumps(x) if x else "[]"
-        )
-
         df_clipped = grid.merge(aggregated, on="grid_id", how="left")
         df_clipped = df_clipped.rename(columns={"grid_id": "id"})
         df_clipped = df_clipped.rename(
@@ -424,9 +420,7 @@ class MVTGeneratorWorker:
             properties = {
                 "id": obj.id,
                 "indice": obj.plantability_normalized_indice,
-                "source_values": (
-                    obj.source_values if hasattr(obj, "source_values") else []
-                ),
+                **MVTGenerator.score_counts(getattr(obj, "source_values", None)),
             }
 
             # Add aggregated vulnerability means if available (from grid aggregation)
@@ -751,3 +745,14 @@ class MVTGenerator:
         )
 
         return plantability_coord * 10 + vulnerability_coord
+
+    @staticmethod
+    def score_counts(source_values) -> Dict[str, int]:
+        if not isinstance(source_values, list):
+            return {}
+        counts = Counter(
+            int(round(value))
+            for value in source_values
+            if value is not None and not math.isnan(value)
+        )
+        return {f"count_{score}": count for score, count in sorted(counts.items())}

@@ -15,6 +15,7 @@ from .views import (
     TileView,
     HealthCheckView,
     QPVListView,
+    PublicBuildingListView,
     CityBoundaryView,
     MetadataView,
     RasterDownloadView,
@@ -26,6 +27,8 @@ from .views import (
     VegetationHeightAtPointView,
     BiosphereLandCoverAtPointView,
     WMSView,
+    PetTileView,
+    ShadowTileView,
 )
 
 router = routers.DefaultRouter()
@@ -55,6 +58,16 @@ urlpatterns = [
         name="vegetation-height-tile",
     ),
     path(
+        "tiles/pet/<int:z>/<int:x>/<int:y>.png",
+        PetTileView.as_view(),
+        name="pet-tile",
+    ),
+    path(
+        "tiles/shadow/<int:z>/<int:x>/<int:y>.png",
+        ShadowTileView.as_view(),
+        name="shadow-tile",
+    ),
+    path(
         "tiles/<datatype>/<id>/",
         TileDetailsView.as_view(),
         name="retrieve-tile-details",
@@ -71,6 +84,11 @@ urlpatterns = [
     ),
     path("feedback/", FeedbackView.as_view(), name="create-feedback"),
     path("qpv/", QPVListView.as_view(), name="qpv-list"),
+    path(
+        "public-buildings/",
+        PublicBuildingListView.as_view(),
+        name="public-buildings-list",
+    ),
     path("boundaries/cities/", CityBoundaryView.as_view(), name="city-boundaries"),
     path(
         "rasters/<str:file_key>/",

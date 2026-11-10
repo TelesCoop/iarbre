@@ -108,6 +108,10 @@ def _build_elevation_color_map():
 
 VEGESTRATE_ELEVATION_COLOR_MAP = _build_elevation_color_map()
 
+PET_RASTERS: dict[int, str] = {2020: "PET_index_2020", 2090: "PET_index_1m_2090"}
+SHADOW_RASTER = "Shadow"
+
+
 # Score ranges for different data types
 PLANTABILITY_MAX_SCORE = 10
 VULNERABILITY_MAX_SCORE = 9

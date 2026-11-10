@@ -25,8 +25,8 @@ Les données ne sont pas modifiées en prod : pas de sauvegarde continue, aucune
 | Fréquence               | Action                                                                                                                                                    |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Quotidien               | Smoke test Cypress prod (automatique)                                                                                                                     |
-| Hebdomadaire (mercredi) | Merge Dependabot, MEP, [checklist post-déploiement](#checklist-post-deploiement), revue Rollbar de la semaine                                             |
-| Trimestriel             | [Passe manuelle complète](#passe-manuelle-trimestrielle), revue du tableau [fin de vie](#fin-de-vie-des-composants)                                       |
+| Hebdomadaire (mercredi) | Merge Dependabot, MEP, [checklist post-déploiement](#checklist-post-deploiement)                                                                          |
+| Trimestriel             | [Passe manuelle complète](#passe-manuelle-trimestrielle)                                                                                                  |
 | Annuel                  | Mise à jour des données (pipeline, lancé manuellement), montée de version Ubuntu / Python / PostgreSQL si besoin, revue des accès et rotation des secrets |
 
 ## Dépannage
@@ -46,11 +46,10 @@ Environ 10 minutes, après chaque MEP du mercredi, sur [carte.iarbre.fr](https:/
 - [ ] Recherche d'adresse
 - [ ] Dashboard : les widgets se chargent
 - [ ] Vérifier à la main chaque changement livré dans la MEP
-- [ ] Si nouvelle version de données : date de génération correcte sur `https://carte.iarbre.fr/api/metadata/`
 
 ## Passe manuelle trimestrielle
 
-Environ 1 heure. Desktop (Firefox et Chrome) puis mobile (iOS ou Android).
+Environ 30min, d'abord sur ordi puis sur mobile.
 
 **Carte**
 
@@ -83,20 +82,13 @@ Environ 1 heure. Desktop (Firefox et Chrome) puis mobile (iOS ou Android).
 
 - [ ] Mobile : panneau, sélecteur de calques, couches
 - [ ] Documentation [docs.iarbre.fr](https://docs.iarbre.fr) accessible et à jour
-- [ ] Performance : Lighthouse sur la page d'accueil, comparer au trimestre précédent
 
 ## Fin de vie des composants
 
-À revoir chaque trimestre. Planifier la montée de version 6 mois avant l'échéance.
-
-| Composant            | Version     | Fin de support |
-| -------------------- | ----------- | -------------- |
-| Ubuntu (serveur)     | à compléter | -              |
-| Python               | 3.10        | octobre 2026   |
-| PostgreSQL / PostGIS | 14 / 3      | novembre 2026  |
-| Django               | 5.2 LTS     | avril 2028     |
-| Node.js              | 24          | avril 2028     |
-
-## Pistes d'amélioration
-
-- Écrire sous quel délais sous traités les alertes
+| Composant            | Version | Fin de support |
+| -------------------- | ------- | -------------- |
+| Ubuntu (serveur)     | 24.04   | avril 2029     |
+| Python               | 3.12    | octobre 2028   |
+| PostgreSQL / PostGIS | 16 / 3  | novembre 2028  |
+| Django               | 5.2 LTS | avril 2028     |
+| Node.js              | 24      | avril 2028     |

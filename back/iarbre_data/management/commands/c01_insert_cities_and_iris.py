@@ -1,5 +1,6 @@
-"""Insert cities and IRIS from geojson file and BPCE API."""
+"""Insert cities and IRIS from geojson file and IGN WFS."""
 
+import json
 import logging
 
 from django.contrib.gis.utils import LayerMapping
@@ -10,17 +11,44 @@ from tqdm import tqdm
 from django.contrib.gis.geos import GEOSGeometry
 from unidecode import unidecode
 
-from iarbre_data.models import City, Iris
-from iarbre_data.utils.database import (
-    load_geodataframe_from_db,
-    remove_duplicates,
-)
+from iarbre_data.models import City, Iris, Tile
+from iarbre_data.utils.database import remove_duplicates
 from iarbre_data.settings import SRID_DB
 
 mapping_city = {"geometry": "POLYGON", "name": "nom", "code": "insee"}
 mapping_iris = {"geometry": "POLYGON", "name": "iris_name", "code": "iris_code"}
 
-api_url = "https://bpce.opendatasoft.com/api/explore/v2.1/catalog/datasets/iris-millesime-france/records"
+IRIS_WFS_URL = "https://data.geopf.fr/wfs/ows"
+IRIS_TYPENAME = "STATISTICALUNITS.IRIS:contours_iris"
+
+
+def iris_from_feature(feature: dict) -> tuple[str, str, GEOSGeometry]:
+    properties = feature["properties"]
+    geom = GEOSGeometry(json.dumps(feature["geometry"]))
+    geom.srid = SRID_DB
+    if geom.geom_type == "MultiPolygon":
+        if geom.num_geom > 1:
+            print(
+                f"IRIS {properties['code_iris']} has {geom.num_geom} parts, "
+                "keeping the largest one."
+            )
+        geom = max(geom, key=lambda polygon: polygon.area)
+    return properties["code_iris"], properties["nom_iris"], geom
+
+
+def remove_stale_iris(city: City, codes: list[str]) -> None:
+    if not codes:
+        print(f"No IRIS returned for city {city.name}, keeping existing ones.")
+        return
+    stale = Iris.objects.filter(city=city).exclude(code__in=codes)
+    if not stale.exists():
+        return
+    detached = Tile.objects.filter(iris__in=stale).update(iris=None)
+    print(
+        f"Removing {stale.count()} IRIS no longer in IGN for city {city.name}, "
+        f"{detached} tiles detached."
+    )
+    stale.delete()
 
 
 class Command(BaseCommand):
@@ -28,60 +56,33 @@ class Command(BaseCommand):
 
     @staticmethod
     def _insert_iris(qs_city: QuerySet) -> None:
-        """Use BPCE API to download IRIS and insert them in a table
+        """Use IGN WFS to download IRIS and insert them in a table
         Args:
             qs_city (QuerySet): Query set that correspond to one or multiple cities.
         """
-        cities = load_geodataframe_from_db(qs_city, ["id", "name", "code"])
-        limit = 100
-        for city in cities.itertuples():
-            city_GEOS = GEOSGeometry(city.geometry.wkt)
-            city_GEOS.srid = SRID_DB
+        for city in qs_city:
             print(f"Dowloading IRIS for city: {city.name}.")
-            if city.name[:4].upper() == "LYON":
-                com_code = 69123
-            else:
-                com_code = city.code
-            offset = 0
             params = {
-                "where": f"com_code={int(com_code)}",
-                "limit": limit,
-                "offset": offset,
+                "SERVICE": "WFS",
+                "VERSION": "2.0.0",
+                "REQUEST": "GetFeature",
+                "TYPENAMES": IRIS_TYPENAME,
+                "OUTPUTFORMAT": "application/json",
+                "SRSNAME": f"EPSG:{SRID_DB}",
+                "CQL_FILTER": f"code_insee='{city.code}'",
             }
-            response = requests.get(api_url, params=params)
-            while response.status_code == 200:
-                data = response.json()
-                records = data.get("results", [])
-                if len(records) == 0:
-                    break
-                for record in tqdm(records, total=len(records)):
-                    geometry = record["geo_shape"]["geometry"]
-                    iris_name = record.get("iris_name")[0]
-                    iris_code = record.get("iris_code")[0]
-                    if geometry and iris_name and iris_code:
-                        geom = GEOSGeometry(str(geometry))
-                        geom.transform(SRID_DB, clone=False)
-                        if geom.intersects(
-                            city_GEOS
-                        ):  # for Lyon keep only iris for the 'arrondissement' at hand
-                            Iris.objects.update_or_create(
-                                city_id=city.id,
-                                code=iris_code,
-                                defaults={
-                                    "geometry": geom,
-                                    "name": iris_name,
-                                },
-                            )
-                    else:
-                        print("No Iris code")
-                # Iteration over next fetch
-                offset += limit
-                params = {
-                    "where": f"com_code={int(com_code)}",
-                    "limit": limit,
-                    "offset": offset,
-                }
-                response = requests.get(api_url, params=params)
+            response = requests.get(IRIS_WFS_URL, params=params, timeout=60)
+            response.raise_for_status()
+            codes = []
+            for feature in tqdm(response.json()["features"]):
+                code, name, geom = iris_from_feature(feature)
+                codes.append(code)
+                Iris.objects.update_or_create(
+                    city_id=city.id,
+                    code=code,
+                    defaults={"geometry": geom, "name": name},
+                )
+            remove_stale_iris(city, codes)
 
     @staticmethod
     def _insert_cities(data: str) -> None:
@@ -100,7 +101,7 @@ class Command(BaseCommand):
             city.save()
 
     def handle(self, *args, **options):
-        """Insert cities from geojson file and IRIS from BPCE API."""
+        """Insert cities from geojson file and IRIS from IGN WFS."""
         logger = logging.getLogger(__name__)
         self._insert_cities(data="file_data/communes_gl_2025.geojson")
         print("Removing duplicated cities...")

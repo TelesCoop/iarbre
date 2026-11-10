@@ -1,0 +1,30 @@
+# Carte IA·rbre
+
+> Carte interactive open source de la Métropole de Lyon pour adapter la ville au changement climatique : où planter des arbres (score de plantabilité), quelles zones sont vulnérables à la chaleur, zones climatiques locales, strates végétales et intégrité fonctionnelle de la biosphère.
+
+La carte fait partie du projet IA·rbre, porté par un consortium lyonnais (TelesCoop, Laboratoire Érasme, LIRIS / CNRS, Métropole de Lyon) et financé par la Caisse des Dépôts dans le cadre de France 2030. Le code est publié sous licence GPLv3.
+
+- Site du projet : https://iarbre.fr
+- Documentation technique et méthodologies : https://docs.iarbre.fr
+- Code source : https://github.com/TelesCoop/iarbre
+- Contact : contact@telescoop.fr
+
+## Calques de la carte
+
+- [Score de plantabilité](https://carte.iarbre.fr/plantability): note de 0 à 10 sur des tuiles de 5 x 5 m, calculée à partir des contraintes (réseaux souterrains, voirie, bâti...) qui facilitent ou bloquent la plantation
+- [Vulnérabilité à la chaleur](https://carte.iarbre.fr/vulnerability): zones les plus exposées aux vagues de chaleur (Grand Lyon)
+- [Plantabilité et chaleur](https://carte.iarbre.fr/plantability_vulnerability): croisement du score de plantabilité et de la vulnérabilité à la chaleur
+- [Zones climatiques locales](https://carte.iarbre.fr/lcz): typologie des ZCL / LCZ (CEREMA) pour l'étude des îlots de chaleur urbains
+- [Strates végétales](https://carte.iarbre.fr/vegestrate): strates herbacée, arbustive et arborée détectées par IA
+- [Intégrité fonctionnelle de la biosphère](https://carte.iarbre.fr/biosphere_functional_integrity): indicateur de biodiversité à l'échelle du territoire
+
+## Pages
+
+- [Tableau de bord](https://carte.iarbre.fr/dashboard): statistiques par commune et par IRIS
+- [Mentions légales](https://carte.iarbre.fr/mentions-legales)
+
+## Optional
+
+- [Comprendre la carte IA·rbre](https://iarbre.fr/actualites/ce-que-dit-la-carte-iarbre/)
+- [Analyse des facteurs de plantabilité](https://iarbre.fr/actualites/facteurs-plantabilite-arbres-en-ville/)
+- [Méthodologie de création des calques](https://iarbre.fr/actualites/methodologie-calques/)
