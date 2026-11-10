@@ -11,7 +11,8 @@ export enum DataType {
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
   VEGESTRATE = "vegestrate",
   BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity",
-  PET = "pet"
+  PET = "pet",
+  SHADOW = "shadow"
 }
 
 export enum MapStyle {
@@ -65,12 +66,13 @@ export const MapStyleToLabel: Record<MapStyle, string> = {
 
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Score de plantabilité",
-  [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
-  [DataType.VULNERABILITY]: "Vulnérabilité chaleur",
-  [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
-  [DataType.VEGESTRATE]: "Strates végétales",
+  [DataType.CLIMATE_ZONE]: "Zones climatiques locales (ZCL)",
+  [DataType.VULNERABILITY]: "Vulnérabilité à la chaleur",
+  [DataType.PLANTABILITY_VULNERABILITY]: "Croisement plantabilité et chaleur",
+  [DataType.VEGESTRATE]: "Inventaire des strates végétales",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
-  [DataType.PET]: "Confort thermique dans la rue"
+  [DataType.PET]: "Confort thermique dans la rue",
+  [DataType.SHADOW]: "Ombre dans la rue"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -80,7 +82,8 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
   [DataType.VEGESTRATE]: GeoLevel.TILE,
-  [DataType.PET]: GeoLevel.TILE
+  [DataType.PET]: GeoLevel.TILE,
+  [DataType.SHADOW]: GeoLevel.TILE
 }
 
 export const DataTypeToSourceDate: Partial<Record<DataType, string>> = {
@@ -92,6 +95,11 @@ export const DataTypeToSourceDate: Partial<Record<DataType, string>> = {
 export interface AttributionSource {
   label: string
   url: string
+}
+
+const SOLWEIG_SOURCE: AttributionSource = {
+  label: "IArbre",
+  url: "https://github.com/TelesCoop/solweig-gpu"
 }
 
 const PLANTABILITY_NOTICE_URL =
@@ -122,10 +130,8 @@ export const DataTypeToAttributionSource: Record<DataType, AttributionSource> = 
     label: "2025 Emile Balembois",
     url: "https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires"
   },
-  [DataType.PET]: {
-    label: "IArbre",
-    url: "https://github.com/TelesCoop/solweig-gpu"
-  }
+  [DataType.PET]: SOLWEIG_SOURCE,
+  [DataType.SHADOW]: SOLWEIG_SOURCE
 }
 
 const DOCUMENTATION_BASE_URL =
@@ -143,7 +149,8 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57",
-  [DataType.PET]: "https://www.sciencedirect.com/science/article/abs/pii/S0360132325007188"
+  [DataType.PET]: "https://www.sciencedirect.com/science/article/abs/pii/S0360132325007188",
+  [DataType.SHADOW]: SOLWEIG_SOURCE.url
 }
 
 export enum VulnerabilityCategory {

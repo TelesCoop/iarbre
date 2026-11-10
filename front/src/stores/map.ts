@@ -68,13 +68,14 @@ import {
   type HeightRange
 } from "@/utils/vegetation"
 import {
-  DEFAULT_PET_HOUR,
-  DEFAULT_PET_YEAR,
-  buildPetColorRamp,
-  buildPetTileUrl,
-  type PetHour,
-  type PetYear
-} from "@/utils/pet"
+  DEFAULT_HOUR,
+  HOURLY_RASTERS,
+  buildColorRamp,
+  buildTileUrl,
+  type Hour,
+  type HourlyRaster
+} from "@/utils/hourlyRaster"
+import { DEFAULT_PET_YEAR } from "@/utils/pet"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
@@ -202,8 +203,8 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
-  const petYear = ref<PetYear>(DEFAULT_PET_YEAR)
-  const petHour = ref<PetHour>(DEFAULT_PET_HOUR)
+  const rasterYear = ref<number>(DEFAULT_PET_YEAR)
+  const rasterHour = ref<Hour>(DEFAULT_HOUR)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
   const heightMapZoomHandler = ref<(() => void) | null>(null)
 
@@ -342,7 +343,8 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    if (datatype === DataType.PET) {
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (hourlyRaster) {
       return [
         {
           id: layerId,
@@ -350,12 +352,17 @@ export const useMapStore = defineStore("map", () => {
           source: sourceId,
           paint: {
             "color-relief-opacity": 0.6,
-            "color-relief-color": buildPetColorRamp(),
+            "color-relief-color": buildColorRamp(
+              hourlyRaster.classes,
+              filteredValues.value as number[]
+            ),
             resampling: "nearest"
           }
         }
       ]
     }
+
+    const vectorDatatype = datatype as keyof typeof FILL_COLOR_MAP.value
 
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       return [
@@ -383,10 +390,10 @@ export const useMapStore = defineStore("map", () => {
         layout: {},
         paint: {
           "fill-extrusion-color": FILL_COLOR_MAP.value[
-            datatype
+            vectorDatatype
           ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
           "fill-extrusion-height": EXTRUSION_HEIGHT_MAP.value[
-            datatype
+            vectorDatatype
           ] as DataDrivenPropertyValueSpecification<number>,
           "fill-extrusion-base": 0,
           "fill-extrusion-opacity": 0.7
@@ -403,7 +410,7 @@ export const useMapStore = defineStore("map", () => {
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
-          datatype
+          vectorDatatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
         "fill-opacity": 0.5,
         "fill-outline-color": "#00000000"
@@ -561,7 +568,7 @@ export const useMapStore = defineStore("map", () => {
     if (!selection) return
     if (use3D.value) {
       const heightExpression = EXTRUSION_HEIGHT_MAP.value[
-        selection.datatype as Exclude<DataType, DataType.PET>
+        selection.datatype as keyof typeof EXTRUSION_HEIGHT_MAP.value
       ] as DataDrivenPropertyValueSpecification<number>
       showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
     } else {
@@ -738,11 +745,12 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
-    if (datatype === DataType.PET) {
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (hourlyRaster) {
       map.addSource(sourceId, {
         type: "raster-dem",
         encoding: "terrarium",
-        tiles: [buildPetTileUrl(fullBaseApiUrl, petYear.value, petHour.value)],
+        tiles: [hourlyRasterTileUrl(hourlyRaster)],
         tileSize: 256,
         minzoom: MIN_ZOOM
       })
@@ -856,29 +864,35 @@ export const useMapStore = defineStore("map", () => {
     refreshDatatype()
   }
 
-  const applyPetTilesOnceLoaded = (mapInstance: Map) => {
-    const sourceId = getSourceId(DataType.PET, DataTypeToGeolevel[DataType.PET])
+  const hourlyRasterTileUrl = (hourlyRaster: HourlyRaster) =>
+    buildTileUrl(getFullBaseApiUrl(), hourlyRaster, rasterHour.value, rasterYear.value)
+
+  const applyHourlyRasterTilesOnceLoaded = (mapInstance: Map) => {
+    const datatype = selectedDataType.value
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (!hourlyRaster) return
+    const sourceId = getSourceId(datatype, DataTypeToGeolevel[datatype])
     const source = mapInstance.getSource<RasterDEMTileSource>(sourceId)
-    const tileUrl = buildPetTileUrl(getFullBaseApiUrl(), petYear.value, petHour.value)
+    const tileUrl = hourlyRasterTileUrl(hourlyRaster)
     if (!source || source.tiles[0] === tileUrl) return
     if (!mapInstance.isSourceLoaded(sourceId)) {
-      mapInstance.once("idle", () => applyPetTilesOnceLoaded(mapInstance))
+      mapInstance.once("idle", () => applyHourlyRasterTilesOnceLoaded(mapInstance))
       return
     }
     source.setTiles([tileUrl])
   }
-  const refreshPetTiles = () => {
-    Object.values(mapInstancesByIds.value).forEach(applyPetTilesOnceLoaded)
+  const refreshHourlyRasterTiles = () => {
+    Object.values(mapInstancesByIds.value).forEach(applyHourlyRasterTilesOnceLoaded)
   }
 
-  const setPetYear = (year: PetYear) => {
-    petYear.value = year
-    refreshPetTiles()
+  const setRasterYear = (year: number) => {
+    rasterYear.value = year
+    refreshHourlyRasterTiles()
   }
 
-  const setPetHour = (hour: PetHour) => {
-    petHour.value = hour
-    refreshPetTiles()
+  const setRasterHour = (hour: Hour) => {
+    rasterHour.value = hour
+    refreshHourlyRasterTiles()
   }
 
   const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
@@ -2035,9 +2049,9 @@ export const useMapStore = defineStore("map", () => {
     vegestrateHeightRanges,
     setVegestrateHeightRanges,
     vegetationHeightAtPoint,
-    petYear,
-    petHour,
-    setPetYear,
-    setPetHour
+    rasterYear,
+    rasterHour,
+    setRasterYear,
+    setRasterHour
   }
 })

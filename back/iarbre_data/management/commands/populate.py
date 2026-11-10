@@ -14,7 +14,7 @@ from shapely.geometry.polygon import Polygon
 
 import rasterio
 
-from api.constants import PET_RASTERS
+from api.constants import PET_RASTERS, SHADOW_RASTER
 from api.utils.mvt_generator import MVTGenerator
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
@@ -327,18 +327,20 @@ class Command(BaseCommand):
         self._write_test_raster(raster_path, data, nodata=255)
         self.stdout.write(self.style.SUCCESS("> Vegetation test raster created"))
 
-    def _create_test_pet_rasters(self):
-        for year, pet_class in {2020: 8, 2090: 9}.items():
-            raster_path = (
-                Path(settings.MEDIA_ROOT) / "rasters/WMS" / f"{PET_RASTERS[year]}.tif"
-            )
+    def _create_test_hourly_rasters(self):
+        rasters = {
+            PET_RASTERS[2020]: (np.uint8(8), 0),
+            PET_RASTERS[2090]: (np.uint8(9), 0),
+            SHADOW_RASTER: (np.float32(0.03), None),
+        }
+        for name, (value, nodata) in rasters.items():
+            raster_path = Path(settings.MEDIA_ROOT) / "rasters/WMS" / f"{name}.tif"
             if raster_path.exists():
-                self.stdout.write(f"PET {year} test raster already exists")
+                self.stdout.write(f"{name} test raster already exists")
                 continue
-            data = np.full((25, 10, 10), pet_class, dtype=np.uint8)
-            self._write_test_raster(raster_path, data, nodata=0)
+            self._write_test_raster(raster_path, np.full((25, 10, 10), value), nodata)
             list(split_hours(raster_path))
-            self.stdout.write(self.style.SUCCESS(f"> PET {year} test raster created"))
+            self.stdout.write(self.style.SUCCESS(f"> {name} test raster created"))
 
     def _generate_qpv_data(self):
         qpv_data = Data.objects.filter(
@@ -391,5 +393,5 @@ class Command(BaseCommand):
 
         self._generate_qpv_data()
         self._create_test_raster()
-        self._create_test_pet_rasters()
+        self._create_test_hourly_rasters()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))

@@ -41,6 +41,12 @@ def read_tile(
         ):
             return None, None
 
+        nodata = src.nodata
+        if nodata is None:
+            dtype = np.dtype(src.dtypes[0])
+            info = np.finfo if np.issubdtype(dtype, np.floating) else np.iinfo
+            nodata = info(dtype).max
+
         window = from_bounds(left, bottom, right, top, transform=src.transform)
         data = src.read(
             1,
@@ -48,9 +54,9 @@ def read_tile(
             out_shape=(TILE_SIZE, TILE_SIZE),
             resampling=Resampling.nearest,
             boundless=True,
-            fill_value=src.nodata or 0,
+            fill_value=nodata,
         )
-        return data, src.nodata
+        return data, nodata
 
 
 class RasterTileView(APIView):

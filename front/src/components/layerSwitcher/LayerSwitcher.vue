@@ -17,12 +17,20 @@ const options = [
     value: DataType.PLANTABILITY
   },
   {
-    label: DataTypeToLabel[DataType.VULNERABILITY],
-    value: DataType.VULNERABILITY
+    label: DataTypeToLabel[DataType.VEGESTRATE],
+    value: DataType.VEGESTRATE
   },
   {
-    label: DataTypeToLabel[DataType.CLIMATE_ZONE],
-    value: DataType.CLIMATE_ZONE
+    label: DataTypeToLabel[DataType.PET],
+    value: DataType.PET
+  },
+  {
+    label: DataTypeToLabel[DataType.SHADOW],
+    value: DataType.SHADOW
+  },
+  {
+    label: DataTypeToLabel[DataType.VULNERABILITY],
+    value: DataType.VULNERABILITY
   },
   {
     label: DataTypeToLabel[DataType.PLANTABILITY_VULNERABILITY],
@@ -33,12 +41,8 @@ const options = [
     value: DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY
   },
   {
-    label: DataTypeToLabel[DataType.VEGESTRATE],
-    value: DataType.VEGESTRATE
-  },
-  {
-    label: DataTypeToLabel[DataType.PET],
-    value: DataType.PET
+    label: DataTypeToLabel[DataType.CLIMATE_ZONE],
+    value: DataType.CLIMATE_ZONE
   }
 ]
 </script>

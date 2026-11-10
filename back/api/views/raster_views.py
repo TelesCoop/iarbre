@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from rest_framework.views import APIView
 
-from api.constants import PET_RASTERS
+from api.constants import PET_RASTERS, SHADOW_RASTER
 
 
 def _entry(path: str, filename: str | None = None) -> tuple[str, str]:
@@ -26,6 +26,7 @@ RASTER_MAP: dict[str, tuple[str, str]] = {
         f"pet_{year}": _entry(f"{base_dir}{name}.tif")
         for year, name in PET_RASTERS.items()
     },
+    "shadow": _entry(f"{base_dir}{SHADOW_RASTER}.tif"),
 }
 
 

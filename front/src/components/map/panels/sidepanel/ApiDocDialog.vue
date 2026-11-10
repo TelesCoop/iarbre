@@ -89,6 +89,7 @@ const rasterDatasets: RasterDataset[] = [
   { label: "Végéstrate avec hauteurs", url: rasterUrl("vegestrate_ndsm") },
   { label: "Confort thermique dans la rue 2020 (une bande par heure)", url: rasterUrl("pet_2020") },
   { label: "Confort thermique dans la rue 2090 (une bande par heure)", url: rasterUrl("pet_2090") },
+  { label: "Ombre dans la rue (une bande par heure)", url: rasterUrl("shadow") },
   { label: "Vulnérabilité chaleur (couleurs)", url: rasterUrl("vulnerability_colors") },
   { label: "Vulnérabilité chaleur (données brutes)", url: rasterUrl("vulnerability") },
   { label: "Zones climatiques locales (couleurs)", url: rasterUrl("lcz_colors") },
