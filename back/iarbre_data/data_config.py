@@ -30,7 +30,6 @@ FACTORS = {
     "Strate basse et pelouse": 3,
     "Espaces agricoles": 1,
     "Forêts": 1,
-    "Espaces artificialisés": -2,
     "Tracé de métro": -2,
     "Tracé de tramway": -2,
     "Tracé de bus": -1,
@@ -72,11 +71,6 @@ FINE_GRID_FACTORS = {
     },
     "Forêts": {
         "include": [("data", "EVA forêts")],
-        "exclude": VEGESTRATE_LAYERS,
-        "uncertainty": None,
-    },
-    "Espaces artificialisés": {
-        "include": [("data", "EVA espaces artificialisés")],
         "exclude": VEGESTRATE_LAYERS,
         "uncertainty": None,
     },
@@ -125,7 +119,6 @@ META_FACTORS_MAPPING = {
         "Marchés forains",
     ],
     "Plan d'eau": ["Plan eau"],
-    "Espaces artificialisés": ["Espaces artificialisés"],
 }
 
 
@@ -146,12 +139,10 @@ EVA_TREE_CODES = [111, 321]
 EVA_AGRICULTURAL_CODES = [211, 212, 213, 214, 215, 221, 222, 223, 224, 225, 231, 241]
 EVA_FOREST_CODES = [311, 312, 322, 331, 341, 342, 351, 371, 372, 374, 411, 412]
 EVA_OPEN_GROUND_CODES = [114, 115, 122, 361, 362, 381, 382]
-EVA_ARTIFICIAL_CODES = [121]
 EVA_LAND_COVER_CODES = [
     EVA_OPEN_GROUND_CODES,
     EVA_AGRICULTURAL_CODES,
     EVA_FOREST_CODES,
-    EVA_ARTIFICIAL_CODES,
 ]
 
 
@@ -258,14 +249,12 @@ DATA_FILES = [
             "strate_basse.py",
             "agricole.py",
             "foret.py",
-            "arti.py",
         ],
         "factors": [
             "Strate arborée",
             "Strate basse et pelouse",
             "Espaces agricoles",
             "Forêts",
-            "Espaces artificialisés",
         ],
         "output_type": "POLYGON",
     },
@@ -279,7 +268,6 @@ DATA_FILES = [
             "EVA sols nus, friches et milieux herbeux",
             "EVA espaces agricoles",
             "EVA forêts",
-            "EVA espaces artificialisés",
         ],
         "output_type": "POLYGON",
     },

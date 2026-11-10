@@ -146,7 +146,7 @@ def rasterize_data_across_all_cities(
         blurred = ndimage.gaussian_filter(raster, blur, output=np.float32)
         pessimistic = np.maximum if FACTORS[factor_name] < 0 else np.minimum
         raster = pessimistic(blurred, raster, out=blurred)
-    log_progress("Sum on 5x5")
+    log_progress(f"Sum on {grid_size}x{grid_size}")
     coarse_raster = (
         raster[: height_out * grid_size, : width_out * grid_size]
         .reshape(height_out, grid_size, width_out, grid_size)
