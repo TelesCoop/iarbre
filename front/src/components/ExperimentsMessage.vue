@@ -5,6 +5,11 @@ const visible = defineModel<boolean>({ default: false })
 
 const experiments = [
   {
+    title: "3-30-300",
+    description: "L'accès aux végétal par les citoyens, selon la règle du 3-30-300.",
+    url: "https://feature-330300-carte.iarbre.fr/"
+  },
+  {
     title: "Ipave",
     description: "Faire un découpage de l'espace public (la voirie) et projetr le végétal dessus.",
     url: "https://feature-ipave-carte.iarbre.fr/"
