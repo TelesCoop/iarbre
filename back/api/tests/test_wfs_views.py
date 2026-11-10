@@ -1,9 +1,16 @@
+import json
+import re
+
 from django.test import TestCase, Client
 from django.contrib.gis.geos import Polygon
 from iarbre_data.settings import SRID_DB
 from iarbre_data.models import City, Tile, Vegestrate
 
 WFS_URL = "/api/wfs/"
+CRS84 = "urn:ogc:def:crs:OGC::CRS84"
+GML_POS_LIST = re.compile(r"<gml:posList[^>]*>([^<]+)<")
+GML_ENVELOPE = re.compile(r"<gml:(?:lowerCorner|upperCorner)>([^<]+)<")
+FLOAT4_BBOX_TOLERANCE = 1e-5
 
 VILLARD_SQUARE = Polygon(
     (
@@ -15,6 +22,11 @@ VILLARD_SQUARE = Polygon(
     ),
     srid=SRID_DB,
 )
+VILLARD_SQUARE_LON_LAT = VILLARD_SQUARE.transform(4326, clone=True)
+
+
+def gml_values(pattern, body):
+    return [float(v) for text in pattern.findall(body) for v in text.split()]
 
 
 class WFSViewTest(TestCase):
@@ -122,6 +134,124 @@ class WFSViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         body = b"".join(response.streaming_content)
         self.assertIn(b'numberReturned="0"', body)
+
+    def test_get_feature_geojson_has_no_geometry_name(self):
+        response = self.client.get(
+            WFS_URL,
+            {
+                "SERVICE": "WFS",
+                "VERSION": "2.0.0",
+                "REQUEST": "GetFeature",
+                "TYPENAMES": "plantability",
+                "OUTPUTFORMAT": "geojson",
+            },
+        )
+        feature = json.loads(b"".join(response.streaming_content))["features"][0]
+        self.assertNotIn("geometry_name", feature)
+        self.assertNotIn("name", feature["properties"])
+        self.assertEqual(feature["properties"]["city_code"], "38250")
+
+    def _get_in_degrees(self, srs_name=CRS84, **params):
+        response = self.client.get(
+            WFS_URL,
+            {
+                "SERVICE": "WFS",
+                "VERSION": "2.0.0",
+                "TYPENAMES": "plantability",
+                "SRSNAME": srs_name,
+                **params,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        return b"".join(response.streaming_content).decode()
+
+    def _assert_coordinates(self, coordinates, expected, tolerance=1e-6):
+        self.assertEqual(len(coordinates), len(expected))
+        for value, reference in zip(coordinates, expected):
+            self.assertAlmostEqual(value, reference, delta=tolerance)
+
+    def _assert_lon_lat_ring(self, coordinates):
+        self._assert_coordinates(
+            coordinates,
+            [v for point in VILLARD_SQUARE_LON_LAT.coords[0] for v in point],
+        )
+
+    def _assert_gml_lon_lat_ring(self, body):
+        self._assert_lon_lat_ring(gml_values(GML_POS_LIST, body))
+
+    def _assert_geojson_lon_lat_ring(self, body):
+        ring = json.loads(body)["features"][0]["geometry"]["coordinates"][0]
+        self._assert_lon_lat_ring([value for point in ring for value in point])
+
+    def test_get_feature_geojson_in_crs84(self):
+        self._assert_geojson_lon_lat_ring(
+            self._get_in_degrees(REQUEST="GetFeature", OUTPUTFORMAT="geojson")
+        )
+
+    def test_get_feature_gml_in_crs84(self):
+        body = self._get_in_degrees(REQUEST="GetFeature")
+        self._assert_gml_lon_lat_ring(body)
+        self._assert_coordinates(
+            gml_values(GML_ENVELOPE, body),
+            VILLARD_SQUARE_LON_LAT.extent,
+            FLOAT4_BBOX_TOLERANCE,
+        )
+
+    def test_get_property_value_in_crs84(self):
+        self._assert_gml_lon_lat_ring(
+            self._get_in_degrees(REQUEST="GetPropertyValue", VALUEREFERENCE="geometry")
+        )
+
+    def test_get_feature_csv_in_crs84(self):
+        body = self._get_in_degrees(REQUEST="GetFeature", OUTPUTFORMAT="csv")
+        ring = re.search(r"POLYGON\(\(([^)]+)\)\)", body).group(1)
+        self._assert_lon_lat_ring([float(v) for v in re.split(r"[ ,]", ring)])
+
+    def test_get_feature_geojson_in_epsg_4326(self):
+        self._assert_geojson_lon_lat_ring(
+            self._get_in_degrees(
+                "EPSG:4326", REQUEST="GetFeature", OUTPUTFORMAT="geojson"
+            )
+        )
+
+    def test_get_feature_gml_in_epsg_4326(self):
+        self._assert_gml_lon_lat_ring(
+            self._get_in_degrees("EPSG:4326", REQUEST="GetFeature")
+        )
+
+    def test_get_feature_gml_in_epsg_4326_urn_is_lat_lon(self):
+        body = self._get_in_degrees("urn:ogc:def:crs:EPSG::4326", REQUEST="GetFeature")
+        self._assert_coordinates(
+            gml_values(GML_POS_LIST, body),
+            [v for point in VILLARD_SQUARE_LON_LAT.coords[0] for v in reversed(point)],
+        )
+
+    def test_get_feature_filters_by_city_code(self):
+        other_city = City.objects.create(
+            name="Rillieux-la-Pape", code="69286", geometry=VILLARD_SQUARE
+        )
+        Tile.objects.create(
+            geometry=VILLARD_SQUARE,
+            plantability_indice=1.0,
+            plantability_normalized_indice=2,
+            city=other_city,
+        )
+        params = {
+            "SERVICE": "WFS",
+            "VERSION": "2.0.0",
+            "REQUEST": "GetFeature",
+            "TYPENAMES": "plantability",
+            "OUTPUTFORMAT": "geojson",
+        }
+
+        unfiltered = b"".join(self.client.get(WFS_URL, params).streaming_content)
+        filtered = b"".join(
+            self.client.get(WFS_URL, {**params, "city_code": "69286"}).streaming_content
+        )
+
+        self.assertIn(b"Villard-de-Lans", unfiltered)
+        self.assertIn(b"Rillieux-la-Pape", filtered)
+        self.assertNotIn(b"Villard-de-Lans", filtered)
 
 
 class VegestrateWFSViewTest(TestCase):

@@ -10,7 +10,9 @@ export enum DataType {
   CLIMATE_ZONE = "lcz",
   PLANTABILITY_VULNERABILITY = "plantability_vulnerability",
   VEGESTRATE = "vegestrate",
-  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity"
+  BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity",
+  PET = "pet",
+  SHADOW = "shadow"
 }
 
 export enum MapStyle {
@@ -68,7 +70,9 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.VULNERABILITY]: "Vulnérabilité chaleur",
   [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
   [DataType.VEGESTRATE]: "Strates végétales",
-  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère"
+  [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
+  [DataType.PET]: "Confort thermique dans la rue",
+  [DataType.SHADOW]: "Ombre dans la rue"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -77,7 +81,9 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.VULNERABILITY]: GeoLevel.LCZ,
   [DataType.PLANTABILITY_VULNERABILITY]: GeoLevel.TILE,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-  [DataType.VEGESTRATE]: GeoLevel.TILE
+  [DataType.VEGESTRATE]: GeoLevel.TILE,
+  [DataType.PET]: GeoLevel.TILE,
+  [DataType.SHADOW]: GeoLevel.TILE
 }
 
 export const DataTypeToSourceDate: Partial<Record<DataType, string>> = {
@@ -91,6 +97,11 @@ export interface AttributionSource {
   url: string
 }
 
+const SOLWEIG_SOURCE: AttributionSource = {
+  label: "IArbre",
+  url: "https://github.com/TelesCoop/solweig-gpu"
+}
+
 const PLANTABILITY_NOTICE_URL =
   "https://documents.exo-dev.fr/notice_utilisation_calque_plantabilite_lyon_V1.pdf"
 
@@ -100,7 +111,7 @@ export const DataTypeToAttributionSource: Record<DataType, AttributionSource> = 
     url: "https://www.data.gouv.fr/en/datasets/cartographie-des-zones-climatiques-locales-lcz-de-83-aires-urbaines-de-plus-de-50-000-habitants-2022/"
   },
   [DataType.PLANTABILITY]: {
-    label: `ERASME (${DataTypeToSourceDate[DataType.PLANTABILITY]})`,
+    label: `IArbre (${DataTypeToSourceDate[DataType.PLANTABILITY]})`,
     url: PLANTABILITY_NOTICE_URL
   },
   [DataType.VULNERABILITY]: {
@@ -108,17 +119,19 @@ export const DataTypeToAttributionSource: Record<DataType, AttributionSource> = 
     url: "https://geoweb.grandlyon.com/portal/apps/storymaps/collections/7e7862ec92694601a7085074dcaf7481?item=3"
   },
   [DataType.PLANTABILITY_VULNERABILITY]: {
-    label: "ERASME",
+    label: "IArbre",
     url: PLANTABILITY_NOTICE_URL
   },
   [DataType.VEGESTRATE]: {
-    label: "Vegestrate",
+    label: "IArbre",
     url: "https://github.com/TelesCoop/vegestrate/releases/tag/v2.0-metropole-lyon-ir-2023"
   },
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: {
     label: "2025 Emile Balembois",
     url: "https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires"
-  }
+  },
+  [DataType.PET]: SOLWEIG_SOURCE,
+  [DataType.SHADOW]: SOLWEIG_SOURCE
 }
 
 const DOCUMENTATION_BASE_URL =
@@ -135,7 +148,9 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
     "https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d",
   [DataType.CLIMATE_ZONE]: DOCUMENTATION_BASE_URL,
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
-    "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57"
+    "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57",
+  [DataType.PET]: "https://www.sciencedirect.com/science/article/abs/pii/S0360132325007188",
+  [DataType.SHADOW]: SOLWEIG_SOURCE.url
 }
 
 export enum VulnerabilityCategory {

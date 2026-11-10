@@ -22,10 +22,7 @@ export const getTileDetails = async (
       `Unable to retrieve tile information with id ${id}`
     )
     return req.data as
-      | PlantabilityData
-      | VulnerabilityData
-      | ClimateData
-      | PlantabilityVulnerabilityData
+      PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData
   } catch (error) {
     // Surface the failure to the caller so the UI can show an error state
     // instead of silently rendering an empty panel.

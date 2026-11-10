@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import itertools
+from pathlib import Path
 
 import numpy as np
 from django.conf import settings
@@ -13,12 +14,14 @@ from shapely.geometry.polygon import Polygon
 
 import rasterio
 
+from api.constants import PET_RASTERS, SHADOW_RASTER
 from api.utils.mvt_generator import MVTGenerator
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
 from iarbre_data.models import City, Tile, Lcz, Vulnerability, Data
 from iarbre_data.utils.database import select_city
+from iarbre_data.utils.hourly_rasters import split_hours
 from iarbre_data.utils.utils_populate import (
     create_tiles_for_city,
     HexTileShape,
@@ -292,6 +295,27 @@ class Command(BaseCommand):
         self._generate_mvt(Vulnerability, vulnerabilities, zoom_levels)
         self.stdout.write(self.style.SUCCESS("> MVT Tiles for vulnerability computed"))
 
+    @staticmethod
+    def _write_test_raster(raster_path, data, nodata):
+        os.makedirs(os.path.dirname(raster_path), exist_ok=True)
+        # Small raster covering Villard-de-Lans area (EPSG:4326)
+        west, east, south, north = 5.52, 5.58, 45.04, 45.10
+        count, height, width = data.shape
+        transform = from_bounds(west, south, east, north, width, height)
+        with rasterio.open(
+            raster_path,
+            "w",
+            driver="GTiff",
+            height=height,
+            width=width,
+            count=count,
+            dtype=data.dtype,
+            crs=CRS.from_epsg(4326),
+            transform=transform,
+            nodata=nodata,
+        ) as dst:
+            dst.write(data)
+
     def _create_test_raster(self):
         raster_path = os.path.join(
             settings.MEDIA_ROOT, "rasters/WMS", "vegestrate_02_2023_elevation.tif"
@@ -299,26 +323,24 @@ class Command(BaseCommand):
         if os.path.exists(raster_path):
             self.stdout.write("Vegetation test raster already exists")
             return
-        os.makedirs(os.path.dirname(raster_path), exist_ok=True)
-        # Small raster covering Villard-de-Lans area (EPSG:4326)
-        west, east, south, north = 5.52, 5.58, 45.04, 45.10
-        size = 10
-        transform = from_bounds(west, south, east, north, size, size)
-        data = np.full((1, size, size), 12, dtype=np.uint8)
-        with rasterio.open(
-            raster_path,
-            "w",
-            driver="GTiff",
-            height=size,
-            width=size,
-            count=1,
-            dtype=np.uint8,
-            crs=CRS.from_epsg(4326),
-            transform=transform,
-            nodata=255,
-        ) as dst:
-            dst.write(data)
+        data = np.full((1, 10, 10), 12, dtype=np.uint8)
+        self._write_test_raster(raster_path, data, nodata=255)
         self.stdout.write(self.style.SUCCESS("> Vegetation test raster created"))
+
+    def _create_test_hourly_rasters(self):
+        rasters = {
+            PET_RASTERS[2020]: (np.uint8(8), 0),
+            PET_RASTERS[2090]: (np.uint8(9), 0),
+            SHADOW_RASTER: (np.float32(0.03), None),
+        }
+        for name, (value, nodata) in rasters.items():
+            raster_path = Path(settings.MEDIA_ROOT) / "rasters/WMS" / f"{name}.tif"
+            if raster_path.exists():
+                self.stdout.write(f"{name} test raster already exists")
+                continue
+            self._write_test_raster(raster_path, np.full((25, 10, 10), value), nodata)
+            list(split_hours(raster_path))
+            self.stdout.write(self.style.SUCCESS(f"> {name} test raster created"))
 
     def _generate_qpv_data(self):
         qpv_data = Data.objects.filter(
@@ -371,4 +393,5 @@ class Command(BaseCommand):
 
         self._generate_qpv_data()
         self._create_test_raster()
+        self._create_test_hourly_rasters()
         self.stdout.write(self.style.SUCCESS("Successfully populated"))

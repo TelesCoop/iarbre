@@ -11,7 +11,8 @@ import {
   type DataDrivenPropertyValueSpecification,
   type ExpressionSpecification,
   type FilterSpecification,
-  type PointLike
+  type PointLike,
+  type RasterDEMTileSource
 } from "maplibre-gl"
 import {
   MAP_CONTROL_POSITION,
@@ -66,6 +67,15 @@ import {
   normalizeHeightRanges,
   type HeightRange
 } from "@/utils/vegetation"
+import {
+  DEFAULT_HOUR,
+  HOURLY_RASTERS,
+  buildColorRamp,
+  buildTileUrl,
+  type Hour,
+  type HourlyRaster
+} from "@/utils/hourlyRaster"
+import { DEFAULT_PET_YEAR } from "@/utils/pet"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
@@ -193,6 +203,8 @@ export const useMapStore = defineStore("map", () => {
   const showVegestrateHeight = ref<boolean>(false)
   const vegestrateHeightRanges = ref<HeightRange[]>(loadStoredHeightRanges())
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
+  const rasterYear = ref<number>(DEFAULT_PET_YEAR)
+  const rasterHour = ref<Hour>(DEFAULT_HOUR)
   const heightMapClickHandler = ref<((e: any) => void) | null>(null)
   const heightMapZoomHandler = ref<(() => void) | null>(null)
 
@@ -331,6 +343,27 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (hourlyRaster) {
+      return [
+        {
+          id: layerId,
+          type: "color-relief",
+          source: sourceId,
+          paint: {
+            "color-relief-opacity": 0.6,
+            "color-relief-color": buildColorRamp(
+              hourlyRaster.classes,
+              filteredValues.value as number[]
+            ),
+            resampling: "nearest"
+          }
+        }
+      ]
+    }
+
+    const vectorDatatype = datatype as keyof typeof FILL_COLOR_MAP.value
+
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       return [
         {
@@ -357,10 +390,10 @@ export const useMapStore = defineStore("map", () => {
         layout: {},
         paint: {
           "fill-extrusion-color": FILL_COLOR_MAP.value[
-            datatype
+            vectorDatatype
           ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
           "fill-extrusion-height": EXTRUSION_HEIGHT_MAP.value[
-            datatype
+            vectorDatatype
           ] as DataDrivenPropertyValueSpecification<number>,
           "fill-extrusion-base": 0,
           "fill-extrusion-opacity": 0.7
@@ -377,7 +410,7 @@ export const useMapStore = defineStore("map", () => {
       layout: {},
       paint: {
         "fill-color": FILL_COLOR_MAP.value[
-          datatype
+          vectorDatatype
         ] as DataDrivenPropertyValueSpecification<"ExpressionSpecification">,
         "fill-opacity": 0.5,
         "fill-outline-color": "#00000000"
@@ -535,7 +568,7 @@ export const useMapStore = defineStore("map", () => {
     if (!selection) return
     if (use3D.value) {
       const heightExpression = EXTRUSION_HEIGHT_MAP.value[
-        selection.datatype
+        selection.datatype as keyof typeof EXTRUSION_HEIGHT_MAP.value
       ] as DataDrivenPropertyValueSpecification<number>
       showSelectionWall3D(map, selection.geometry, selection.properties, heightExpression)
     } else {
@@ -712,6 +745,18 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (hourlyRaster) {
+      map.addSource(sourceId, {
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [hourlyRasterTileUrl(hourlyRaster)],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
       const tileUrl = `${fullBaseApiUrl}/tiles/vegetation-height/{z}/{x}/{y}.png?kind=raw`
       map.addSource(sourceId, {
@@ -817,6 +862,37 @@ export const useMapStore = defineStore("map", () => {
   const toggleVegestrateHeight = () => {
     showVegestrateHeight.value = !showVegestrateHeight.value
     refreshDatatype()
+  }
+
+  const hourlyRasterTileUrl = (hourlyRaster: HourlyRaster) =>
+    buildTileUrl(getFullBaseApiUrl(), hourlyRaster, rasterHour.value, rasterYear.value)
+
+  const applyHourlyRasterTilesOnceLoaded = (mapInstance: Map) => {
+    const datatype = selectedDataType.value
+    const hourlyRaster = HOURLY_RASTERS[datatype]
+    if (!hourlyRaster) return
+    const sourceId = getSourceId(datatype, DataTypeToGeolevel[datatype])
+    const source = mapInstance.getSource<RasterDEMTileSource>(sourceId)
+    const tileUrl = hourlyRasterTileUrl(hourlyRaster)
+    if (!source || source.tiles[0] === tileUrl) return
+    if (!mapInstance.isSourceLoaded(sourceId)) {
+      mapInstance.once("idle", () => applyHourlyRasterTilesOnceLoaded(mapInstance))
+      return
+    }
+    source.setTiles([tileUrl])
+  }
+  const refreshHourlyRasterTiles = () => {
+    Object.values(mapInstancesByIds.value).forEach(applyHourlyRasterTilesOnceLoaded)
+  }
+
+  const setRasterYear = (year: number) => {
+    rasterYear.value = year
+    refreshHourlyRasterTiles()
+  }
+
+  const setRasterHour = (hour: Hour) => {
+    rasterHour.value = hour
+    refreshHourlyRasterTiles()
   }
 
   const setVegestrateHeightRanges = (ranges: HeightRange[]) => {
@@ -1972,6 +2048,10 @@ export const useMapStore = defineStore("map", () => {
     toggleVegestrateHeight,
     vegestrateHeightRanges,
     setVegestrateHeightRanges,
-    vegetationHeightAtPoint
+    vegetationHeightAtPoint,
+    rasterYear,
+    rasterHour,
+    setRasterYear,
+    setRasterHour
   }
 })

@@ -9,13 +9,15 @@ import {
   ALL_PUBLIC_BUILDING_CATEGORIES
 } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS } from "@/utils/mapStyleOptions"
+import { HOURLY_RASTERS } from "@/utils/hourlyRaster"
 import { BIOSPHERE_CLASSES, BIOSPHERE_DETAIL_CLASSES } from "@/utils/biosphere_functional_integrity"
 
 const LIST_SEPARATOR = ","
 
 const NUMERIC_FILTER_DATA_TYPES: (DataType | null)[] = [
   DataType.PLANTABILITY,
-  DataType.VULNERABILITY
+  DataType.VULNERABILITY,
+  ...(Object.keys(HOURLY_RASTERS) as DataType[])
 ]
 
 const BIOSPHERE_ALL_CLASSES = [...BIOSPHERE_CLASSES, ...BIOSPHERE_DETAIL_CLASSES]

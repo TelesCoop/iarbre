@@ -14,6 +14,7 @@ backend_identity_file_path: /home/{{ main_user }}/.ssh/id_ed25519_backend
 var_log_path: /var/log/{{ organization_slug }}/{{ project_slug }}
 project_base_dir: /{{ organization_slug }}/{{ base_project_slug }}
 supervisor_conf: /etc/supervisor/conf.d
+prometheus_multiproc_path: "{{ project_dir }}/prometheus_multiproc"
 
 database_user: "{{ project_slug }}"
 database_name: "{{ project_slug }}"

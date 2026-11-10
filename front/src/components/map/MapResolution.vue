@@ -3,19 +3,22 @@ import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { useAppStore } from "@/stores/app"
 import { ZoomToGridSize } from "@/utils/plantability"
+import { DataType } from "@/utils/enum"
 
 const mapStore = useMapStore()
 const appStore = useAppStore()
 
-const gridSize = computed(() => {
-  const zoom = Math.floor(mapStore.currentZoom)
-  return ZoomToGridSize[zoom] ?? null
-})
+const DataTypeToGridSize: Partial<Record<DataType, (zoom: number) => number | undefined>> = {
+  [DataType.PLANTABILITY]: (zoom) => ZoomToGridSize[zoom],
+  [DataType.PET]: () => 1,
+  [DataType.SHADOW]: () => 1
+}
 
-const isVisible = computed(
-  () =>
-    appStore.isDesktop && mapStore.selectedDataType === "plantability" && gridSize.value !== null
+const gridSize = computed(
+  () => DataTypeToGridSize[mapStore.selectedDataType]?.(Math.floor(mapStore.currentZoom)) ?? null
 )
+
+const isVisible = computed(() => appStore.isDesktop && gridSize.value !== null)
 </script>
 
 <template>

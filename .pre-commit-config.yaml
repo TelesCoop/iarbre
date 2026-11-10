@@ -108,12 +108,14 @@ repos:
         pass_filenames: false
         language: system
 
-  - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.3.3"
+  - repo: local
     hooks:
       - id: prettier
         name: prettier
+        entry: front/node_modules/.bin/prettier --write --ignore-unknown
+        types: [text]
         exclude: (back/iarbre_data/(templates|static)/*)|.json
+        language: system
   - repo: local
     hooks:
       - id: django-test
