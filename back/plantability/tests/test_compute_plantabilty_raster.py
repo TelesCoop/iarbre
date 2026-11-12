@@ -6,10 +6,12 @@ from django.test import TestCase
 
 from plantability.management.commands.compute_plantability_raster import (
     compute_weighted_sum,
+    keep_planting_spots,
+    remove_isolated_pixels,
     threshold_and_convert_to_colors,
     BLOCKING_SCORE,
 )
-from plantability.constants import colors, rgb_colors
+from plantability.constants import BLOCKED_SCORE, colors, rgb_colors
 
 
 class ComputePlantabilityRasterTestCase(TestCase):
@@ -77,6 +79,7 @@ class ComputePlantabilityRasterTestCase(TestCase):
                 weight,
             )
         result[blocked] = BLOCKING_SCORE
+        self.blocked = blocked
 
         meta_out = self.meta.copy()
         meta_out.update(dtype=np.float32, count=1, compress="lzw", nodata=-9999)
@@ -113,12 +116,20 @@ class ComputePlantabilityRasterTestCase(TestCase):
         result = self.final_result.copy()
         # Include some nodata values for testing
         result[0:5, 0:5] = -9999
+        result[self.blocked] = BLOCKED_SCORE
+        result[95, 95] = BLOCKING_SCORE
 
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
-        # Test if it is RGB
-        expected_shape = result.shape + (3,)
+        # Test if it is RGBA
+        expected_shape = result.shape + (4,)
         self.assertEqual(result_colors.shape, expected_shape)
+        self.assertEqual(result_colors[75, 75, 3], 0)
+        self.assertEqual(result_colors[27, 30, 3], 255)
+        self.assertEqual(tuple(result_colors[0, 0]), (255, 255, 255, 255))
+        self.assertEqual(
+            tuple(result_colors[95, 95]), (*rgb_colors[BLOCKING_SCORE], 255)
+        )
 
         # Test nodata in white
         self.assertEqual(
@@ -134,3 +145,39 @@ class ComputePlantabilityRasterTestCase(TestCase):
         self.assertEqual(
             result[85, 85].all(), np.array(rgb_colors[-5], dtype=np.uint8).all()
         )
+
+    def test_remove_isolated_pixels(self):
+        result = np.full((9, 9), 3.0, dtype=np.float32)
+        result[0:3, 0:3] = 1.0
+        result[1, 1] = -3.0
+        result[5, 5] = 1.0
+        result[6, 6] = 1.0
+        result[7, 1] = BLOCKING_SCORE
+        result[4, 7] = 6.0
+        blocked = result == BLOCKING_SCORE
+
+        result = remove_isolated_pixels(result, blocked)
+
+        self.assertAlmostEqual(result[1, 1], 1.0)
+        self.assertEqual(result[5, 5], 1.0)
+        self.assertEqual(result[6, 6], 1.0)
+        self.assertEqual(result[7, 1], BLOCKING_SCORE)
+        self.assertEqual(result[4, 4], 3.0)
+        self.assertEqual(result[4, 7], 6.0)
+
+    def test_keep_planting_spots(self):
+        result = np.zeros((12, 12), dtype=np.float32)
+        result[1:5, 1:5] = 3.0
+        result[7:12, 1:4] = 3.0
+        result[6, 8] = -3.0
+        result[9, 9] = BLOCKING_SCORE
+        result[9, 10] = -8.0
+        blocked = result == BLOCKING_SCORE
+
+        result = keep_planting_spots(result, blocked, 1.0)
+
+        self.assertTrue(np.all(result[1:5, 1:5] == 3.0))
+        self.assertEqual(result[0:6, 0:6].sum(), 3.0 * 16)
+        self.assertTrue(np.all(result[7:12, 1:4] == 0.0))
+        self.assertEqual(result[6, 8], -3.0)
+        self.assertEqual(result[9, 9], BLOCKING_SCORE)
