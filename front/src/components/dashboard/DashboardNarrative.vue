@@ -18,6 +18,7 @@ const props = defineProps<{ printMode?: boolean }>()
 const store = useDashboardStore()
 
 const hasData = computed(() => store.dashboardData !== null && !store.loading)
+const dashboardData = computed(() => store.dashboardData!)
 
 const plantabilityFinding = computed(() => {
   if (!store.dashboardData) return ""
@@ -199,7 +200,7 @@ const riskInterpretation = computed(() => {
       source="Indice calculé par pondération de 35 facteurs d'occupation du sol : réseaux, bâti, espaces verts, plans d'eau, transport, espaces artificialisés et aménagements urbains."
       source-link="https://erasme.notion.site/Lire-le-score-de-plantabilit-33444e49a3ad8080bb66f23ad06bb6a1"
     >
-      <PlantabilityWidget :data="store.dashboardData!.plantability" />
+      <PlantabilityWidget :data="dashboardData.plantability" />
     </NarrativeSection>
 
     <hr class="border-gray-400 print:hidden" />
@@ -214,8 +215,8 @@ const riskInterpretation = computed(() => {
       source="Inventaire réalisé grâce au modèle FlairHub de l'IGN sur les orthophotos de la Métropole et des relevés LIDAR THD de la métropole."
       source-link="https://erasme.notion.site/L-inventaire-du-v-g-tal-stratifi-expliqu-33644e49a3ad805d95e2de361988c45d"
     >
-      <VegetationSurfaceWidget :data="store.dashboardData!.vegetation" />
-      <BiosphereWidget :data="store.dashboardData!.biosphere" />
+      <VegetationSurfaceWidget :data="dashboardData.vegetation" />
+      <BiosphereWidget :data="dashboardData.biosphere" />
     </NarrativeSection>
 
     <hr class="border-gray-400 print:hidden" />
@@ -231,10 +232,10 @@ const riskInterpretation = computed(() => {
       source-link="https://www.cerema.fr/fr/actualites/cerema-publie-nouvelles-donnees-surchauffe-urbaine"
     >
       <BuildingCharacteristicsWidget
-        :lcz="store.dashboardData!.lcz"
-        :buildings="store.dashboardData!.buildings"
+        :lcz="dashboardData.lcz"
+        :buildings="dashboardData.buildings"
       />
-      <SurfaceTypeWidget :data="store.dashboardData!.lcz" />
+      <SurfaceTypeWidget :data="dashboardData.lcz" />
     </NarrativeSection>
 
     <hr class="border-gray-400 print:hidden" />
@@ -249,7 +250,7 @@ const riskInterpretation = computed(() => {
       source="C'est une étude de l'institut Paris Région répliquée par la métropole de Lyon."
       source-link="https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1"
     >
-      <HeatWidget :data="store.dashboardData!.vulnerability" />
+      <HeatWidget :data="dashboardData.vulnerability" />
     </NarrativeSection>
 
     <DashboardFooter v-if="!props.printMode" />

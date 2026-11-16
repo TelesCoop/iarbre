@@ -66,10 +66,10 @@ export const MapStyleToLabel: Record<MapStyle, string> = {
 
 export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.PLANTABILITY]: "Score de plantabilité",
-  [DataType.CLIMATE_ZONE]: "Zones climatiques locales",
-  [DataType.VULNERABILITY]: "Vulnérabilité chaleur",
-  [DataType.PLANTABILITY_VULNERABILITY]: "Plantabilité et chaleur",
-  [DataType.VEGESTRATE]: "Strates végétales",
+  [DataType.CLIMATE_ZONE]: "Zones climatiques locales (ZCL)",
+  [DataType.VULNERABILITY]: "Vulnérabilité à la chaleur",
+  [DataType.PLANTABILITY_VULNERABILITY]: "Croisement plantabilité et chaleur",
+  [DataType.VEGESTRATE]: "Inventaire des strates végétales",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
   [DataType.PET]: "Confort thermique dans la rue",
   [DataType.SHADOW]: "Ombre dans la rue"
