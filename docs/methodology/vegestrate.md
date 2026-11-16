@@ -42,6 +42,8 @@ Pour nettoyer les artefacts de classifications, on procède d'abord à une ferme
 
 ## Limites
 
+Une comparaison avec l'inventaire EVA 2023 sur toute la Métropole est détaillée dans [Comparaison EVA 2023 / Végéstrate](eva_vegestrate_2023/index.md) (aussi en [PDF](eva_vegestrate_2023/rapport_eva_vegestrate_2023.pdf)).
+
 La qualité du résultat est très dépendante du LIDAR qui reste la meilleure manière de classifier la végétation, hors zones herbacées, de manière précise (résolution de l'ordre du mètre).
 La métropole de Lyon produit une couverture du territoire en THD (100 points par m2 en zone urbaine dense et 30 ailleurs) ce qui permet une classification très précise. En zone urbaine dense, c'est parfois trop car on a des points qui traversent le couvert arboré et se retrouvent classés en zone herbacée qui est en dessous.
 Comme évoqué plus haut, le LIDAR pert en précision dans les zones proches des bâtiments.

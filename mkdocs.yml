@@ -79,6 +79,7 @@ nav:
       - Croisement plantabilité et vulnérabilité: methodology/plantability_vulnerability.md
       - Indicateur fonctionnel de biodiversité: methodology/biosphere_functional_integrity.md
       - Végéstrate: methodology/vegestrate.md
+      - Comparaison EVA 2023 / Végéstrate: methodology/eva_vegestrate_2023/index.md
   - Backend:
       - Instructions: back/backend.md
       - Données de test: back/testing-data.md
