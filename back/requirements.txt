@@ -17,6 +17,8 @@ geopandas==1.2.0
 getconf==1.11.1
 gunicorn==26.2.0
 humanize==4.17.0
+gunicorn==27.0.1
+humanize==4.16.0
 ipython==9.18.1
 mapbox_vector_tile==2.2.0
 mercantile==1.2.1
