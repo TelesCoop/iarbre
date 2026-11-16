@@ -2,11 +2,11 @@
 
 ## Synthèse
 
-Deux inventaires de la végétation 2023 de la Métropole de Lyon sont comparés sur 527,964 km² : **EVA 2023**, photo-interprétation manuelle en polygones, et **Végéstrate 2023**, raster à 0,2 m issu du LiDAR et des orthophotographies. **L'audit mesure l'accord entre les deux sources, pas leur exactitude** : aucune n'est une vérité terrain. Les pourcentages portent sur la surface comparée.
+Deux inventaires de la végétation 2023 de la Métropole de Lyon sont comparés sur 527,964 km² : **EVA 2023**, photo-interprétation manuelle en polygones, et **Végéstrate 2023**, raster à 0,2 m issu du LiDAR et des orthophotographies qui est ensuite vectorisé. **L'audit mesure l'accord entre les deux sources** : aucune n'est une vérité terrain. Les pourcentages portent sur la surface comparée ; sauf mention contraire, ils sont calculés au pixel de 0,2 m, EVA étant rastérisée sur la grille Végéstrate.
 
 - **Végétal / non végétal : 92,5 % d'accord.** Les deux sources voient la végétation aux mêmes endroits.
-- **Ligneux / herbacé : 84,6 % d'accord ; arbre / arbuste / herbe : 80,2 %.** Plus la comparaison entre dans le détail des strates, plus les définitions diffèrent (arbuste dès 1 m pour EVA, végétation moyenne dès 1,5 m pour le LiDAR de Végéstrate).
-- **Forêts (EVA 311) : 98,3 % de la surface conforme** à la règle de couverture du guide EVA selon Végéstrate.
+- **Ligneux / herbacé : 84,6 % d'accord ; arbre / arbuste / herbe : 80,2 %.** Plus la comparaison entre dans le détail des strates, plus les définitions diffèrent (arbuste dès 1 m pour EVA, végétation moyenne dès 1,5 m pour la classification LiDAR utilisée par Végéstrate ; ce seuil peut être adapté au besoin, en reclassant le LiDAR brut ou en seuillant directement le modèle de hauteur).
+- **Forêts (EVA code 311) : Végéstrate retrouve la couverture ligneuse attendue sur 98,3 % de leur surface**, à l'échelle du polygone EVA.
 - **Le désaccord est concentré sur les contours.** À l'intérieur des zones végétales EVA, Végéstrate voit de la végétation sur 71,3 % des pixels à moins de 1 m du bord et sur 98,7 % à plus de 10 m.
 - **Végéstrate voit la végétation que l'unité minimale d'EVA (100 m²) écarte** : 37,3 % de la végétation ligneuse Végéstrate située en zone EVA non végétale est en taches de moins de 100 m² (arbres isolés, alignements), soit 2,957 km².
 
@@ -16,16 +16,15 @@ Deux inventaires de la végétation 2023 de la Métropole de Lyon sont comparés
 
 ## Données
 
-| Donnée                    | Description                                                                                                                                                                                                                                                                                                                                                        |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| EVA 2023                  | Produit par Geofit pour la Métropole par photo-interprétation manuelle. Polygones, champs `COD3` (classe) et `CODH` (classe de hauteur), EPSG:3946. Unité minimale de collecte (UMC) 100 m², largeur minimale de collecte (LMC) 3 m, taux de couverture propre à chaque classe (guide de photo-interprétation Geofit).                                             |
-| Végéstrate 2023, classes  | Produit par TelesCoop et le LIRIS. Raster 0,2 m, EPSG:3946. 0 autre, 1 herbacé (FLAIR-HUB), 2 végétation moyenne (LiDAR 1,5-5 m), 3 végétation haute (LiDAR > 5 m). Les zones « Autre » du LiDAR reconnues comme végétation moyenne ou haute par FLAIR-HUB sont complétées (`src/postprocessing/merge_classifications.py`), puis un filtre modal 3x3 est appliqué. |
-| Végéstrate 2023, hauteurs | Modèle numérique de hauteur (nDSM) à 0,2 m sur les seuls pixels de végétation, hauteur maximale du pixel arrondie au mètre (`src/core/utils.py`).                                                                                                                                                                                                                  |
-| IRIS, communes, LCZ       | Base de données IA.rbre (IRIS INSEE, zones climatiques locales).                                                                                                                                                                                                                                                                                                   |
+| Donnée                   | Description                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| EVA 2023                 | Produit par Geofit pour la Métropole par photo-interprétation manuelle. Polygones, champs `COD3` (classe) et `CODH` (classe de hauteur), EPSG:3946. Unité minimale de collecte (UMC) 100 m², largeur minimale de collecte (LMC) 3 m, taux de couverture propre à chaque classe.                                                                                                |
+| Végéstrate 2023, classes | Produit par TelesCoop et le LIRIS. Raster 0,2 m, EPSG:3946. 0 autre, 1 herbacé (FLAIR-HUB), 2 végétation moyenne (LiDAR 1,5-5 m), 3 végétation haute (LiDAR > 5 m). Les zones « Autre » du LiDAR reconnues comme végétation moyenne ou haute par FLAIR-HUB sont complétées (`src/postprocessing/merge_classifications.py`), puis un filtre modal 3x3 est appliqué pour lisser. |
+| IRIS, communes, LCZ      | Base de données data.gouv (IRIS INSEE, zones climatiques locales).                                                                                                                                                                                                                                                                                                             |
 
 Le domaine est l'union des IRIS de la Métropole : les deux sources y sont découpées.
 
-**Zone exclue.** L'orthophotographie 2023 est vide sur le camp militaire du Mont Verdun : Végéstrate n'y a pas de donnée, EVA si. Le contour est tracé à partir des pixels transparents de l'orthophotographie Grand Lyon 2023 (WMS `ortho_2023`, 0,5 m). Ces 5,865 km² sont retirés pour les deux sources ; leur contenu EVA est dans `zone_exclue.csv`.
+**Zone exclue.** L'orthophotographie 2023 est vide sur le camp militaire du Mont Verdun : Végéstrate n'y a pas de donnée. EVA a complété cette zone grâce à des sources secondaires (OSM, IGN, etc.). Le contour est tracé à partir des pixels transparents de l'orthophotographie Grand Lyon 2023 (WMS `ortho_2023`, 0,5 m). Ces 5,865 km² sont retirés pour les deux sources ; leur contenu EVA est dans `zone_exclue.csv`.
 
 ![Zone exclue](figures/zone_exclue.jpg)
 
@@ -47,29 +46,31 @@ Les classes « non comparable » (cultures classées à partir du RPG, friches, 
 
 ## Recoupage des hauteurs
 
-EVA distingue < 1 m, 1-3 m et > 3 m ; Végéstrate distingue la végétation moyenne (1,5-5 m) et haute (> 5 m). Pour comparer les strates, Végéstrate est recoupé sur les seuils d'EVA (variante `principal` : lecture littérale sur hauteurs arrondies : < 1 m herbe, 1 à 3 m arbuste, > 3 m arbre, soit arbuste dès 1 m arrondi et arbre dès 4 m arrondi) :
+EVA distingue < 1 m, 1-3 m et > 3 m ; Végéstrate distingue la végétation moyenne (1,5-5 m) et haute (> 5 m). Pour comparer les strates, Végéstrate est recoupé sur les seuils d'EVA (variante principale : lecture littérale sur hauteurs arrondies : < 1 m herbe, 1 à 3 m arbuste, > 3 m arbre, soit arbuste dès 1 m arrondi et arbre dès 4 m arrondi) :
 
 - les pixels herbacés (classe 1, FLAIR-HUB) restent de l'herbe ;
 - les zones de végétation moyenne ou haute (classes 2 et 3) sont reclassées selon leur hauteur médiane ;
 - une zone de classe 2 ou 3 dont la hauteur médiane est nulle n'a pas de hauteur mesurée : elle garde sa classe Végéstrate native. C'est le cas de la végétation reconnue par FLAIR-HUB là où le LiDAR ne donne pas de hauteur, notamment autour du camp militaire du Mont Verdun, où la lacune du LiDAR semble plus large que celle de l'orthophotographie.
 
-Une zone est un ensemble 4-connexe de pixels de même classe, comme un polygone de la version vectorielle de Végéstrate. Sa hauteur est la médiane du nDSM sur ses pixels, comme l'attribut `median_height` des polygones Végéstrate publiés dans IA.rbre (`compute_zone_elevation` dans `src/postprocessing/apply_vegetation_elevation.py`). Un recoupage pixel par pixel classerait en arbuste le bord bas des houppiers ; il reste disponible (`height_source: pixel`). Les zones sont calculées par bloc de 2048 pixels avec une marge de 20 m : un massif plus grand prend la médiane de sa partie visible.
+Une zone est un ensemble 4-connexe de pixels de même classe, la règle utilisée pour vectoriser Végéstrate. La hauteur d'une zone est la hauteur médiane sur ses pixels, comme l'attribut `median_height` des polygones Végéstrate publiés dans IA.rbre (`compute_zone_elevation` dans `src/postprocessing/apply_vegetation_elevation.py`). Les zones sont calculées par bloc de 2048 pixels avec une marge de 20 m : un massif plus grand prend la médiane de sa partie visible.
 
-Un pixel herbacé de Végéstrate est un pixel où le LiDAR n'a pas vu de végétation et où FLAIR-HUB a reconnu de l'herbe. Les deux sources sont des vues du dessus : là où EVA voit une strate arborée et Végéstrate de l'herbe, c'est un houppier manqué par le LiDAR et lu comme herbe. Ce désaccord pèse contre Végéstrate.
+Un pixel herbacé de Végéstrate est un pixel où le LiDAR n'a pas vu de végétation et où FLAIR-HUB a reconnu de l'herbe.
 
-Le nDSM est arrondi au mètre, chaque seuil n'est donc connu qu'à ± 0,5 m. Selon la variante de seuils (`principal`, `seuils_bas`, `seuils_hauts`), l'accord par strate varie de 79,4 % à 80,2 % ; le détail est dans `indicateurs_accord.csv`.
+Le modèle de hauteur de végétation de Végéstrate est arrondi au mètre (paramétrisable), chaque seuil n'est donc connu qu'à ± 0,5 m. Selon la variante de seuils (`principal`, `seuils_bas`, `seuils_hauts`), l'accord par strate varie de 79,4 % à 80,2 % ; le détail est dans `indicateurs_accord.csv`.
 
 ## Niveaux, échelles et indicateurs
 
-Trois niveaux, du plus au moins aligné entre les définitions : **végétation** (végétal / non végétal), **ligneux / herbacé**, **strates** (arbre / arbuste / herbe, sur les seules classes EVA à strate unique : forêts, haies et fourrés sont exclus de ce niveau).
+La comparaison se fait sur trois niveaux : **végétation** (végétal / non végétal), **ligneux (strates hautes et moyennes) / herbacé**, **strates** (arbre / arbuste / herbe, sur les seules classes EVA à strate unique : forêts, haies et fourrés sont exclus de ce niveau).
 
-Deux échelles : **le pixel** de 0,2 m (EVA rastérisé sur la grille Végéstrate) et **le polygone EVA**, l'échelle pour laquelle EVA a été conçue.
+Les deux données ont des échelles différentes : **le pixel** de 0,2 m pour Végéstrate (qui est ensuite vectorisé) et **le polygone pour EVA**.
 
-- **Accord global** et **décomposition du désaccord** selon Pontius et Millones (2011) : désaccord de **quantité** (surfaces totales différentes) et d'**allocation** (surfaces semblables à des endroits différents). Le kappa de Cohen est donné pour mémoire.
-- **Conformité des polygones** : part des polygones EVA (et de leur surface) dont la composition Végéstrate respecte la règle de couverture du guide, pour les polygones dont au moins la moitié est dans le domaine.
+Les indicateurs sélectionnés pour les comparaisons sont :
+
+- **Accord global** et **décomposition du désaccord** : désaccord de **quantité** (surfaces totales différentes) et d'**allocation** (surfaces semblables à des endroits différents).
+- **Composition des polygones EVA** : part des polygones EVA (et de leur surface) où Végéstrate retrouve la couverture attendue par la définition de leur classe (taux de couverture du guide EVA). C'est la comparaison à l'échelle d'EVA.
 - **Accord selon la distance au bord** des zones EVA, dedans et dehors.
-- **Petites taches** : végétation Végéstrate en taches 4-connexes de moins de 100 m² (l'UMC d'EVA). Une tache qui touche le bord de la fenêtre de calcul est comptée comme grande.
-- **Couverture par commune**, et **accord par zone climatique locale (LCZ)** dans `accord_lcz.csv`.
+- **Petites taches** : végétation Végéstrate en taches 4-connexes de moins de 100 m² (l'UMC d'EVA).
+- **Couverture par commune**.
 
 ## Résultats
 
@@ -83,19 +84,17 @@ Deux échelles : **le pixel** de 0,2 m (EVA rastérisé sur la grille Végéstra
 | strates         | natif              | 380,897     | 80,0 % | 3,0 %              | 17,0 %               | 0,690 |
 | strates         | principal          | 380,897     | 80,2 % | 4,3 %              | 15,4 %               | 0,694 |
 
-Au niveau ligneux / herbacé, la variante `principal` donne le même résultat que les classes natives : avec un seuil arbuste à 1 m, seule une hauteur nulle ferait passer une zone moyenne ou haute en herbe, et ces zones gardent leur classe native.
-
 ### Matrices de confusion
 
-Part de chaque classe EVA (ligne) selon la classe Végéstrate (colonne), aux niveaux végétation, ligneux / herbacé et strates (variante `principal`).
+Répartition de chaque classe EVA (ligne) entre les classes Végéstrate (colonne) ; la diagonale correspond à l'accord.
 
 ![Niveau végétation](figures/matrice_vegetation.png) ![Niveau ligneux / herbacé](figures/matrice_ligneux.png) ![Niveau strates](figures/matrice_strates.png)
 
-### Conformité des polygones EVA à leur règle de couverture
+### À l'échelle des polygones EVA
 
-La règle porte sur la part du polygone occupée par la strate cible selon Végéstrate (« ligneux » = arbre + arbuste), variante `principal`. Les forêts sont conformes à 98,3 % en surface, la strate arborée à 65,6 % ; la strate arbustive à 4,7 % seulement, ce qui est cohérent avec la différence de définition de l'arbuste (dès 1 m pour EVA, 1,5 m pour le LiDAR de Végéstrate). Détail par classe, avec la page du guide et la médiane, dans `regles_couverture.csv`.
+Pour chaque classe EVA, part des polygones (et de leur surface) où Végéstrate retrouve la couverture attendue par la définition de la classe (« ligneux » = arbre + arbuste), variante principale. Végéstrate retrouve cette couverture sur 98,3 % de la surface des forêts et 65,6 % de la strate arborée, mais sur 4,7 % seulement de la strate arbustive, ce qui est cohérent avec la différence de définition de l'arbuste (dès 1 m pour EVA, 1,5 m pour la classification LiDAR). Détail par classe dans `regles_couverture.csv`.
 
-![Conformité des polygones EVA](figures/regles_couverture.png)
+![Couverture attendue retrouvée par Végéstrate dans les polygones EVA](figures/regles_couverture.png)
 
 ### Accord selon la distance au bord des zones EVA
 
@@ -113,13 +112,13 @@ Parts calculées sur la surface comparable de chaque commune, une commune par po
 
 ![Couverture par commune](figures/communes.png)
 
+La correspondance est globalement la même pour toutes les communes : aucune ne se démarque nettement.
+
 ## Limites
 
 - Accord n'est pas exactitude : sans vérité terrain, un désaccord peut venir de l'une, de l'autre ou des deux sources.
-- EVA cartographie la couverture dominante de polygones d'au moins 100 m² avec un taux de couverture de 60 à 75 % : jusqu'à un quart d'un polygone « strate arborée » peut légitimement être autre chose. La comparaison au pixel pénalise EVA pour un détail qu'elle ne cherche pas à représenter, d'où la comparaison à l'échelle du polygone.
-- Le guide EVA n'indique ni précision de positionnement, ni date ou source des images interprétées.
-- Le nDSM est arrondi au mètre et ne porte que sur les pixels que Végéstrate classe en végétation : là où EVA voit un arbre et Végéstrate rien, aucune hauteur ne permet de distinguer un écart de définition d'un écart de détection.
-- Les LCZ sont elles-mêmes dérivées en partie de la végétation ; l'accord par LCZ décrit des contextes, pas des causes.
+- EVA cartographie la couverture dominante de polygones d'au moins 100 m² avec un taux de couverture de 60 à 75 % : jusqu'à un quart d'un polygone « strate arborée » peut légitimement être autre chose, et ses contours englobent la végétation. Au pixel, ces écarts admis par la définition d'EVA comptent comme des désaccords ; la composition des polygones EVA donne l'accord à l'échelle d'EVA.
+- Le modèle de hauteur de canopée (nDSM Végéstrate) est arrondi au mètre et ne porte que sur les pixels que Végéstrate classe en végétation : là où EVA voit un arbre et Végéstrate rien, aucune hauteur ne permet de distinguer un écart de définition d'un écart de détection.
 
 ## Reproduire
 
@@ -135,13 +134,7 @@ Tableaux complets dans le dossier de sortie :
 
 - `indicateurs_accord.csv` : accord et désaccord pour tous les niveaux et toutes les variantes de seuils ;
 - `matrices.csv` : matrices en km², parts par ligne et par colonne ;
-- `regles_couverture.csv`, `polygones_composition.csv.gz` : conformité par classe et composition de chaque polygone ;
+- `regles_couverture.csv`, `polygones_composition.csv.gz` : couverture attendue retrouvée par classe et composition de chaque polygone ;
 - `distance_bord.csv`, `petites_taches.csv` ;
 - `couverture_communes.csv`, `couverture_iris.csv`, `accord_lcz.csv` ;
 - `zone_exclue.csv`, `exemples_stats.csv` et les rasters `exemples/<lieu>_*.tif` avec leurs styles QGIS `.qml`.
-
-## Sources
-
-- Geofit, _Guide de photo-interprétation des données EVA_, Métropole de Lyon, version 1 (pages citées dans `audit/config.yaml`).
-- Pontius R. G. Jr., Millones M. (2011), _Death to Kappa: birth of quantity disagreement and allocation disagreement for accuracy assessment_, International Journal of Remote Sensing, 32(15), 4407-4429.
-- Végéstrate : ce dépôt, `README.md` et code cité ci-dessus.
