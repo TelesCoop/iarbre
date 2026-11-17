@@ -20,6 +20,7 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
+  DEFAULT_DATA_TYPE,
   DEFAULT_MAP_STYLE,
   MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
@@ -170,7 +171,7 @@ const loadStoredHeightRanges = (): HeightRange[] => {
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const selectedDataType = ref<DataType>(DEFAULT_DATA_TYPE)
   const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)

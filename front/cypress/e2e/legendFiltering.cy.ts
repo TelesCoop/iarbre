@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { DEFAULT_MAP_STYLE } from "../../src/utils/constants"
 import { DataType, DataTypeToLabel } from "../../src/utils/enum"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
@@ -9,7 +10,10 @@ describe("Legend Filtering - Desktop", () => {
     cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
     cy.visit("/plantability/13/45.07126/5.55430")
-    cy.get("@consoleInfo").should("have.been.calledWith", "cypress: map data osm loaded")
+    cy.get("@consoleInfo").should(
+      "have.been.calledWith",
+      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+    )
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
       "cypress: layer: tile-plantability-layer and source: tile-plantability-source loaded."

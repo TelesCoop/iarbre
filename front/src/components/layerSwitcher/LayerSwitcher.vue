@@ -13,16 +13,16 @@ const selectedDataType = computed({
 
 const options = [
   {
-    label: DataTypeToLabel[DataType.PLANTABILITY],
-    value: DataType.PLANTABILITY
+    label: DataTypeToLabel[DataType.PLANTABILITY_2026_1M],
+    value: DataType.PLANTABILITY_2026_1M
   },
   {
     label: DataTypeToLabel[DataType.PLANTABILITY_2026_5M],
     value: DataType.PLANTABILITY_2026_5M
   },
   {
-    label: DataTypeToLabel[DataType.PLANTABILITY_2026_1M],
-    value: DataType.PLANTABILITY_2026_1M
+    label: DataTypeToLabel[DataType.PLANTABILITY],
+    value: DataType.PLANTABILITY
   },
   {
     label: DataTypeToLabel[DataType.VULNERABILITY],

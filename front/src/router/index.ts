@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router"
 import MapView from "@/views/MapView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
-import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
+import { DEFAULT_DATA_TYPE, DEFAULT_MAP_PARAMS } from "@/utils/constants"
 import { useApiGet } from "@/api"
 import { updatePageMeta } from "@/utils/seo"
 
@@ -57,7 +57,7 @@ const router = createRouter({
         return {
           name: "mapWithUrlParams",
           params: {
-            dataType: DataType.PLANTABILITY,
+            dataType: DEFAULT_DATA_TYPE,
             zoom,
             lat: parseFloat(lat as string).toFixed(5),
             lng: parseFloat(lng as string).toFixed(5)
