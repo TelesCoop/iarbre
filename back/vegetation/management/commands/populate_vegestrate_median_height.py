@@ -18,8 +18,8 @@ from iarbre_data.utils.database import log_progress
 RASTER_PATH = os.path.join(
     settings.MEDIA_ROOT, "rasters/WMS", "vegestrate_02_2023_elevation.tif"
 )
-# ponytail: 1024 = 4x the 256px block size, keeps peak RAM ~2.5GB instead of ~5GB
-STRIP_HEIGHT = 1024
+# shortcut: 256 = one block row, peak RAM ~0.7GB on the 147500px-wide raster; raise via --strip-height if RAM allows
+STRIP_HEIGHT = 256
 BATCH_SIZE = 20000
 
 
@@ -54,9 +54,11 @@ def compute_median_heights(raster_path: str, strip_height: int) -> dict[int, flo
             pks = [pk for pk, _ in rows]
             geoms = shapely.from_wkb([bytes(g) for _, g in rows])
 
+            # clip first: huge polygons (400k+ vertices) are otherwise fully re-rasterized for every strip
+            clipped = shapely.clip_by_rect(geoms, left, bottom, right, top)
             # ponytail: burn dense 1..N indices, not pks -- int32 would overflow BigAutoField
             ids = rasterize(
-                zip(geoms, range(1, len(pks) + 1)),
+                ((g, i) for i, g in enumerate(clipped, 1) if not g.is_empty),
                 out_shape=(strip_h, width),
                 transform=strip_transform,
                 fill=0,
