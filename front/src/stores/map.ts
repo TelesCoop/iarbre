@@ -76,6 +76,12 @@ import {
   type HourlyRaster
 } from "@/utils/hourlyRaster"
 import { DEFAULT_PET_YEAR } from "@/utils/pet"
+import {
+  PLANTABILITY_2026_GRIDS,
+  maxZoomFor,
+  plantability2026TileUrl,
+  rasterClasses
+} from "@/utils/plantability2026"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
@@ -343,8 +349,8 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    const hourlyRaster = HOURLY_RASTERS[datatype]
-    if (hourlyRaster) {
+    const classes = rasterClasses(datatype)
+    if (classes) {
       return [
         {
           id: layerId,
@@ -352,10 +358,7 @@ export const useMapStore = defineStore("map", () => {
           source: sourceId,
           paint: {
             "color-relief-opacity": 0.6,
-            "color-relief-color": buildColorRamp(
-              hourlyRaster.classes,
-              filteredValues.value as number[]
-            ),
+            "color-relief-color": buildColorRamp(classes, filteredValues.value as number[]),
             resampling: "nearest"
           }
         }
@@ -745,6 +748,18 @@ export const useMapStore = defineStore("map", () => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
+    const plantability2026Grid = PLANTABILITY_2026_GRIDS[datatype]
+    if (plantability2026Grid) {
+      map.addSource(sourceId, {
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [plantability2026TileUrl(fullBaseApiUrl, plantability2026Grid)],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
+
     const hourlyRaster = HOURLY_RASTERS[datatype]
     if (hourlyRaster) {
       map.addSource(sourceId, {
@@ -829,6 +844,7 @@ export const useMapStore = defineStore("map", () => {
       }
       clearSelectionWall3D(mapInstance)
       clearSelectionOutline2D(mapInstance)
+      mapInstance.setMaxZoom(maxZoomFor(datatype))
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
@@ -1722,7 +1738,7 @@ export const useMapStore = defineStore("map", () => {
       new Map({
         container: mapId,
         style: loadMapStyle(mapStyle),
-        maxZoom: MAX_ZOOM,
+        maxZoom: maxZoomFor(selectedDataType.value),
         minZoom: MIN_ZOOM,
         attributionControl: false
       })

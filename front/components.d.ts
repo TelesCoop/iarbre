@@ -137,6 +137,7 @@ declare module 'vue' {
     PetContextTool: typeof import('./src/components/contextTools/PetContextTool.vue')['default']
     PetDescription: typeof import('./src/components/contextData/PetDescription.vue')['default']
     PetLegend: typeof import('./src/components/map/legend/PetLegend.vue')['default']
+    Plantability2026Description: typeof import('./src/components/contextData/Plantability2026Description.vue')['default']
     PlantabilityCityCard: typeof import('./src/components/division/PlantabilityCityCard.vue')['default']
     PlantabilityContextDataLimits: typeof import('./src/components/contextData/plantability/PlantabilityContextDataLimits.vue')['default']
     PlantabilityContextDataList: typeof import('./src/components/contextData/plantability/PlantabilityContextDataList.vue')['default']

@@ -11,7 +11,9 @@ const appStore = useAppStore()
 const DataTypeToGridSize: Partial<Record<DataType, (zoom: number) => number | undefined>> = {
   [DataType.PLANTABILITY]: (zoom) => ZoomToGridSize[zoom],
   [DataType.PET]: () => 1,
-  [DataType.SHADOW]: () => 1
+  [DataType.SHADOW]: () => 1,
+  [DataType.PLANTABILITY_2026_5M]: () => 5,
+  [DataType.PLANTABILITY_2026_1M]: () => 1
 }
 
 const gridSize = computed(
