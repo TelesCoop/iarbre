@@ -90,7 +90,9 @@ _tile_qs = Tile.objects.select_related("city").only(
     "city__name",
 )
 
-_vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
+_vegestrate_qs = Vegestrate.objects.only(
+    "geometry", "strate", "surface", "median_height"
+)
 
 _biosphere_functional_integrity_qs = BiosphereFunctionalIntegrity.objects.only(
     "geometry", "indice"
@@ -198,7 +200,7 @@ class IArbreWFSView(WFSView):
                 _vegestrate_qs,
                 name="vegestrate",
                 title="Végéstrate",
-                fields=["geometry", "strate", "surface"],
+                fields=["geometry", "strate", "surface", "median_height"],
             ),
             TileFeatureType(
                 _biosphere_functional_integrity_qs,
