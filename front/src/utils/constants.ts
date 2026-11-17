@@ -22,7 +22,7 @@ export const DEFAULT_MAP_PARAMS: MapParams = {
   zoom: 14
 }
 
-export const DEFAULT_MAP_STYLE = MapStyle.OSM
+export const DEFAULT_MAP_STYLE = MapStyle.ORTHOPHOTO
 
 // Terra Draw layer name (used to position layers below drawing layers)
 export const TERRA_DRAW_POLYGON_LAYER = "td-polygon"

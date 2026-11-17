@@ -77,7 +77,10 @@ defineProps({
         <PetDescription v-if="mapStore.selectedDataType === DataType.PET" />
         <ShadowDescription v-else-if="mapStore.selectedDataType === DataType.SHADOW" />
       </MapContextDataHourlyRaster>
-      <Plantability2026Description v-else-if="isPlantability2026(mapStore.selectedDataType)" />
+      <template v-else-if="isPlantability2026(mapStore.selectedDataType)">
+        <Plantability2026Description />
+        <MapContextDataPlantability :data="mapStore.contextData.data as PlantabilityData" />
+      </template>
     </template>
   </div>
 </template>

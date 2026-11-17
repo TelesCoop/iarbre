@@ -14,6 +14,7 @@ from api.tests.test_hourly_raster_views import (
     RASTER_LNG_MIN,
     decoded_values,
 )
+from iarbre_data.data_config import FACTORS
 from iarbre_data.management.commands.populate import Command as PopulateCommand
 from plantability.constants import BLOCKED_SCORE, PLANTABILITY_NORMALIZED
 
@@ -94,3 +95,79 @@ class Plantability2026TileViewTest(TestCase):
         self.assertEqual(decoded_values(response), {4})
         self.write(5, [3])
         self.assertEqual(decoded_values(self.get(grid=5)), {10})
+
+
+class Plantability2026PointViewTest(TestCase):
+    point = {
+        "lng": (RASTER_LNG_MIN + RASTER_LNG_MAX) / 2,
+        "lat": (RASTER_LAT_MIN + RASTER_LAT_MAX) / 2,
+    }
+
+    def setUp(self):
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        self.media_root = Path(tmpdir.name)
+        self.url = reverse("plantability-2026-value")
+
+    def write(self, grid, score, factors):
+        folder = self.media_root / "rasters/plantability_2026"
+        PopulateCommand._write_test_raster(
+            folder / f"plantability_2026_villeurbanne_{grid}m.tif",
+            np.full((1, 10, 10), score, dtype=np.float32),
+            NODATA,
+        )
+        for factor in set(FACTORS) - {"QPV"}:
+            PopulateCommand._write_test_raster(
+                folder / f"factors_{grid}m" / f"{factor}.tif",
+                np.full((1, 10, 10), factors.get(factor, 0), dtype=np.uint8),
+                None,
+            )
+
+    def get(self, **params):
+        with self.settings(MEDIA_ROOT=self.media_root):
+            return self.client.get(self.url, params)
+
+    def test_returns_score_class_and_top5_with_networks_grouped(self):
+        self.write(
+            1,
+            3,
+            {
+                "Bâtiments": 100,
+                "Rsx gaz": 40,
+                "Rsx souterrains ERDF": 30,
+                "Strate arborée": 20,
+            },
+        )
+        response = self.get(grid=1, **self.point)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["plantabilityIndice"], 3)
+        self.assertEqual(data["plantabilityNormalizedIndice"], 10)
+        self.assertEqual(
+            data["details"]["top5LandUse"],
+            {"Bâtiments": 100, "Réseaux et infrastructures": 70, "Strate arborée": 20},
+        )
+
+    def test_blocked_point_is_class_zero_with_its_land_uses(self):
+        self.write(5, BLOCKED_SCORE, {"Bâtiments": 100})
+        data = self.get(grid=5, **self.point).json()
+        self.assertEqual(data["plantabilityNormalizedIndice"], 0)
+        self.assertEqual(data["details"]["top5LandUse"], {"Bâtiments": 100})
+
+    def test_grid_switches_rasters(self):
+        self.write(5, -1.9, {"Parkings": 50})
+        self.write(1, 3, {"Strate arborée": 80})
+        data = self.get(grid=5, **self.point).json()
+        self.assertEqual(data["plantabilityNormalizedIndice"], 4)
+        self.assertEqual(data["details"]["top5LandUse"], {"Parkings": 50})
+
+    def test_point_outside_raster_or_on_nodata_returns_404(self):
+        self.write(1, 3, {})
+        self.assertEqual(self.get(grid=1, lat=0, lng=0).status_code, 404)
+        self.write(1, NODATA, {})
+        self.assertEqual(self.get(grid=1, **self.point).status_code, 404)
+
+    def test_invalid_params_return_400(self):
+        self.write(1, 3, {})
+        self.assertEqual(self.get(grid=1, lat=45.07).status_code, 400)
+        self.assertEqual(self.get(grid=10, **self.point).status_code, 400)

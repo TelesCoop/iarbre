@@ -15,4 +15,7 @@ from .biosphere_views import BiosphereLandCoverAtPointView  # noqa: F401
 from .vegetation_height_views import VegetationHeightTileView  # noqa: F401
 from .vegetation_height_views import VegetationHeightAtPointView  # noqa: F401
 from .hourly_raster_views import PetTileView, ShadowTileView  # noqa: F401
-from .plantability_2026_views import Plantability2026TileView  # noqa: F401
+from .plantability_2026_views import (  # noqa: F401
+    Plantability2026PointView,
+    Plantability2026TileView,
+)

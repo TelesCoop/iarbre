@@ -5,7 +5,8 @@ import type { ClimateData } from "@/types/climate"
 import type { PlantabilityVulnerabilityData } from "@/types/vulnerability_plantability"
 import type { BiosphereIntegrityData } from "@/types/biosphereIntegrity"
 import type { VegetationData } from "@/types/vegetation"
-import { getTileDetails } from "@/services/tileService"
+import { getPlantability2026AtPoint, getTileDetails } from "@/services/tileService"
+import { PLANTABILITY_2026_GRIDS } from "@/utils/plantability2026"
 import { getBiosphereLandCoverAtPoint } from "@/services/biosphereService"
 import { DataType, DataTypeToGeolevel, GeoLevel } from "@/utils/enum"
 
@@ -44,6 +45,16 @@ export function useContextData(selectedDataTypeRef: Ref<DataType>) {
     let newData: ContextData = null
 
     try {
+      const plantability2026Grid = PLANTABILITY_2026_GRIDS[selectedDataType.value]
+      if (plantability2026Grid && lat !== undefined && lng !== undefined) {
+        const point = await getPlantability2026AtPoint(plantability2026Grid, lat, lng)
+        data.value = point && {
+          ...point,
+          geolevel: GeoLevel.TILE,
+          datatype: selectedDataType.value
+        }
+        return
+      }
       if (indexValue === undefined) {
         newData = await getTileDetails(stringId, selectedDataType.value)
 
