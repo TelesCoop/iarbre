@@ -1,0 +1,19 @@
+#!/bin/bash
+set -eu
+
+since=$(date -d 'yesterday 00:00:00' '+%Y-%m-%d %H:%M:%S %z')
+until=$(date -d 'yesterday 23:59:59' '+%Y-%m-%d %H:%M:%S %z')
+echo "$(date -Is) importing $since -> $until"
+
+cd /var/log/nginx
+zcat -f $(ls -1vr access_{{ main_hostname | lower | replace('.', '_') }}.log*) \
+  | grep -v HeadlessChrome \
+  | python3 {{ matomo_log_importer_path }}/import_logs.py \
+    --url={{ matomo_url }} \
+    --auth-config={{ matomo_auth_config_path }} \
+    --idsite={{ matomo_log_import_site_id }} \
+    --include-path='/api/wfs/*' --include-path='/api/wms/*' \
+    --exclude-older-than="$since" --exclude-newer-than="$until" \
+    --log-format-regex='(?P<ip>[\w*.:-]+)\s+\S+\s+.*?\s+\[(?P<date>.*?)\s+(?P<timezone>.*?)\]\s+"(?P<method>\S+)\s+(?P<path>.*?)\s+\S+"\s+(?P<status>\d+)\s+(?P<length>\S+)\s+"(?P<referrer>.*?)"\s+"(?P<user_agent>(?P<client>.*?))"' \
+    --regex-group-to-visit-cvar='client=Client' \
+    -

@@ -119,3 +119,39 @@
             cmd: "{{ project_slug }}-ctl delete_test_data"
 
       when: dedicated_database and (clonecode.changed or force_update is defined)
+
+    - name: Import WFS and WMS requests from the nginx logs into Matomo every night
+      vars:
+        matomo_log_importer_path: "{{ project_dir }}/matomo-log-analytics"
+        matomo_auth_config_path: "/etc/{{ organization_slug }}/{{ project_slug }}/matomo-auth.ini"
+      block:
+        - name: Clone the Matomo log importer
+          git:
+            repo: https://github.com/matomo-org/matomo-log-analytics.git
+            dest: "{{ matomo_log_importer_path }}"
+            version: 4aaaf4c4be7a14231b5a40b7fbd50b67b5ae8697
+
+        - name: Write the Matomo token
+          copy:
+            content: "[auth]\ntoken_auth={{ vault_matomo_token_auth }}\n"
+            dest: "{{ matomo_auth_config_path }}"
+            owner: root
+            group: root
+            mode: "0600"
+
+        - name: Install the Matomo import script
+          template:
+            src: templates/matomo-log-import.sh.j2
+            dest: "/usr/local/bin/{{ project_slug }}-matomo-log-import"
+            owner: root
+            group: root
+            mode: "0700"
+
+        - name: Schedule the Matomo import
+          cron:
+            name: "{{ project_slug }} matomo log import"
+            user: root
+            hour: "3"
+            minute: "0"
+            job: "/usr/local/bin/{{ project_slug }}-matomo-log-import >> {{ django_path }}/logs/matomo_import.log 2>&1"
+      when: "'prod' in group_names"
