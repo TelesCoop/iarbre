@@ -23,7 +23,11 @@ class Plantability2026TileView(RasterTileView):
 
     def raster_path(self, request) -> Path:
         grid = _int_param(request, "grid", GRIDS)
-        return Path(settings.MEDIA_ROOT) / "rasters/plantability_2026" / f"{grid}m.tif"
+        return (
+            Path(settings.MEDIA_ROOT)
+            / "rasters/plantability_2026"
+            / f"plantability_2026_villeurbanne_{grid}m.tif"
+        )
 
     def render(self, data, nodata, request):
         classes = np.asarray(PLANTABILITY_NORMALIZED, dtype=np.float32)[

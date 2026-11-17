@@ -38,7 +38,9 @@ class Plantability2026TileViewTest(TestCase):
     def write(self, grid, scores):
         data = np.tile(np.array(scores, dtype=np.float32), (1, 10, 10))
         PopulateCommand._write_test_raster(
-            Path(self.media_root) / "rasters/plantability_2026" / f"{grid}m.tif",
+            Path(self.media_root)
+            / "rasters/plantability_2026"
+            / f"plantability_2026_villeurbanne_{grid}m.tif",
             data,
             NODATA,
         )
