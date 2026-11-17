@@ -6,6 +6,15 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-11-17T11:01_postgres_backup.dump
+
+**Changements :** :
+
+- En DB pour les polygone `Vegestrate` c'est maintenant bien la hauteur `median` et plus moyenne `mean` qui est utilisée pour la zone.
+- Ajout dans `media/` du WIP sur la mise à jour du calque de plantabilité pour l'afficher sur une feature
+- Ajout dans `media/` du WIP sur le 3-30-300 pour l'afficher sur une feature
+- Ajout dans `media/rasters/WMS` de `plantability_colors.tif` (et de son `.ovr`) pour que le flux WMS serve le raster de plantabilité en couleur.
+
 ## 2026-10-26T16:08_postgres_backup.dump
 
 **Changements :** :
