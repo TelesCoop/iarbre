@@ -23,12 +23,12 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.gis.db.models import Union
 from django.core.management import BaseCommand, call_command
-from rasterio.enums import ColorInterp
 from rasterio.features import rasterize
 
 from iarbre_data.models import City
 from iarbre_data.utils.calque_config import CALQUE_REGISTRY, CalqueConfig
 from iarbre_data.utils.database import load_geodataframe_from_db
+from iarbre_data.utils.rgb_raster import write_rgba
 
 logger = logging.getLogger(__name__)
 
@@ -141,13 +141,7 @@ def _write_rgb(
     for i in range(3):
         rgb[i][mask] = rgb_pixels[:, i]
 
-    profile.update(
-        dtype="uint8", count=3, nodata=None, photometric="RGB", compress="lzw"
-    )
-    profile.pop("predictor", None)
-    with rasterio.open(output_path, "w", **profile) as dst:
-        dst.write(rgb)
-        dst.colorinterp = (ColorInterp.red, ColorInterp.green, ColorInterp.blue)
+    write_rgba(output_path, rgb, mask, profile)
     logger.info(
         "Generated RGB preview %s (%.1f MB)",
         output_path,

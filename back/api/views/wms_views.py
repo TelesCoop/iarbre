@@ -263,19 +263,32 @@ class IArbreWMSView(APIView):
                 return self._empty_image(width, height)
 
             window = from_bounds(left, bottom, right, top, transform=src.transform)
-            data = src.read(
-                1,
-                window=window,
-                out_shape=(height, width),
-                resampling=Resampling.nearest,
-            )
-            nodata = src.nodata
+            if src.count >= 3:
+                img = self._rgb_image(src, window, width, height)
+            else:
+                data = src.read(
+                    1,
+                    window=window,
+                    out_shape=(height, width),
+                    resampling=Resampling.nearest,
+                )
+                img = self._grayscale_image(data, src.nodata)
 
-        img = self._grayscale_image(data, nodata)
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
         return HttpResponse(buf.getvalue(), content_type="image/png")
+
+    @staticmethod
+    def _rgb_image(src, window, width: int, height: int) -> Image.Image:
+        rgb = src.read(
+            [1, 2, 3],
+            window=window,
+            out_shape=(3, height, width),
+            resampling=Resampling.nearest,
+        )
+        alpha = src.dataset_mask(window=window, out_shape=(height, width))
+        return Image.fromarray(np.dstack([*rgb, alpha]), mode="RGBA")
 
     @staticmethod
     def _grayscale_image(data: np.ndarray, nodata) -> Image.Image:
