@@ -1,5 +1,4 @@
 /// <reference types="cypress" />
-import { DEFAULT_MAP_STYLE } from "../../src/utils/constants"
 import {
   DataType,
   DataTypeToLabel,
@@ -77,7 +76,7 @@ describe("Map - Desktop", () => {
     cy.visitMap(DESKTOP_VIEWPORT)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+      `cypress: map data ${MapStyle.ORTHOPHOTO} loaded`
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
@@ -464,7 +463,7 @@ describe("Map - Mobile", () => {
     cy.visitMap(MOBILE_VIEWPORT)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+      `cypress: map data ${MapStyle.ORTHOPHOTO} loaded`
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
@@ -585,7 +584,7 @@ describe("Geocoder", () => {
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+      `cypress: map data ${MapStyle.ORTHOPHOTO} loaded`
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })
@@ -606,7 +605,7 @@ describe("Map - Biosphere functional integrity", () => {
     cy.visit(`/${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}/13/45.07126/5.55430`)
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+      `cypress: map data ${MapStyle.ORTHOPHOTO} loaded`
     )
     cy.wait(150) // eslint-disable-line cypress/no-unnecessary-waiting
   })

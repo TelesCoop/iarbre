@@ -1,6 +1,5 @@
 /// <reference types="cypress" />
-import { DEFAULT_MAP_STYLE } from "../../src/utils/constants"
-import { DataType, DataTypeToLabel } from "../../src/utils/enum"
+import { DataType, DataTypeToLabel, MapStyle } from "../../src/utils/enum"
 import { LocalStorageHandler } from "../../src/utils/LocalStorageHandler"
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
@@ -12,7 +11,7 @@ describe("Legend Filtering - Desktop", () => {
     cy.visit("/plantability/13/45.07126/5.55430")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
-      `cypress: map data ${DEFAULT_MAP_STYLE} loaded`
+      `cypress: map data ${MapStyle.ORTHOPHOTO} loaded`
     )
     cy.get("@consoleInfo").should(
       "have.been.calledWith",
