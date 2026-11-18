@@ -5,7 +5,7 @@ from iarbre_data.factories import TileFactory, CityFactory
 from iarbre_data.models import Tile, MVTTile
 from django.test import TestCase
 from django.http import HttpRequest
-from api.utils.mvt_generator import MVTGenerator, MVTGeneratorWorker
+from api.services.mvt import MVTGenerator, MVTGeneratorWorker
 from django.contrib.gis.geos import Polygon
 from django.urls import reverse
 

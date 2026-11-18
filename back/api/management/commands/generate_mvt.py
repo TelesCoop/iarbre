@@ -11,7 +11,7 @@ from django.core.management import BaseCommand
 from django.db.models import Model
 
 from api.constants import DEFAULT_ZOOM_LEVELS, GeoLevel, DataType
-from api.utils.mvt_generator import MVTGenerator
+from api.services.mvt import MVTGenerator
 from iarbre_data.models import (
     Tile,
     Lcz,

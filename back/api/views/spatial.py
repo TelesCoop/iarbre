@@ -21,13 +21,13 @@ from api.serializers.serializers import (
     VulnerabilityScoresSerializer,
     VulnerabilitySerializer,
 )
+from api.services.polygon import InvalidPolygon, parse_polygon
 from api.services.rasters import sample_at_point, vegetation_height_raster
 from api.services.spatial import (
     iris_and_city_codes,
     land_cover_at_point,
     polygon_scores,
 )
-from api.utils.polygon import parse_and_validate_polygon
 from iarbre_data.models import (
     BiosphereFunctionalIntegrity,
     Lcz,
@@ -168,9 +168,10 @@ class ScoresInPolygonView(APIView):
         if error_response:
             return error_response
 
-        polygon, error_response = parse_and_validate_polygon(request.data)
-        if error_response:
-            return error_response
+        try:
+            polygon = parse_polygon(request.data)
+        except InvalidPolygon as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         model = FRONTEND_DATATYPE_MODEL_MAP[datatype]
         tiles = model.objects.filter(geometry__intersects=polygon)

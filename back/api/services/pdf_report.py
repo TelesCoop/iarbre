@@ -1,13 +1,41 @@
+"""Dashboard PDF report.
+
+The export scope is stored in the cache under a short-lived token, then a
+headless browser opens the frontend in print mode; the page reads the scope
+back from the API with that token and the browser prints it to PDF.
+"""
+
 import re
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 from django.conf import settings
+from django.core.cache import cache
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
+
+CACHE_PREFIX = "pdf_export_scope"
+TTL_SECONDS = 300
 
 
 class PdfExportTimeout(Exception):
     pass
+
+
+# --- Export scope -----------------------------------------------------------------
+
+
+def store_export_scope(scope: dict) -> str:
+    token = uuid.uuid4().hex
+    cache.set(f"{CACHE_PREFIX}:{token}", scope, timeout=TTL_SECONDS)
+    return token
+
+
+def get_export_scope(token: str) -> dict | None:
+    return cache.get(f"{CACHE_PREFIX}:{token}")
+
+
+# --- Rendering --------------------------------------------------------------------
 
 
 def _render(token: str, frontend_url: str) -> bytes:

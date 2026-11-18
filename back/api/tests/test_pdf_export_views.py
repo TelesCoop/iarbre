@@ -3,8 +3,8 @@ from django.test import SimpleTestCase, override_settings
 from rest_framework.test import APISimpleTestCase
 from django.urls import reverse
 
-from api.utils.pdf_export import store_export_scope, get_export_scope
-from api.utils import pdf_renderer
+from api.services import pdf_report
+from api.services.pdf_report import get_export_scope, store_export_scope
 
 
 class ExportScopeStoreTest(SimpleTestCase):
@@ -51,7 +51,7 @@ class ExportPdfViewTest(APISimpleTestCase):
         url = reverse("dashboard-export-pdf")
         with mock.patch(
             "api.views.dashboard.render_dashboard_pdf",
-            side_effect=pdf_renderer.PdfExportTimeout("slow"),
+            side_effect=pdf_report.PdfExportTimeout("slow"),
         ):
             response = self.client.post(url, {"scale": "metropole"}, format="json")
         self.assertEqual(response.status_code, 504)

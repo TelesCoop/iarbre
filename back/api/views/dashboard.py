@@ -17,9 +17,13 @@ from api.services.dashboard import (
     division_scope,
     polygon_scope,
 )
-from api.utils.pdf_export import get_export_scope, store_export_scope
-from api.utils.pdf_renderer import PdfExportTimeout, render_dashboard_pdf
-from api.utils.polygon import parse_and_validate_polygon
+from api.services.pdf_report import (
+    PdfExportTimeout,
+    get_export_scope,
+    render_dashboard_pdf,
+    store_export_scope,
+)
+from api.services.polygon import InvalidPolygon, parse_polygon
 from iarbre_data.models import City, Iris
 
 
@@ -67,9 +71,10 @@ class DashboardPolygonView(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        polygon, error_response = parse_and_validate_polygon(request.data)
-        if error_response:
-            return error_response
+        try:
+            polygon = parse_polygon(request.data)
+        except InvalidPolygon as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return _dashboard_response(
             assemble_dashboard_data(
