@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.constants import ONE_HOUR
 from api.serializers.dashboard_serializer import DashboardSerializer
 from api.services.dashboard import (
     aggregate_plantability,
@@ -44,7 +45,7 @@ class DashboardView(APIView):
     GET /api/dashboard/?iris_code=691230101    -> single IRIS
     """
 
-    @method_decorator(cache_page(60 * 60))
+    @method_decorator(cache_page(ONE_HOUR))
     def get(self, request, *args, **kwargs):
         city_code = request.query_params.get("city_code")
         iris_code = request.query_params.get("iris_code")

@@ -10,7 +10,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.constants import DataType, FrontendDataType
+from api.constants import ONE_DAY, DataType, FrontendDataType
 from api.serializers.serializers import (
     BiosphereFunctionalIntegritySerializer,
     LczSerializer,
@@ -62,9 +62,19 @@ SCORES_SERIALIZER_PER_DATATYPE = {
 }
 
 
-def _parse_lat_lng(request) -> tuple[float, float]:
-    """Raise KeyError or ValueError when lat/lng are missing or not numeric."""
-    return float(request.query_params["lat"]), float(request.query_params["lng"])
+def _parse_lat_lng(request) -> tuple[float, float] | None:
+    """Return (lat, lng) from the query string, or None when missing or not numeric."""
+    try:
+        return float(request.query_params["lat"]), float(request.query_params["lng"])
+    except (KeyError, ValueError):
+        return None
+
+
+def _invalid_lat_lng_response() -> Response:
+    return Response(
+        {"error": "lat and lng query parameters are required and must be numeric"},
+        status=status.HTTP_400_BAD_REQUEST,
+    )
 
 
 # --- Feature details ------------------------------------------------------------
@@ -88,7 +98,7 @@ class TileDetailsView(generics.RetrieveAPIView):
             raise Http404
         return DATATYPE_MODEL_MAP[instance]
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(ONE_DAY))
     def get(self, request, datatype, id, *args, **kwargs):
         try:
             instance = get_object_or_404(DATATYPE_MODEL_MAP[datatype], id=id)
@@ -104,13 +114,10 @@ class TileDetailsView(generics.RetrieveAPIView):
 
 class VegetationHeightAtPointView(APIView):
     def get(self, request):
-        try:
-            lat, lng = _parse_lat_lng(request)
-        except (KeyError, ValueError):
-            return Response(
-                {"error": "lat and lng required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        point = _parse_lat_lng(request)
+        if point is None:
+            return _invalid_lat_lng_response()
+        lat, lng = point
 
         raster_path = vegetation_height_raster()
         if not raster_path.exists():
@@ -127,15 +134,10 @@ class BiosphereLandCoverAtPointView(APIView):
     """Retrieve distinct land cover types with area percentages within a 500m radius."""
 
     def get(self, request, *args, **kwargs):
-        try:
-            lat, lng = _parse_lat_lng(request)
-        except (KeyError, ValueError):
-            return Response(
-                {
-                    "error": "lat and lng query parameters are required and must be numeric"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        point = _parse_lat_lng(request)
+        if point is None:
+            return _invalid_lat_lng_response()
+        lat, lng = point
 
         return Response(land_cover_at_point(lat, lng))
 

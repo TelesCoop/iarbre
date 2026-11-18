@@ -15,7 +15,7 @@ from gisserver.geometries import WGS84BoundingBox
 from gisserver.views import WFSView
 from rest_framework.views import APIView
 
-from api.constants import PET_RASTERS, SHADOW_RASTER
+from api.constants import ONE_HOUR, PET_RASTERS, SHADOW_RASTER
 from api.services.rasters import render_grayscale_png
 from api.services.wms import discover_layers, layer_bounds_wgs84
 from api.utils.wfs_renderers import GetFeature, GetPropertyValue
@@ -230,7 +230,7 @@ class IArbreWFSView(WFSView):
 
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
-_CAPABILITIES_CACHE_TTL = 60 * 60
+_CAPABILITIES_CACHE_TTL = ONE_HOUR
 _MAX_SIZE = 4096
 
 
@@ -490,7 +490,7 @@ class FileDownloadView(APIView):
             as_attachment=True,
             filename=filename,
         )
-        response["Cache-Control"] = "public, max-age=3600"
+        response["Cache-Control"] = f"public, max-age={ONE_HOUR}"
         return response
 
 

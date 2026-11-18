@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, mixins, viewsets
 from rest_framework.response import Response
 
+from api.constants import ONE_DAY, ONE_MONTH
 from api.filters import CityFilterSet, IrisFilterSet
 from api.serializers.serializers import CitySerializer, IrisSerializer
 from iarbre_data.models import City, Data, Iris, PublicBuilding
@@ -72,7 +73,7 @@ class CityBoundaryView(generics.ListAPIView):
     def get_queryset(self):
         return City.objects.all()
 
-    @method_decorator(cache_page(60 * 60 * 24 * 30))
+    @method_decorator(cache_page(ONE_MONTH))
     def get(self, request, *args, **kwargs):
         return _geojson_response(self.get_queryset(), fields=("code", "name"))
 
@@ -81,7 +82,7 @@ class QPVListView(generics.ListAPIView):
     def get_queryset(self):
         return Data.objects.filter(factor="QPV")
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(ONE_DAY))
     def get(self, request, *args, **kwargs):
         return _geojson_response(
             self.get_queryset(), fields=("id", "metadata", "factor")
@@ -97,7 +98,7 @@ class PublicBuildingListView(generics.ListAPIView):
             )
         ).values("id", "geojson", *PUBLIC_BUILDING_PROPERTIES)
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(ONE_DAY))
     def get(self, request, *args, **kwargs):
         features = [
             {

@@ -15,7 +15,7 @@ from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
-from api.constants import PET_RASTERS, SHADOW_RASTER
+from api.constants import ONE_DAY, ONE_MONTH, PET_RASTERS, SHADOW_RASTER
 from api.services.rasters import (
     TILE_SIZE,
     WMS_RASTER_DIR,
@@ -26,7 +26,6 @@ from api.services.rasters import (
     read_tile,
     vegetation_height_raster,
 )
-from api.utils.tile_math import tile_to_bbox
 from iarbre_data.models import MVTTile
 from iarbre_data.utils.hourly_rasters import hour_raster_path
 from iarbre_data.utils.palettes import VEGESTRATE_COLOR_MAP
@@ -38,8 +37,7 @@ HOURS = range(25)
 ORTHOPHOTO_WMS_URL = "https://download.data.grandlyon.com/wms/grandlyon"
 ORTHOPHOTO_WMS_LAYER = "grandlyon:ortho_latest"
 ORTHOPHOTO_WMS_TIMEOUT = 10
-# Cache tiles for 6 months
-ORTHOPHOTO_CACHE_DURATION = 60 * 60 * 24 * 30 * 6
+ORTHOPHOTO_CACHE_DURATION = 6 * ONE_MONTH
 
 
 def _png_response(content: bytes) -> HttpResponse:
@@ -69,7 +67,7 @@ class TileView(generics.RetrieveAPIView):
             tile_y=self.kwargs.get("y"),
         )
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(ONE_DAY))
     def get(self, request, *args, **kwargs):
         try:
             return HttpResponse(
@@ -97,7 +95,7 @@ class RasterTileView(APIView):
     def render(self, data: np.ndarray, nodata, request) -> np.ndarray:
         raise NotImplementedError
 
-    @method_decorator(cache_page(60 * 60 * 24))
+    @method_decorator(cache_page(ONE_DAY))
     def get(self, request, z, x, y):
         raster_path = self.raster_path(request)
         if not raster_path.exists():
@@ -175,7 +173,7 @@ class OrthophotoTileView(APIView):
     def get(self, request, z, x, y):
         z, x, y = int(z), int(x), int(y)
 
-        bbox = tile_to_bbox(z, x, y)
+        bbox = mercantile.xy_bounds(mercantile.Tile(x, y, z))
 
         params = {
             "SERVICE": "WMS",
@@ -183,7 +181,7 @@ class OrthophotoTileView(APIView):
             "REQUEST": "GetMap",
             "LAYERS": ORTHOPHOTO_WMS_LAYER,
             "CRS": "EPSG:3857",
-            "BBOX": f"{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
+            "BBOX": f"{bbox.left},{bbox.bottom},{bbox.right},{bbox.top}",
             "WIDTH": TILE_SIZE,
             "HEIGHT": TILE_SIZE,
             "FORMAT": "image/png",
