@@ -160,6 +160,30 @@ function openCookiePanel() {
               </li>
             </ul>
 
+            <h4 class="sub-block-title">Mesure d'usage des services WFS / WMS</h4>
+            <ul class="legal-list">
+              <li>
+                Les requêtes adressées aux services <code>/api/wfs/</code> et
+                <code>/api/wms/</code> (par exemple depuis QGIS) sont extraites des journaux du
+                serveur web et importées dans notre instance <strong>Matomo</strong> auto-hébergée
+              </li>
+              <li>
+                <strong>Données</strong> : adresse IP (tronquée de 2 octets dans Matomo), logiciel
+                client (user agent), couche et type de requête, date et heure
+              </li>
+              <li><strong>Base légale</strong> : intérêt légitime (article 6.1.f du RGPD)</li>
+              <li>
+                <strong>Finalité</strong> : mesurer l'usage des données ouvertes (nombre
+                d'utilisateurs, organisations utilisatrices, couches téléchargées)
+              </li>
+              <li>Aucun cookie n'est déposé</li>
+              <li><strong>Durée de conservation</strong> : 13 mois</li>
+              <li>
+                Vous pouvez vous opposer à ce traitement en écrivant à
+                <a class="legal-link" href="mailto:contact@telescoop.fr">contact@telescoop.fr</a>
+              </li>
+            </ul>
+
             <h4 class="sub-block-title">Cookie technique (CSRF)</h4>
             <ul class="legal-list">
               <li>
@@ -230,7 +254,7 @@ function openCookiePanel() {
               Cette politique de confidentialité peut être mise à jour à tout moment. La date de
               dernière mise à jour est indiquée ci-dessous.
             </p>
-            <p class="text-sm text-gray-500">Dernière mise à jour : février 2026</p>
+            <p class="text-sm text-gray-500">Dernière mise à jour : novembre 2026</p>
           </div>
         </section>
       </main>

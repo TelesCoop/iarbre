@@ -46,9 +46,8 @@ Détails : [gestion des sauvegardes](../back/backend.md#gestion-des-sauvegardes-
 
 ## WFS lent
 
-1. Dashboard Grafana WFS : repérer les requêtes à grande `bbox_area` ou gros `feature_count`.
-2. Aller voir dans le fichier `/telescoop/iarbre/backend/back/logs/wfs.log`.
-3. Le WFS tourne sur son propre gunicorn (`iarbre-backend-gisserver`) et ne bloque pas la carte. Redémarrer ce seul service si les workers sont saturés.
+1. Dans `/telescoop/iarbre/backend/back/logs/wfs.log`, repérer les requêtes à grande `bbox_area` ou gros `feature_count` (lignes `START`) et leur durée (lignes `END`).
+2. Le WFS tourne sur son propre gunicorn (`iarbre-backend-gisserver`) et ne bloque pas la carte. Redémarrer ce seul service si les workers sont saturés.
 
 ## Certificat qui expire (alerte Uptime Kuma)
 
