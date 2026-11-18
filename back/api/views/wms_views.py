@@ -79,12 +79,15 @@ class IArbreWMSView(APIView):
         )
 
     def _get_capabilities(self, request, version):
-        cache_key = f"wms:capabilities:{version}"
+        # Advertise the URL the client actually called, so the view works
+        # under any mount point or alias. The URL is baked into the XML,
+        # hence part of the cache key.
+        base_url = request.build_absolute_uri(request.path)
+        cache_key = f"wms:capabilities:{version}:{base_url}"
         cached = cache.get(cache_key)
         if cached is not None:
             return HttpResponse(cached, content_type="text/xml; charset=utf-8")
 
-        base_url = request.build_absolute_uri("/api/wms/")
         is_130 = version == "1.3.0"
         crs_tag = "CRS" if is_130 else "SRS"
 
