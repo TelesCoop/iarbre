@@ -38,7 +38,9 @@ VILLARD_SQUARE = Polygon(
     srid=SRID_DB,
 )
 
-NO_CACHE = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
+_DUMMY = {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}
+# No view cache and no rate limit (a dummy throttle cache never counts requests).
+NO_CACHE = {"default": _DUMMY, "throttle": _DUMMY}
 
 
 @override_settings(CACHES=NO_CACHE)

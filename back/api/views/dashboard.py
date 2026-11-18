@@ -25,6 +25,11 @@ from api.services.pdf_report import (
     store_export_scope,
 )
 from api.services.polygon import InvalidPolygon, parse_polygon
+from api.throttling import (
+    PdfExportBurstThrottle,
+    PdfExportSustainedThrottle,
+    PolygonThrottle,
+)
 from iarbre_data.models import City, Iris
 
 
@@ -71,6 +76,8 @@ class DashboardPolygonView(APIView):
     POST /api/dashboard/in-polygon/   body: GeoJSON Polygon
     """
 
+    throttle_classes = [PolygonThrottle]
+
     def post(self, request, *args, **kwargs):
         try:
             polygon = parse_polygon(request.data)
@@ -98,6 +105,8 @@ class DashboardExportScopeView(APIView):
 
 
 class DashboardExportPdfView(APIView):
+    throttle_classes = [PdfExportBurstThrottle, PdfExportSustainedThrottle]
+
     def post(self, request, *args, **kwargs):
         token = store_export_scope(request.data)
         frontend_url = settings.PDF_EXPORT_FRONTEND_URL or request.build_absolute_uri(

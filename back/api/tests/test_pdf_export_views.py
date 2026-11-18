@@ -1,4 +1,6 @@
 from unittest import mock
+
+from django.core.cache import caches
 from django.test import SimpleTestCase, override_settings
 from rest_framework.test import APISimpleTestCase
 from django.urls import reverse
@@ -32,6 +34,9 @@ class ExportScopeViewTest(APISimpleTestCase):
 
 
 class ExportPdfViewTest(APISimpleTestCase):
+    def setUp(self):
+        caches["throttle"].clear()
+
     @override_settings(PDF_EXPORT_FRONTEND_URL="")
     def test_returns_pdf(self):
         url = reverse("dashboard-export-pdf")

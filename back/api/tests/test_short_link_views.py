@@ -1,16 +1,14 @@
 import json
 
-from django.core.cache import cache
-from django.test import TestCase, Client, override_settings
-from rest_framework.throttling import AnonRateThrottle
+from django.core.cache import caches
+from django.test import TestCase, Client
+
+from api.throttling import WriteThrottle
 
 
-@override_settings(
-    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
-)
 class ShortLinkViewTest(TestCase):
     def setUp(self):
-        cache.clear()
+        caches["throttle"].clear()
         self.client = Client()
 
     def post(self, path):
@@ -37,7 +35,7 @@ class ShortLinkViewTest(TestCase):
             self.assertEqual(self.post(path).status_code, 400)
 
     def test_throttles_anonymous_creation(self):
-        limit = AnonRateThrottle().num_requests
+        limit = WriteThrottle().num_requests
         statuses = [
             self.post(f"/plantability/{i}").status_code for i in range(limit + 1)
         ]

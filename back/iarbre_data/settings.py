@@ -271,7 +271,16 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "10/minute"},
+    # Only nginx sits in front of gunicorn: trust the last X-Forwarded-For entry,
+    # the one nginx appends, so clients cannot dodge throttles by sending their own.
+    "NUM_PROXIES": 1,
+    # See api/throttling.py
+    "DEFAULT_THROTTLE_RATES": {
+        "writes": "10/minute",
+        "polygon": "30/minute",
+        "pdf_export_burst": "2/minute",
+        "pdf_export_sustained": "20/hour",
+    },
 }
 
 DECAP_CMS_AUTH = {
@@ -378,4 +387,14 @@ CACHES = {
         },
         "TIMEOUT": 60 * 60 * 24 * 30 * 6,
     },
+    # Rate-limit counters (api/throttling.py). File-based so all gunicorn workers
+    # share them; in memory for tests so counters do not leak between runs.
+    "throttle": (
+        {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+        if IS_TESTING
+        else {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": "/var/tmp/django_cache_throttle",
+        }
+    ),
 }

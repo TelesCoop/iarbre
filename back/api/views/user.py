@@ -10,11 +10,11 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from api.models import Feedback, ShortLink
 from api.serializers import FeedbackSerializer
+from api.throttling import WriteThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ MAX_PATH_LENGTH = ShortLink._meta.get_field("path").max_length
 class FeedbackView(generics.CreateAPIView):
     queryset = Feedback
     serializer_class = FeedbackSerializer
+    throttle_classes = [WriteThrottle]
 
     @method_decorator(ensure_csrf_cookie)
     def post(self, request, *args, **kwargs):
@@ -57,7 +58,7 @@ class FeedbackView(generics.CreateAPIView):
 
 
 class ShortLinkCreateView(APIView):
-    throttle_classes = [AnonRateThrottle]
+    throttle_classes = [WriteThrottle]
 
     def post(self, request):
         path = request.data.get("path")

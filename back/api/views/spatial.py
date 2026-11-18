@@ -28,6 +28,7 @@ from api.services.spatial import (
     land_cover_at_point,
     polygon_scores,
 )
+from api.throttling import PolygonThrottle
 from iarbre_data.models import (
     BiosphereFunctionalIntegrity,
     Lcz,
@@ -146,6 +147,8 @@ class BiosphereLandCoverAtPointView(APIView):
 
 
 class ScoresInPolygonView(APIView):
+    throttle_classes = [PolygonThrottle]
+
     def _validate_datatype(self, datatype):
         if datatype not in FRONTEND_DATATYPE_MODEL_MAP:
             return Response(
