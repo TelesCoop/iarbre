@@ -1,4 +1,4 @@
-"""Spatial queries: feature details, values at a point, aggregates in an area."""
+"""Spatial queries: feature details, values at a point, scores in an area."""
 
 import logging
 
@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.constants import DataType, FrontendDataType
-from api.serializers.dashboard_serializer import DashboardSerializer
 from api.serializers.serializers import (
     BiosphereFunctionalIntegritySerializer,
     LczSerializer,
@@ -22,13 +21,6 @@ from api.serializers.serializers import (
     VulnerabilityScoresSerializer,
     VulnerabilitySerializer,
 )
-from api.services.dashboard import (
-    aggregate_plantability,
-    aggregate_plantability_from_polygon,
-    assemble_dashboard_data,
-    division_scope,
-    polygon_scope,
-)
 from api.services.rasters import sample_at_point, vegetation_height_raster
 from api.services.spatial import (
     iris_and_city_codes,
@@ -38,8 +30,6 @@ from api.services.spatial import (
 from api.utils.polygon import parse_and_validate_polygon
 from iarbre_data.models import (
     BiosphereFunctionalIntegrity,
-    City,
-    Iris,
     Lcz,
     MVTTile,
     Tile,
@@ -199,55 +189,3 @@ class ScoresInPolygonView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
-
-
-def _dashboard_response(data: dict) -> Response:
-    serializer = DashboardSerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    return Response(serializer.data)
-
-
-class DashboardView(APIView):
-    """Aggregated dashboard data for the metropole, a city, or an IRIS zone.
-
-    GET /api/dashboard/                        -> metropole (all cities)
-    GET /api/dashboard/?city_code=69123        -> single city
-    GET /api/dashboard/?iris_code=691230101    -> single IRIS
-    """
-
-    @method_decorator(cache_page(60 * 60))
-    def get(self, request, *args, **kwargs):
-        city_code = request.query_params.get("city_code")
-        iris_code = request.query_params.get("iris_code")
-
-        city, iris = None, None
-        if iris_code:
-            iris = get_object_or_404(
-                Iris.objects.select_related("city"), code=iris_code
-            )
-            city = iris.city
-        elif city_code:
-            city = get_object_or_404(City, code=city_code)
-
-        scope = division_scope(city, iris)
-        return _dashboard_response(
-            assemble_dashboard_data(scope, aggregate_plantability(scope))
-        )
-
-
-class DashboardPolygonView(APIView):
-    """Aggregated dashboard data for a user-drawn polygon.
-
-    POST /api/dashboard/in-polygon/   body: GeoJSON Polygon
-    """
-
-    def post(self, request, *args, **kwargs):
-        polygon, error_response = parse_and_validate_polygon(request.data)
-        if error_response:
-            return error_response
-
-        return _dashboard_response(
-            assemble_dashboard_data(
-                polygon_scope(polygon), aggregate_plantability_from_polygon(polygon)
-            )
-        )

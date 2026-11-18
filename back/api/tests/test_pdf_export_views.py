@@ -36,7 +36,7 @@ class ExportPdfViewTest(APISimpleTestCase):
     def test_returns_pdf(self):
         url = reverse("dashboard-export-pdf")
         with mock.patch(
-            "api.views.exports.render_dashboard_pdf",
+            "api.views.dashboard.render_dashboard_pdf",
             return_value=b"%PDF-1.7 fake",
         ) as mock_render:
             response = self.client.post(
@@ -50,7 +50,7 @@ class ExportPdfViewTest(APISimpleTestCase):
     def test_timeout_returns_504(self):
         url = reverse("dashboard-export-pdf")
         with mock.patch(
-            "api.views.exports.render_dashboard_pdf",
+            "api.views.dashboard.render_dashboard_pdf",
             side_effect=pdf_renderer.PdfExportTimeout("slow"),
         ):
             response = self.client.post(url, {"scale": "metropole"}, format="json")
