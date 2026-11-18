@@ -6,6 +6,13 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-11-18T12:22_postgres_backup.dump
+
+**Changements :** :
+
+- Les .tif en couleurs sont maintenant transparents en dehors de la Métropole
+- Le calcul de hauteur médiane n'avait pas été appliquée, seul le champ vide avait été crée et il est maintenant peuplé
+
 ## 2026-11-17T11:01_postgres_backup.dump
 
 **Changements :** :

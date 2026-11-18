@@ -23,6 +23,15 @@ STRIP_HEIGHT = 256
 BATCH_SIZE = 20000
 
 
+def clip_or_keep(geoms, *rect):
+    try:
+        return shapely.clip_by_rect(geoms, *rect)
+    except shapely.errors.GEOSException:
+        if np.ndim(geoms) == 0:
+            return geoms
+        return np.array([clip_or_keep(g, *rect) for g in geoms], dtype=object)
+
+
 def compute_median_heights(raster_path: str, strip_height: int) -> dict[int, float]:
     medians: dict[int, float] = {}
     pending: dict[int, list[np.ndarray]] = {}
@@ -55,7 +64,7 @@ def compute_median_heights(raster_path: str, strip_height: int) -> dict[int, flo
             geoms = shapely.from_wkb([bytes(g) for _, g in rows])
 
             # clip first: huge polygons (400k+ vertices) are otherwise fully re-rasterized for every strip
-            clipped = shapely.clip_by_rect(geoms, left, bottom, right, top)
+            clipped = clip_or_keep(geoms, left, bottom, right, top)
             # ponytail: burn dense 1..N indices, not pks -- int32 would overflow BigAutoField
             ids = rasterize(
                 ((g, i) for i, g in enumerate(clipped, 1) if not g.is_empty),
