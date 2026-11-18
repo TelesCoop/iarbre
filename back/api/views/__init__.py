@@ -1,17 +1,41 @@
-from .division_views import CityView, IrisView  # noqa: F401
-from .feedback_views import FeedbackView  # noqa: F401
-from .short_link_views import ShortLinkCreateView, ShortLinkDetailView  # noqa: F401
-from .tile_views import TileView  # noqa: F401
-from .heath_views import HealthCheckView  # noqa: F401
-from .qpv_views import QPVListView  # noqa: F401
-from .public_building_views import PublicBuildingListView  # noqa: F401
-from .boundary_views import CityBoundaryView  # noqa: F401
-from .database_version_views import MetadataView  # noqa: F401
-from .raster_views import RasterDownloadView  # noqa: F401
-from .wfs_views import IArbreWFSView  # noqa: F401
-from .wms_views import IArbreWMSView  # noqa: F401
-from .orthophoto_views import OrthophotoTileView  # noqa: F401
-from .biosphere_views import BiosphereLandCoverAtPointView  # noqa: F401
-from .vegetation_height_views import VegetationHeightTileView  # noqa: F401
-from .vegetation_height_views import VegetationHeightAtPointView  # noqa: F401
-from .hourly_raster_views import PetTileView, ShadowTileView  # noqa: F401
+"""API views, grouped by usage.
+
+- tiles:       map tiles served by z/x/y (MVT, raster PNG, orthophoto proxy)
+- spatial:     feature details, values at a point, aggregates in an area
+- reference:   administrative divisions and other reference layers
+- geoservices: OGC services (WFS, WMS)
+- exports:     file downloads and PDF reports
+- user:        user writes (feedback, short links)
+- system:      health check and metadata
+"""
+
+from .exports import (  # noqa: F401
+    DashboardExportPdfView,
+    DashboardExportScopeView,
+    RasterDownloadView,
+)
+from .geoservices import IArbreWFSView, IArbreWMSView  # noqa: F401
+from .reference import (  # noqa: F401
+    CityBoundaryView,
+    CityView,
+    IrisView,
+    PublicBuildingListView,
+    QPVListView,
+)
+from .spatial import (  # noqa: F401
+    BiosphereLandCoverAtPointView,
+    DashboardPolygonView,
+    DashboardView,
+    ScoresInPolygonView,
+    TileDetailsView,
+    VegetationHeightAtPointView,
+)
+from .system import HealthCheckView, MetadataView  # noqa: F401
+from .tiles import (  # noqa: F401
+    OrthophotoTileView,
+    PetTileView,
+    ShadowTileView,
+    TileView,
+    VegetationHeightTileView,
+)
+from .user import FeedbackView, ShortLinkCreateView, ShortLinkDetailView  # noqa: F401

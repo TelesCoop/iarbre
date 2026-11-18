@@ -1,41 +1,234 @@
-import io
+"""OGC geoservices: WFS (django-gisserver) and WMS (raster layers)."""
+
 import logging
-from pathlib import Path
+import time
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-import numpy as np
-import rasterio
-from django.conf import settings
+from django.contrib.gis.geos import Polygon
 from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
-from PIL import Image
-from pyproj import Transformer
-from rasterio.warp import Resampling
-from rasterio.windows import from_bounds
+from gisserver.crs import CRS, CRS84, WEB_MERCATOR, WGS84
+from gisserver.features import FeatureField, FeatureType, ServiceDescription
+from gisserver.geometries import WGS84BoundingBox
+from gisserver.views import WFSView
 from rest_framework.views import APIView
 
+from api.services.rasters import render_grayscale_png
+from api.services.wms import discover_layers, layer_bounds_wgs84
+from api.utils.wfs_renderers import GetFeature, GetPropertyValue
+from iarbre_data.models import BiosphereFunctionalIntegrity, Tile, Vegestrate
+from iarbre_data.settings import SRID_DB
+
 logger = logging.getLogger(__name__)
+# Named logger, configured in settings.LOGGING.
+wfs_logger = logging.getLogger("wfs")
+
+
+# --- WFS ----------------------------------------------------------------------
+
+
+def _parse_bbox(bbox_str):
+    """Parse a WFS BBOX param into (Polygon, srid).
+
+    Accepts: "minx,miny,maxx,maxy[,CRS_string]"
+    SRID is inferred from the optional CRS token or from coordinate magnitude.
+    Returns (None, None) on any parse failure.
+    """
+    if not bbox_str:
+        return None, None
+    parts = bbox_str.split(",")
+    if len(parts) < 4:
+        return None, None
+    try:
+        minx, miny, maxx, maxy = (float(p) for p in parts[:4])
+    except ValueError:
+        return None, None
+
+    if len(parts) > 4:
+        crs_token = parts[4]
+        if "2154" in crs_token:
+            srid = 2154
+        elif "3857" in crs_token:
+            srid = 3857
+        else:
+            srid = 4326
+    elif abs(minx) > 180 or abs(maxx) > 180:
+        srid = 2154
+    else:
+        srid = 4326
+
+    poly = Polygon.from_bbox((minx, miny, maxx, maxy))
+    poly.srid = srid
+    return poly, srid
+
+
+def _count_features(typename, bbox_poly):
+    """Return approximate feature count for the given BBOX using a fast bbox-overlap index scan."""
+    if bbox_poly is None:
+        return None
+    name = typename.lower()
+    try:
+        if "vegestrate" in name:
+            return Vegestrate.objects.filter(geometry__bboverlaps=bbox_poly).count()
+        if "biosphere" in name:
+            return BiosphereFunctionalIntegrity.objects.filter(
+                geometry__bboverlaps=bbox_poly
+            ).count()
+        return Tile.objects.filter(geometry__bboverlaps=bbox_poly).count()
+    except Exception:
+        return None
+
+
+LAMBERT93 = CRS.from_string(f"urn:ogc:def:crs:EPSG::{SRID_DB}")
+
+
+class TileFeatureType(FeatureType):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            other_crs=[LAMBERT93, WEB_MERCATOR, CRS84, WGS84],
+            show_name_field=False,
+            **kwargs,
+        )
+
+    def get_bounding_box(self):
+        return WGS84BoundingBox(4.6, 45.5, 5.2, 46.0)
+
+
+_tile_qs = Tile.objects.select_related("city").only(
+    "geometry",
+    "plantability_indice",
+    "plantability_normalized_indice",
+    "city__code",
+    "city__name",
+)
+
+_vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
+
+_biosphere_functional_integrity_qs = BiosphereFunctionalIntegrity.objects.only(
+    "geometry", "indice"
+)
+
+
+class IArbreWFSView(WFSView):
+    accept_operations = {
+        "WFS": {
+            **WFSView.accept_operations["WFS"],
+            "GetFeature": GetFeature,
+            "GetPropertyValue": GetPropertyValue,
+        }
+    }
+    xml_namespace = "http://carte.iarbre.fr/api/wfs"
+    xml_namespace_aliases = {"iarbre": "http://carte.iarbre.fr/api/wfs"}
+
+    service_description = ServiceDescription(
+        title="IArbre WFS",
+        abstract="WFS stream to download IArbre data",
+        keywords=["django-gisserver"],
+        provider_name="IArbre",
+        provider_site="https://iarbre.fr/",
+        contact_person="contact@telescoop.fr",
+    )
+
+    def dispatch(self, request, *args, **kwargs):
+        params = {k.upper(): v for k, v in request.GET.items()}
+        req = params.get("REQUEST", "").upper()
+        self.city_code = params.get("CITY_CODE")
+
+        if req == "GETTYPES":
+            types = [
+                {"name": f"iarbre:{ft.name}", "title": ft.title or ft.name}
+                for ft in self.get_feature_types()
+            ]
+            return JsonResponse(types, safe=False)
+
+        if req != "GETFEATURE":
+            return super().dispatch(request, *args, **kwargs)
+
+        typename = params.get("TYPENAMES") or params.get("TYPENAME", "unknown")
+        count_param = params.get("COUNT", "default")
+        start_index = params.get("STARTINDEX", "0")
+        output_format = params.get("OUTPUTFORMAT", "gml")
+        bbox_str = params.get("BBOX", "")
+
+        bbox_poly, srid = _parse_bbox(bbox_str)
+        bbox_area = None
+        if bbox_poly:
+            ext = bbox_poly.extent
+            bbox_area = abs((ext[2] - ext[0]) * (ext[3] - ext[1]))
+
+        feature_count = _count_features(typename, bbox_poly)
+
+        wfs_logger.info(
+            "START typename=%s count_param=%s startindex=%s format=%s "
+            "bbox_srid=%s bbox_area=%.2f feature_count=%s",
+            typename,
+            count_param,
+            start_index,
+            output_format,
+            srid,
+            bbox_area or 0.0,
+            feature_count,
+        )
+
+        t_start = time.monotonic()
+        response = super().dispatch(request, *args, **kwargs)
+
+        if hasattr(response, "streaming_content"):
+            original_content = response.streaming_content
+            t_ref = t_start
+
+            def timed_stream():
+                yield from original_content
+                wfs_logger.info(
+                    "END typename=%s elapsed=%.3fs",
+                    typename,
+                    time.monotonic() - t_ref,
+                )
+
+            response.streaming_content = timed_stream()
+
+        return response
+
+    def get_feature_types(self):
+        tile_qs = (
+            _tile_qs.filter(city__code=self.city_code) if self.city_code else _tile_qs
+        )
+        return [
+            TileFeatureType(
+                tile_qs,
+                name="plantability",
+                title="Plantabilité",
+                fields=[
+                    "geometry",
+                    "plantability_indice",
+                    "plantability_normalized_indice",
+                    FeatureField("city_code", model_attribute="city.code"),
+                    FeatureField("city_name", model_attribute="city.name"),
+                ],
+            ),
+            TileFeatureType(
+                _vegestrate_qs,
+                name="vegestrate",
+                title="Végéstrate",
+                fields=["geometry", "strate", "surface"],
+            ),
+            TileFeatureType(
+                _biosphere_functional_integrity_qs,
+                name="biosphere_functional_integrity",
+                title="Intégrité fonctionnelle de la biosphère",
+                fields=["geometry", "indice"],
+            ),
+        ]
+
+
+# --- WMS ----------------------------------------------------------------------
+
 
 _XLINK = "http://www.w3.org/1999/xlink"
 _SUPPORTED_CRS = ("EPSG:4326", "EPSG:3857", "EPSG:2154")
 _CAPABILITIES_CACHE_TTL = 60 * 60
 _MAX_SIZE = 4096
-_WMS_RASTER_DIR = "rasters/WMS"
-
-
-def _discover_layers() -> dict:
-    """Discover the available WMS layers by globbing ``media/rasters/WMS/*.tif``.
-
-    Each ``<name>.tif`` becomes the layer ``iarbre:<name>``. The layer list is
-    driven by what is on disk, not by a static registry.
-    """
-    wms_root = Path(settings.MEDIA_ROOT) / _WMS_RASTER_DIR
-    if not wms_root.is_dir():
-        return {}
-    return {
-        f"iarbre:{tif.stem}": {"title": tif.stem, "path": tif}
-        for tif in sorted(wms_root.glob("*.tif"))
-    }
 
 
 class IArbreWMSView(APIView):
@@ -73,7 +266,7 @@ class IArbreWMSView(APIView):
         return JsonResponse(
             [
                 {"name": name, "title": meta["title"]}
-                for name, meta in _discover_layers().items()
+                for name, meta in discover_layers().items()
             ],
             safe=False,
         )
@@ -127,7 +320,7 @@ class IArbreWMSView(APIView):
         for crs in _SUPPORTED_CRS:
             SubElement(root_layer, crs_tag).text = crs
 
-        for name, meta in _discover_layers().items():
+        for name, meta in discover_layers().items():
             layer = SubElement(root_layer, "Layer")
             layer.set("queryable", "0")
             SubElement(layer, "Name").text = name
@@ -139,16 +332,7 @@ class IArbreWMSView(APIView):
             if not raster_path.exists():
                 continue
 
-            bounds_key = f"wms:bounds:{name}"
-            bounds = cache.get(bounds_key)
-            if bounds is None:
-                with rasterio.open(raster_path) as src:
-                    t = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
-                    west, south = t.transform(src.bounds.left, src.bounds.bottom)
-                    east, north = t.transform(src.bounds.right, src.bounds.top)
-                bounds = (west, south, east, north)
-                cache.set(bounds_key, bounds, timeout=None)
-            west, south, east, north = bounds
+            west, south, east, north = layer_bounds_wgs84(name, raster_path)
 
             if is_130:
                 geo_bb = SubElement(layer, "EX_GeographicBoundingBox")
@@ -184,7 +368,7 @@ class IArbreWMSView(APIView):
     def _get_map(self, request, version):
         params = request.query_params
         layer_name = params.get("LAYERS", "")
-        layers = _discover_layers()
+        layers = discover_layers()
         layer = layers.get(layer_name)
         if not layer:
             return HttpResponse(
@@ -228,21 +412,15 @@ class IArbreWMSView(APIView):
             )
 
         try:
-            return self._render_layer(
-                raster_path,
-                crs,
-                west,
-                south,
-                east,
-                north,
-                width,
-                height,
+            png = render_grayscale_png(
+                raster_path, crs, (west, south, east, north), width, height
             )
         except Exception:
             logger.exception("Error generating WMS GetMap for layer %s", layer_name)
             return HttpResponse(
                 "Rendering error", status=500, content_type="text/plain"
             )
+        return HttpResponse(png, content_type="image/png")
 
     @staticmethod
     def _parse_size(params) -> tuple[int, int]:
@@ -254,54 +432,3 @@ class IArbreWMSView(APIView):
         if not (0 < width <= _MAX_SIZE and 0 < height <= _MAX_SIZE):
             raise ValueError(f"WIDTH and HEIGHT must be between 1 and {_MAX_SIZE}")
         return width, height
-
-    def _render_layer(self, raster_path, crs, west, south, east, north, width, height):
-        with rasterio.open(raster_path) as src:
-            transformer = Transformer.from_crs(crs, src.crs, always_xy=True)
-            left, bottom = transformer.transform(west, south)
-            right, top = transformer.transform(east, north)
-
-            b = src.bounds
-            if right < b.left or left > b.right or top < b.bottom or bottom > b.top:
-                return self._empty_image(width, height)
-
-            window = from_bounds(left, bottom, right, top, transform=src.transform)
-            data = src.read(
-                1,
-                window=window,
-                out_shape=(height, width),
-                resampling=Resampling.nearest,
-            )
-            nodata = src.nodata
-
-        img = self._grayscale_image(data, nodata)
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        buf.seek(0)
-        return HttpResponse(buf.getvalue(), content_type="image/png")
-
-    @staticmethod
-    def _grayscale_image(data: np.ndarray, nodata) -> Image.Image:
-        """Encode raw raster values as a grayscale ("LA") PNG, no color mapping.
-
-        Pixel intensity is the raw band value (clipped to 0-255); nodata and NaN
-        pixels are made fully transparent so the stream carries no color code.
-        """
-        arr = np.asarray(data)
-        transparent = np.zeros(arr.shape, dtype=bool)
-        if np.issubdtype(arr.dtype, np.floating):
-            transparent |= np.isnan(arr)
-        if nodata is not None:
-            transparent |= arr == nodata
-
-        gray = np.clip(np.nan_to_num(arr, nan=0.0), 0, 255).astype(np.uint8)
-        alpha = np.where(transparent, 0, 255).astype(np.uint8)
-        return Image.fromarray(np.dstack([gray, alpha]), mode="LA")
-
-    def _empty_image(self, width: int, height: int) -> HttpResponse:
-        """Return a transparent PNG of the requested dimensions."""
-        img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        buf.seek(0)
-        return HttpResponse(buf.getvalue(), content_type="image/png")

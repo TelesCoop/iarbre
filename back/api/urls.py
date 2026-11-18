@@ -1,34 +1,33 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from .views.tile_views import TileDetailsView, ScoresInPolygonView
-from .views.dashboard_views import (
-    DashboardView,
-    DashboardPolygonView,
-    DashboardExportScopeView,
-    DashboardExportPdfView,
-)
 from .views import (
-    CityView,
-    IrisView,
-    FeedbackView,
-    ShortLinkCreateView,
-    ShortLinkDetailView,
-    TileView,
-    HealthCheckView,
-    QPVListView,
-    PublicBuildingListView,
+    BiosphereLandCoverAtPointView,
     CityBoundaryView,
-    MetadataView,
-    RasterDownloadView,
+    CityView,
+    DashboardExportPdfView,
+    DashboardExportScopeView,
+    DashboardPolygonView,
+    DashboardView,
+    FeedbackView,
+    HealthCheckView,
     IArbreWFSView,
     IArbreWMSView,
+    IrisView,
+    MetadataView,
     OrthophotoTileView,
-    BiosphereLandCoverAtPointView,
-    VegetationHeightTileView,
-    VegetationHeightAtPointView,
     PetTileView,
+    PublicBuildingListView,
+    QPVListView,
+    RasterDownloadView,
+    ScoresInPolygonView,
     ShadowTileView,
+    ShortLinkCreateView,
+    ShortLinkDetailView,
+    TileDetailsView,
+    TileView,
+    VegetationHeightAtPointView,
+    VegetationHeightTileView,
 )
 
 router = routers.DefaultRouter()

@@ -8,7 +8,7 @@ from PIL import Image
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from api.views.raster_tile_views import NODATA_HEIGHT
+from api.services.rasters import NODATA_HEIGHT
 from iarbre_data.management.commands.populate import Command as PopulateCommand
 
 RASTER_LNG_MIN, RASTER_LNG_MAX = 5.52, 5.58

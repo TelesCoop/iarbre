@@ -10,7 +10,7 @@ from django.db.models import Avg
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.dashboard_views import _avg_from_counts, _safe_round
+from api.services.dashboard import avg_from_counts, safe_round
 from iarbre_data.management.commands.populate import CITY_CODE
 from iarbre_data.management.commands.populate import Command as PopulateCommand
 from iarbre_data.models import City, Iris, Tile, Vulnerability
@@ -131,7 +131,7 @@ class DashboardViewTest(TestCase):
     def test_metropole_plantability(self):
         data = self.client.get(self.url).json()
         plantability = data["plantability"]
-        expected = _safe_round(_avg_from_counts(self.city.plantability_counts))
+        expected = safe_round(avg_from_counts(self.city.plantability_counts))
         self.assertEqual(plantability["averageNormalizedIndice"], expected)
         divisions = plantability["distributionByDivision"]
         self.assertEqual(len(divisions), City.objects.count())
@@ -149,7 +149,7 @@ class DashboardViewTest(TestCase):
         data = self.client.get(self.url, {"iris_code": self.iris.code}).json()
         self.assertEqual(data["city"]["code"], CITY_CODE)
         self.assertEqual(data["plantability"]["distributionByDivision"], [])
-        expected = _safe_round(_avg_from_counts(self.iris.plantability_counts))
+        expected = safe_round(avg_from_counts(self.iris.plantability_counts))
         self.assertAlmostEqual(
             data["plantability"]["averageNormalizedIndice"], expected
         )
@@ -177,10 +177,10 @@ class DashboardViewTest(TestCase):
             avg_expo_day=Avg("expo_index_day"),
             avg_expo_night=Avg("expo_index_night"),
         )
-        self.assertEqual(vuln["averageDay"], _safe_round(expected["avg_day"]))
-        self.assertEqual(vuln["averageNight"], _safe_round(expected["avg_night"]))
-        self.assertEqual(vuln["expoDay"], _safe_round(expected["avg_expo_day"]))
-        self.assertEqual(vuln["expoNight"], _safe_round(expected["avg_expo_night"]))
+        self.assertEqual(vuln["averageDay"], safe_round(expected["avg_day"]))
+        self.assertEqual(vuln["averageNight"], safe_round(expected["avg_night"]))
+        self.assertEqual(vuln["expoDay"], safe_round(expected["avg_expo_day"]))
+        self.assertEqual(vuln["expoNight"], safe_round(expected["avg_expo_night"]))
 
     def test_vegetation_values(self):
         data = self.client.get(self.url).json()
@@ -206,7 +206,7 @@ class DashboardViewTest(TestCase):
 
     def test_buildings_value(self):
         data = self.client.get(self.url).json()
-        expected = _safe_round(self.city.geometry.area)
+        expected = safe_round(self.city.geometry.area)
         self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], expected)
 
 
@@ -403,17 +403,17 @@ class DashboardPolygonViewTest(TestCase):
 
 class HelperFunctionsTest(SimpleTestCase):
     def test_safe_round_none_returns_zero(self):
-        self.assertEqual(_safe_round(None), 0)
+        self.assertEqual(safe_round(None), 0)
 
     def test_safe_round_value(self):
-        self.assertEqual(_safe_round(6.666), 6.7)
+        self.assertEqual(safe_round(6.666), 6.7)
 
     def test_avg_from_counts_empty(self):
-        self.assertEqual(_avg_from_counts({}), 0.0)
+        self.assertEqual(avg_from_counts({}), 0.0)
 
     def test_avg_from_counts_weighted(self):
-        self.assertAlmostEqual(_avg_from_counts({"0": 1, "10": 1}), 5.0)
+        self.assertAlmostEqual(avg_from_counts({"0": 1, "10": 1}), 5.0)
 
     def test_avg_from_counts_realistic(self):
         counts = {"0": 10, "2": 20, "4": 30, "6": 40, "8": 50, "10": 60}
-        self.assertAlmostEqual(_avg_from_counts(counts), 6.667, places=2)
+        self.assertAlmostEqual(avg_from_counts(counts), 6.667, places=2)
