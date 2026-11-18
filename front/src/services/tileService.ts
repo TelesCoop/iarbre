@@ -31,6 +31,17 @@ export const getTileDetails = async (
   }
 }
 
+export const getPlantability2026AtPoint = async (
+  grid: number,
+  lat: number,
+  lng: number
+): Promise<PlantabilityData | null> => {
+  const { data } = await useApiGet<PlantabilityData>(
+    `tiles/plantability-2026/value/?grid=${grid}&lat=${lat}&lng=${lng}`
+  )
+  return data ?? null
+}
+
 export const getScoresInPolygon = async (
   polygonCoordinates: [number, number][],
   dataType: DataType

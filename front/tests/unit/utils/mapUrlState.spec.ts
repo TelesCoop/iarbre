@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { buildMapDisplayQuery, parseMapDisplayState } from "@/utils/mapUrlState"
+import { DEFAULT_MAP_STYLE } from "@/utils/constants"
 import {
   DataType,
   MapStyle,
@@ -12,7 +13,7 @@ describe("parseMapDisplayState", () => {
   it("returns the default display when the query is empty", () => {
     expect(parseMapDisplayState({}, DataType.PLANTABILITY)).toEqual({
       filters: [],
-      mapStyle: MapStyle.OSM,
+      mapStyle: DEFAULT_MAP_STYLE,
       overlayLayers: []
     })
   })
@@ -26,7 +27,7 @@ describe("parseMapDisplayState", () => {
   it("ignores a basemap the background selector does not offer", () => {
     const state = parseMapDisplayState({ basemap: "cadastre" }, DataType.PLANTABILITY)
 
-    expect(state.mapStyle).toBe(MapStyle.OSM)
+    expect(state.mapStyle).toBe(DEFAULT_MAP_STYLE)
   })
 
   it("reads the overlay layers", () => {
@@ -102,21 +103,21 @@ describe("parseMapDisplayState", () => {
 describe("buildMapDisplayQuery", () => {
   it("omits everything for the default display", () => {
     expect(
-      buildMapDisplayQuery({ filters: [], mapStyle: MapStyle.OSM, overlayLayers: [] })
+      buildMapDisplayQuery({ filters: [], mapStyle: DEFAULT_MAP_STYLE, overlayLayers: [] })
     ).toEqual({})
   })
 
   it("writes a non-default basemap", () => {
     expect(
-      buildMapDisplayQuery({ filters: [], mapStyle: MapStyle.ORTHOPHOTO, overlayLayers: [] })
-    ).toEqual({ basemap: "orthophoto" })
+      buildMapDisplayQuery({ filters: [], mapStyle: MapStyle.SATELLITE, overlayLayers: [] })
+    ).toEqual({ basemap: "satellite" })
   })
 
   it("writes the visible overlay layers as a comma-separated list", () => {
     expect(
       buildMapDisplayQuery({
         filters: [],
-        mapStyle: MapStyle.OSM,
+        mapStyle: DEFAULT_MAP_STYLE,
         overlayLayers: [OverlayLayer.QPV, OverlayLayer.BOUNDARY]
       })
     ).toEqual({ layers: "qpv,boundary" })
@@ -124,7 +125,7 @@ describe("buildMapDisplayQuery", () => {
 
   it("writes the filters as a comma-separated list", () => {
     expect(
-      buildMapDisplayQuery({ filters: [2, 4], mapStyle: MapStyle.OSM, overlayLayers: [] })
+      buildMapDisplayQuery({ filters: [2, 4], mapStyle: DEFAULT_MAP_STYLE, overlayLayers: [] })
     ).toEqual({ filters: "2,4" })
   })
 
@@ -132,7 +133,7 @@ describe("buildMapDisplayQuery", () => {
     expect(
       buildMapDisplayQuery({
         filters: ["Entre 0% et 12%", "Entre 87% et 100%"],
-        mapStyle: MapStyle.OSM,
+        mapStyle: DEFAULT_MAP_STYLE,
         overlayLayers: []
       })
     ).toEqual({ filters: "0-12,87-100" })
@@ -152,7 +153,7 @@ describe("buildMapDisplayQuery", () => {
     expect(
       buildMapDisplayQuery({
         filters: [],
-        mapStyle: MapStyle.OSM,
+        mapStyle: DEFAULT_MAP_STYLE,
         overlayLayers: [],
         publicBuildingCategories: ALL_PUBLIC_BUILDING_CATEGORIES
       })
@@ -163,7 +164,7 @@ describe("buildMapDisplayQuery", () => {
     expect(
       buildMapDisplayQuery({
         filters: [],
-        mapStyle: MapStyle.OSM,
+        mapStyle: DEFAULT_MAP_STYLE,
         overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
         publicBuildingCategories: [
           PublicBuildingCategory.SANTE,
@@ -177,7 +178,7 @@ describe("buildMapDisplayQuery", () => {
     expect(
       buildMapDisplayQuery({
         filters: [],
-        mapStyle: MapStyle.OSM,
+        mapStyle: DEFAULT_MAP_STYLE,
         overlayLayers: [OverlayLayer.QPV],
         publicBuildingCategories: [PublicBuildingCategory.SANTE]
       })
@@ -187,7 +188,7 @@ describe("buildMapDisplayQuery", () => {
   it("writes an empty value when no public building category is selected", () => {
     const state = {
       filters: [],
-      mapStyle: MapStyle.OSM,
+      mapStyle: DEFAULT_MAP_STYLE,
       overlayLayers: [OverlayLayer.PUBLIC_BUILDINGS],
       publicBuildingCategories: []
     }

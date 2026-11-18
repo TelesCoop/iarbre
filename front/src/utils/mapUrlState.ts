@@ -10,6 +10,7 @@ import {
 } from "@/utils/enum"
 import { MAP_STYLE_OPTIONS } from "@/utils/mapStyleOptions"
 import { HOURLY_RASTERS } from "@/utils/hourlyRaster"
+import { PLANTABILITY_2026_GRIDS } from "@/utils/plantability2026"
 import { BIOSPHERE_CLASSES, BIOSPHERE_DETAIL_CLASSES } from "@/utils/biosphere_functional_integrity"
 
 const LIST_SEPARATOR = ","
@@ -17,7 +18,8 @@ const LIST_SEPARATOR = ","
 const NUMERIC_FILTER_DATA_TYPES: (DataType | null)[] = [
   DataType.PLANTABILITY,
   DataType.VULNERABILITY,
-  ...(Object.keys(HOURLY_RASTERS) as DataType[])
+  ...(Object.keys(HOURLY_RASTERS) as DataType[]),
+  ...(Object.keys(PLANTABILITY_2026_GRIDS) as DataType[])
 ]
 
 const BIOSPHERE_ALL_CLASSES = [...BIOSPHERE_CLASSES, ...BIOSPHERE_DETAIL_CLASSES]

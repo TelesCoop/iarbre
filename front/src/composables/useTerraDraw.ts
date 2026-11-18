@@ -10,6 +10,7 @@ import { terraDrawStyles } from "@/utils/color"
 import { computePolygonAreaM2 } from "@/utils/geo"
 import { MAX_SHAPE_AREA_M2 } from "@/utils/constants"
 import { isHourlyRaster } from "@/utils/hourlyRaster"
+import { isPlantability2026 } from "@/utils/plantability2026"
 import {
   TerraDraw,
   TerraDrawPointMode,
@@ -222,7 +223,12 @@ export function useShapeDrawing() {
   ): Promise<PlantabilityData | VulnerabilityData | ClimateData | null> => {
     if (!terraDraw.value) return null
 
-    if (dataType === DataType.CLIMATE_ZONE || isHourlyRaster(dataType)) return null
+    if (
+      dataType === DataType.CLIMATE_ZONE ||
+      isHourlyRaster(dataType) ||
+      isPlantability2026(dataType)
+    )
+      return null
 
     // Pick the drawn polygon explicitly; select mode also injects helper Point features.
     const polygon = terraDraw.value
