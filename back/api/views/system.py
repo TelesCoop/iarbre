@@ -1,8 +1,17 @@
-from telescoop_backup.backup import get_backups, FILE_FORMAT
-from rest_framework.views import APIView
-from rest_framework.response import Response
+"""Operations: health check and data metadata."""
+
+import django
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from telescoop_backup.backup import FILE_FORMAT, get_backups
+
+
+class HealthCheckView(APIView):
+    def get(self, request, *args, **kwargs):
+        django.db.connection.ensure_connection()
+        return Response("OK")
 
 
 class MetadataView(APIView):
