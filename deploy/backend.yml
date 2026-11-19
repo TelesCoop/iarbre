@@ -58,14 +58,9 @@
 
     - name: Use s3 backup if dedicated_database (by default on prod, preprod)
       block:
-        - name: Clear cache
+        - name: Delete MVT tiles before recovery
           shell:
-            cmd: "{{ project_slug }}-ctl clean_mvt_files && {{ project_slug }}-ctl clear_cache"
-
-        - name: Clear nginx API cache
-          shell:
-            cmd: "find /var/cache/nginx/api -mindepth 1 -delete"
-          become: true
+            cmd: "{{ project_slug }}-ctl clean_mvt_files"
 
         - name: Check if .db_recover_target exists
           stat:
@@ -117,6 +112,17 @@
         - name: Remove test fixtures (Villard-de-Lans) from restored database
           shell:
             cmd: "{{ project_slug }}-ctl delete_test_data"
+
+        # Purge caches only once the data is final: the API keeps serving during
+        # the recovery, so purging earlier lets stale or partial responses back in.
+        - name: Clear Django cache
+          shell:
+            cmd: "{{ project_slug }}-ctl clear_cache"
+
+        - name: Clear nginx API cache
+          shell:
+            cmd: "find /var/cache/nginx/api -mindepth 1 -delete"
+          become: true
 
       when: dedicated_database and (clonecode.changed or force_update is defined)
 
