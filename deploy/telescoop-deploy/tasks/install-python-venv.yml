@@ -1,7 +1,52 @@
-- name: Install venv package
+# Ubuntu ne fournit qu'une seule version de Python dans ses dépôts (3.10 sur
+# 22.04, 3.12 sur 24.04). Le PPA deadsnakes fournit les autres versions.
+- name: Install software-properties-common (needed to manage apt repositories)
+  apt:
+    name: software-properties-common
+  when: python_version is defined
+
+- name: Add deadsnakes PPA for Python {{ python_version | default('3') }}
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+    state: present
+  when: python_version is defined
+
+- name: Install python{{ python_version | default('3') }} and venv package
   apt:
     name:
-      - python3-venv
+      - "python{{ python_version | default('3') }}"
+      - "python{{ python_version | default('3') }}-venv"
+      # headers nécessaires pour compiler les paquets sans wheel (ex. psycopg2)
+      - "python{{ python_version | default('3') }}-dev"
+      # headers GDAL : fiona et rasterio se compilent depuis les sources
+      # lorsqu'ils n'ont pas de wheel pour la version de Python choisie
+      - libgdal-dev
+
+# Un venv créé avec une autre version de Python n'a pas de bin/python{{ version }}.
+# Si le venv existant date d'avant un changement de version, on le supprime pour
+# qu'il soit recréé ci-dessous avec le bon interpréteur.
+- name: Check whether the existing venv already uses python{{ python_version | default('3') }}
+  stat:
+    path: "{{ venv.path }}/bin/python{{ python_version | default('3') }}"
+  register: venv_matches_python_version
+
+# Le venv ne doit pas voir les paquets Python du système (--system-site-packages) :
+# ils sont compilés pour le python3 de la distribution et plantent sous une autre
+# version (ex. cryptography/pyOpenSSL importés par boto3). Un venv créé avec cette
+# option est reconstruit.
+- name: Check whether the existing venv exposes system site-packages
+  command:
+    cmd: grep -q "^include-system-site-packages = true" {{ venv.path }}/pyvenv.cfg
+  register: venv_has_system_site_packages
+  failed_when: false
+  changed_when: false
+
+- name: Remove venv if it's on a different Python version or exposes system site-packages
+  file:
+    path: "{{ venv.path }}"
+    state: absent
+  register: venv_removed
+  when: not venv_matches_python_version.stat.exists or venv_has_system_site_packages.rc == 0
 
 - name: Create venv directory and set permission
   file:
@@ -12,7 +57,7 @@
 
 - name: Create venv {{ venv.path }}
   command:
-    cmd: python3 -m venv --system-site-packages {{ venv.path }}
+    cmd: python{{ python_version | default('3') }} -m venv {{ venv.path }}
     creates: "{{ venv.path }}/bin/python"
   become: true
   become_user: "{{ main_user }}"
@@ -21,4 +66,4 @@
   pip:
     requirements: "{{ requirements }}"
     virtualenv: "{{ venv.path }}"
-  when: clonecode.changed or force_update is defined
+  when: clonecode.changed or force_update is defined or venv_removed.changed
