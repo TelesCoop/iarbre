@@ -123,7 +123,8 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-    location /api/wfs/ {
+    # /api/wfs/ and /api/wms/: legacy aliases of /api/v1/, kept for saved QGIS projects.
+    location ~ ^/api/(v1/)?wfs/ {
         proxy_pass         http://app_servers_gisserver_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;
@@ -139,7 +140,7 @@ server {
         add_header         X-Cache-Status $upstream_cache_status;
     }
 
-    location /api/wms/ {
+    location ~ ^/api/(v1/)?wms/ {
         proxy_pass         http://app_servers_gisserver_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;
@@ -149,7 +150,8 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-    location ~ ^/api/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)/ {
+    # Public API, legacy /api/rasters/ alias and the frontend-only hourly raster tiles.
+    location ~ ^/api/(v1/(tiles|dashboard|boundaries|rasters|cities|iris|metadata)|rasters|app/tiles)/ {
         proxy_pass         http://app_servers_{{ project_slug }};
         proxy_redirect     off;
         proxy_set_header   Host $host;

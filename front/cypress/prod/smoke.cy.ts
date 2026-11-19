@@ -29,7 +29,7 @@ describe("Map layers", () => {
 
   dataTypes.forEach((dataType) => {
     it(`loads ${dataType} tiles`, () => {
-      cy.intercept("GET", "**/api/tiles/**/*.mvt").as("tiles")
+      cy.intercept("GET", "**/api/v1/tiles/**/*.mvt").as("tiles")
       cy.visit(`/${dataType}/${MAP_POSITION}`)
       cy.getBySel("map-component").should("exist")
       cy.get("@consoleInfo").should("have.been.calledWithMatch", /cypress: map data .* loaded/)
@@ -41,7 +41,7 @@ describe("Map layers", () => {
 
 describe("Pages", () => {
   it("dashboard renders with live data", () => {
-    cy.intercept("GET", "**/api/dashboard/").as("dashboard")
+    cy.intercept("GET", "**/api/v1/dashboard/").as("dashboard")
     cy.visit("/dashboard")
     cy.wait("@dashboard").its("response.statusCode").should("eq", 200)
     cy.get(".widget-card").should("have.length.greaterThan", 0)

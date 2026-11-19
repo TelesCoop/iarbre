@@ -76,8 +76,9 @@ Environ 30min, d'abord sur ordi puis sur mobile.
 
 **SIG**
 
-- [ ] QGIS : ajouter le flux WFS (`https://carte.iarbre.fr/api/wfs/`) et charger une couche
-- [ ] QGIS : ajouter le flux WMS (`https://carte.iarbre.fr/api/wms/`)
+- [ ] QGIS : ajouter le flux WFS (`https://carte.iarbre.fr/api/v1/wfs/`) et charger une couche
+- [ ] QGIS : ajouter le flux WMS (`https://carte.iarbre.fr/api/v1/wms/`)
+- [ ] QGIS : les anciennes adresses (`/api/wfs/`, `/api/wms/`) répondent toujours
 
 **Transverse**
 

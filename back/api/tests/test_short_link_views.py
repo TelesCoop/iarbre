@@ -13,7 +13,7 @@ class ShortLinkViewTest(TestCase):
 
     def post(self, path):
         return self.client.post(
-            "/api/short-links/",
+            "/api/app/short-links/",
             json.dumps({"path": path}),
             content_type="application/json",
         )
@@ -27,7 +27,7 @@ class ShortLinkViewTest(TestCase):
         existing = self.post(path)
         self.assertEqual(existing.status_code, 200)
         self.assertEqual(existing.json()["code"], code)
-        response = self.client.get(f"/api/short-links/{code}/")
+        response = self.client.get(f"/api/app/short-links/{code}/")
         self.assertEqual(response.json()["path"], path)
 
     def test_rejects_external_path(self):
@@ -42,4 +42,4 @@ class ShortLinkViewTest(TestCase):
         self.assertEqual(statuses, [201] * limit + [429])
 
     def test_unknown_code(self):
-        self.assertEqual(self.client.get("/api/short-links/nope/").status_code, 404)
+        self.assertEqual(self.client.get("/api/app/short-links/nope/").status_code, 404)

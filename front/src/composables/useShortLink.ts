@@ -1,8 +1,8 @@
 import { ref } from "vue"
-import { useApiPost } from "@/api"
+import { useAppApiPost } from "@/api"
 
 export const fetchShortLink = async (): Promise<string> => {
-  const { data } = await useApiPost<{ code: string }>("short-links/", {
+  const { data } = await useAppApiPost<{ code: string }>("short-links/", {
     path: window.location.pathname + window.location.search
   })
   return data ? `${window.location.origin}/s/${data.code}` : window.location.href

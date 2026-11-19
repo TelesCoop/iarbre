@@ -1,5 +1,15 @@
-export function getFullBaseApiUrl(): string {
+function getApiRootUrl(): string {
   return import.meta.env.VITE_BASE_API_URL || "http://localhost:8000/api"
+}
+
+/** Public API: stable contract, also used by third parties. */
+export function getPublicApiUrl(): string {
+  return `${getApiRootUrl()}/v1`
+}
+
+/** Internal API: routes serving this frontend only. */
+export function getAppApiUrl(): string {
+  return `${getApiRootUrl()}/app`
 }
 
 type MyHeaders = { [key: string]: string }
@@ -28,14 +38,15 @@ function getCsrfCookie() {
   return csfrRow.split("=")[1]
 }
 
-async function useApiRequestWithCsrfToken<Type>(
+async function apiRequestWithCsrfToken<Type>(
+  baseUrl: string,
   path: string,
   method: string,
   payload = {},
   onErrorMessage: string = ""
 ): Promise<{ data: Type | undefined; error: unknown }> {
   try {
-    const response = await fetch(`${getFullBaseApiUrl()}/${path}`, {
+    const response = await fetch(`${baseUrl}/${path}`, {
       method: method,
       body: JSON.stringify(payload),
       credentials: "include",
@@ -66,16 +77,13 @@ async function useApiRequestWithCsrfToken<Type>(
   }
 }
 
-export async function useApiPost<Type>(path: string, payload = {}, onErrorMessage: string = "") {
-  return useApiRequestWithCsrfToken<Type>(path, "POST", payload, onErrorMessage)
-}
-
-export async function useApiGet<Type>(
+async function apiGet<Type>(
+  baseUrl: string,
   path: string,
   onErrorMessage: string = ""
 ): Promise<{ data: Type | undefined; error: unknown }> {
   try {
-    const response = await fetch(`${getFullBaseApiUrl()}/${path}`, {
+    const response = await fetch(`${baseUrl}/${path}`, {
       method: "GET",
       credentials: "include",
       headers: getHeaders()
@@ -92,4 +100,20 @@ export async function useApiGet<Type>(
     }
     return { error, data: undefined }
   }
+}
+
+export async function useApiPost<Type>(path: string, payload = {}, onErrorMessage: string = "") {
+  return apiRequestWithCsrfToken<Type>(getPublicApiUrl(), path, "POST", payload, onErrorMessage)
+}
+
+export async function useApiGet<Type>(path: string, onErrorMessage: string = "") {
+  return apiGet<Type>(getPublicApiUrl(), path, onErrorMessage)
+}
+
+export async function useAppApiPost<Type>(path: string, payload = {}, onErrorMessage: string = "") {
+  return apiRequestWithCsrfToken<Type>(getAppApiUrl(), path, "POST", payload, onErrorMessage)
+}
+
+export async function useAppApiGet<Type>(path: string, onErrorMessage: string = "") {
+  return apiGet<Type>(getAppApiUrl(), path, onErrorMessage)
 }

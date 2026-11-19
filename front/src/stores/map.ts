@@ -34,7 +34,7 @@ import {
 } from "@/utils/enum"
 import mapStyles from "@/map/map-style.json"
 import { applyMapStyleAttributions } from "@/utils/mapStyleOptions"
-import { getFullBaseApiUrl } from "@/api"
+import { getAppApiUrl, getPublicApiUrl } from "@/api"
 import { getQPVData } from "@/services/qpvService"
 import {
   getPublicBuildingsData,
@@ -278,7 +278,8 @@ export const useMapStore = defineStore("map", () => {
   const loadMapStyle = (style: MapStyle): StyleSpecification => {
     const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY
     const rawStyle = JSON.stringify(mapStyles[style])
-      .replace("{API_BASE_URL}", getFullBaseApiUrl())
+      .replace(/\{API_BASE_URL\}/g, getPublicApiUrl())
+      .replace(/\{APP_API_URL\}/g, getAppApiUrl())
       .replace(/\?key=\{CARTO_API_KEY\}/g, cartoApiKey ? `?key=${cartoApiKey}` : "")
     return applyMapStyleAttributions(JSON.parse(rawStyle)) as StyleSpecification
   }
@@ -742,7 +743,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    const fullBaseApiUrl = getFullBaseApiUrl()
+    const fullBaseApiUrl = getPublicApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
 
     const hourlyRaster = HOURLY_RASTERS[datatype]
@@ -865,7 +866,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const hourlyRasterTileUrl = (hourlyRaster: HourlyRaster) =>
-    buildTileUrl(getFullBaseApiUrl(), hourlyRaster, rasterHour.value, rasterYear.value)
+    buildTileUrl(getAppApiUrl(), hourlyRaster, rasterHour.value, rasterYear.value)
 
   const applyHourlyRasterTilesOnceLoaded = (mapInstance: Map) => {
     const datatype = selectedDataType.value
@@ -1132,7 +1133,7 @@ export const useMapStore = defineStore("map", () => {
   }
 
   const addCadastreLayer = (mapInstance: Map) => {
-    const fullBaseApiUrl = getFullBaseApiUrl()
+    const fullBaseApiUrl = getPublicApiUrl()
 
     if (!mapInstance.getSource("cadastre-source")) {
       mapInstance.addSource("cadastre-source", {

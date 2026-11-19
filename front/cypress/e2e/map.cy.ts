@@ -376,7 +376,7 @@ describe("Map - Desktop", () => {
   })
 
   it("keeps the basemap and the overlay layers when coming back from the dashboard", () => {
-    cy.intercept("GET", "**/api/dashboard/", { fixture: "dashboard.json" })
+    cy.intercept("GET", "**/api/v1/dashboard/", { fixture: "dashboard.json" })
     cy.getBySel("bg-selector-toggle").should("be.visible").click()
     cy.get(`[data-cy="bg-option-${MapStyle.SATELLITE}"]`).should("be.visible").click()
     cy.getBySel("cadastre-toggle").filter(":visible").should("be.visible").click()

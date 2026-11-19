@@ -5,9 +5,10 @@ describe("Share the current map view", () => {
   beforeEach(() => {
     cy.viewport(1024, 768)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("POST", "**/api/short-links/", { statusCode: 201, body: { code: "r4Vd9x" } }).as(
-      "shortLink"
-    )
+    cy.intercept("POST", "**/api/app/short-links/", {
+      statusCode: 201,
+      body: { code: "r4Vd9x" }
+    }).as("shortLink")
     cy.visit("/plantability/14/45.75773/4.85377")
     cy.get("@consoleInfo").should(
       "have.been.calledWith",

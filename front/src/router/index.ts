@@ -3,7 +3,7 @@ import MapView from "@/views/MapView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
-import { useApiGet } from "@/api"
+import { useAppApiGet } from "@/api"
 import { updatePageMeta } from "@/utils/seo"
 
 const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE}|${DataType.PET}|${DataType.SHADOW})`
@@ -69,7 +69,7 @@ const router = createRouter({
       path: "/s/:code",
       component: { render: () => null },
       beforeEnter: async (to) => {
-        const { data } = await useApiGet<{ path: string }>(`short-links/${to.params.code}/`)
+        const { data } = await useAppApiGet<{ path: string }>(`short-links/${to.params.code}/`)
         return data?.path ?? "/"
       }
     },

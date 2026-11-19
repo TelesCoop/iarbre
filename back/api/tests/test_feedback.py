@@ -7,7 +7,7 @@ from api.models import Feedback
 class ReceiveFeedbackViewTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.url = "/api/feedback/"
+        self.url = "/api/app/feedback/"
 
     def test_valid_feedback_submission(self):
         data = {

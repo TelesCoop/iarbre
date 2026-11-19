@@ -100,7 +100,7 @@
       "orthophoto": {
         "tileSize": 256,
         "tiles": [
-          "{API_BASE_URL}/orthophoto/{z}/{x}/{y}.png"
+          "{APP_API_URL}/orthophoto/{z}/{x}/{y}.png"
         ],
         "type": "raster"
       },

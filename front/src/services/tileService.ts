@@ -1,4 +1,4 @@
-import { useApiGet, useApiPost } from "@/api"
+import { useApiPost, useAppApiGet } from "@/api"
 import { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
@@ -17,12 +17,15 @@ export const getTileDetails = async (
   PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
 > => {
   try {
-    const req = await useApiGet(
+    const req = await useAppApiGet(
       `tiles/${dataType}/${id}/`,
       `Unable to retrieve tile information with id ${id}`
     )
     return req.data as
-      PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData
+      | PlantabilityData
+      | VulnerabilityData
+      | ClimateData
+      | PlantabilityVulnerabilityData
   } catch (error) {
     // Surface the failure to the caller so the UI can show an error state
     // instead of silently rendering an empty panel.
