@@ -1,7 +1,3 @@
-# La version de Python est pilotée par `python_version` (ex. "3.12", lue dans
-# back/.python-version via group_vars). Sans cette variable, on retombe sur le
-# python3 par défaut de la distribution, comme avant.
-#
 # Ubuntu ne fournit qu'une seule version de Python dans ses dépôts (3.10 sur
 # 22.04, 3.12 sur 24.04). Le PPA deadsnakes fournit les autres versions.
 - name: Install software-properties-common (needed to manage apt repositories)
