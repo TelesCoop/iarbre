@@ -105,6 +105,12 @@ git clone https://github.com/TelesCoop/iarbre-back.git
 pip install -r requirements.txt
 ```
 
+L'export PDF du tableau de bord utilise [Playwright](https://playwright.dev/python/), qui a besoin de son propre navigateur Chromium. Il faut le télécharger après l'installation des packages, et le refaire à chaque fois que la version de `playwright` change dans `requirements.txt` ou que l'environnement virtuel est recréé :
+
+```bash
+playwright install chromium
+```
+
 Créez un fichier `local_settings.ini`, à la racine du dossier `back`, avec le contenu suivant :
 
 ```
@@ -113,6 +119,12 @@ engine=postgresql
 user=<nom_utilisateur>
 name=<nom_base_de_données>
 password=votre_mot_de_passe_sécurisé
+
+[pdf_export]
+# En local le front et l'API ne sont pas sur le même port, il faut donc la préciser.
+frontend_url=http://localhost:3000
+# Délai maximum de rendu en secondes (5 par défaut, souvent trop court en dev)
+timeout_s=30
 ```
 
 Pour travailler sur le projet à l'avenir, activez l'environnement :
