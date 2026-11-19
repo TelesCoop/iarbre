@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: back/.python-version
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
@@ -66,7 +66,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: back/.python-version
           cache: "pip"
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
@@ -294,7 +294,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: back/.python-version
           cache: "pip"
       - run: pip install -r back/requirements.txt
 
@@ -379,7 +379,7 @@ jobs:
       - name: Set up Python doc
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version-file: back/.python-version
           cache: "pip"
       - run: pip install -r mkdocs-requirements.txt
       - name: Run documentation validation
