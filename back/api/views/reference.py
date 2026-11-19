@@ -7,11 +7,13 @@ from django.contrib.gis.serializers import geojson
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, mixins, viewsets
 from rest_framework.response import Response
 
 from api.constants import ONE_DAY, ONE_MONTH
 from api.filters import CityFilterSet, IrisFilterSet
+from api.schema import GEOJSON_FEATURE_COLLECTION, TAG_REFERENCE, TAG_MAP_LAYERS
 from api.serializers.serializers import CitySerializer, IrisSerializer
 from iarbre_data.models import City, Data, Iris, PublicBuilding
 from iarbre_data.settings import SRID_DOWNLOADED_DATA
@@ -35,6 +37,19 @@ def _geojson_response(queryset, fields) -> Response:
     return Response(json.loads(geojson_string), content_type="application/json")
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Liste des communes",
+        description=(
+            "Communes de la Métropole avec leurs statistiques agrégées (surfaces en "
+            "m²). Lyon est découpée en arrondissements (69381 à 69389), le code "
+            "69123 ne renvoie rien. `geometry__intersects` attend un point "
+            "`lng,lat` en EPSG:4326."
+        ),
+    ),
+    retrieve=extend_schema(summary="Une commune par son identifiant interne"),
+)
+@extend_schema(tags=[TAG_REFERENCE])
 class CityView(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -52,6 +67,18 @@ class CityView(
     filterset_class = CityFilterSet
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Liste des IRIS",
+        description=(
+            "IRIS (découpage statistique INSEE infra-communal). `city` est l'`id` "
+            "interne de la commune. `geometry__intersects` attend un point "
+            "`lng,lat` en EPSG:4326."
+        ),
+    ),
+    retrieve=extend_schema(summary="Un IRIS par son identifiant interne"),
+)
+@extend_schema(tags=[TAG_REFERENCE])
 class IrisView(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -69,6 +96,12 @@ class IrisView(
     filterset_class = IrisFilterSet
 
 
+@extend_schema(
+    tags=[TAG_REFERENCE],
+    summary="Contours des communes",
+    description="GeoJSON, propriétés `code` et `name`. Cache : 30 jours.",
+    responses=GEOJSON_FEATURE_COLLECTION,
+)
 class CityBoundaryView(generics.ListAPIView):
     def get_queryset(self):
         return City.objects.all()
@@ -78,6 +111,12 @@ class CityBoundaryView(generics.ListAPIView):
         return _geojson_response(self.get_queryset(), fields=("code", "name"))
 
 
+@extend_schema(
+    tags=[TAG_MAP_LAYERS],
+    summary="Quartiers prioritaires de la politique de la ville",
+    description="GeoJSON, propriétés `metadata` et `factor`. Cache : 24 heures.",
+    responses=GEOJSON_FEATURE_COLLECTION,
+)
 class QPVListView(generics.ListAPIView):
     def get_queryset(self):
         return Data.objects.filter(factor="QPV")
@@ -89,6 +128,17 @@ class QPVListView(generics.ListAPIView):
         )
 
 
+@extend_schema(
+    tags=[TAG_MAP_LAYERS],
+    summary="Bâtiments publics",
+    description=(
+        "GeoJSON des bâtiments publics (IGN BD TOPO et crèches publiques de Grand "
+        "Lyon), coordonnées arrondies à 6 décimales. Propriétés : `name`, "
+        "`category`, `nature`, `natureDetaillee`, `studentCount`, "
+        "`educationPriority`, `capacity`. Cache : 24 heures."
+    ),
+    responses=GEOJSON_FEATURE_COLLECTION,
+)
 class PublicBuildingListView(generics.ListAPIView):
     def get_queryset(self):
         return PublicBuilding.objects.annotate(

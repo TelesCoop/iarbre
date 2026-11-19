@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
+    "drf_spectacular",
     "decapcms_auth",
     "anymail",
 ]
@@ -262,6 +263,7 @@ BACKUP_RECOVER_N_WORKERS = config.getint("backup.backup_recovery_n_workers", 1)
 BACKUP_KEEP_N_DAYS = 365 * 20
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": (
         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
@@ -285,6 +287,28 @@ REST_FRAMEWORK = {
 # IPs never throttled: the server's own, since the PDF export's headless browser
 # calls the API (e.g. dashboard/in-polygon/) from the server for every user.
 THROTTLE_EXEMPT_IPS = config.getlist("throttling.exempt_ips", [])
+
+# OpenAPI schema of the public API only (``/api/v1/schema/``), see api/schema.py.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API IArbre",
+    "DESCRIPTION": (
+        "API publique d'IArbre (https://carte.iarbre.fr) : plantabilité, "
+        "vulnérabilité à la chaleur, végétation et référentiel territorial de la "
+        "Métropole de Lyon. Les clés JSON sont en camelCase, les paramètres de "
+        "requête restent en snake_case. Coordonnées en EPSG:4326."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    # The public API has no authentication.
+    "AUTHENTICATION_WHITELIST": [],
+    "PREPROCESSING_HOOKS": ["api.schema.public_endpoints_only"],
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
+    ],
+    "COMPONENT_SPLIT_REQUEST": True,
+}
 
 DECAP_CMS_AUTH = {
     "OAUTH_CLIENT_ID": config.getstr("github_oauth.client_id"),

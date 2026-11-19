@@ -9,6 +9,8 @@ from django.conf import settings
 from django.contrib.gis.geos import Polygon
 from django.core.cache import cache
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from gisserver.crs import CRS, CRS84, WEB_MERCATOR, WGS84
 from gisserver.features import FeatureField, FeatureType, ServiceDescription
 from gisserver.geometries import WGS84BoundingBox
@@ -16,6 +18,7 @@ from gisserver.views import WFSView
 from rest_framework.views import APIView
 
 from api.constants import ONE_HOUR, PET_RASTERS, SHADOW_RASTER
+from api.schema import NOT_FOUND_RESPONSE, TAG_GEOSERVICES, binary_response
 from api.services.rasters import render_grayscale_png
 from api.services.wms import discover_layers, layer_bounds_wgs84
 from api.utils.wfs_renderers import GetFeature, GetPropertyValue
@@ -234,6 +237,45 @@ _CAPABILITIES_CACHE_TTL = ONE_HOUR
 _MAX_SIZE = 4096
 
 
+@extend_schema(
+    tags=[TAG_GEOSERVICES],
+    summary="Flux WMS",
+    description=(
+        "Flux OGC WMS 1.1.1 / 1.3.0 sur les rasters. Ordre des axes du `BBOX` : en "
+        "WMS 1.3.0 avec EPSG:4326, `min_lat,min_lon,max_lat,max_lon` ; sinon "
+        "`ouest,sud,est,nord`. Erreurs en texte brut."
+    ),
+    parameters=[
+        OpenApiParameter("SERVICE", str, enum=["WMS"]),
+        OpenApiParameter("VERSION", str, enum=["1.1.1", "1.3.0"], default="1.3.0"),
+        OpenApiParameter(
+            "REQUEST",
+            str,
+            required=True,
+            enum=["GetCapabilities", "GetMap", "GetLayers"],
+        ),
+        OpenApiParameter("LAYERS", str, description="GetMap, ex. `iarbre:lcz`"),
+        OpenApiParameter("BBOX", str, description="GetMap, 4 valeurs séparées par `,`"),
+        OpenApiParameter("CRS", str, enum=list(_SUPPORTED_CRS), description="1.3.0"),
+        OpenApiParameter("SRS", str, enum=list(_SUPPORTED_CRS), description="1.1.1"),
+        OpenApiParameter("WIDTH", int, description=f"GetMap, {_MAX_SIZE} maximum"),
+        OpenApiParameter("HEIGHT", int, description=f"GetMap, {_MAX_SIZE} maximum"),
+        OpenApiParameter("FORMAT", str, enum=["image/png"]),
+    ],
+    responses={
+        (200, "text/xml"): OpenApiResponse(
+            OpenApiTypes.STR, description="GetCapabilities (cache 1 heure)"
+        ),
+        **binary_response("image/png", "GetMap"),
+        (200, "application/json"): OpenApiResponse(
+            OpenApiTypes.OBJECT,
+            description='GetLayers : `[{"name": "iarbre:lcz", "title": "lcz"}]`',
+        ),
+        (400, "text/plain"): OpenApiResponse(
+            OpenApiTypes.STR, description="Requête invalide"
+        ),
+    },
+)
 class IArbreWMSView(APIView):
     """OGC WMS 1.1.1 / 1.3.0 endpoint serving raster layers.
 
@@ -494,6 +536,19 @@ class FileDownloadView(APIView):
         return response
 
 
+@extend_schema(
+    tags=[TAG_GEOSERVICES],
+    summary="Téléchargement d'un raster GeoTIFF",
+    parameters=[
+        OpenApiParameter(
+            "raster_type", str, OpenApiParameter.PATH, enum=list(RASTER_MAP)
+        )
+    ],
+    responses={
+        **binary_response("image/tiff", "GeoTIFF en pièce jointe"),
+        404: NOT_FOUND_RESPONSE,
+    },
+)
 class RasterDownloadView(FileDownloadView):
     """Download raster files (GeoTIFF). Example: ``GET /api/rasters/plantability/``."""
 

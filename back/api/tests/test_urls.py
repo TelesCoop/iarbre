@@ -26,6 +26,8 @@ PUBLIC_NAMES = {
     "wms": [],
     "download-raster": ["plantability"],
     "metadata": [],
+    "schema": [],
+    "swagger-ui": [],
 }
 
 APP_NAMES = {

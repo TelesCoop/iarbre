@@ -5,11 +5,19 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.constants import ONE_HOUR
+from api.schema import (
+    ERROR_RESPONSE,
+    NOT_FOUND_RESPONSE,
+    POLYGON_REQUEST,
+    TAG_INDICATORS,
+    THROTTLED_RESPONSE,
+)
 from api.serializers.dashboard_serializer import DashboardSerializer
 from api.services.dashboard import (
     aggregate_plantability,
@@ -42,6 +50,21 @@ def _dashboard_response(data: dict) -> Response:
     return Response(serializer.data)
 
 
+@extend_schema(
+    tags=[TAG_INDICATORS],
+    summary="Tableau de bord d'une division",
+    description=(
+        "Indicateurs agrégés pour la Métropole (sans paramètre), une commune ou un "
+        "IRIS. Cache : 1 heure."
+    ),
+    parameters=[
+        OpenApiParameter("city_code", str, description="Code INSEE de la commune"),
+        OpenApiParameter(
+            "iris_code", str, description="Code IRIS (prioritaire sur `city_code`)"
+        ),
+    ],
+    responses={200: DashboardSerializer, 404: NOT_FOUND_RESPONSE},
+)
 class DashboardView(APIView):
     """Aggregated dashboard data for the metropole, a city, or an IRIS zone.
 
@@ -70,6 +93,21 @@ class DashboardView(APIView):
         )
 
 
+@extend_schema(
+    tags=[TAG_INDICATORS],
+    summary="Tableau de bord d'un polygone",
+    description=(
+        "Même réponse que `GET /dashboard/`, calculée sur un polygone. `city` vaut "
+        "`null` et `distributionByDivision` est vide. 30 requêtes/minute par IP, "
+        "limite partagée avec `POST /tiles/{datatype}/in-polygon/`."
+    ),
+    request=POLYGON_REQUEST,
+    responses={
+        200: DashboardSerializer,
+        400: ERROR_RESPONSE,
+        429: THROTTLED_RESPONSE,
+    },
+)
 class DashboardPolygonView(APIView):
     """Aggregated dashboard data for a user-drawn polygon.
 

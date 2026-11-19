@@ -10,12 +10,15 @@ from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from PIL import Image
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 
-from api.constants import ONE_DAY, ONE_MONTH, PET_RASTERS, SHADOW_RASTER
+from api.constants import ONE_DAY, ONE_MONTH, PET_RASTERS, SHADOW_RASTER, GeoLevel
+from api.schema import NOT_FOUND_RESPONSE, TAG_MAP_LAYERS, binary_response
 from api.services.rasters import (
     TILE_SIZE,
     WMS_RASTER_DIR,
@@ -57,6 +60,40 @@ def _int_param(request, name: str, allowed) -> int:
 # --- Vector tiles ---------------------------------------------------------------
 
 
+MVT_DATATYPES = [
+    "plantability",
+    "vegestrate",
+    "lcz",
+    "vulnerability",
+    "cadastre",
+    "biosphere_functional_integrity",
+]
+
+_XYZ_PARAMETERS = [
+    OpenApiParameter(name, OpenApiTypes.INT, OpenApiParameter.PATH)
+    for name in ("x", "y")
+]
+
+
+@extend_schema_view(get=extend_schema(operation_id="mvt_tile"))
+@extend_schema(
+    tags=[TAG_MAP_LAYERS],
+    summary="Tuile vectorielle (MVT)",
+    description=(
+        "Tuiles Mapbox Vector Tile pré-générées, EPSG:3857. Le nom de la couche "
+        "est `{geolevel}--{datatype}`. Cache : 24 heures."
+    ),
+    parameters=[
+        OpenApiParameter("geolevel", str, OpenApiParameter.PATH, enum=GeoLevel.values),
+        OpenApiParameter("datatype", str, OpenApiParameter.PATH, enum=MVT_DATATYPES),
+        OpenApiParameter("zoom", OpenApiTypes.INT, OpenApiParameter.PATH),
+        *_XYZ_PARAMETERS,
+    ],
+    responses={
+        **binary_response("application/x-protobuf", "Tuile MVT"),
+        404: NOT_FOUND_RESPONSE,
+    },
+)
 class TileView(generics.RetrieveAPIView):
     def get_object(self):
         return MVTTile.objects.get(
@@ -115,6 +152,25 @@ class RasterTileView(APIView):
         return _png_response(png_bytes(Image.fromarray(rgba_data, mode="RGBA")))
 
 
+@extend_schema_view(get=extend_schema(operation_id="vegetation_height_tile"))
+@extend_schema(
+    tags=[TAG_MAP_LAYERS],
+    summary="Tuile raster de hauteur de végétation",
+    description="Tuiles PNG 256×256 générées à la volée. Cache : 24 heures.",
+    parameters=[
+        OpenApiParameter(
+            "kind",
+            str,
+            enum=["class", "raw"],
+            default="class",
+            description=(
+                "`class` : pixels colorés par classe. `raw` : hauteur encodée en "
+                "Terrarium (`R * 256 + G + B / 256 - 32768`)."
+            ),
+        )
+    ],
+    responses={**binary_response("image/png", "Tuile PNG"), 404: NOT_FOUND_RESPONSE},
+)
 class VegetationHeightTileView(RasterTileView):
     """
     Serve vegetation raster data as {z}/{x}/{y} PNG tiles for MapLibre.

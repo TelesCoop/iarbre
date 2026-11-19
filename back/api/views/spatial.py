@@ -6,6 +6,13 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    PolymorphicProxySerializer,
+    extend_schema,
+    inline_serializer,
+)
+from rest_framework import serializers
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,6 +27,14 @@ from api.serializers.serializers import (
     VegestrateSerializer,
     VulnerabilityScoresSerializer,
     VulnerabilitySerializer,
+)
+from api.schema import (
+    ERROR_RESPONSE,
+    LAT_LNG_PARAMETERS,
+    NOT_FOUND_RESPONSE,
+    POLYGON_REQUEST,
+    TAG_INDICATORS,
+    THROTTLED_RESPONSE,
 )
 from api.services.polygon import InvalidPolygon, parse_polygon
 from api.services.rasters import sample_at_point, vegetation_height_raster
@@ -113,6 +128,21 @@ class TileDetailsView(generics.RetrieveAPIView):
 # --- Values at a point ------------------------------------------------------------
 
 
+@extend_schema(
+    tags=[TAG_INDICATORS],
+    summary="Hauteur de végétation en un point",
+    description=(
+        "Hauteur de végétation (canopy height model) en mètres, `null` hors "
+        "emprise ou sans végétation."
+    ),
+    parameters=LAT_LNG_PARAMETERS,
+    responses={
+        200: inline_serializer(
+            "VegetationHeight", {"height": serializers.FloatField(allow_null=True)}
+        ),
+        400: ERROR_RESPONSE,
+    },
+)
 class VegetationHeightAtPointView(APIView):
     def get(self, request):
         point = _parse_lat_lng(request)
@@ -131,6 +161,28 @@ class VegetationHeightAtPointView(APIView):
             return Response({"height": None})
 
 
+@extend_schema(
+    tags=[TAG_INDICATORS],
+    summary="Occupation du sol autour d'un point",
+    description=(
+        "Répartition de l'occupation du sol dans un rayon de 500 m. `binary` "
+        "indique si la classe est favorable à l'intégrité de la biosphère."
+    ),
+    parameters=LAT_LNG_PARAMETERS,
+    responses={
+        200: inline_serializer(
+            "LandCoverShare",
+            {
+                "land_cover": serializers.CharField(),
+                "land_cover_label": serializers.CharField(),
+                "binary": serializers.BooleanField(allow_null=True),
+                "percentage": serializers.FloatField(),
+            },
+            many=True,
+        ),
+        400: ERROR_RESPONSE,
+    },
+)
 class BiosphereLandCoverAtPointView(APIView):
     """Retrieve distinct land cover types with area percentages within a 500m radius."""
 
@@ -146,6 +198,34 @@ class BiosphereLandCoverAtPointView(APIView):
 # --- Aggregates in an area --------------------------------------------------------
 
 
+@extend_schema(
+    tags=[TAG_INDICATORS],
+    summary="Scores moyens dans un polygone",
+    description=(
+        "Les champs dépendent de `datatype`. Pour `vulnerability`, `irisCodes` et "
+        "`cityCodes` sont vides. 30 requêtes/minute par IP, limite partagée avec "
+        "`POST /dashboard/in-polygon/`."
+    ),
+    parameters=[
+        OpenApiParameter(
+            "datatype",
+            str,
+            OpenApiParameter.PATH,
+            enum=list(SCORES_SERIALIZER_PER_DATATYPE),
+        )
+    ],
+    request=POLYGON_REQUEST,
+    responses={
+        200: PolymorphicProxySerializer(
+            component_name="ScoresInPolygon",
+            serializers=list(SCORES_SERIALIZER_PER_DATATYPE.values()),
+            resource_type_field_name=None,
+        ),
+        400: ERROR_RESPONSE,
+        404: NOT_FOUND_RESPONSE,
+        429: THROTTLED_RESPONSE,
+    },
+)
 class ScoresInPolygonView(APIView):
     throttle_classes = [PolygonThrottle]
 

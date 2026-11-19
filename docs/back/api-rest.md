@@ -14,6 +14,19 @@ Les chemins de cette page sont relatifs à `/api/v1/`, sauf dans la partie [Rout
 
 `/api/wfs/`, `/api/wms/` et `/api/rasters/{raster_type}/` restent servis à leur ancienne adresse (même vue, sans redirection) : ces URL ont pu être enregistrées dans des projets QGIS ou partagées. Les accès WFS et WMS, anciennes adresses comprises, sont suivis dans Matomo.
 
+### Schéma OpenAPI
+
+L'API publique est décrite par un schéma OpenAPI 3 généré par `drf-spectacular` :
+
+- `/api/v1/schema/` : schéma (YAML, `?format=json` pour du JSON) ;
+- `/api/v1/docs/` : Swagger UI.
+
+Seules les routes `/api/v1/` y figurent (filtre `api.schema.public_endpoints_only`). Le WFS (`django-gisserver`, hors DRF) n'y est pas : il se décrit lui-même par `GetCapabilities`. Les vues publiques sont annotées avec `@extend_schema` ; pour vérifier le schéma après une modification :
+
+```bash
+python manage.py spectacular --validate --fail-on-warn --file /dev/null
+```
+
 ### Casse des clés JSON
 
 Le renderer par défaut est `djangorestframework_camel_case` :
