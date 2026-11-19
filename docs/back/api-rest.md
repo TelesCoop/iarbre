@@ -19,7 +19,7 @@ Les chemins de cette page sont relatifs à `/api/v1/`, sauf dans la partie [Rout
 L'API publique est décrite par un schéma OpenAPI 3 généré par `drf-spectacular` :
 
 - `/api/v1/schema/` : schéma (YAML, `?format=json` pour du JSON) ;
-- `/api/v1/docs/` : Swagger UI.
+- `/api/v1/docs/` : Swagger UI, dont les fichiers JS/CSS sont servis par nos fichiers statiques (`drf-spectacular-sidecar`, aucun CDN).
 
 Seules les routes `/api/v1/` y figurent (filtre `api.schema.public_endpoints_only`). Le WFS (`django-gisserver`, hors DRF) n'y est pas : il se décrit lui-même par `GetCapabilities`. Les vues publiques sont annotées avec `@extend_schema` ; pour vérifier le schéma après une modification :
 

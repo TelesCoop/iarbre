@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "telescoop_backup",
     "rest_framework",
     "drf_spectacular",
+    "drf_spectacular_sidecar",  # Swagger UI assets, served from our static files
     "decapcms_auth",
     "anymail",
 ]
@@ -308,6 +309,8 @@ SPECTACULAR_SETTINGS = {
         "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
     ],
     "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
 
 DECAP_CMS_AUTH = {

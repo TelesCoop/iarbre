@@ -49,3 +49,6 @@ class SchemaViewsTest(SimpleTestCase):
     def test_swagger_ui(self):
         response = self.client.get(reverse("swagger-ui"))
         self.assertEqual(response.status_code, 200)
+        # Assets come from drf-spectacular-sidecar, not from a CDN.
+        self.assertIn(b"/static/drf_spectacular_sidecar/", response.content)
+        self.assertNotIn(b"cdn.jsdelivr.net", response.content)
