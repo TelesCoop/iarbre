@@ -282,6 +282,9 @@ REST_FRAMEWORK = {
         "pdf_export_sustained": "20/hour",
     },
 }
+# IPs never throttled: the server's own, since the PDF export's headless browser
+# calls the API (e.g. dashboard/in-polygon/) from the server for every user.
+THROTTLE_EXEMPT_IPS = config.getlist("throttling.exempt_ips", [])
 
 DECAP_CMS_AUTH = {
     "OAUTH_CLIENT_ID": config.getstr("github_oauth.client_id"),

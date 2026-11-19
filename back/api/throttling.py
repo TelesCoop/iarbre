@@ -4,8 +4,10 @@ Each throttle has its own scope; rates live in
 ``REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]``. Clients are identified by IP,
 authenticated or not (``NUM_PROXIES`` tells DRF which X-Forwarded-For entry to
 trust). Counters are kept in the ``throttle`` cache, shared between workers.
+IPs listed in ``THROTTLE_EXEMPT_IPS`` (the server itself) are never throttled.
 """
 
+from django.conf import settings
 from django.core.cache import caches
 from rest_framework.throttling import SimpleRateThrottle
 
@@ -15,6 +17,11 @@ class _IpThrottle(SimpleRateThrottle):
     def cache(self):
         # Resolved on each use, so tests overriding CACHES are honored.
         return caches["throttle"]
+
+    def allow_request(self, request, view):
+        if self.get_ident(request) in settings.THROTTLE_EXEMPT_IPS:
+            return True
+        return super().allow_request(request, view)
 
     def get_cache_key(self, request, view):
         return self.cache_format % {

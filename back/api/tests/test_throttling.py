@@ -1,6 +1,7 @@
 from unittest import mock
 
 from django.core.cache import caches
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
@@ -51,6 +52,27 @@ class PdfExportThrottleTest(ThrottleTestCase):
             for i in range(3)
         ]
         self.assertEqual(statuses, [200, 200, 429])
+
+
+class ExemptIpTest(ThrottleTestCase):
+    @override_settings(THROTTLE_EXEMPT_IPS=["203.0.113.7"])
+    def test_exempt_ip_is_never_throttled(self):
+        limit = PolygonThrottle().num_requests
+        url = reverse("scores-in-polygon", args=["plantability"])
+        statuses = self.post_until_throttled(
+            url, {}, limit, HTTP_X_FORWARDED_FOR="203.0.113.7"
+        )
+        self.assertEqual(statuses, [400] * (limit + 1))
+
+    @override_settings(THROTTLE_EXEMPT_IPS=["203.0.113.7"])
+    def test_spoofed_exempt_ip_is_still_throttled(self):
+        """A client cannot claim the server IP: nginx appends the real one."""
+        limit = PolygonThrottle().num_requests
+        url = reverse("scores-in-polygon", args=["plantability"])
+        statuses = self.post_until_throttled(
+            url, {}, limit, HTTP_X_FORWARDED_FOR="203.0.113.7, 198.51.100.1"
+        )
+        self.assertEqual(statuses, [400] * limit + [429])
 
 
 class PolygonThrottleTest(ThrottleTestCase):
