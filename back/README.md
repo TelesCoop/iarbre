@@ -80,6 +80,14 @@ Après l'installation, créez un utilisateur et une nouvelle base de données Po
 
 ### Installation des packages Python requis
 
+La version de Python à utiliser est indiquée dans le fichier `back/.python-version` (lue automatiquement par `pyenv`, et utilisée par le déploiement Ansible et la CI).
+
+Certains paquets (fiona, rasterio, psycopg2) ne fournissent pas toujours de wheel précompilé pour les versions de Python les plus récentes. Dans ce cas, pip les compile depuis les sources, ce qui nécessite sur la machine les en-têtes de Python (pour la version indiquée dans `.python-version`), de GDAL et de PostgreSQL :
+
+```bash
+sudo apt install python$(cat .python-version)-dev libgdal-dev libpq-dev
+```
+
 Nous recommandons d'utiliser un environnement virtuel Python géré par [`pew`](https://github.com/pew-org/pew) :
 
 ```bash
