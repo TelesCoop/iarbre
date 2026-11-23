@@ -1,4 +1,4 @@
-boto3==1.44.3
+boto3==1.44.7
 certifi==2026.10.23
 coverage==7.17.3
 Django==5.2.17
@@ -20,10 +20,10 @@ humanize==4.17.0
 ipython==9.18.1
 mapbox_vector_tile==2.2.0
 mercantile==1.2.1
-numpy==2.5.4
+numpy==2.5.5
 openpyxl==3.1.5
 pillow==13.0.0
-playwright==1.65.1
+playwright==1.65.2
 protobuf==6.33.6
 psycopg2==2.9.13
 pyproj==3.8.0
