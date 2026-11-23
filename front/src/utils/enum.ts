@@ -69,7 +69,7 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.CLIMATE_ZONE]: "Zones climatiques locales (ZCL)",
   [DataType.VULNERABILITY]: "Vulnérabilité à la chaleur",
   [DataType.PLANTABILITY_VULNERABILITY]: "Croisement plantabilité et chaleur",
-  [DataType.VEGESTRATE]: "Inventaire des strates végétales",
+  [DataType.VEGESTRATE]: "Inventaire des strates végétales (Végéstrate)",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
   [DataType.PET]: "Confort thermique dans la rue",
   [DataType.SHADOW]: "Ombre dans la rue"
