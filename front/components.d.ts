@@ -51,6 +51,7 @@ declare module 'vue' {
     DashboardFooter: typeof import('./src/components/dashboard/DashboardFooter.vue')['default']
     DashboardHeader: typeof import('./src/components/dashboard/DashboardHeader.vue')['default']
     DashboardNarrative: typeof import('./src/components/dashboard/DashboardNarrative.vue')['default']
+    DashboardSummary: typeof import('./src/components/dashboard/DashboardSummary.vue')['default']
     DashboardWidgetCard: typeof import('./src/components/dashboard/shared/DashboardWidgetCard.vue')['default']
     DivisionDataDisplay: typeof import('./src/components/division/DivisionDataDisplay.vue')['default']
     EmptyMessage: typeof import('./src/components/EmptyMessage.vue')['default']
