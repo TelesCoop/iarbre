@@ -21,8 +21,11 @@
     creates: "{{ ansible_env.HOME }}/.nvm/{{ node_version.stdout }}_installed"
 
 - name: Install project node dependencies with npm
+  # `nvm use` selects the project's node for every following command. With
+  # `nvm exec`, only `npm ci` would run on it and `npx allow-scripts` would
+  # fall back to the system node, which may be too old for the dependencies.
   # yamllint disable-line rule:line-length
-  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm exec {{ node_version.stdout }} npm ci && npx allow-scripts"
+  ansible.builtin.shell: "source /root/.nvm/nvm.sh && nvm use {{ node_version.stdout }} && npm ci && npx allow-scripts"
   args:
     chdir: "{{ current_path }}"
     executable: /bin/bash
