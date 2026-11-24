@@ -32,6 +32,11 @@ export type Hour = (typeof HOURS)[number]
 
 export const DEFAULT_HOUR: Hour = 16
 
+export const HOURLY_RASTER_OPACITY = 0.6
+
+export const toMapColor = (color: string): string =>
+  `color-mix(in srgb, ${color} ${HOURLY_RASTER_OPACITY * 100}%, transparent)`
+
 export const formatHour = (hour: number): string => `${hour}h`
 
 export const buildTileUrl = (

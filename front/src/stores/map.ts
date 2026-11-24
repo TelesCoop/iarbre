@@ -70,6 +70,7 @@ import {
 import {
   DEFAULT_HOUR,
   HOURLY_RASTERS,
+  HOURLY_RASTER_OPACITY,
   buildColorRamp,
   buildTileUrl,
   type Hour,
@@ -351,7 +352,7 @@ export const useMapStore = defineStore("map", () => {
           type: "color-relief",
           source: sourceId,
           paint: {
-            "color-relief-opacity": 0.6,
+            "color-relief-opacity": HOURLY_RASTER_OPACITY,
             "color-relief-color": buildColorRamp(
               hourlyRaster.classes,
               filteredValues.value as number[]

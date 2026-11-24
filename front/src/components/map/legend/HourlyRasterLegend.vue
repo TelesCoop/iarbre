@@ -2,7 +2,7 @@
 import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel } from "@/utils/enum"
-import { HOURLY_RASTERS, formatHour } from "@/utils/hourlyRaster"
+import { HOURLY_RASTERS, formatHour, toMapColor } from "@/utils/hourlyRaster"
 
 const mapStore = useMapStore()
 
@@ -31,7 +31,7 @@ const title = computed(() =>
         <ScoreLabel
           v-for="(item, index) in raster.classes"
           :key="item.value"
-          :background-color="item.color"
+          :background-color="toMapColor(item.color)"
           :class="[
             index === 0 ? 'rounded-l' : '',
             index === raster.classes.length - 1 ? 'rounded-r' : '',
