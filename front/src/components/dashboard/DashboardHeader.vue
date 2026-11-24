@@ -6,6 +6,7 @@ import AppSelect from "@/components/shared/AppSelect.vue"
 import AppBadge from "@/components/shared/AppBadge.vue"
 import MapCopyLinkButton from "@/components/map/MapCopyLinkButton.vue"
 import { useMapRoute } from "@/composables/useMapRoute"
+import { useDashboardPdfExport } from "@/composables/useDashboardPdfExport"
 import { useDashboardStore } from "@/stores/dashboard"
 import type { DashboardScale } from "@/types/dashboard"
 
@@ -13,6 +14,7 @@ const props = defineProps<{ printMode?: boolean }>()
 
 const store = useDashboardStore()
 const mapRoute = useMapRoute()
+const { loading: exportLoading, exportToPdf } = useDashboardPdfExport()
 
 const COVER_SECTIONS = [
   {
@@ -117,9 +119,34 @@ const currentLabel = computed(() => {
           <AppBadge variant="secondary">{{ areaDisplay }}</AppBadge>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="header-actions">
         <MapCopyLinkButton />
-        <RouterLink :to="mapRoute" class="back-to-map">
+        <button
+          aria-label="Télécharger le rapport en PDF"
+          class="export-button"
+          :disabled="exportLoading"
+          data-cy="export-pdf-button"
+          type="button"
+          @click="exportToPdf"
+        >
+          <svg
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" x2="12" y1="15" y2="3" />
+          </svg>
+          <span class="hidden md:inline">Télécharger le rapport</span>
+        </button>
+        <RouterLink :to="mapRoute" aria-label="Retourner sur la carte" class="back-to-map">
           <svg
             fill="none"
             height="16"
@@ -135,7 +162,7 @@ const currentLabel = computed(() => {
             <line x1="8" x2="8" y1="2" y2="18" />
             <line x1="16" x2="16" y1="6" y2="22" />
           </svg>
-          <span>Retourner sur la carte</span>
+          <span class="hidden md:inline">Retourner sur la carte</span>
         </RouterLink>
       </div>
     </div>
@@ -172,11 +199,27 @@ const currentLabel = computed(() => {
 }
 
 .header-top {
-  @apply flex items-start justify-between mb-4;
+  @apply flex items-start justify-between gap-3 mb-4;
+}
+
+.header-actions {
+  @apply flex items-center gap-2 shrink-0;
+}
+
+.export-button {
+  @apply flex items-center gap-1.5 py-1.5 px-2 lg:px-2.5 bg-white border border-gray-200 rounded-lg text-xs lg:text-sm font-medium text-gray-500 hover:text-primary-600 cursor-pointer transition-all shrink-0;
+}
+
+.export-button svg {
+  @apply text-primary-500 shrink-0;
+}
+
+.export-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
 }
 
 .back-to-map {
-  @apply flex items-center gap-2 text-sm font-medium text-primary-600 bg-primary-50 hover:text-primary-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-primary-100 shrink-0;
+  @apply flex items-center gap-2 text-xs lg:text-sm font-medium text-primary-600 bg-primary-50 hover:text-primary-800 transition-colors px-2 lg:px-3 py-1.5 rounded-lg hover:bg-primary-100 shrink-0;
 }
 
 .header-title {

@@ -19,7 +19,7 @@ const handleCopyLink = () => copyLink(fetchShortLink())
     <IconCheck v-if="isCopied" class="text-primary-500 shrink-0" :size="14" />
     <IconCopy v-else class="text-primary-500 shrink-0" :size="14" />
     <span
-      class="text-xs lg:text-sm font-medium whitespace-nowrap"
+      class="hidden md:inline text-xs lg:text-sm font-medium whitespace-nowrap"
       :class="isCopied ? 'text-primary-600' : 'text-gray-500 group-hover:text-primary-600'"
       >{{ isCopied ? "Lien copié" : "Copier le lien de la vue" }}</span
     >
