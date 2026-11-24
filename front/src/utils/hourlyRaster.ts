@@ -12,6 +12,7 @@ export interface RasterClass {
 
 export interface HourlyRaster {
   endpoint: string
+  swapLabel: string
   classes: RasterClass[]
   axisLabels: [string, string]
   columnLabels: [string, string]

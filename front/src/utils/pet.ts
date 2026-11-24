@@ -6,6 +6,7 @@ export const DEFAULT_PET_YEAR = 2090
 
 export const PET_RASTER: HourlyRaster = {
   endpoint: "pet",
+  swapLabel: "le confort",
   years: PET_YEARS,
   axisLabels: ["Frais", "Chaud"],
   columnLabels: ["Température ressentie", "Stress"],

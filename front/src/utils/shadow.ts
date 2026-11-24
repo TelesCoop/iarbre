@@ -2,6 +2,7 @@ import type { HourlyRaster } from "@/utils/hourlyRaster"
 
 export const SHADOW_RASTER: HourlyRaster = {
   endpoint: "shadow",
+  swapLabel: "l'ombre",
   axisLabels: ["Dense", "Légère"],
   columnLabels: ["Ombre", "Origine"],
   descriptionSummary: "En savoir plus sur l'ombre",

@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 import MethodologyButton from "@/components/shared/MethodologyButton.vue"
+import HourlyRasterSwapButton from "@/components/layerSwitcher/HourlyRasterSwapButton.vue"
+import { useMapStore } from "@/stores/map"
+import { isHourlyRaster } from "@/utils/hourlyRaster"
 
 interface Props {
   withBorder?: boolean
@@ -12,6 +15,8 @@ const props = withDefaults(defineProps<Props>(), {
   showContextTools: true,
   showMethodology: true
 })
+
+const mapStore = useMapStore()
 </script>
 
 <template>
@@ -20,6 +25,7 @@ const props = withDefaults(defineProps<Props>(), {
     data-cy="map-layer-switcher"
   >
     <LayerSwitcher />
+    <HourlyRasterSwapButton v-if="isHourlyRaster(mapStore.selectedDataType)" />
     <MethodologyButton v-if="props.showMethodology" class="self-center" />
     <MapContextTools v-if="props.showContextTools" />
   </div>
