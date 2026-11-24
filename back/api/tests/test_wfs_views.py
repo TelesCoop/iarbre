@@ -261,6 +261,7 @@ class VegestrateWFSViewTest(TestCase):
             geometry=VILLARD_SQUARE,
             strate="arborescent",
             surface=120.5,
+            median_height=12.34,
         )
 
     def test_get_capabilities_status(self):
@@ -290,6 +291,7 @@ class VegestrateWFSViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"strate", response.content)
         self.assertIn(b"surface", response.content)
+        self.assertIn(b"median_height", response.content)
 
     def test_get_feature_status(self):
         response = self.client.get(
@@ -315,6 +317,7 @@ class VegestrateWFSViewTest(TestCase):
         )
         body = b"".join(response.streaming_content)
         self.assertIn(b"arborescent", body)
+        self.assertIn(b"12.34", body)
 
     def test_get_feature_without_data(self):
         Vegestrate.objects.all().delete()

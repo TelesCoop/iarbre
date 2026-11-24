@@ -18,14 +18,23 @@ from iarbre_data.utils.database import log_progress
 RASTER_PATH = os.path.join(
     settings.MEDIA_ROOT, "rasters/WMS", "vegestrate_02_2023_elevation.tif"
 )
-# ponytail: 1024 = 4x the 256px block size, keeps peak RAM ~2.5GB instead of ~5GB
-STRIP_HEIGHT = 1024
+# shortcut: 256 = one block row, peak RAM ~0.7GB on the 147500px-wide raster; raise via --strip-height if RAM allows
+STRIP_HEIGHT = 256
 BATCH_SIZE = 20000
 
 
-def compute_sums_and_counts(raster_path: str, strip_height: int) -> tuple[dict, dict]:
-    sums: dict[int, float] = {}
-    counts: dict[int, int] = {}
+def clip_or_keep(geoms, *rect):
+    try:
+        return shapely.clip_by_rect(geoms, *rect)
+    except shapely.errors.GEOSException:
+        if np.ndim(geoms) == 0:
+            return geoms
+        return np.array([clip_or_keep(g, *rect) for g in geoms], dtype=object)
+
+
+def compute_median_heights(raster_path: str, strip_height: int) -> dict[int, float]:
+    medians: dict[int, float] = {}
+    pending: dict[int, list[np.ndarray]] = {}
 
     with rasterio.open(raster_path) as src:
         nodata = src.nodata
@@ -54,9 +63,11 @@ def compute_sums_and_counts(raster_path: str, strip_height: int) -> tuple[dict, 
             pks = [pk for pk, _ in rows]
             geoms = shapely.from_wkb([bytes(g) for _, g in rows])
 
+            # clip first: huge polygons (400k+ vertices) are otherwise fully re-rasterized for every strip
+            clipped = clip_or_keep(geoms, left, bottom, right, top)
             # ponytail: burn dense 1..N indices, not pks -- int32 would overflow BigAutoField
             ids = rasterize(
-                zip(geoms, range(1, len(pks) + 1)),
+                ((g, i) for i, g in enumerate(clipped, 1) if not g.is_empty),
                 out_shape=(strip_h, width),
                 transform=strip_transform,
                 fill=0,
@@ -68,49 +79,47 @@ def compute_sums_and_counts(raster_path: str, strip_height: int) -> tuple[dict, 
             if nodata is not None:
                 valid &= elevation != nodata
             flat_ids = ids[valid]
-            if flat_ids.size == 0:
-                continue
             flat_elev = elevation[valid]
+            order = np.argsort(flat_ids, kind="stable")
+            flat_ids, flat_elev = flat_ids[order], flat_elev[order]
+            idx, first = np.unique(flat_ids, return_index=True)
+            for i, values in zip(idx, np.split(flat_elev, first[1:])):
+                pending.setdefault(pks[i - 1], []).append(values)
 
-            nbins = len(pks) + 1
-            group_sums = np.bincount(flat_ids, weights=flat_elev, minlength=nbins)
-            group_counts = np.bincount(flat_ids, minlength=nbins)
+            done = shapely.bounds(geoms)[:, 1] >= bottom
+            for pk in np.asarray(pks)[done]:
+                if pk in pending:
+                    medians[pk] = float(np.median(np.concatenate(pending.pop(pk))))
 
-            for idx in np.nonzero(group_counts[1:])[0] + 1:
-                pk = pks[idx - 1]
-                sums[pk] = sums.get(pk, 0.0) + group_sums[idx]
-                counts[pk] = counts.get(pk, 0) + int(group_counts[idx])
-
-    return sums, counts
+    for pk, chunks in pending.items():
+        medians[pk] = float(np.median(np.concatenate(chunks)))
+    return medians
 
 
-def save_mean_heights(sums: dict, counts: dict) -> None:
+def save_median_heights(medians: dict) -> None:
     Vegestrate.objects.bulk_update(
-        [
-            Vegestrate(id=pk, mean_height=round(total / counts[pk], 2))
-            for pk, total in sums.items()
-        ],
-        ["mean_height"],
+        [Vegestrate(id=pk, median_height=round(m, 2)) for pk, m in medians.items()],
+        ["median_height"],
         batch_size=BATCH_SIZE,
     )
 
 
 class Command(BaseCommand):
-    help = "Populate Vegestrate.mean_height from the vegestrate elevation raster."
+    help = "Populate Vegestrate.median_height from the vegestrate elevation raster."
 
     def add_arguments(self, parser):
         parser.add_argument("--strip-height", type=int, default=STRIP_HEIGHT)
 
     def handle(self, *args, **options):
-        log_progress("Computing mean height per Vegestrate polygon from raster")
-        sums, counts = compute_sums_and_counts(RASTER_PATH, options["strip_height"])
+        log_progress("Computing median height per Vegestrate polygon from raster")
+        medians = compute_median_heights(RASTER_PATH, options["strip_height"])
         total = Vegestrate.objects.count()
-        uncovered = total - len(sums)
-        log_progress(f"Saving mean_height for {len(sums)} polygons")
-        save_mean_heights(sums, counts)
+        uncovered = total - len(medians)
+        log_progress(f"Saving median_height for {len(medians)} polygons")
+        save_median_heights(medians)
         if uncovered:
             log_progress(
                 f"{uncovered} / {total} polygons ({100 * uncovered / total:.1f}%) had "
-                "no raster coverage and keep mean_height=NULL"
+                "no raster coverage and keep median_height=NULL"
             )
         log_progress("Done", star=True)

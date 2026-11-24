@@ -10,6 +10,7 @@ from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
 from iarbre_data.utils.factor_margin import is_fine_grid
+from iarbre_data.utils.rgb_raster import write_rgba
 from typing import Dict, Any
 from plantability.constants import (
     BLOCKED_SCORE,
@@ -233,10 +234,9 @@ class Command(BaseCommand):
 
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
-        color_meta = meta.copy()
-        color_meta.update(
-            dtype=rasterio.uint8, count=4, nodata=None, photometric="RGB", alpha="YES"
+        write_rgba(
+            output_color_file,
+            result_colors.transpose(2, 0, 1),
+            result != meta["nodata"],
+            meta,
         )
-
-        with rasterio.open(output_color_file, "w", **color_meta) as dst:
-            dst.write(np.moveaxis(result_colors, -1, 0))

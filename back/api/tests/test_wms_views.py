@@ -1,3 +1,4 @@
+import io
 import json
 import shutil
 import tempfile
@@ -7,12 +8,17 @@ import numpy as np
 import rasterio
 from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
+from PIL import Image
 from rasterio.transform import from_bounds
+
+from iarbre_data.utils.rgb_raster import write_rgba
 
 WMS_URL = "/api/wms/"
 
 _LAYER_STEM = "test_layer"
 _LAYER_NAME = f"iarbre:{_LAYER_STEM}"
+_SIZE = 16
+_TRANSFORM = from_bounds(4.6, 45.4, 5.3, 46.1, _SIZE, _SIZE)
 
 
 def _write_test_raster(media_root: str) -> None:
@@ -23,22 +29,40 @@ def _write_test_raster(media_root: str) -> None:
     """
     wms_dir = Path(media_root) / "rasters" / "WMS"
     wms_dir.mkdir(parents=True, exist_ok=True)
-    width = height = 16
-    transform = from_bounds(4.6, 45.4, 5.3, 46.1, width, height)
-    data = np.arange(width * height, dtype=np.uint8).reshape(height, width)
+    data = np.arange(_SIZE * _SIZE, dtype=np.uint8).reshape(_SIZE, _SIZE)
     with rasterio.open(
         wms_dir / f"{_LAYER_STEM}.tif",
         "w",
         driver="GTiff",
-        height=height,
-        width=width,
+        height=_SIZE,
+        width=_SIZE,
         count=1,
         dtype="uint8",
         crs="EPSG:4326",
-        transform=transform,
+        transform=_TRANSFORM,
         nodata=0,
     ) as dst:
         dst.write(data, 1)
+
+
+def _write_test_rgba_raster(media_root: str, stem: str) -> None:
+    rgb = np.zeros((3, _SIZE, _SIZE), dtype=np.uint8)
+    rgb[0] = 200
+    rgb[:, :, : _SIZE // 4] = 0
+    valid = np.ones((_SIZE, _SIZE), dtype=bool)
+    valid[_SIZE // 2 :] = False
+    write_rgba(
+        Path(media_root) / "rasters" / "WMS" / f"{stem}.tif",
+        rgb,
+        valid,
+        {
+            "driver": "GTiff",
+            "height": _SIZE,
+            "width": _SIZE,
+            "crs": "EPSG:4326",
+            "transform": _TRANSFORM,
+        },
+    )
 
 
 class _WMSFixtureMixin:
@@ -153,6 +177,29 @@ class WMSGetMapTest(_WMSFixtureMixin, TestCase):
         response = self.client.get(WMS_URL, self.valid_params)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["content-type"], "image/png")
+
+    def test_grayscale_raster_returns_la_png(self):
+        response = self.client.get(WMS_URL, self.valid_params)
+        self.assertEqual(Image.open(io.BytesIO(response.content)).mode, "LA")
+
+    def test_rgba_raster_returns_colors_with_alpha_transparency(self):
+        _write_test_rgba_raster(self._media_dir, "test_layer_colors")
+        params = {
+            **self.valid_params,
+            "LAYERS": "iarbre:test_layer_colors",
+            "BBOX": "45.4,4.6,46.1,5.3",
+        }
+        response = self.client.get(WMS_URL, params)
+        self.assertEqual(response.status_code, 200)
+        img = Image.open(io.BytesIO(response.content))
+        self.assertEqual(img.mode, "RGBA")
+        pixels = np.asarray(img)
+        height = pixels.shape[0]
+        self.assertTrue((pixels[: height // 2 - 1, :, 3] == 255).all())
+        self.assertTrue((pixels[height // 2 + 1 :, :, 3] == 0).all())
+        top = pixels[: height // 2 - 1]
+        self.assertTrue((top[..., :3] == (200, 0, 0)).all(axis=-1).any())
+        self.assertTrue((top[..., :3] == (0, 0, 0)).all(axis=-1).any())
 
     def test_unknown_layer_returns_400(self):
         params = {**self.valid_params, "LAYERS": "iarbre:nonexistent"}

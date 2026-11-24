@@ -1,5 +1,23 @@
 # Journal des changements
 
+## 🔖 0.45.0 (2026-11-03) : Affichage du calque d'ombre
+
+### ✨ feat : Le calque d'ombrage
+
+On affiche le raster de manière assez simple pour permettre une première diffusion large
+
+&rarr; PR [#869](https://github.com/TelesCoop/iarbre/pull/869)
+
+### 🛠️ enhance : Permettre de filtrer le calque de PET
+
+Ajout d'une fonction de filtrage sur le calque à partir de la légende et retravail du panneau de contexte.
+
+&rarr; PR [#868](https://github.com/TelesCoop/iarbre/pull/868)
+
+### 🧹 chore: Mises à jour de versions de TypeScript (5->6) et Node (24->26)
+
+&rarr; PR [#880](https://github.com/TelesCoop/iarbre/pull/880)
+
 ## 🔖 0.44.0 (2026-11-03) : Affichage du calque de confort thermique
 
 ### ✨ feat : Le calque de confort thermique (PET)
