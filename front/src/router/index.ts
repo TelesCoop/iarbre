@@ -84,6 +84,16 @@ const router = createRouter({
       }
     },
     {
+      path: "/methodologie",
+      name: "methodology",
+      component: () => import("@/views/MethodologyView.vue"),
+      meta: {
+        title: "Méthodologie",
+        description:
+          "Méthodologie du calque de plantabilité 2026 : différences entre la grille de 5 m et la nouvelle grille de 1 m, et leurs limites."
+      }
+    },
+    {
       path: "/mentions-legales",
       name: "legal",
       component: () => import("@/views/LegalView.vue"),

@@ -14,9 +14,14 @@ const mapStore = useMapStore()
       {{ DataTypeToLabel[mapStore.selectedDataType] }}
     </h3>
     <p>
-      Aperçu de travail du calque de plantabilité 2026, sur Villeurbanne uniquement. Données 2026,
-      grille de 5 m (méthode actuelle) ou de 1 m (nouvelle méthode).
+      Aperçu de travail sur Villeurbanne, données 2026. Grille de 5 m (méthode actuelle) ou de 1 m
+      (nouvelle méthode).
     </p>
-    <p>Ces cartes servent aux ateliers de validation et vont évoluer.</p>
+    <router-link
+      :to="{ name: 'methodology' }"
+      class="font-medium text-primary-600 underline hover:text-primary-700"
+    >
+      Voir ce qui change et les limites
+    </router-link>
   </div>
 </template>
