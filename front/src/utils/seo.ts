@@ -23,7 +23,11 @@ const DataTypeToDescription: Record<DataType, string> = {
   [DataType.PET]:
     "Confort thermique dans la rue (PET) heure par heure à 1 m sur la Métropole de Lyon, pour une journée chaude du 14 juillet en 2020 et en 2090.",
   [DataType.SHADOW]:
-    "Ombre des arbres et des bâtiments dans la rue heure par heure à 1 m sur la Métropole de Lyon."
+    "Ombre des arbres et des bâtiments dans la rue heure par heure à 1 m sur la Métropole de Lyon.",
+  [DataType.PLANTABILITY_2026_5M]:
+    "Aperçu du score de plantabilité 2026 sur Villeurbanne, sur une grille de 5 m (méthode actuelle).",
+  [DataType.PLANTABILITY_2026_1M]:
+    "Aperçu du score de plantabilité 2026 sur Villeurbanne, sur une grille de 1 m (nouvelle méthode)."
 }
 
 interface PageMeta {

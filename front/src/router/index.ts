@@ -2,11 +2,11 @@ import { createRouter, createWebHistory } from "vue-router"
 import MapView from "@/views/MapView.vue"
 import NotFoundView from "@/views/NotFoundView.vue"
 import { DataType } from "@/utils/enum"
-import { DEFAULT_MAP_PARAMS } from "@/utils/constants"
+import { DEFAULT_DATA_TYPE, DEFAULT_MAP_PARAMS } from "@/utils/constants"
 import { useApiGet } from "@/api"
 import { updatePageMeta } from "@/utils/seo"
 
-const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE}|${DataType.PET}|${DataType.SHADOW})`
+const dataTypeBaseRegex = `/:dataType(${DataType.PLANTABILITY}|${DataType.VULNERABILITY}|${DataType.CLIMATE_ZONE}|${DataType.PLANTABILITY_VULNERABILITY}|${DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY}|${DataType.VEGESTRATE}|${DataType.PET}|${DataType.SHADOW}|${DataType.PLANTABILITY_2026_5M}|${DataType.PLANTABILITY_2026_1M})`
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,7 +57,7 @@ const router = createRouter({
         return {
           name: "mapWithUrlParams",
           params: {
-            dataType: DataType.PLANTABILITY,
+            dataType: DEFAULT_DATA_TYPE,
             zoom,
             lat: parseFloat(lat as string).toFixed(5),
             lng: parseFloat(lng as string).toFixed(5)
@@ -81,6 +81,16 @@ const router = createRouter({
         title: "Tableau de bord",
         description:
           "Tableau de bord IA·rbre : statistiques de plantabilité, de chaleur et de végétation par commune et par IRIS de la Métropole de Lyon."
+      }
+    },
+    {
+      path: "/methodologie",
+      name: "methodology",
+      component: () => import("@/views/MethodologyView.vue"),
+      meta: {
+        title: "Méthodologie",
+        description:
+          "Méthodologie du calque de plantabilité 2026 : différences entre la grille de 5 m et la nouvelle grille de 1 m, et leurs limites."
       }
     },
     {

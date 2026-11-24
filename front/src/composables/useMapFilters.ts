@@ -4,7 +4,8 @@ import type { FilterSpecification, Map } from "maplibre-gl"
 import { getLayerId } from "@/utils/map"
 import { calculateMixedIndice } from "@/utils/plantability_vulnerability"
 import { BIOSPHERE_INTEGRITY_ALL_RANGES } from "@/utils/biosphere_functional_integrity"
-import { HOURLY_RASTERS, buildColorRamp } from "@/utils/hourlyRaster"
+import { buildColorRamp } from "@/utils/hourlyRaster"
+import { rasterClasses } from "@/utils/plantability2026"
 
 export function useMapFilters() {
   const filteredValues = ref<(number | string)[]>([])
@@ -36,10 +37,10 @@ export function useMapFilters() {
     selectedDataType: Ref<DataType>,
     vulnerabilityMode?: Ref<string>
   ) => {
-    const hourlyRaster = HOURLY_RASTERS[selectedDataType.value]
-    if (hourlyRaster) {
+    const classes = rasterClasses(selectedDataType.value)
+    if (classes) {
       const layerId = getLayerId(selectedDataType.value, DataTypeToGeolevel[selectedDataType.value])
-      const ramp = buildColorRamp(hourlyRaster.classes, filteredValues.value as number[])
+      const ramp = buildColorRamp(classes, filteredValues.value as number[])
       Object.values(mapInstancesByIds.value).forEach((mapInstance) => {
         mapInstance.setPaintProperty(layerId, "color-relief-color", ramp)
       })

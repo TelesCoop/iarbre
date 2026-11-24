@@ -12,7 +12,9 @@ export enum DataType {
   VEGESTRATE = "vegestrate",
   BIOSPHERE_FUNCTIONAL_INTEGRITY = "biosphere_functional_integrity",
   PET = "pet",
-  SHADOW = "shadow"
+  SHADOW = "shadow",
+  PLANTABILITY_2026_5M = "plantabilite2026_5m",
+  PLANTABILITY_2026_1M = "plantabilite2026_1m"
 }
 
 export enum MapStyle {
@@ -72,7 +74,9 @@ export const DataTypeToLabel: Record<DataType, string> = {
   [DataType.VEGESTRATE]: "Inventaire des strates végétales",
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: "Intégrité fonctionnelle de la biosphère",
   [DataType.PET]: "Confort thermique dans la rue",
-  [DataType.SHADOW]: "Ombre dans la rue"
+  [DataType.SHADOW]: "Ombre dans la rue",
+  [DataType.PLANTABILITY_2026_5M]: "Plantabilité 2026 - 5 m (Villeurbanne)",
+  [DataType.PLANTABILITY_2026_1M]: "Plantabilité 2026 - 1 m (Villeurbanne)"
 }
 
 export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
@@ -83,7 +87,9 @@ export const DataTypeToGeolevel: Record<DataType, GeoLevel> = {
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]: GeoLevel.BIOSPHERE_FUNCTIONAL_INTEGRITY,
   [DataType.VEGESTRATE]: GeoLevel.TILE,
   [DataType.PET]: GeoLevel.TILE,
-  [DataType.SHADOW]: GeoLevel.TILE
+  [DataType.SHADOW]: GeoLevel.TILE,
+  [DataType.PLANTABILITY_2026_5M]: GeoLevel.TILE,
+  [DataType.PLANTABILITY_2026_1M]: GeoLevel.TILE
 }
 
 export const DataTypeToSourceDate: Partial<Record<DataType, string>> = {
@@ -131,15 +137,19 @@ export const DataTypeToAttributionSource: Record<DataType, AttributionSource> = 
     url: "https://millenaire3.grandlyon.com/ressources/2025/changement-climatique-comment-territorialiser-la-responsabilite-de-la-metropole-de-lyon-dans-le-depassement-des-limites-planetaires"
   },
   [DataType.PET]: SOLWEIG_SOURCE,
-  [DataType.SHADOW]: SOLWEIG_SOURCE
+  [DataType.SHADOW]: SOLWEIG_SOURCE,
+  [DataType.PLANTABILITY_2026_5M]: { label: "IArbre", url: PLANTABILITY_NOTICE_URL },
+  [DataType.PLANTABILITY_2026_1M]: { label: "IArbre", url: PLANTABILITY_NOTICE_URL }
 }
 
 const DOCUMENTATION_BASE_URL =
   "https://erasme.notion.site/Documentation-IA-rbre-33444e49a3ad80af8d9ef01b578e1192"
 
+const PLANTABILITY_DOCUMENTATION_URL =
+  "https://erasme.notion.site/Lire-le-score-de-plantabilit-33444e49a3ad8080bb66f23ad06bb6a1"
+
 export const DataTypeToDocumentationUrl: Record<DataType, string> = {
-  [DataType.PLANTABILITY]:
-    "https://erasme.notion.site/Lire-le-score-de-plantabilit-33444e49a3ad8080bb66f23ad06bb6a1",
+  [DataType.PLANTABILITY]: PLANTABILITY_DOCUMENTATION_URL,
   [DataType.VULNERABILITY]:
     "https://erasme.notion.site/Comprendre-l-atlas-de-vuln-rabilit-la-chaleur-33644e49a3ad80878f83fa021241cbd1",
   [DataType.PLANTABILITY_VULNERABILITY]:
@@ -150,7 +160,9 @@ export const DataTypeToDocumentationUrl: Record<DataType, string> = {
   [DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY]:
     "https://erasme.notion.site/L-indice-fonctionnel-de-biodiversit-et-comment-il-est-construit-35244e49a3ad802992acd04add0f7c57",
   [DataType.PET]: "https://www.sciencedirect.com/science/article/abs/pii/S0360132325007188",
-  [DataType.SHADOW]: SOLWEIG_SOURCE.url
+  [DataType.SHADOW]: SOLWEIG_SOURCE.url,
+  [DataType.PLANTABILITY_2026_5M]: PLANTABILITY_DOCUMENTATION_URL,
+  [DataType.PLANTABILITY_2026_1M]: PLANTABILITY_DOCUMENTATION_URL
 }
 
 export enum VulnerabilityCategory {

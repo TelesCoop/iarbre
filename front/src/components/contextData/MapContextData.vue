@@ -2,6 +2,7 @@
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 import { isHourlyRaster } from "@/utils/hourlyRaster"
+import { isPlantability2026 } from "@/utils/plantability2026"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
 import type { ClimateData } from "@/types/climate"
@@ -76,6 +77,13 @@ defineProps({
         <PetDescription v-if="mapStore.selectedDataType === DataType.PET" />
         <ShadowDescription v-else-if="mapStore.selectedDataType === DataType.SHADOW" />
       </MapContextDataHourlyRaster>
+      <div
+        v-else-if="isPlantability2026(mapStore.selectedDataType)"
+        class="flex-1 min-h-0 overflow-y-auto"
+      >
+        <Plantability2026Description />
+        <MapContextDataPlantability :data="mapStore.contextData.data as PlantabilityData" />
+      </div>
     </template>
   </div>
 </template>

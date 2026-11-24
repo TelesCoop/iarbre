@@ -4,15 +4,23 @@ from django.core.management import BaseCommand
 import rasterio
 from rasterio import features
 import numpy as np
-from iarbre_data.data_config import FACTORS
+from scipy import ndimage
+from iarbre_data.data_config import BLOCKING_SCORE, FACTORS
 from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
+from iarbre_data.utils.factor_margin import is_fine_grid
 from iarbre_data.utils.rgb_raster import write_rgba
 from typing import Dict, Any
-from plantability.constants import colors, rgb_colors
+from plantability.constants import (
+    BLOCKED_SCORE,
+    MIN_PLANTING_SIZE,
+    PLANTABILITY_THRESHOLDS,
+    colors,
+    rgb_colors,
+)
 
-BLOCKING_SCORE = float(min(FACTORS.values()))
+NEIGHBOUR_OFFSETS = [(dr, dc) for dr in (-1, 0, 1) for dc in (-1, 0, 1) if dr or dc]
 
 
 def build_blocked_mask(raster_directory: str, shape: tuple) -> np.ndarray:
@@ -78,6 +86,40 @@ def compute_weighted_sum(
     log_progress(f"Weighted sum written to {output_file}")
 
 
+def remove_isolated_pixels(result: np.ndarray, blocked: np.ndarray) -> np.ndarray:
+    classes = np.digitize(result, PLANTABILITY_THRESHOLDS[:-1], right=True).astype(
+        np.uint8
+    )
+    sieved = features.sieve(classes, size=2, connectivity=8)
+    sieved[blocked] = classes[blocked]
+    rows, cols = np.nonzero(sieved != classes)
+    log_progress(f"Reassigning {len(rows)} isolated pixels")
+    padded_result = np.pad(result, 1)
+    padded_classes = np.pad(classes, 1, constant_values=np.iinfo(np.uint8).max)
+    neighbour_scores = np.stack(
+        [padded_result[rows + 1 + dr, cols + 1 + dc] for dr, dc in NEIGHBOUR_OFFSETS],
+        axis=1,
+    )
+    neighbour_classes = np.stack(
+        [padded_classes[rows + 1 + dr, cols + 1 + dc] for dr, dc in NEIGHBOUR_OFFSETS],
+        axis=1,
+    )
+    same_class = neighbour_classes == sieved[rows, cols][:, None]
+    result[rows, cols] = (neighbour_scores * same_class).sum(axis=1) / same_class.sum(
+        axis=1
+    )
+    return result
+
+
+def keep_planting_spots(
+    result: np.ndarray, blocked: np.ndarray, pixel_size: float
+) -> np.ndarray:
+    size = round(MIN_PLANTING_SIZE / pixel_size)
+    result = ndimage.grey_opening(result, size=(size, size))
+    result[blocked] = BLOCKING_SCORE
+    return result
+
+
 def cut_outside_cities(
     meta: Dict[str, Any], result: np.ndarray, all_cities_union: Any
 ) -> np.ndarray:
@@ -109,7 +151,7 @@ def threshold_and_convert_to_colors(
     result: np.ndarray, rgb_colors: Dict[float, np.ndarray], colors: Dict[float, str]
 ) -> np.ndarray:
     """
-    Apply thresholding to the result array and convert it to RGB colors.
+    Apply thresholding to the result array and convert it to RGBA colors.
 
     Args:
         result (np.ndarray): The array containing the computed weighted sum.
@@ -117,24 +159,25 @@ def threshold_and_convert_to_colors(
         colors (Dict[float, str]): A dictionary mapping threshold values to color names.
 
     Returns:
-        np.ndarray: The array with RGB color values.
+        np.ndarray: The array with RGBA color values, blocked pixels are transparent.
     """
     thresholds = sorted(colors.keys())
-    result_colors = np.zeros(result.shape + (3,), dtype=np.uint8)
+    result_colors = np.full(result.shape + (4,), 255, dtype=np.uint8)
 
     mask = result <= thresholds[0]
-    result_colors[mask] = rgb_colors[thresholds[0]]
+    result_colors[mask, :3] = rgb_colors[thresholds[0]]
 
     for i in range(0, len(thresholds) - 1):
         lower = thresholds[i]
         upper = thresholds[i + 1]
         mask = (result > lower) & (result <= upper)
-        result_colors[mask] = rgb_colors[upper]
+        result_colors[mask, :3] = rgb_colors[upper]
 
     mask = result > thresholds[-1]
-    result_colors[mask] = rgb_colors[thresholds[-1]]
+    result_colors[mask, :3] = rgb_colors[thresholds[-1]]
+    result_colors[result == BLOCKED_SCORE, 3] = 0
     nodata_mask = result == -9999
-    result_colors[nodata_mask] = np.array([255, 255, 255], dtype=np.uint8)
+    result_colors[nodata_mask] = 255
 
     return result_colors
 
@@ -143,11 +186,11 @@ class Command(BaseCommand):
     help = "Compute and save factors data."
 
     def add_arguments(self, parser):
+        """Add arguments to the command."""
         parser.add_argument(
             "--raster-dir",
-            type=str,
             default=str(BASE_DIR) + "/media/rasters/",
-            help="Directory containing factor rasters, outputs are written there",
+            help="Directory containing the factor rasters, outputs are written there",
         )
 
     def handle(self, *args, **options):
@@ -178,6 +221,10 @@ class Command(BaseCommand):
             )
 
         result[blocked] = BLOCKING_SCORE
+        if is_fine_grid(meta["transform"].a):
+            result = remove_isolated_pixels(result, blocked)
+            result = keep_planting_spots(result, blocked, meta["transform"].a)
+        result[blocked] = BLOCKED_SCORE
 
         all_cities = select_city(None).union_all()
         result = cut_outside_cities(meta, result, all_cities)

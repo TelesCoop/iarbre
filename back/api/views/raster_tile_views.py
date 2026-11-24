@@ -95,6 +95,9 @@ class RasterTileView(APIView):
 
     @method_decorator(cache_page(60 * 60 * 24))
     def get(self, request, z, x, y):
+        return self.tile_response(request, z, x, y)
+
+    def tile_response(self, request, z, x, y):
         raster_path = self.raster_path(request)
         if not raster_path.exists():
             raise Http404("Raster file not found")

@@ -4,6 +4,7 @@ import { useDebounceFn } from "@vueuse/core"
 import { useMapFilters } from "@/composables/useMapFilters"
 import {
   Map,
+  type Marker,
   NavigationControl,
   type GeoJSONSource,
   type StyleSpecification,
@@ -19,6 +20,7 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   DEFAULT_MAP_CENTER,
+  DEFAULT_DATA_TYPE,
   DEFAULT_MAP_STYLE,
   MAX_SHAPE_AREA_M2
 } from "@/utils/constants"
@@ -76,6 +78,14 @@ import {
   type HourlyRaster
 } from "@/utils/hourlyRaster"
 import { DEFAULT_PET_YEAR } from "@/utils/pet"
+import { createPointPin } from "@/utils/pointPin"
+import {
+  PLANTABILITY_2026_GRIDS,
+  isPlantability2026,
+  maxZoomFor,
+  plantability2026TileUrl,
+  rasterClasses
+} from "@/utils/plantability2026"
 import { LocalStorageHandler } from "@/utils/LocalStorageHandler"
 import {
   extractFeatureProperty,
@@ -161,7 +171,7 @@ const loadStoredHeightRanges = (): HeightRange[] => {
 export const useMapStore = defineStore("map", () => {
   const mapInstancesByIds = ref<Record<string, Map>>({})
   const mapEventsListener = ref<Record<string, (e: any) => void>>({})
-  const selectedDataType = ref<DataType>(DataType.PLANTABILITY)
+  const selectedDataType = ref<DataType>(DEFAULT_DATA_TYPE)
   const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
@@ -205,8 +215,7 @@ export const useMapStore = defineStore("map", () => {
   const vegetationHeightAtPoint = ref<number | null | undefined>(undefined)
   const rasterYear = ref<number>(DEFAULT_PET_YEAR)
   const rasterHour = ref<Hour>(DEFAULT_HOUR)
-  const heightMapClickHandler = ref<((e: any) => void) | null>(null)
-  const heightMapZoomHandler = ref<(() => void) | null>(null)
+  const pointClickHandler = ref<((e: any) => void) | null>(null)
 
   const {
     clearAllFilters,
@@ -343,8 +352,8 @@ export const useMapStore = defineStore("map", () => {
   ): AddLayerObject[] => {
     const layerId = getLayerId(datatype, geolevel)
 
-    const hourlyRaster = HOURLY_RASTERS[datatype]
-    if (hourlyRaster) {
+    const classes = rasterClasses(datatype)
+    if (classes) {
       return [
         {
           id: layerId,
@@ -352,10 +361,7 @@ export const useMapStore = defineStore("map", () => {
           source: sourceId,
           paint: {
             "color-relief-opacity": 0.6,
-            "color-relief-color": buildColorRamp(
-              hourlyRaster.classes,
-              filteredValues.value as number[]
-            ),
+            "color-relief-color": buildColorRamp(classes, filteredValues.value as number[]),
             resampling: "nearest"
           }
         }
@@ -427,65 +433,26 @@ export const useMapStore = defineStore("map", () => {
   const IFB_CLICK_CIRCLE_LAYER = "ifb-click-circle-layer"
   const IFB_CIRCLE_RADIUS_M = 500
 
-  const CROSS_HALF_SIZE_PX = 9
+  const CLICK_SQUARE_HALF_SIZE_M = 2
 
-  const metersPerPixel = (map: Map, lat: number) =>
-    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / 2 ** map.getZoom()
-
-  const CLICK_MARKER_STYLES = {
-    square: {
-      halfSizeM: () => 2,
-      width: QPV_CASING_WIDTH,
-      casingWidth: 0
-    },
-    cross: {
-      halfSizeM: (map: Map, lat: number) => CROSS_HALF_SIZE_PX * metersPerPixel(map, lat),
-      width: 2,
-      casingWidth: 5
-    }
-  }
-  type ClickMarkerShape = keyof typeof CLICK_MARKER_STYLES
-
-  const drawClickMarker = (
-    map: Map,
-    lat: number,
-    lng: number,
-    shape: ClickMarkerShape,
-    withCircle = true
-  ) => {
-    const { halfSizeM, width, casingWidth } = CLICK_MARKER_STYLES[shape]
-    const sizeM = halfSizeM(map, lat)
-    const latOffset = sizeM / METERS_PER_DEGREE_LAT
-    const lngOffset = sizeM / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
+  const drawClickMarker = (map: Map, lat: number, lng: number, withCircle = true) => {
+    const latOffset = CLICK_SQUARE_HALF_SIZE_M / METERS_PER_DEGREE_LAT
+    const lngOffset =
+      CLICK_SQUARE_HALF_SIZE_M / (METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180))
     const marker = {
       type: "Feature" as const,
-      geometry:
-        shape === "square"
-          ? {
-              type: "Polygon" as const,
-              coordinates: [
-                [
-                  [lng - lngOffset, lat - latOffset],
-                  [lng + lngOffset, lat - latOffset],
-                  [lng + lngOffset, lat + latOffset],
-                  [lng - lngOffset, lat + latOffset],
-                  [lng - lngOffset, lat - latOffset]
-                ]
-              ]
-            }
-          : {
-              type: "MultiLineString" as const,
-              coordinates: [
-                [
-                  [lng - lngOffset, lat],
-                  [lng + lngOffset, lat]
-                ],
-                [
-                  [lng, lat - latOffset],
-                  [lng, lat + latOffset]
-                ]
-              ]
-            },
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [
+          [
+            [lng - lngOffset, lat - latOffset],
+            [lng + lngOffset, lat - latOffset],
+            [lng + lngOffset, lat + latOffset],
+            [lng - lngOffset, lat + latOffset],
+            [lng - lngOffset, lat - latOffset]
+          ]
+        ]
+      },
       properties: {}
     }
     const source = map.getSource(CLICK_MARKER_SOURCE) as GeoJSONSource | undefined
@@ -500,7 +467,7 @@ export const useMapStore = defineStore("map", () => {
         layout: { "line-cap": "round" },
         paint: {
           "line-color": QPV_BORDER_COLOR,
-          "line-width": casingWidth,
+          "line-width": 0,
           "line-opacity": QPV_CASING_OPACITY
         }
       })
@@ -511,7 +478,7 @@ export const useMapStore = defineStore("map", () => {
         layout: { "line-cap": "round" },
         paint: {
           "line-color": QPV_CASING_COLOR,
-          "line-width": width,
+          "line-width": QPV_CASING_WIDTH,
           "line-opacity": QPV_CASING_OPACITY
         }
       })
@@ -545,6 +512,18 @@ export const useMapStore = defineStore("map", () => {
       })
     }
     console.info("cypress: IFB click square drawn")
+  }
+
+  const pointPins = new WeakMap<Map, Marker>()
+
+  const drawPointPin = (map: Map, lat: number, lng: number) => {
+    const pin = pointPins.get(map) ?? createPointPin()
+    pointPins.set(map, pin)
+    pin.setLngLat([lng, lat]).addTo(map)
+  }
+
+  const removePointPin = (map: Map) => {
+    pointPins.get(map)?.remove()
   }
 
   const removeClickMarker = (map: Map) => {
@@ -597,7 +576,7 @@ export const useMapStore = defineStore("map", () => {
         ? extractFeatureProperty(features, datatype, geolevel, "vulnerability_indice_night")
         : undefined
     if (datatype === DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY) {
-      drawClickMarker(map, lngLat.lat, lngLat.lng, "square")
+      drawClickMarker(map, lngLat.lat, lngLat.lng)
       selectedFeatureInfo.value = null
       applySelectionHighlight(map)
     } else {
@@ -648,32 +627,44 @@ export const useMapStore = defineStore("map", () => {
     return layers.length > 0 && map.queryRenderedFeatures(point, { layers }).length > 0
   }
 
-  const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
-    if (heightMapClickHandler.value) {
-      map.off("click", heightMapClickHandler.value)
-      heightMapClickHandler.value = null
-    }
-    if (heightMapZoomHandler.value) {
-      map.off("zoom", heightMapZoomHandler.value)
-      heightMapZoomHandler.value = null
-    }
+  const pointClickAction = (
+    datatype: DataType
+  ): ((lat: number, lng: number) => Promise<void>) | undefined => {
     if (datatype === DataType.VEGESTRATE && showVegestrateHeight.value) {
+      return async (lat, lng) => {
+        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(lat, lng)
+      }
+    }
+    if (isPlantability2026(datatype)) {
+      return async (lat, lng) => {
+        await contextData.setData(
+          `${lat},${lng}`,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          lat,
+          lng
+        )
+      }
+    }
+  }
+
+  const setupClickEventOnTile = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
+    if (pointClickHandler.value) {
+      map.off("click", pointClickHandler.value)
+      pointClickHandler.value = null
+    }
+    const pointAction = pointClickAction(datatype)
+    if (pointAction) {
       const handler = async (e: any) => {
         if (selectionMode.value !== SelectionMode.POINT) return
         clickCoordinates.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
-        drawClickMarker(map, e.lngLat.lat, e.lngLat.lng, "cross", false)
-        vegetationHeightAtPoint.value = await getVegetationHeightAtPoint(e.lngLat.lat, e.lngLat.lng)
+        drawPointPin(map, e.lngLat.lat, e.lngLat.lng)
+        await pointAction(e.lngLat.lat, e.lngLat.lng)
       }
       map.on("click", handler)
-      heightMapClickHandler.value = handler
-
-      const zoomHandler = () => {
-        if (!map.getLayer(CLICK_MARKER_LAYER)) return
-        const { lat, lng } = clickCoordinates.value
-        drawClickMarker(map, lat, lng, "cross", false)
-      }
-      map.on("zoom", zoomHandler)
-      heightMapZoomHandler.value = zoomHandler
+      pointClickHandler.value = handler
       return
     }
     const layerId = getLayerId(datatype, geolevel)
@@ -744,6 +735,18 @@ export const useMapStore = defineStore("map", () => {
   const setupSource = (map: Map, datatype: DataType, geolevel: GeoLevel) => {
     const fullBaseApiUrl = getFullBaseApiUrl()
     const sourceId = getSourceId(datatype, geolevel)
+
+    const plantability2026Grid = PLANTABILITY_2026_GRIDS[datatype]
+    if (plantability2026Grid) {
+      map.addSource(sourceId, {
+        type: "raster-dem",
+        encoding: "terrarium",
+        tiles: [plantability2026TileUrl(fullBaseApiUrl, plantability2026Grid)],
+        tileSize: 256,
+        minzoom: MIN_ZOOM
+      })
+      return
+    }
 
     const hourlyRaster = HOURLY_RASTERS[datatype]
     if (hourlyRaster) {
@@ -827,8 +830,10 @@ export const useMapStore = defineStore("map", () => {
       if (mapInstance.getLayer(CLICK_MARKER_LAYER)) {
         removeClickMarker(mapInstance)
       }
+      removePointPin(mapInstance)
       clearSelectionWall3D(mapInstance)
       clearSelectionOutline2D(mapInstance)
+      mapInstance.setMaxZoom(maxZoomFor(datatype))
       // remove existing layers and sources
       if (previousDataType !== null) {
         const layerId = getLayerId(previousDataType, previousGeoLevel)
@@ -1722,7 +1727,7 @@ export const useMapStore = defineStore("map", () => {
       new Map({
         container: mapId,
         style: loadMapStyle(mapStyle),
-        maxZoom: MAX_ZOOM,
+        maxZoom: maxZoomFor(selectedDataType.value),
         minZoom: MIN_ZOOM,
         attributionControl: false
       })

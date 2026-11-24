@@ -3,13 +3,15 @@ import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToAttributionSource } from "@/utils/enum"
 import { HOURLY_RASTERS, isHourlyRaster } from "@/utils/hourlyRaster"
+import { PLANTABILITY_2026_GRIDS, isPlantability2026 } from "@/utils/plantability2026"
 
 const mapStore = useMapStore()
 const FIXED_HEIGHT_DATA_TYPES = [
   DataType.PLANTABILITY,
   DataType.VULNERABILITY,
   DataType.BIOSPHERE_FUNCTIONAL_INTEGRITY,
-  ...(Object.keys(HOURLY_RASTERS) as DataType[])
+  ...(Object.keys(HOURLY_RASTERS) as DataType[]),
+  ...(Object.keys(PLANTABILITY_2026_GRIDS) as DataType[])
 ]
 const FIXED_WIDTH_DATA_TYPES = [...FIXED_HEIGHT_DATA_TYPES, DataType.CLIMATE_ZONE]
 const hasFixedWidth = computed(() => FIXED_WIDTH_DATA_TYPES.includes(mapStore.selectedDataType))
@@ -27,7 +29,13 @@ const attribution = computed(() =>
       { 'legend-panel-fixed-width': hasFixedWidth, 'legend-panel-fixed-height': hasFixedHeight }
     ]"
   >
-    <PlantabilityLegend v-if="mapStore.selectedDataType === DataType.PLANTABILITY" class="w-full" />
+    <PlantabilityLegend
+      v-if="
+        mapStore.selectedDataType === DataType.PLANTABILITY ||
+        isPlantability2026(mapStore.selectedDataType)
+      "
+      class="w-full"
+    />
     <ClimateZoneLegend
       v-else-if="mapStore.selectedDataType === DataType.CLIMATE_ZONE"
       class="w-full"
