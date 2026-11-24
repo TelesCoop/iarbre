@@ -166,6 +166,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
+  const currentBearing = ref<number>(0)
   const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
   const showBoundaryLayer = ref<boolean>(false)
@@ -1771,6 +1772,9 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
+    mapInstance.on("rotate", () => {
+      currentBearing.value = mapInstance.getBearing()
+    })
     mapInstance.once("load", () => {
       const center = mapInstance.getCenter()
       clickCoordinates.value = {
@@ -1975,6 +1979,7 @@ export const useMapStore = defineStore("map", () => {
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
+    currentBearing,
     clickCoordinates,
     selectedLegendCell,
     selectionMode,

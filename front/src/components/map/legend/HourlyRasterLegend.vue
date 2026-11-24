@@ -3,6 +3,7 @@ import { computed } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel } from "@/utils/enum"
 import { HOURLY_RASTERS, formatHour, toMapColor } from "@/utils/hourlyRaster"
+import SunCompass from "@/components/map/legend/SunCompass.vue"
 
 const mapStore = useMapStore()
 
@@ -51,5 +52,6 @@ const title = computed(() =>
         <span class="legend-axis-indicator">+</span>
       </div>
     </div>
+    <SunCompass />
   </div>
 </template>

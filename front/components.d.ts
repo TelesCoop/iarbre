@@ -159,6 +159,7 @@ declare module 'vue' {
     ShapeModePicker: typeof import('./src/components/map/ShapeModePicker.vue')['default']
     ShapeToolbar: typeof import('./src/components/map/ShapeToolbar.vue')['default']
     SidebarComponent: typeof import('./src/components/sidebar/SidebarComponent.vue')['default']
+    SunCompass: typeof import('./src/components/map/legend/SunCompass.vue')['default']
     SurfaceTypeWidget: typeof import('./src/components/dashboard/widgets/SurfaceTypeWidget.vue')['default']
     UnsupportedShapeModeMessage: typeof import('./src/components/contextData/shared/UnsupportedShapeModeMessage.vue')['default']
     VegestrateContextDataInfo: typeof import('./src/components/contextData/vegestrate/VegestrateContextDataInfo.vue')['default']
