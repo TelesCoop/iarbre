@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, watch, type Ref, type WatchSource } from "vue"
 import * as d3 from "d3"
+import "d3-transition"
 import { shouldAnimate, supportsIntersectionObserver } from "@/utils/motion"
 
 export interface D3ChartContext {
