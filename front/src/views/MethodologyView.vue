@@ -47,6 +47,49 @@ const newLimits = [
   "Les seuils des classes sont ceux de la carte à 5 m. Ils seront recalculés sur toute la Métropole."
 ]
 
+const blurRules = [
+  "Contrainte (poids négatif) : la zone ne peut que grandir. Pénalité entière à l'intérieur, qui s'estompe à l'extérieur.",
+  "Atout (poids positif) : la zone ne peut que rétrécir. Aucun bonus à l'extérieur, bonus réduit près du bord.",
+  "Zones bloquantes : pas de flou, leur emprise est élargie de leur précision.",
+  "Sources sans précision connue : pas de flou, limite nette (et toujours application d'un buffer)."
+]
+
+const blurExamples = [
+  {
+    title: "Réseau de gaz",
+    detail: "poids -3, précision ±1 m",
+    rows: [
+      { place: "Dans la zone", hard: -3, blurred: -3 },
+      { place: "0,5 m à l'extérieur", hard: 0, blurred: -0.9 },
+      { place: "1 m à l'extérieur", hard: 0, blurred: -0.5 },
+      { place: "2 m à l'extérieur", hard: 0, blurred: -0.1 }
+    ]
+  },
+  {
+    title: "Strate basse (Végéstrate)",
+    detail: "poids +3, précision ±0,5 m",
+    rows: [
+      { place: "Bien à l'intérieur", hard: 3, blurred: 3 },
+      { place: "0,25 m à l'intérieur du bord", hard: 3, blurred: 2.1 },
+      { place: "À l'extérieur", hard: 0, blurred: 0 }
+    ]
+  }
+]
+
+const formatScore = (value: number, approx = false) =>
+  (approx ? "≈ " : "") + value.toLocaleString("fr-FR", { signDisplay: "exceptZero" })
+
+const postProcessingSteps = [
+  {
+    title: "Pixels isolés",
+    text: "Un pixel seul dans sa classe, entouré de pixels d'autres classes, prend le score moyen de ses voisins de la classe qui l'entoure."
+  },
+  {
+    title: "Espaces de 4 x 4 m",
+    text: "Un pixel garde son score seulement s'il fait partie d'un carré de 4 x 4 m dont tous les pixels ont au moins ce score. Sinon il prend le meilleur score possible pour un tel carré. Une bande plantable plus étroite que 4 m descend donc au score de ce qui l'entoure."
+  }
+]
+
 const oldLimits = [
   "Prudence parfois trompeuse : la moyenne sur 5 m n'absorbe pas toujours les erreurs de position. Un réseau sur le bord d'un carreau et en réalité décalé de 3 m tombe dans un carreau voisin, non pénalisé.",
   "Un carreau à cheval entre partie en herbe et chaussée reçoit un score moyen qui ne correspond à aucun des deux.",
@@ -102,6 +145,103 @@ const oldLimits = [
               </tbody>
             </table>
           </div>
+        </section>
+
+        <section class="flex flex-col gap-4" aria-labelledby="blur-title">
+          <h2 id="blur-title" class="text-xl font-semibold">Zone de flou en bordure</h2>
+          <div class="flex max-w-2xl flex-col gap-3 text-base leading-relaxed">
+            <p>
+              À 5 m, un facteur compte selon la part du carreau qu'il couvre : un carreau couvert à
+              40&nbsp;% par la zone du réseau de gaz reçoit 0,4&nbsp;x&nbsp;-3&nbsp;=&nbsp;-1,2. À 1
+              m, un pixel est dedans ou dehors, et le score n'est plus qu'une somme de poids
+              entiers. Cette limite nette supposerait une précision plus grandes que celles des
+              données en réalité, d'où l'utilisation de flou sur la bordure, en plus du buffer.
+            </p>
+            <p>
+              Nous avons donc pour chaque source une précision estimée en mètres. À 1 m, la zone est
+              floutée sur cette distance avec une décroissance (non-linéaire, gaussienne), ce qui
+              donne la probabilité que l'objet couvre vraiment le pixel. Le flou reste prudent :
+            </p>
+            <ul class="flex list-disc flex-col gap-1.5 pl-5 text-sm">
+              <li v-for="rule in blurRules" :key="rule">{{ rule }}</li>
+            </ul>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <figure
+              v-for="example in blurExamples"
+              :key="example.title"
+              class="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4"
+            >
+              <figcaption>
+                <span class="font-semibold">{{ example.title }}</span>
+                <span class="text-sm text-gray-500"> ({{ example.detail }})</span>
+              </figcaption>
+              <table class="w-full border-collapse text-sm">
+                <thead>
+                  <tr class="text-left text-gray-500">
+                    <th class="py-1.5 pr-2 font-medium" scope="col">Pixel</th>
+                    <th class="py-1.5 pr-2 whitespace-nowrap text-right font-medium" scope="col">
+                      Ancienne méthode (net)
+                    </th>
+                    <th class="w-2/5 py-1.5 pl-2 font-medium" scope="col">
+                      Nouvelle méthode (flou)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in example.rows" :key="row.place" class="border-t border-gray-100">
+                    <th class="py-1.5 pr-2 text-left font-normal" scope="row">{{ row.place }}</th>
+                    <td class="py-1.5 pr-2 text-right tabular-nums text-gray-500">
+                      {{ formatScore(row.hard) }}
+                    </td>
+                    <td class="py-1.5 pl-2">
+                      <div class="flex items-center gap-2">
+                        <span class="w-12 shrink-0 tabular-nums">
+                          {{ formatScore(row.blurred, row.blurred !== row.hard) }}
+                        </span>
+                        <span class="h-2 flex-1 rounded-full bg-gray-100" aria-hidden="true">
+                          <span
+                            :class="[
+                              'block h-full rounded-full',
+                              row.blurred < 0 ? 'bg-orange-400' : 'bg-primary-500'
+                            ]"
+                            :style="{ width: `${(Math.abs(row.blurred) / 3) * 100}%` }"
+                          />
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </figure>
+          </div>
+        </section>
+
+        <section class="flex flex-col gap-4" aria-labelledby="post-title">
+          <h2 id="post-title" class="text-xl font-semibold">Post-traitement</h2>
+          <p class="max-w-2xl text-base leading-relaxed">
+            Après la somme pondérée des facteurs, deux étapes nettoient la carte à 1 m. Les pixels
+            bloqués ne changent jamais.
+          </p>
+          <ol class="grid gap-4 md:grid-cols-2">
+            <li
+              v-for="(step, index) in postProcessingSteps"
+              :key="step.title"
+              class="flex gap-3 rounded-lg border border-gray-200 bg-white p-4"
+            >
+              <span
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-semibold text-primary-700"
+                aria-hidden="true"
+              >
+                {{ index + 1 }}
+              </span>
+              <div class="flex flex-col gap-1">
+                <h3 class="font-semibold">{{ step.title }}</h3>
+                <p class="text-sm leading-relaxed">{{ step.text }}</p>
+              </div>
+            </li>
+          </ol>
         </section>
 
         <div class="grid gap-8 md:grid-cols-2">
