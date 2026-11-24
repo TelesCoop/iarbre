@@ -8,6 +8,7 @@ from iarbre_data.data_config import FACTORS
 from iarbre_data.settings import BASE_DIR
 
 from iarbre_data.utils.database import log_progress, select_city
+from iarbre_data.utils.rgb_raster import write_rgba
 from typing import Dict, Any
 from plantability.constants import colors, rgb_colors
 
@@ -186,9 +187,9 @@ class Command(BaseCommand):
 
         result_colors = threshold_and_convert_to_colors(result, rgb_colors, colors)
 
-        color_meta = meta.copy()
-        color_meta.update(dtype=rasterio.uint8, count=3, nodata=None)
-
-        with rasterio.open(output_color_file, "w", **color_meta) as dst:
-            for i in range(3):
-                dst.write(result_colors[:, :, i], i + 1)
+        write_rgba(
+            output_color_file,
+            result_colors.transpose(2, 0, 1),
+            result != meta["nodata"],
+            meta,
+        )

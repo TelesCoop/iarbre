@@ -143,7 +143,19 @@ def empty_png(width: int = TILE_SIZE, height: int = TILE_SIZE) -> bytes:
     return png_bytes(Image.new("RGBA", (width, height), (0, 0, 0, 0)))
 
 
-def render_grayscale_png(
+def rgb_image(src, window, width: int, height: int) -> Image.Image:
+    """Encode the first three bands as an RGBA image, alpha from the dataset mask."""
+    rgb = src.read(
+        [1, 2, 3],
+        window=window,
+        out_shape=(3, height, width),
+        resampling=Resampling.nearest,
+    )
+    alpha = src.dataset_mask(window=window, out_shape=(height, width))
+    return Image.fromarray(np.dstack([*rgb, alpha]), mode="RGBA")
+
+
+def render_wms_png(
     raster_path: Path,
     crs: str,
     bbox: tuple[float, float, float, float],
@@ -151,7 +163,10 @@ def render_grayscale_png(
     height: int,
 ) -> bytes:
     """Render ``bbox`` (west, south, east, north, expressed in ``crs``) as a
-    ``width`` x ``height`` grayscale PNG; transparent outside the raster."""
+    ``width`` x ``height`` PNG; transparent outside the raster.
+
+    Rasters with 3+ bands are rendered as RGBA, single-band ones as raw
+    grayscale values."""
     west, south, east, north = bbox
     with rasterio.open(raster_path) as src:
         transformer = Transformer.from_crs(crs, src.crs, always_xy=True)
@@ -163,12 +178,15 @@ def render_grayscale_png(
             return empty_png(width, height)
 
         window = from_bounds(left, bottom, right, top, transform=src.transform)
-        data = src.read(
-            1,
-            window=window,
-            out_shape=(height, width),
-            resampling=Resampling.nearest,
-        )
-        nodata = src.nodata
+        if src.count >= 3:
+            img = rgb_image(src, window, width, height)
+        else:
+            data = src.read(
+                1,
+                window=window,
+                out_shape=(height, width),
+                resampling=Resampling.nearest,
+            )
+            img = grayscale_image(data, src.nodata)
 
-    return png_bytes(grayscale_image(data, nodata))
+    return png_bytes(img)

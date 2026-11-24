@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from api.constants import ONE_HOUR, PET_RASTERS, SHADOW_RASTER
 from api.schema import NOT_FOUND_RESPONSE, TAG_GEOSERVICES, binary_response
-from api.services.rasters import render_grayscale_png
+from api.services.rasters import render_wms_png
 from api.services.wms import discover_layers, layer_bounds_wgs84
 from api.utils.wfs_renderers import GetFeature, GetPropertyValue
 from iarbre_data.models import BiosphereFunctionalIntegrity, Tile, Vegestrate
@@ -109,7 +109,9 @@ _tile_qs = Tile.objects.select_related("city").only(
     "city__name",
 )
 
-_vegestrate_qs = Vegestrate.objects.only("geometry", "strate", "surface")
+_vegestrate_qs = Vegestrate.objects.only(
+    "geometry", "strate", "surface", "median_height"
+)
 
 _biosphere_functional_integrity_qs = BiosphereFunctionalIntegrity.objects.only(
     "geometry", "indice"
@@ -217,7 +219,7 @@ class IArbreWFSView(WFSView):
                 _vegestrate_qs,
                 name="vegestrate",
                 title="Végéstrate",
-                fields=["geometry", "strate", "surface"],
+                fields=["geometry", "strate", "surface", "median_height"],
             ),
             TileFeatureType(
                 _biosphere_functional_integrity_qs,
@@ -457,7 +459,7 @@ class IArbreWMSView(APIView):
             )
 
         try:
-            png = render_grayscale_png(
+            png = render_wms_png(
                 raster_path, crs, (west, south, east, north), width, height
             )
         except Exception:

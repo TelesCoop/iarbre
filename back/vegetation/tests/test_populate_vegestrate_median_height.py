@@ -1,9 +1,11 @@
 import os
 import shutil
 import tempfile
+from unittest.mock import patch
 
 import numpy as np
 import rasterio
+import shapely
 from django.contrib.gis.geos import GEOSGeometry
 from django.test import TestCase
 from rasterio.transform import from_origin
@@ -35,6 +37,32 @@ class PopulateVegestrateMedianHeightTest(TestCase):
         save_median_heights(medians)
         veg.refresh_from_db()
         self.assertEqual(veg.median_height, 2.0)
+
+    def test_polygon_failing_geos_clip_is_rasterized_unclipped(self):
+        failing = Vegestrate.objects.create(
+            geometry=GEOSGeometry(
+                "POLYGON((7 0, 10 0, 10 10, 7 10, 7 0))", srid=SRID_DB
+            ),
+            surface=30.0,
+        )
+        clean = Vegestrate.objects.create(
+            geometry=GEOSGeometry("POLYGON((0 0, 7 0, 7 10, 0 10, 0 0))", srid=SRID_DB),
+            surface=70.0,
+        )
+        clip_by_rect = shapely.clip_by_rect
+
+        def flaky_clip(geoms, *rect):
+            if any(shapely.bounds(g)[0] == 7 for g in np.atleast_1d(geoms)):
+                raise shapely.errors.GEOSException(
+                    "Invalid number of points in LinearRing"
+                )
+            return clip_by_rect(geoms, *rect)
+
+        with patch("shapely.clip_by_rect", side_effect=flaky_clip):
+            medians = compute_median_heights(self._make_raster(), strip_height=5)
+
+        self.assertEqual(medians[failing.id], 30.0)
+        self.assertEqual(medians[clean.id], 2.0)
 
     def test_polygon_outside_raster_keeps_null_median_height(self):
         outside = Vegestrate.objects.create(
