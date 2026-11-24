@@ -75,7 +75,8 @@ Cypress.Commands.add("mount", (component, options) => {
     history: createMemoryHistory(),
     routes: [
       { path: "/", name: "map", component: { template: "<div />" } },
-      { path: "/dashboard", name: "dashboard", component: { template: "<div />" } }
+      { path: "/dashboard", name: "dashboard", component: { template: "<div />" } },
+      { path: "/methodologie", name: "methodology", component: { template: "<div />" } }
     ]
   })
 
