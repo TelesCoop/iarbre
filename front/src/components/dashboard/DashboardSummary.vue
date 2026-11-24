@@ -53,7 +53,7 @@ const summarySources = [
   <section
     class="flex flex-col gap-5 print:h-[208mm] print:w-[297mm] print:break-before-page print:gap-0 print:overflow-hidden print:px-[18mm] print:pt-[16mm] print:pb-[12mm]"
   >
-    <div class="flex flex-col gap-1.5">
+    <div v-reveal class="flex flex-col gap-1.5">
       <h2 class="text-xl font-bold text-gray-900">Synthèse du territoire</h2>
       <p class="text-sm italic text-gray-500">Les quatre indicateurs clés en une lecture.</p>
     </div>
@@ -61,8 +61,9 @@ const summarySources = [
     <div class="flex gap-6 xl:gap-10 print:mt-6 print:min-h-0 print:flex-1 print:gap-10">
       <div class="grid flex-[3] grid-cols-1 gap-4 sm:grid-cols-2 print:gap-5">
         <div
-          v-for="card in summaryCards"
+          v-for="(card, index) in summaryCards"
           :key="card.label"
+          v-reveal="index * 100"
           class="summary-card flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4 md:p-5 print:p-5"
         >
           <span
@@ -78,11 +79,13 @@ const summarySources = [
         </div>
       </div>
       <IconMetropoleMap
+        v-reveal="200"
         class="hidden min-w-0 self-center text-primary-300 xl:block xl:h-72 xl:w-auto print:block print:h-full print:w-auto print:flex-[2] print:self-auto"
       />
     </div>
 
     <div
+      v-reveal
       class="grid grid-cols-1 gap-6 border-t border-gray-200 pt-6 md:grid-cols-2 md:gap-12 print:mt-8 print:grid-cols-2 print:pt-8"
     >
       <div>

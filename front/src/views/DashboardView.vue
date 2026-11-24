@@ -105,6 +105,14 @@ onMounted(() => {
   }
 }
 
+/* The PDF renderer captures the page as soon as it is ready: nothing may
+   still be animating. Entrance animations are already skipped in print mode,
+   this is a safety net for any other transition. */
+.print-mode :deep(*) {
+  transition: none !important;
+  animation: none !important;
+}
+
 .dashboard-content {
   @apply flex-1 overflow-y-auto;
   @apply p-4 md:p-8 lg:p-12;

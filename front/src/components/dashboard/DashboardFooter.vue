@@ -7,6 +7,7 @@ const { loading, exportToPdf } = useDashboardPdfExport()
 
 <template>
   <footer
+    v-reveal
     class="flex flex-col items-center gap-4 p-6 rounded-xl bg-primary-50 border border-primary-100 mt-4 print:hidden"
   >
     <div class="text-center">

@@ -22,6 +22,7 @@ import "@/styles/main.css"
 import { createPinia } from "pinia"
 import { createRouter, createMemoryHistory } from "vue-router"
 import { vTooltip } from "@/directives/tooltip"
+import { vReveal } from "@/directives/reveal"
 
 import { mount } from "cypress/vue"
 
@@ -84,6 +85,7 @@ Cypress.Commands.add("mount", (component, options) => {
       app.use(createPinia())
       app.use(router)
       app.directive("tooltip", vTooltip)
+      app.directive("reveal", vReveal)
     }
   })
 

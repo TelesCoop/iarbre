@@ -219,16 +219,9 @@ const { svgRef } = useD3Chart(
 
 .bar-fill {
   @apply h-full rounded-md flex items-center px-2;
-  animation: barGrow 700ms ease-out both;
 }
 
 .bar-inner-value {
   @apply text-[0.625rem] font-bold whitespace-nowrap;
-}
-
-@keyframes barGrow {
-  from {
-    width: 0 !important;
-  }
 }
 </style>

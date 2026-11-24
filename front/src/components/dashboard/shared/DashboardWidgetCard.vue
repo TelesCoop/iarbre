@@ -11,7 +11,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="widget-card">
+  <div v-reveal class="widget-card">
     <div class="widget-header">
       <h3 class="widget-title">
         <slot name="title">{{ title }}</slot>

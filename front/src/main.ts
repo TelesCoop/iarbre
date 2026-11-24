@@ -7,6 +7,7 @@ import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 import App from "./App.vue"
 import router from "./router"
 import { vTooltip } from "./directives/tooltip"
+import { vReveal } from "./directives/reveal"
 import { setupAnalytics } from "./analytics/matomo"
 
 setWorkerUrl(maplibreWorkerUrl)
@@ -17,5 +18,6 @@ app.use(router)
 setupAnalytics()
 
 app.directive("tooltip", vTooltip)
+app.directive("reveal", vReveal)
 
 app.mount("#app")
