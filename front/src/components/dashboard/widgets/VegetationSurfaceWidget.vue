@@ -41,7 +41,7 @@ const items = computed(() => {
 <template>
   <DashboardWidgetCard
     :subtitle="`Découpage en trois strates : haute (> 5 m), moyenne (1,5 - 5 m) et basse (< 1,5 m).`"
-    title="Inventaire stratifié de végétation existante"
+    title="Inventaire stratifié de végétation existante (Végéstrate)"
   >
     <div v-if="hasData" class="widget-body">
       <div v-for="item in items" :key="item.label" class="bar-item">
