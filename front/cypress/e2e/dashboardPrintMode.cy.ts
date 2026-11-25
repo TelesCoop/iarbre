@@ -7,7 +7,7 @@ describe("Dashboard - Print Mode", () => {
   beforeEach(() => {
     cy.viewport(DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/dashboard/", { fixture: "dashboard.json" }).as("dashboard")
+    cy.intercept("GET", "**/api/v1/dashboard/", { fixture: "dashboard.json" }).as("dashboard")
     cy.visit("/dashboard?print=1")
     cy.wait("@dashboard")
   })

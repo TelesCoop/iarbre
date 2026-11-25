@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import AppDialog from "@/components/shared/AppDialog.vue"
 import { ref } from "vue"
-import { getFullBaseApiUrl } from "@/api"
+import { getPublicApiUrl } from "@/api"
 import AccordionSection from "./apiDoc/AccordionSection.vue"
 import QgisConnectionCard from "./apiDoc/QgisConnectionCard.vue"
 import ManualRequestSection from "./apiDoc/ManualRequestSection.vue"
@@ -19,8 +19,8 @@ const toggle = (service: "wfs" | "wms" | "raster") => {
 }
 
 const origin = window.location.origin
-const wfsBase = `${origin}/api/wfs/`
-const wmsBase = `${origin}/api/wms/`
+const wfsBase = `${origin}/api/v1/wfs/`
+const wmsBase = `${origin}/api/v1/wms/`
 
 const defaultTypename = "iarbre:plantability"
 
@@ -62,7 +62,7 @@ interface RasterDataset {
   url: string
 }
 
-const rasterUrl = (key: string) => `${getFullBaseApiUrl()}/rasters/${key}/`
+const rasterUrl = (key: string) => `${getPublicApiUrl()}/rasters/${key}/`
 
 const rasterSizes = ref<Record<string, number>>({})
 

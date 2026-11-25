@@ -13,7 +13,7 @@ from rasterio.transform import from_bounds
 
 from iarbre_data.utils.rgb_raster import write_rgba
 
-WMS_URL = "/api/wms/"
+WMS_URL = "/api/v1/wms/"
 
 _LAYER_STEM = "test_layer"
 _LAYER_NAME = f"iarbre:{_LAYER_STEM}"
@@ -125,6 +125,21 @@ class WMSCapabilitiesTest(_WMSFixtureMixin, TestCase):
         )
         self.assertIn(b"<MaxWidth>4096</MaxWidth>", response.content)
         self.assertIn(b"<MaxHeight>4096</MaxHeight>", response.content)
+
+    def test_get_capabilities_advertises_requested_url(self):
+        response = self.client.get(
+            WMS_URL,
+            {"SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetCapabilities"},
+        )
+        self.assertIn(b'href="http://testserver/api/v1/wms/"', response.content)
+
+    @override_settings(ALLOWED_HOSTS=["a.example", "b.example"])
+    def test_get_capabilities_cache_is_per_url(self):
+        params = {"SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetCapabilities"}
+        self.client.get(WMS_URL, params, HTTP_HOST="a.example")
+        response = self.client.get(WMS_URL, params, HTTP_HOST="b.example")
+        self.assertIn(b'href="http://b.example/api/v1/wms/"', response.content)
+        self.assertNotIn(b"a.example", response.content)
 
     def test_unsupported_request_returns_400(self):
         response = self.client.get(

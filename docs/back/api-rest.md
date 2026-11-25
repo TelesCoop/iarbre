@@ -2,6 +2,31 @@
 
 Cette page décrit l'API DjangoREST (application `api` pour le backend). Elle sert de référence pour le frontend, pour les intégrations SIG.
 
+### Adresses
+
+| Préfixe              | Contenu                                                                                                         | Fichier                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `/api/v1/`           | **API publique** : contrat stable, utilisable par des tiers. Un changement cassant demande une nouvelle version | `back/api/urls/public.py`   |
+| `/api/app/`          | **Routes internes** au frontend, sans garantie de stabilité                                                     | `back/api/urls/app.py`      |
+| `/api/health-check/` | Supervision                                                                                                     | `back/api/urls/__init__.py` |
+
+Les chemins de cette page sont relatifs à `/api/v1/`, sauf dans la partie [Routes internes](#routes-internes) où ils sont relatifs à `/api/app/`.
+
+`/api/wfs/`, `/api/wms/` et `/api/rasters/{raster_type}/` restent servis à leur ancienne adresse (même vue, sans redirection) : ces URL ont pu être enregistrées dans des projets QGIS ou partagées. Les accès WFS et WMS, anciennes adresses comprises, sont suivis dans Matomo.
+
+### Schéma OpenAPI
+
+L'API publique est décrite par un schéma OpenAPI 3 généré par `drf-spectacular` :
+
+- `/api/v1/schema/` : schéma (YAML, `?format=json` pour du JSON) ;
+- `/api/v1/docs/` : Swagger UI, dont les fichiers JS/CSS sont servis par nos fichiers statiques (`drf-spectacular-sidecar`, aucun CDN).
+
+Seules les routes `/api/v1/` y figurent (filtre `api.schema.public_endpoints_only`). Le WFS (`django-gisserver`, hors DRF) n'y est pas : il se décrit lui-même par `GetCapabilities`. Les vues publiques sont annotées avec `@extend_schema` ; pour vérifier le schéma après une modification :
+
+```bash
+python manage.py spectacular --validate --fail-on-warn --file /dev/null
+```
+
 ### Casse des clés JSON
 
 Le renderer par défaut est `djangorestframework_camel_case` :
@@ -23,8 +48,13 @@ Un polygone envoyé sans SRID est considéré en EPSG:4326.
 
 ### Limites
 
-- Polygones (`in-polygon`) : surface maximale **5 km²** et **100 sommets** maximum (`back/api/utils/polygon.py`).
-- Throttling : seul `POST /short-links/` est limité, à **10 requêtes/minute** par IP anonyme.
+- Polygones (`in-polygon`) : surface maximale **5 km²** et **100 sommets** maximum (`back/api/services/polygon.py`).
+- Throttling, par IP (`back/api/throttling.py`, taux dans `REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]`) :
+  - `POST /api/v1/tiles/<datatype>/in-polygon/` et `POST /api/v1/dashboard/in-polygon/` : **30 requêtes/minute** (limite partagée) ;
+  - `POST /api/app/feedback/` et `POST /api/app/short-links/` : **10 requêtes/minute** (limite partagée) ;
+  - `POST /api/app/dashboard/export-pdf/` : **2 requêtes/minute** et **20 requêtes/heure**.
+
+  Au-delà, l'API répond `429`. Les IP du serveur (`THROTTLE_EXEMPT_IPS`) ne sont pas limitées : le navigateur headless de l'export PDF appelle l'API depuis le serveur.
 
 ### Cache
 
@@ -73,7 +103,7 @@ Liste des communes de la Métropole avec leurs statistiques agrégées. Lyon est
 | `geometry__intersects` | string | Point `lng,lat` en EPSG:4326, renvoie la commune qui le contient |
 
 ```bash
-curl "https://carte.iarbre.fr/api/cities/?geometry__intersects=4.835,45.76"
+curl "https://carte.iarbre.fr/api/v1/cities/?geometry__intersects=4.835,45.76"
 ```
 
 ```json
@@ -226,7 +256,7 @@ Même réponse que `GET /dashboard/`, calculée sur un polygone dessiné. `city`
 Corps : une géométrie GeoJSON `Polygon` en EPSG:4326 (voir [Limites](#limites)).
 
 ```bash
-curl -X POST "https://carte.iarbre.fr/api/dashboard/in-polygon/" \
+curl -X POST "https://carte.iarbre.fr/api/v1/dashboard/in-polygon/" \
   -H "Content-Type: application/json" \
   -d '{"type":"Polygon","coordinates":[[[4.834,45.759],[4.836,45.759],[4.836,45.761],[4.834,45.761],[4.834,45.759]]]}'
 ```
@@ -256,18 +286,6 @@ Corps : une géométrie GeoJSON `Polygon` en EPSG:4326.
 | `plantability_vulnerability` | Union des deux                                                                               |
 
 Erreurs : `400` (datatype ou polygone invalide), `404` si aucune tuile n'intersecte le polygone.
-
-### `GET /tiles/{datatype}/{id}/`
-
-Détail d'un élément identifié par l'`id` présent dans les propriétés des tuiles MVT. Cache : 24 heures.
-
-| `datatype`                       | Champs                                                                                                                              |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `plantability`                   | `id`, `plantabilityNormalizedIndice`, `plantabilityIndice`, `details` (part de chaque facteur sur la tuile), `geolevel`, `datatype` |
-| `vulnerability`                  | `id`, indices `vulnerabilityIndex*`, `expoIndex*`, `capafIndex*`, `sensibiltyIndex*` (jour/nuit), `details`, géométries             |
-| `lcz`                            | `id`, `lczIndex`, `lczDescription`, `details`, géométries                                                                           |
-| `vegestrate`                     | `id`, `indice` (strate), `surface`, `geolevel`, `datatype`                                                                          |
-| `biosphere_functional_integrity` | `id`, `indice`                                                                                                                      |
 
 ### `GET /tiles/vegetation-height/value/`
 
@@ -336,10 +354,6 @@ Tuiles raster PNG 256×256 de la hauteur de végétation, générées à la vol�
 | --------- | -------------------------------------------------------------------------------------------------------------------- |
 | `kind`    | `class` (défaut) : pixels colorés par classe. `raw` : hauteur encodée en Terrarium (`R * 256 + G + B / 256 - 32768`) |
 
-### `GET /orthophoto/{z}/{x}/{y}.png`
-
-Proxy des orthophotos de la Métropole de Lyon en tuiles XYZ. Cache : 6 mois. `404` si le service amont échoue.
-
 ### `GET /qpv/`
 
 Quartiers prioritaires de la politique de la ville en GeoJSON (`FeatureCollection`). Propriétés : `metadata`, `factor`. Cache : 24 heures.
@@ -390,7 +404,7 @@ Flux OGC WFS (`django-gisserver`) pour QGIS et autres clients SIG.
 Projections : EPSG:2154 (défaut), EPSG:3857 (`SRSNAME`). Requêtes standards (`GetCapabilities`, `DescribeFeatureType`, `GetFeature` avec `BBOX`, `FILTER`, `COUNT`, `STARTINDEX`), plus `REQUEST=GetTypes` qui renvoie la liste des couches en JSON et `CITY_CODE=<code INSEE>` qui filtre `iarbre:plantability` par commune (pour Lyon, code d'arrondissement 69381 à 69389, 69123 ne renvoie rien).
 
 ```bash
-curl "https://carte.iarbre.fr/api/wfs/?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&BBOX=842000,6518000,843000,6519000&COUNT=100&OUTPUTFORMAT=geojson"
+curl "https://carte.iarbre.fr/api/v1/wfs/?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=iarbre:plantability&BBOX=842000,6518000,843000,6519000&COUNT=100&OUTPUTFORMAT=geojson"
 ```
 
 ### `GET /wms/`
@@ -407,7 +421,37 @@ Ordre des axes du `BBOX` : en WMS 1.3.0 avec EPSG:4326, `min_lat,min_lon,max_lat
 
 ---
 
-## Application
+## Métadonnées
+
+### `GET /metadata/`
+
+Date de génération des données : `{"generationDate": "2026-10"}`. Cache : 24 heures.
+
+---
+
+## Routes internes
+
+Montées sur `/api/app/`. Elles servent le frontend uniquement : pas de garantie de stabilité, origines CORS restreintes.
+
+### `GET /tiles/{datatype}/{id}/`
+
+Détail d'un élément identifié par l'`id` présent dans les propriétés des tuiles MVT. Interne car cet `id` est une clé de base qui change à chaque import de données. Cache : 24 heures.
+
+| `datatype`                       | Champs                                                                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `plantability`                   | `id`, `plantabilityNormalizedIndice`, `plantabilityIndice`, `details` (part de chaque facteur sur la tuile), `geolevel`, `datatype` |
+| `vulnerability`                  | `id`, indices `vulnerabilityIndex*`, `expoIndex*`, `capafIndex*`, `sensibiltyIndex*` (jour/nuit), `details`, géométries             |
+| `lcz`                            | `id`, `lczIndex`, `lczDescription`, `details`, géométries                                                                           |
+| `vegestrate`                     | `id`, `indice` (strate), `surface`, `geolevel`, `datatype`                                                                          |
+| `biosphere_functional_integrity` | `id`, `indice`                                                                                                                      |
+
+### `GET /orthophoto/{z}/{x}/{y}.png`
+
+Proxy des orthophotos de la Métropole de Lyon en tuiles XYZ. Cache : 6 mois. Interne : un tiers doit interroger directement le service de la Métropole. `404` si le service amont échoue.
+
+### `GET /tiles/pet/{z}/{x}/{y}.png`, `GET /tiles/shadow/{z}/{x}/{y}.png`
+
+Tuiles raster horaires (température ressentie PET, ombrage), expérimentales. Paramètres `hour`, et `year` pour PET.
 
 ### `POST /feedback/`
 
@@ -417,7 +461,7 @@ Corps : `{"email": "optionnel@exemple.fr", "feedback": "texte"}`. Réponse `201`
 
 ### `POST /short-links/`
 
-Crée (ou retrouve) un lien court vers un chemin de la carte. Limité à 10 requêtes/minute.
+Crée (ou retrouve) un lien court vers un chemin de la carte. Limité à 10 requêtes/minute (partagé avec `feedback/`).
 
 Corps : `{"path": "/plantability/14/45.76/4.83?layers=qpv"}`. Le chemin doit commencer par `/` (pas `//`) et faire au plus 2000 caractères.
 
@@ -435,11 +479,11 @@ Génère le PDF du tableau de bord (`application/pdf`, pièce jointe `rapport.pd
 
 Usage interne au rendu PDF : renvoie le scope stocké, `404` après expiration.
 
-### `GET /metadata/`
+---
 
-Date de génération des données : `{"generationDate": "2026-10"}`. Cache : 24 heures.
+## Supervision
 
-### `GET /health-check/`
+### `GET /api/health-check/`
 
 Vérifie la connexion à la base. Réponse `"OK"`.
 

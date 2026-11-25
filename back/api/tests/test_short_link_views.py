@@ -1,21 +1,19 @@
 import json
 
-from django.core.cache import cache
-from django.test import TestCase, Client, override_settings
-from rest_framework.throttling import AnonRateThrottle
+from django.core.cache import caches
+from django.test import TestCase, Client
+
+from api.throttling import WriteThrottle
 
 
-@override_settings(
-    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
-)
 class ShortLinkViewTest(TestCase):
     def setUp(self):
-        cache.clear()
+        caches["throttle"].clear()
         self.client = Client()
 
     def post(self, path):
         return self.client.post(
-            "/api/short-links/",
+            "/api/app/short-links/",
             json.dumps({"path": path}),
             content_type="application/json",
         )
@@ -29,7 +27,7 @@ class ShortLinkViewTest(TestCase):
         existing = self.post(path)
         self.assertEqual(existing.status_code, 200)
         self.assertEqual(existing.json()["code"], code)
-        response = self.client.get(f"/api/short-links/{code}/")
+        response = self.client.get(f"/api/app/short-links/{code}/")
         self.assertEqual(response.json()["path"], path)
 
     def test_rejects_external_path(self):
@@ -37,11 +35,11 @@ class ShortLinkViewTest(TestCase):
             self.assertEqual(self.post(path).status_code, 400)
 
     def test_throttles_anonymous_creation(self):
-        limit = AnonRateThrottle().num_requests
+        limit = WriteThrottle().num_requests
         statuses = [
             self.post(f"/plantability/{i}").status_code for i in range(limit + 1)
         ]
         self.assertEqual(statuses, [201] * limit + [429])
 
     def test_unknown_code(self):
-        self.assertEqual(self.client.get("/api/short-links/nope/").status_code, 404)
+        self.assertEqual(self.client.get("/api/app/short-links/nope/").status_code, 404)

@@ -1,4 +1,4 @@
-import { useApiGet, useApiPost } from "@/api"
+import { useApiPost, useAppApiGet } from "@/api"
 import { DataType } from "@/utils/enum"
 import type { PlantabilityData } from "@/types/plantability"
 import type { VulnerabilityData } from "@/types/vulnerability"
@@ -17,7 +17,7 @@ export const getTileDetails = async (
   PlantabilityData | VulnerabilityData | ClimateData | PlantabilityVulnerabilityData | null
 > => {
   try {
-    const req = await useApiGet(
+    const req = await useAppApiGet(
       `tiles/${dataType}/${id}/`,
       `Unable to retrieve tile information with id ${id}`
     )

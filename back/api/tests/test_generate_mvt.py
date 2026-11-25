@@ -4,7 +4,7 @@ from api.management.commands.generate_mvt import Command as GenerateMVTCommand
 from api.constants import GeoLevel, DataType
 from iarbre_data.models import MVTTile, City
 from iarbre_data.management.commands.populate import Command as PopulateCommand
-from api.utils.mvt_generator import MVTGenerator
+from api.services.mvt import MVTGenerator
 
 
 class GenerateMVTCommandTest(TestCase):

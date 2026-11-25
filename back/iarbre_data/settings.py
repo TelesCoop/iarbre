@@ -70,6 +70,8 @@ INSTALLED_APPS = [
     "django_extensions",
     "telescoop_backup",
     "rest_framework",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",  # Swagger UI assets, served from our static files
     "decapcms_auth",
     "anymail",
 ]
@@ -262,6 +264,7 @@ BACKUP_RECOVER_N_WORKERS = config.getint("backup.backup_recovery_n_workers", 1)
 BACKUP_KEEP_N_DAYS = 365 * 20
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_RENDERER_CLASSES": (
         "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
         "djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer",
@@ -271,7 +274,43 @@ REST_FRAMEWORK = {
         "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "10/minute"},
+    # Only nginx sits in front of gunicorn: trust the last X-Forwarded-For entry,
+    # the one nginx appends, so clients cannot dodge throttles by sending their own.
+    "NUM_PROXIES": 1,
+    # See api/throttling.py
+    "DEFAULT_THROTTLE_RATES": {
+        "writes": "10/minute",
+        "polygon": "30/minute",
+        "pdf_export_burst": "2/minute",
+        "pdf_export_sustained": "20/hour",
+    },
+}
+# IPs never throttled: the server's own, since the PDF export's headless browser
+# calls the API (e.g. dashboard/in-polygon/) from the server for every user.
+THROTTLE_EXEMPT_IPS = config.getlist("throttling.exempt_ips", [])
+
+# OpenAPI schema of the public API only (``/api/v1/schema/``), see api/schema.py.
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API IArbre",
+    "DESCRIPTION": (
+        "API publique d'IArbre (https://carte.iarbre.fr) : plantabilité, "
+        "vulnérabilité à la chaleur, végétation et référentiel territorial de la "
+        "Métropole de Lyon. Les clés JSON sont en camelCase, les paramètres de "
+        "requête restent en snake_case. Coordonnées en EPSG:4326."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    # The public API has no authentication.
+    "AUTHENTICATION_WHITELIST": [],
+    "PREPROCESSING_HOOKS": ["api.schema.public_endpoints_only"],
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
+    ],
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
 
 DECAP_CMS_AUTH = {
@@ -378,4 +417,14 @@ CACHES = {
         },
         "TIMEOUT": 60 * 60 * 24 * 30 * 6,
     },
+    # Rate-limit counters (api/throttling.py). File-based so all gunicorn workers
+    # share them; in memory for tests so counters do not leak between runs.
+    "throttle": (
+        {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+        if IS_TESTING
+        else {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": "/var/tmp/django_cache_throttle",
+        }
+    ),
 }

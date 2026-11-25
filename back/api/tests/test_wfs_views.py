@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Polygon
 from iarbre_data.settings import SRID_DB
 from iarbre_data.models import City, Tile, Vegestrate
 
-WFS_URL = "/api/wfs/"
+WFS_URL = "/api/v1/wfs/"
 CRS84 = "urn:ogc:def:crs:OGC::CRS84"
 GML_POS_LIST = re.compile(r"<gml:posList[^>]*>([^<]+)<")
 GML_ENVELOPE = re.compile(r"<gml:(?:lowerCorner|upperCorner)>([^<]+)<")

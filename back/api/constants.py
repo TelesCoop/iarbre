@@ -1,5 +1,10 @@
 from django.db.models import TextChoices
 
+# Cache durations, in seconds
+ONE_HOUR = 60 * 60
+ONE_DAY = 24 * ONE_HOUR
+ONE_MONTH = 30 * ONE_DAY
+
 DEFAULT_ZOOM_LEVELS = (10, 18)
 
 ZOOM_TO_GRID_SIZE = {10: 75, 11: 50, 12: 50, 13: 20, 14: 10, 15: 10}

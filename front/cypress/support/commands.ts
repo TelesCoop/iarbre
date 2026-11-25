@@ -51,8 +51,8 @@ Cypress.Commands.add(
   (viewport: { width: number; height: number }, path: string = DEFAULT_MAP_PATH) => {
     cy.viewport(viewport.width, viewport.height)
     LocalStorageHandler.setItem("hasVisitedBefore", true)
-    cy.intercept("GET", "**/api/qpv/", { fixture: "qpv.json" }).as("qpvData")
-    cy.intercept("GET", "**/api/public-buildings/", { fixture: "public_buildings.json" }).as(
+    cy.intercept("GET", "**/api/v1/qpv/", { fixture: "qpv.json" }).as("qpvData")
+    cy.intercept("GET", "**/api/v1/public-buildings/", { fixture: "public_buildings.json" }).as(
       "publicBuildingsData"
     )
     cy.visit(path)

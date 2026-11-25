@@ -11,6 +11,8 @@ django-prometheus==2.5.0
 django-storages[s3]==1.14.6
 djangorestframework==3.18.3
 djangorestframework_camel_case==1.4.2
+drf-spectacular==0.30.0
+drf-spectacular-sidecar==2026.10.1
 factory-boy==3.3.3
 fiona==1.10.1
 geopandas==1.2.0

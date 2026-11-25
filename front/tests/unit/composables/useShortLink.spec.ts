@@ -1,27 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { fetchShortLink, useCopyLink } from "@/composables/useShortLink"
 
-const useApiPostMock = vi.hoisted(() => vi.fn())
+const useAppApiPostMock = vi.hoisted(() => vi.fn())
 
-vi.mock("@/api", () => ({ useApiPost: useApiPostMock }))
+vi.mock("@/api", () => ({ useAppApiPost: useAppApiPostMock }))
 
 describe("fetchShortLink", () => {
   beforeEach(() => {
-    useApiPostMock.mockReset()
+    useAppApiPostMock.mockReset()
     window.history.replaceState({}, "", "/plantability/14/45.75773/4.85377?filters=8,10")
   })
 
   it("stores the current path and returns the short url", async () => {
-    useApiPostMock.mockResolvedValue({ data: { code: "r4Vd9x" } })
+    useAppApiPostMock.mockResolvedValue({ data: { code: "r4Vd9x" } })
 
     await expect(fetchShortLink()).resolves.toBe(`${window.location.origin}/s/r4Vd9x`)
-    expect(useApiPostMock).toHaveBeenCalledWith("short-links/", {
+    expect(useAppApiPostMock).toHaveBeenCalledWith("short-links/", {
       path: "/plantability/14/45.75773/4.85377?filters=8,10"
     })
   })
 
   it("falls back to the full url when the short link cannot be created", async () => {
-    useApiPostMock.mockResolvedValue({ data: undefined, error: new Error("boom") })
+    useAppApiPostMock.mockResolvedValue({ data: undefined, error: new Error("boom") })
 
     await expect(fetchShortLink()).resolves.toBe(window.location.href)
   })

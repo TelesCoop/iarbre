@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue"
 import { useRouter, useRoute } from "vue-router"
-import { useApiPost } from "@/api"
+import { useAppApiPost } from "@/api"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
 import WelcomeMessage from "@/components/WelcomeMessage.vue"
 import IconChevron from "@/components/icons/IconChevron.vue"
@@ -46,7 +46,7 @@ const handleToggleSidePanel = () => {
 }
 
 const sendFeedbackToAPI = async (data: Feedback) => {
-  const { error } = await useApiPost<Feedback>("feedback/", data)
+  const { error } = await useAppApiPost<Feedback>("feedback/", data)
   if (error != null) {
     toast.add({
       severity: "error",

@@ -163,8 +163,9 @@ function openCookiePanel() {
             <h4 class="sub-block-title">Mesure d'usage des services WFS / WMS</h4>
             <ul class="legal-list">
               <li>
-                Les requêtes adressées aux services <code>/api/wfs/</code> et
-                <code>/api/wms/</code> (par exemple depuis QGIS) sont extraites des journaux du
+                Les requêtes adressées aux services WFS et WMS (<code>/api/v1/wfs/</code>,
+                <code>/api/v1/wms/</code> et leurs anciennes adresses <code>/api/wfs/</code>,
+                <code>/api/wms/</code>), par exemple depuis QGIS, sont extraites des journaux du
                 serveur web et importées dans notre instance <strong>Matomo</strong> auto-hébergée
               </li>
               <li>

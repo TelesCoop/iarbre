@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.orthophoto_views import WMS_BASE_URL, WMS_LAYER
+from api.views.tiles import ORTHOPHOTO_WMS_LAYER, ORTHOPHOTO_WMS_URL
 
 
 # Disable cache during tests
@@ -20,7 +20,7 @@ class OrthophotoTileViewTest(TestCase):
     def _get_url(self, z=14, x=8345, y=5765):
         return reverse("orthophoto-tile", kwargs={"z": z, "x": x, "y": y})
 
-    @patch("api.views.orthophoto_views.requests.get")
+    @patch("api.views.tiles.requests.get")
     def test_passes_correct_wms_params(self, mock_get):
         mock_response = MagicMock()
         mock_response.content = b"png"
@@ -32,10 +32,10 @@ class OrthophotoTileViewTest(TestCase):
 
         mock_get.assert_called_once()
         call_args = mock_get.call_args
-        self.assertEqual(call_args[0][0], WMS_BASE_URL)
+        self.assertEqual(call_args[0][0], ORTHOPHOTO_WMS_URL)
         params = call_args[1]["params"]
         self.assertEqual(params["SERVICE"], "WMS")
-        self.assertEqual(params["LAYERS"], WMS_LAYER)
+        self.assertEqual(params["LAYERS"], ORTHOPHOTO_WMS_LAYER)
         self.assertEqual(params["CRS"], "EPSG:3857")
         self.assertEqual(params["FORMAT"], "image/png")
         self.assertEqual(params["WIDTH"], 256)

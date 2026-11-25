@@ -13,6 +13,7 @@ zcat -f $(ls -1vr access_{{ main_hostname | lower | replace('.', '_') }}.log*) \
     --auth-config={{ matomo_auth_config_path }} \
     --idsite={{ matomo_log_import_site_id }} \
     --include-path='/api/wfs/*' --include-path='/api/wms/*' \
+    --include-path='/api/v1/wfs/*' --include-path='/api/v1/wms/*' \
     --exclude-older-than="$since" --exclude-newer-than="$until" \
     --log-format-regex='(?P<ip>[\w*.:-]+)\s+\S+\s+.*?\s+\[(?P<date>.*?)\s+(?P<timezone>.*?)\]\s+"(?P<method>\S+)\s+(?P<path>.*?)\s+\S+"\s+(?P<status>\d+)\s+(?P<length>\S+)\s+"(?P<referrer>.*?)"\s+"(?P<user_agent>(?P<client>.*?))"' \
     --regex-group-to-visit-cvar='client=Client' \

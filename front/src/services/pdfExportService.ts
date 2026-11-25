@@ -1,7 +1,7 @@
-import { getFullBaseApiUrl } from "@/api"
+import { getAppApiUrl } from "@/api"
 
 export async function fetchExportScope(token: string): Promise<Record<string, unknown> | null> {
-  const res = await fetch(`${getFullBaseApiUrl()}/dashboard/export-scope/${token}/`, {
+  const res = await fetch(`${getAppApiUrl()}/dashboard/export-scope/${token}/`, {
     credentials: "include"
   })
   if (!res.ok) return null
@@ -20,7 +20,7 @@ export async function exportDashboardPdf(
   if (scope.cityCode) body.city_code = scope.cityCode
   if (scope.geometry) body.geometry = scope.geometry
 
-  const res = await fetch(`${getFullBaseApiUrl()}/dashboard/export-pdf/`, {
+  const res = await fetch(`${getAppApiUrl()}/dashboard/export-pdf/`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

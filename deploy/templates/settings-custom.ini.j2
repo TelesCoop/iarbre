@@ -41,3 +41,8 @@ client_secret= {{ vault_github_oauth_client_secret }}
 
 [media]
 media_root={{backend_media_path}}
+
+[throttling]
+# The server's own IPs: the PDF export's headless browser calls the API from here.
+# throttle_exempt_extra_ips: IPs not on an interface (e.g. a NAT public IP).
+exempt_ips={{ (ansible_all_ipv4_addresses + ansible_all_ipv6_addresses + ['127.0.0.1', '::1'] + (throttle_exempt_extra_ips | default([]))) | unique | join(', ') }}

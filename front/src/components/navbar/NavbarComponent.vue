@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from "vue"
-import { useApiPost } from "@/api"
+import { useAppApiPost } from "@/api"
 import { useAppStore } from "@/stores/app"
 import AppDrawer from "@/components/AppDrawer.vue"
 import FeedbackPopin from "@/components/FeedbackPopin.vue"
@@ -23,7 +23,7 @@ const closeMobileMenu = () => {
 }
 
 const sendFeedbackToAPI = async (data: Feedback) => {
-  const { error } = await useApiPost<Feedback>("feedback/", data)
+  const { error } = await useAppApiPost<Feedback>("feedback/", data)
   if (error != null) {
     toast.add({
       severity: "error",

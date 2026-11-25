@@ -31,7 +31,7 @@ describe("MapSidePanelDownload", () => {
     cy.get('[data-cy="api-doc"]').click()
     cy.contains("WEB FEATURE SERVICE").click()
     cy.contains("CONNEXION QGIS").should("be.visible")
-    cy.contains(`${window.location.origin}/api/wfs/`).should("be.visible")
+    cy.contains(`${window.location.origin}/api/v1/wfs/`).should("be.visible")
   })
 
   it("should expand the manual request section and show params table and URL", () => {

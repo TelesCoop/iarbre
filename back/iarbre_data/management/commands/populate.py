@@ -15,7 +15,7 @@ from shapely.geometry.polygon import Polygon
 import rasterio
 
 from api.constants import PET_RASTERS, SHADOW_RASTER
-from api.utils.mvt_generator import MVTGenerator
+from api.services.mvt import MVTGenerator
 from iarbre_data.management.commands.c01_insert_cities_and_iris import (
     Command as InsertIrisCommand,
 )
