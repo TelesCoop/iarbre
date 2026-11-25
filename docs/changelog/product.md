@@ -12,6 +12,13 @@
 &rarr; commit[3846175](https://github.com/TelesCoop/iarbre/commit/384617535565c36d85778d944bab53d9977952fc)
 &rarr; commit[bf736e6](https://github.com/TelesCoop/iarbre/commit/bf736e6b241efbf0e455c6b05e498cc256414383)
 
+### 🛠️ enhance : Affichage des calques chaleur et ombre
+
+- Ajout d'un compas pour la direction du soleil
+- Faciliter le switch entre les 2
+
+&rarr; PR [#895](https://github.com/TelesCoop/iarbre/pull/895)
+
 ## 🔖 0.45.0 (2026-11-03) : Affichage du calque d'ombre
 
 ### ✨ feat : Le calque d'ombrage
