@@ -1,4 +1,5 @@
 import type { HourlyRaster } from "@/utils/hourlyRaster"
+import IconThermometer from "@/components/icons/IconThermometer.vue"
 
 export const PET_YEARS = [2020, 2090] as const
 
@@ -6,7 +7,8 @@ export const DEFAULT_PET_YEAR = 2090
 
 export const PET_RASTER: HourlyRaster = {
   endpoint: "pet",
-  swapLabel: "le confort",
+  toggleLabel: "Confort thermique",
+  icon: IconThermometer,
   years: PET_YEARS,
   axisLabels: ["Frais", "Chaud"],
   columnLabels: ["Température ressentie", "Stress"],

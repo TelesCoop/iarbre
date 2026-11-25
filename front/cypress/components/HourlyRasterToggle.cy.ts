@@ -1,24 +1,28 @@
 /// <reference types="cypress" />
-import HourlyRasterSwapButton from "@/components/layerSwitcher/HourlyRasterSwapButton.vue"
+import HourlyRasterToggle from "@/components/contextTools/HourlyRasterToggle.vue"
 import { useMapStore } from "@/stores/map"
 import { DataType } from "@/utils/enum"
 
-describe("HourlyRasterSwapButton", () => {
+describe("HourlyRasterToggle", () => {
   beforeEach(() => {
-    cy.mount(HourlyRasterSwapButton)
+    cy.mount(HourlyRasterToggle)
     cy.window().then(() => {
       useMapStore().selectedDataType = DataType.PET
       useMapStore().setRasterHour(9)
     })
   })
 
-  it("swaps between comfort and shadow and keeps the hour", () => {
-    cy.get('[data-cy="hourly-raster-swap"]').should("contain.text", "Voir l'ombre à 9h").click()
+  it("toggles between comfort and shadow and keeps the hour", () => {
+    cy.get('[data-cy="hourly-raster-toggle"] [role="switch"]')
+      .should("have.attr", "aria-checked", "false")
+      .click()
     cy.window().should(() => {
       expect(useMapStore().selectedDataType).to.eq(DataType.SHADOW)
       expect(useMapStore().rasterHour).to.eq(9)
     })
-    cy.get('[data-cy="hourly-raster-swap"]').should("contain.text", "Voir le confort à 9h").click()
+    cy.get('[data-cy="hourly-raster-toggle"] [role="switch"]')
+      .should("have.attr", "aria-checked", "true")
+      .click()
     cy.window().should(() => expect(useMapStore().selectedDataType).to.eq(DataType.PET))
   })
 })

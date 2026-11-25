@@ -1,4 +1,5 @@
 import type { ExpressionSpecification } from "maplibre-gl"
+import type { Component } from "vue"
 import { DataType } from "@/utils/enum"
 import { DEFAULT_MAP_CENTER } from "@/utils/constants"
 import { solarAzimuth } from "@/utils/geo"
@@ -14,7 +15,8 @@ export interface RasterClass {
 
 export interface HourlyRaster {
   endpoint: string
-  swapLabel: string
+  toggleLabel: string
+  icon: Component
   classes: RasterClass[]
   axisLabels: [string, string]
   columnLabels: [string, string]
