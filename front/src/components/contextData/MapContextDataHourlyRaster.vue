@@ -2,7 +2,7 @@
 import { computed, ref } from "vue"
 import { useMapStore } from "@/stores/map"
 import { DataTypeToLabel } from "@/utils/enum"
-import { HOURLY_RASTERS } from "@/utils/hourlyRaster"
+import { HOURLY_RASTERS, toMapColor } from "@/utils/hourlyRaster"
 
 const mapStore = useMapStore()
 
@@ -47,7 +47,7 @@ const onDescriptionToggle = () => {
           <tr v-for="item in raster.classes" :key="item.value" class="border-t border-gray-100">
             <td class="w-4 py-1">
               <span
-                :style="{ backgroundColor: item.color }"
+                :style="{ backgroundColor: toMapColor(item.color) }"
                 aria-hidden="true"
                 class="block w-4 h-4 rounded-sm border border-gray-300"
               ></span>

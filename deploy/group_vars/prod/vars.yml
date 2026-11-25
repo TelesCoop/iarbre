@@ -24,3 +24,6 @@ backend_branch: main
 docs_branch: main
 
 environment_name: production
+
+matomo_url: https://analytics.tlscp.fr
+matomo_log_import_site_id: 6

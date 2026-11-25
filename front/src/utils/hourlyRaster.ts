@@ -1,5 +1,8 @@
 import type { ExpressionSpecification } from "maplibre-gl"
+import type { Component } from "vue"
 import { DataType } from "@/utils/enum"
+import { DEFAULT_MAP_CENTER } from "@/utils/constants"
+import { solarAzimuth } from "@/utils/geo"
 import { PET_RASTER } from "@/utils/pet"
 import { SHADOW_RASTER } from "@/utils/shadow"
 
@@ -12,6 +15,8 @@ export interface RasterClass {
 
 export interface HourlyRaster {
   endpoint: string
+  toggleLabel: string
+  icon: Component
   classes: RasterClass[]
   axisLabels: [string, string]
   columnLabels: [string, string]
@@ -31,6 +36,37 @@ export const HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] a
 export type Hour = (typeof HOURS)[number]
 
 export const DEFAULT_HOUR: Hour = 16
+
+export const HOURLY_RASTER_OPACITY = 0.6
+
+export const toMapColor = (color: string): string =>
+  `color-mix(in srgb, ${color} ${HOURLY_RASTER_OPACITY * 100}%, transparent)`
+
+const SIMULATION_DAY_OF_YEAR = 195
+const SIMULATION_UTC_OFFSET_HOURS = 2
+const SOLWEIG_SUN_SHIFT_HOURS = -0.5
+
+export const simulationSunAzimuth = (hour: Hour): number =>
+  solarAzimuth(
+    SIMULATION_DAY_OF_YEAR,
+    hour - SIMULATION_UTC_OFFSET_HOURS + SOLWEIG_SUN_SHIFT_HOURS,
+    DEFAULT_MAP_CENTER.lat,
+    DEFAULT_MAP_CENTER.lng
+  )
+
+const COMPASS_POINTS = [
+  "nord",
+  "nord-est",
+  "est",
+  "sud-est",
+  "sud",
+  "sud-ouest",
+  "ouest",
+  "nord-ouest"
+]
+
+export const compassPoint = (azimuth: number): string =>
+  COMPASS_POINTS[Math.round(azimuth / 45) % COMPASS_POINTS.length]
 
 export const formatHour = (hour: number): string => `${hour}h`
 

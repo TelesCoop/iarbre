@@ -1,7 +1,10 @@
 import type { HourlyRaster } from "@/utils/hourlyRaster"
+import IconUmbrella from "@/components/icons/IconUmbrella.vue"
 
 export const SHADOW_RASTER: HourlyRaster = {
   endpoint: "shadow",
+  toggleLabel: "Ombre",
+  icon: IconUmbrella,
   axisLabels: ["Dense", "Légère"],
   columnLabels: ["Ombre", "Origine"],
   descriptionSummary: "En savoir plus sur l'ombre",

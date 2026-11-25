@@ -71,6 +71,11 @@ jobs:
       # https://github.com/actions/setup-python/blob/main/README.md#caching-packages-dependencies
       - run: pip install -r back/requirements.txt
 
+      # Same PostGIS as the server (Ubuntu archive), not the pgdg build that can require a newer PG minor
+      - name: Pin PostGIS to the Ubuntu archive
+        run: |
+          printf 'Package: postgresql-16-postgis-3*\nPin: release o=Ubuntu\nPin-Priority: 1001\n' | sudo tee /etc/apt/preferences.d/postgis >/dev/null
+
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
         with:
@@ -292,6 +297,11 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - run: pip install -r back/requirements.txt
+
+      # Same PostGIS as the server (Ubuntu archive), not the pgdg build that can require a newer PG minor
+      - name: Pin PostGIS to the Ubuntu archive
+        run: |
+          printf 'Package: postgresql-16-postgis-3*\nPin: release o=Ubuntu\nPin-Priority: 1001\n' | sudo tee /etc/apt/preferences.d/postgis >/dev/null
 
       - name: Set up PostGIS
         uses: nyurik/action-setup-postgis@v2
