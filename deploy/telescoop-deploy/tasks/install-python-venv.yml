@@ -1,7 +1,97 @@
-- name: Install venv package
+# `python_version` (read from back/.python-version, see group_vars) is the single
+# source of truth shared with the CI and local development: the project venv is
+# built with that exact interpreter. How that interpreter gets onto the server
+# (the distribution's package, another repository, pyenv, uv...) is a choice made
+# outside of this task. Without `python_version`, the distribution's python3 is
+# used as before.
+
+- name: Check that python{{ python_version | default('3') }} is installed on the server
+  command:
+    cmd: python{{ python_version | default('3') }} --version
+  register: python_interpreter
+  failed_when: false
+  changed_when: false
+  check_mode: false # read-only, must also run in --check mode
+
+- name: Stop if python{{ python_version | default('3') }} is missing
+  fail:
+    msg: >-
+      python{{ python_version | default('3') }} (required by back/.python-version)
+      is not installed on this server. Either install it, or set
+      back/.python-version to a version available here (the CI and local
+      development follow that file too).
+  when: python_interpreter.rc != 0
+
+# Creating the venv needs the `venv` module, and building packages that ship no
+# wheel (e.g. psycopg2) needs the Python headers. Ubuntu splits both out of its
+# apt-installed interpreter into python3.X-venv and python3.X-dev, so they have
+# to be installed separately. An interpreter installed another way (uv, pyenv,
+# a build from source) already ships both, and those apt packages would either
+# not exist or pull in a second, duplicate interpreter. So the apt step only
+# runs when python3.X itself is an apt package.
+- name: Check whether python{{ python_version | default('3') }} comes from an apt package
+  command:
+    cmd: dpkg -s python{{ python_version | default('3') }}
+  register: python_apt_package
+  failed_when: false
+  changed_when: false
+  check_mode: false # read-only, must also run in --check mode
+
+- name: Install python{{ python_version | default('3') }} venv and development packages
   apt:
     name:
-      - python3-venv
+      - "python{{ python_version | default('3') }}-venv"
+      # headers needed to build packages that ship no wheel (e.g. psycopg2)
+      - "python{{ python_version | default('3') }}-dev"
+  when: python_apt_package.rc == 0
+
+# An existing venv is rebuilt when it does not match: on another Python version,
+# or created with --system-site-packages (pip then skips dependencies that the
+# system already provides, and the app imports packages that follow the system
+# Python rather than requirements.txt). The rebuild is automatic, but announced
+# explicitly in the deploy output.
+- name: Read the Python version of the existing venv
+  command:
+    cmd: sed -n 's/^version\(_info\)\? = //p' {{ venv.path }}/pyvenv.cfg
+  register: venv_python_version
+  failed_when: false # no venv yet
+  changed_when: false
+  check_mode: false # read-only, must also run in --check mode
+
+- name: Check whether the existing venv exposes system site-packages
+  command:
+    cmd: grep -q "^include-system-site-packages = true" {{ venv.path }}/pyvenv.cfg
+  register: venv_has_system_site_packages
+  failed_when: false
+  changed_when: false
+  check_mode: false # read-only, must also run in --check mode
+
+- name: Work out whether the existing venv has to be rebuilt
+  set_fact:
+    venv_rebuild_reason: >-
+      {%- if python_version is defined
+            and venv_python_version.rc == 0
+            and venv_python_version.stdout | length > 0
+            and (venv_python_version.stdout.split('.')[:2] | join('.')) != python_version -%}
+      it runs on Python {{ venv_python_version.stdout }} but back/.python-version requires {{ python_version }}
+      {%- elif venv_has_system_site_packages.rc == 0 -%}
+      it was created with --system-site-packages, which is no longer allowed
+      {%- endif -%}
+
+- name: "WARNING: the existing venv is being replaced"
+  debug:
+    msg: >-
+      The project venv {{ venv.path }} is deleted and rebuilt with
+      python{{ python_version | default('3') }} because {{ venv_rebuild_reason }}.
+      Every dependency is reinstalled from requirements.txt.
+  when: venv_rebuild_reason | length > 0
+
+- name: Remove the existing venv
+  file:
+    path: "{{ venv.path }}"
+    state: absent
+  register: venv_removed
+  when: venv_rebuild_reason | length > 0
 
 - name: Create venv directory and set permission
   file:
@@ -12,7 +102,7 @@
 
 - name: Create venv {{ venv.path }}
   command:
-    cmd: python3 -m venv --system-site-packages {{ venv.path }}
+    cmd: python{{ python_version | default('3') }} -m venv {{ venv.path }}
     creates: "{{ venv.path }}/bin/python"
   become: true
   become_user: "{{ main_user }}"
@@ -21,4 +111,4 @@
   pip:
     requirements: "{{ requirements }}"
     virtualenv: "{{ venv.path }}"
-  when: clonecode.changed or force_update is defined
+  when: clonecode.changed or force_update is defined or venv_removed.changed

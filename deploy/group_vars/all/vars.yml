@@ -32,6 +32,11 @@ database_provider: postgresql # sqlite or postgresql
 frontend_mode: static
 dedicated_database: true
 
+# Single source of truth for the Python version, shared by the deploy, the CI
+# and local development (pyenv/pew): see back/.python-version. A project venv
+# on another version is rebuilt by the deploy, with a warning in its output.
+python_version: "{{ lookup('file', playbook_dir ~ '/../back/.python-version') | trim }}"
+
 # can not be in backend role, as it's also need by cleanup role
 venv:
   path: /usr/local/{{ organization_slug }}/{{ project_slug }}/backend/venv
