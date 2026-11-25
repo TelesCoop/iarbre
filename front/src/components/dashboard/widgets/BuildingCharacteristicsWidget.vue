@@ -91,16 +91,9 @@ const bars = computed(() => {
 
 .bar-fill {
   @apply h-full rounded-lg flex items-center px-3;
-  animation: barGrow 700ms ease-out both;
 }
 
 .bar-inner-value {
   @apply text-sm font-bold whitespace-nowrap;
-}
-
-@keyframes barGrow {
-  from {
-    width: 0 !important;
-  }
 }
 </style>

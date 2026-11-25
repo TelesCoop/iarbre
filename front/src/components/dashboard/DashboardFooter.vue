@@ -1,65 +1,13 @@
 <script lang="ts" setup>
-import { ref } from "vue"
 import AppButton from "@/components/shared/AppButton.vue"
-import { useDashboardStore } from "@/stores/dashboard"
-import { useToast } from "@/composables/useToast"
-import { exportDashboardPdf } from "@/services/pdfExportService"
+import { useDashboardPdfExport } from "@/composables/useDashboardPdfExport"
 
-const store = useDashboardStore()
-const toast = useToast()
-const loading = ref(false)
-
-const pdfFilename = () => {
-  const zone =
-    store.selectedScale === "zone"
-      ? "zone-personnalisee"
-      : (store.selectedCity?.name ?? "metropole-de-lyon")
-  const slug = zone
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-  return `iarbre-${slug}-${new Date().toISOString().slice(0, 10)}.pdf`
-}
-
-const exportToPdf = async () => {
-  if (loading.value) return
-  loading.value = true
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 6000)
-  toast.add({
-    severity: "info",
-    summary: "Génération du rapport en cours...",
-    group: "br",
-    life: 0
-  })
-  try {
-    const blob = await exportDashboardPdf(store.currentScope, controller.signal)
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = pdfFilename()
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.removeAll()
-    toast.add({ severity: "success", summary: "Rapport généré", group: "br" })
-  } catch {
-    toast.removeAll()
-    toast.add({
-      severity: "error",
-      summary: "La génération du rapport a échoué",
-      group: "br"
-    })
-  } finally {
-    clearTimeout(timer)
-    loading.value = false
-  }
-}
+const { loading, exportToPdf } = useDashboardPdfExport()
 </script>
 
 <template>
   <footer
+    v-reveal
     class="flex flex-col items-center gap-4 p-6 rounded-xl bg-primary-50 border border-primary-100 mt-4 print:hidden"
   >
     <div class="text-center">

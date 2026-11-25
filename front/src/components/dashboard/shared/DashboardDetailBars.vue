@@ -64,12 +64,5 @@ withDefaults(defineProps<Props>(), {
 
 .bar-fill {
   @apply h-full rounded-full;
-  animation: barGrow 700ms ease-out both;
-}
-
-@keyframes barGrow {
-  from {
-    width: 0 !important;
-  }
 }
 </style>

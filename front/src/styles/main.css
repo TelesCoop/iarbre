@@ -148,6 +148,35 @@
   @apply hover:bg-gray-100 hover:border-gray-300;
 }
 
+/* Scroll reveal (v-reveal directive, see directives/reveal.ts).
+   The classes are only added when animations are allowed (not in print mode,
+   not with prefers-reduced-motion), so elements render as is otherwise. */
+.reveal {
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out,
+    box-shadow 0.2s ease-out;
+  will-change: opacity, transform;
+}
+
+.reveal.reveal-visible {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Horizontal bars (.bar-fill) grow from zero once their revealed block is in
+   view, and keep transitioning when the data changes. */
+.reveal .bar-fill {
+  transition: width 0.7s ease-out 0.2s;
+}
+
+.reveal:not(.reveal-visible) .bar-fill {
+  width: 0 !important;
+}
+
 /* Custom Tooltip Styles */
 .app-tooltip {
   position: fixed;
