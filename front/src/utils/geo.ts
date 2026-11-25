@@ -30,3 +30,37 @@ export const formatArea = (areaM2: number): string => {
   }
   return `${km2Formatter.format(areaM2 / SQUARE_METERS_PER_KM2)} km²`
 }
+
+const toDegrees = (radians: number): number => (radians * 180) / Math.PI
+
+// NOAA general solar position equations, azimuth in degrees clockwise from north.
+export const solarAzimuth = (
+  dayOfYear: number,
+  utcHours: number,
+  lat: number,
+  lng: number
+): number => {
+  const gamma = ((2 * Math.PI) / 365) * (dayOfYear - 1 + (utcHours - 12) / 24)
+  const equationOfTime =
+    229.18 *
+    (0.000075 +
+      0.001868 * Math.cos(gamma) -
+      0.032077 * Math.sin(gamma) -
+      0.014615 * Math.cos(2 * gamma) -
+      0.040849 * Math.sin(2 * gamma))
+  const declination =
+    0.006918 -
+    0.399912 * Math.cos(gamma) +
+    0.070257 * Math.sin(gamma) -
+    0.006758 * Math.cos(2 * gamma) +
+    0.000907 * Math.sin(2 * gamma) -
+    0.002697 * Math.cos(3 * gamma) +
+    0.00148 * Math.sin(3 * gamma)
+  const hourAngle = toRadians((utcHours * 60 + equationOfTime + 4 * lng) / 4 - 180)
+  const latitude = toRadians(lat)
+  const azimuthFromSouth = Math.atan2(
+    Math.sin(hourAngle),
+    Math.cos(hourAngle) * Math.sin(latitude) - Math.tan(declination) * Math.cos(latitude)
+  )
+  return (toDegrees(azimuthFromSouth) + 180) % 360
+}

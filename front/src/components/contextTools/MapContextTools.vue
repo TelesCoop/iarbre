@@ -4,6 +4,7 @@ import { DataType } from "@/utils/enum"
 import VulnerabilityContextTool from "@/components/contextTools/VulnerabilityContextTool.vue"
 import VegestrateContextTool from "@/components/contextTools/VegestrateContextTool.vue"
 import HourlyRasterContextTool from "@/components/contextTools/HourlyRasterContextTool.vue"
+import HourlyRasterToggle from "@/components/contextTools/HourlyRasterToggle.vue"
 import { isHourlyRaster } from "@/utils/hourlyRaster"
 import { computed } from "vue"
 
@@ -31,6 +32,9 @@ const show = computed(() => {
       "
     />
     <VegestrateContextTool v-if="mapStore.selectedDataType === DataType.VEGESTRATE" />
-    <HourlyRasterContextTool v-if="isHourlyRaster(mapStore.selectedDataType)" />
+    <template v-if="isHourlyRaster(mapStore.selectedDataType)">
+      <HourlyRasterToggle />
+      <HourlyRasterContextTool />
+    </template>
   </div>
 </template>

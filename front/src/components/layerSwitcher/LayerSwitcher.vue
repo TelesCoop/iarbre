@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { useMapStore } from "@/stores/map"
 import { DataType, DataTypeToLabel } from "@/utils/enum"
+import { isHourlyRaster } from "@/utils/hourlyRaster"
 import { computed } from "vue"
 import AppSelect from "@/components/shared/AppSelect.vue"
 
 const mapStore = useMapStore()
 
 const selectedDataType = computed({
-  get: () => mapStore.selectedDataType,
+  get: () => (isHourlyRaster(mapStore.selectedDataType) ? DataType.PET : mapStore.selectedDataType),
   set: (value: DataType) => mapStore.changeDataType(value)
 })
 
@@ -21,12 +22,8 @@ const options = [
     value: DataType.VEGESTRATE
   },
   {
-    label: DataTypeToLabel[DataType.PET],
+    label: "Confort thermique et ombre",
     value: DataType.PET
-  },
-  {
-    label: DataTypeToLabel[DataType.SHADOW],
-    value: DataType.SHADOW
   },
   {
     label: DataTypeToLabel[DataType.VULNERABILITY],

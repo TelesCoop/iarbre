@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest"
-import { buildColorRamp, buildTileUrl, type RasterClass } from "@/utils/hourlyRaster"
+import {
+  buildColorRamp,
+  buildTileUrl,
+  compassPoint,
+  simulationSunAzimuth,
+  type Hour,
+  type RasterClass
+} from "@/utils/hourlyRaster"
 import { PET_RASTER } from "@/utils/pet"
 import { SHADOW_RASTER } from "@/utils/shadow"
 
@@ -74,5 +81,26 @@ describe("hourlyRaster", () => {
     expect(PET_LEGEND.map(({ value }) => colorAt(value, [5, 8]))).toEqual(
       PET_LEGEND.map(({ value, color }) => ([5, 8].includes(value) ? color : TRANSPARENT))
     )
+  })
+})
+
+describe("simulationSunAzimuth", () => {
+  const SOLWEIG_AZIMUTHS: [Hour, number][] = [
+    [7, 61.56],
+    [12, 119.42],
+    [16, 229.92],
+    [21, 292.75]
+  ]
+
+  it.each(SOLWEIG_AZIMUTHS)(
+    "matches the solweig-gpu sun azimuth of 14 July at %ih",
+    (hour, azimuth) => {
+      expect(Math.abs(simulationSunAzimuth(hour) - azimuth)).toBeLessThan(1)
+    }
+  )
+
+  it("names the compass point of the sun", () => {
+    expect(compassPoint(simulationSunAzimuth(16))).toBe("sud-ouest")
+    expect(compassPoint(350)).toBe("nord")
   })
 })

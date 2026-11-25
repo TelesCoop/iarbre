@@ -70,6 +70,7 @@ import {
 import {
   DEFAULT_HOUR,
   HOURLY_RASTERS,
+  HOURLY_RASTER_OPACITY,
   buildColorRamp,
   buildTileUrl,
   type Hour,
@@ -165,6 +166,7 @@ export const useMapStore = defineStore("map", () => {
   const selectedMapStyle = ref<MapStyle>(DEFAULT_MAP_STYLE)
   const vulnerabilityMode = ref<VulnerabilityModeType>(VulnerabilityModeType.DAY)
   const currentZoom = ref<number>(14)
+  const currentBearing = ref<number>(0)
   const contextData = useContextData(selectedDataType)
   const showQPVLayer = ref<boolean>(false)
   const showBoundaryLayer = ref<boolean>(false)
@@ -351,7 +353,7 @@ export const useMapStore = defineStore("map", () => {
           type: "color-relief",
           source: sourceId,
           paint: {
-            "color-relief-opacity": 0.6,
+            "color-relief-opacity": HOURLY_RASTER_OPACITY,
             "color-relief-color": buildColorRamp(
               hourlyRaster.classes,
               filteredValues.value as number[]
@@ -1770,6 +1772,9 @@ export const useMapStore = defineStore("map", () => {
     mapInstance.on("moveend", () => {
       currentZoom.value = mapInstance.getZoom()
     })
+    mapInstance.on("rotate", () => {
+      currentBearing.value = mapInstance.getBearing()
+    })
     mapInstance.once("load", () => {
       const center = mapInstance.getCenter()
       clickCoordinates.value = {
@@ -1974,6 +1979,7 @@ export const useMapStore = defineStore("map", () => {
     getMapInstance,
     vulnerabilityMode,
     currentZoom,
+    currentBearing,
     clickCoordinates,
     selectedLegendCell,
     selectionMode,
