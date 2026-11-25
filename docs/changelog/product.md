@@ -1,5 +1,24 @@
 # Journal des changements
 
+## 🔖 0.46.0 (2026-11-25) : Corrections multiples
+
+### 🐛 fix: Flux WMS/WFS
+
+- Raster en colors pour le calque de plantabilité
+- Raster transparent en dehors de la Métropole
+- Hauteur médian du polygone de végétation pour le flux WFS Végéstrate
+
+&rarr; commit[ba9e154](https://github.com/TelesCoop/iarbre/commit/ba9e154426c319c6f155e7f7109ef3fd88ab2495)
+&rarr; commit[3846175](https://github.com/TelesCoop/iarbre/commit/384617535565c36d85778d944bab53d9977952fc)
+&rarr; commit[bf736e6](https://github.com/TelesCoop/iarbre/commit/bf736e6b241efbf0e455c6b05e498cc256414383)
+
+### 🛠️ enhance : Affichage des calques chaleur et ombre
+
+- Ajout d'un compas pour la direction du soleil
+- Faciliter le switch entre les 2
+
+&rarr; PR [#895](https://github.com/TelesCoop/iarbre/pull/895)
+
 ## 🔖 0.45.0 (2026-11-03) : Affichage du calque d'ombre
 
 ### ✨ feat : Le calque d'ombrage
