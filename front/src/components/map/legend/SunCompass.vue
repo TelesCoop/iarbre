@@ -7,16 +7,11 @@ const mapStore = useMapStore()
 
 const azimuth = computed(() => simulationSunAzimuth(mapStore.rasterHour))
 
-const direction = computed(() => {
-  const point = compassPoint(azimuth.value)
-  return point.charAt(0).toUpperCase() + point.slice(1)
-})
-
-const hour = computed(() => formatHour(mapStore.rasterHour))
+const point = computed(() => compassPoint(azimuth.value))
 
 const label = computed(
   () =>
-    `Soleil : ${direction.value.toLowerCase()} à ${hour.value} (azimut ${Math.round(azimuth.value)}°)`
+    `Soleil : ${point.value} à ${formatHour(mapStore.rasterHour)} (azimut ${Math.round(azimuth.value)}°)`
 )
 </script>
 
@@ -45,7 +40,9 @@ const label = computed(
     </svg>
     <div class="flex flex-col w-24 leading-tight">
       <span class="text-xs font-medium text-gray-500 uppercase tracking-tight">Soleil</span>
-      <span class="text-sm font-bold text-gray-800">{{ direction }}</span>
+      <span class="text-sm font-bold text-gray-800">{{
+        point.charAt(0).toUpperCase() + point.slice(1)
+      }}</span>
     </div>
   </div>
 </template>

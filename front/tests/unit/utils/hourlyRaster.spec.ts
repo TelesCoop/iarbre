@@ -93,7 +93,7 @@ describe("simulationSunAzimuth", () => {
   ]
 
   it.each(SOLWEIG_AZIMUTHS)(
-    "matches the SOLWEIG sun azimuth used for the %ih band",
+    "matches the solweig-gpu sun azimuth of 14 July at %ih",
     (hour, azimuth) => {
       expect(Math.abs(simulationSunAzimuth(hour) - azimuth)).toBeLessThan(1)
     }

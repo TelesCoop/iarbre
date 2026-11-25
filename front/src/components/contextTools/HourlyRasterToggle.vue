@@ -7,7 +7,7 @@ import AppToggleSwitch from "@/components/shared/AppToggleSwitch.vue"
 
 const mapStore = useMapStore()
 
-const [off, on] = Object.keys(HOURLY_RASTERS) as DataType[]
+const [off, on] = [DataType.PET, DataType.SHADOW]
 
 const isOn = computed(() => mapStore.selectedDataType === on)
 
