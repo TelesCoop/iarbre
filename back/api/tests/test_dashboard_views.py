@@ -10,7 +10,7 @@ from django.db.models import Avg
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.dashboard_views import DashboardView, _avg_from_counts, _safe_round
+from api.views.dashboard_views import DashboardView, _weighted_avg, _safe_round
 from iarbre_data.management.commands.populate import CITY_CODE
 from iarbre_data.management.commands.populate import Command as PopulateCommand
 from iarbre_data.models import City, Iris, Tile, Vulnerability
@@ -131,7 +131,7 @@ class DashboardViewTest(TestCase):
     def test_metropole_plantability(self):
         data = self.client.get(self.url).json()
         plantability = data["plantability"]
-        expected = _safe_round(_avg_from_counts(self.city.plantability_counts))
+        expected = _safe_round(_weighted_avg(self.city.plantability_counts))
         self.assertEqual(plantability["averageNormalizedIndice"], expected)
         divisions = plantability["distributionByDivision"]
         self.assertEqual(len(divisions), City.objects.count())
@@ -149,7 +149,7 @@ class DashboardViewTest(TestCase):
         data = self.client.get(self.url, {"iris_code": self.iris.code}).json()
         self.assertEqual(data["city"]["code"], CITY_CODE)
         self.assertEqual(data["plantability"]["distributionByDivision"], [])
-        expected = _safe_round(_avg_from_counts(self.iris.plantability_counts))
+        expected = _safe_round(_weighted_avg(self.iris.plantability_counts))
         self.assertAlmostEqual(
             data["plantability"]["averageNormalizedIndice"], expected
         )
@@ -256,6 +256,20 @@ class DashboardAreaWeightingTest(TestCase):
         biosphere = DashboardView._aggregate_biosphere(self._filter)
         self.assertEqual(biosphere["averageIndice"], 65.0)
         self.assertEqual(biosphere["distribution"], {"20": 10_000.0, "80": 30_000.0})
+
+    def test_lcz_pieces_are_clipped_to_the_scope(self):
+        LczFactory(geometry=self._rect(0, 100), details={"vhr": 0.0})
+        LczFactory(geometry=self._rect(100, 200), details={"vhr": 100.0})
+        scope = {"geometry__intersects": self._rect(0, 200)}
+        self.assertEqual(DashboardView._aggregate_lcz(scope)["treeCoverRate"], 50.0)
+
+    def test_biosphere_pieces_are_clipped_to_the_scope(self):
+        BiosphereFunctionalIntegrityFactory(geometry=self._rect(0, 100), indice=0)
+        BiosphereFunctionalIntegrityFactory(geometry=self._rect(100, 200), indice=100)
+        scope = {"geometry__intersects": self._rect(0, 200)}
+        biosphere = DashboardView._aggregate_biosphere(scope)
+        self.assertEqual(biosphere["averageIndice"], 50.0)
+        self.assertEqual(biosphere["distribution"], {"0": 10_000.0, "100": 10_000.0})
 
 
 @override_settings(CACHES=NO_CACHE)
@@ -456,12 +470,12 @@ class HelperFunctionsTest(SimpleTestCase):
     def test_safe_round_value(self):
         self.assertEqual(_safe_round(6.666), 6.7)
 
-    def test_avg_from_counts_empty(self):
-        self.assertEqual(_avg_from_counts({}), 0.0)
+    def test_weighted_avg_empty(self):
+        self.assertEqual(_weighted_avg({}), 0.0)
 
-    def test_avg_from_counts_weighted(self):
-        self.assertAlmostEqual(_avg_from_counts({"0": 1, "10": 1}), 5.0)
+    def test_weighted_avg_weighted(self):
+        self.assertAlmostEqual(_weighted_avg({"0": 1, "10": 1}), 5.0)
 
-    def test_avg_from_counts_realistic(self):
+    def test_weighted_avg_realistic(self):
         counts = {"0": 10, "2": 20, "4": 30, "6": 40, "8": 50, "10": 60}
-        self.assertAlmostEqual(_avg_from_counts(counts), 6.667, places=2)
+        self.assertAlmostEqual(_weighted_avg(counts), 6.667, places=2)
