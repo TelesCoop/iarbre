@@ -10,7 +10,7 @@ from django.db.models import Avg
 from django.test import SimpleTestCase, TestCase, Client, override_settings
 from django.urls import reverse
 
-from api.views.dashboard_views import _avg_from_counts, _safe_round
+from api.views.dashboard_views import DashboardView, _avg_from_counts, _safe_round
 from iarbre_data.management.commands.populate import CITY_CODE
 from iarbre_data.management.commands.populate import Command as PopulateCommand
 from iarbre_data.models import City, Iris, Tile, Vulnerability
@@ -202,12 +202,60 @@ class DashboardViewTest(TestCase):
         data = self.client.get(self.url).json()
         biosphere = data["biosphere"]
         self.assertEqual(biosphere["averageIndice"], 70.0)
-        self.assertEqual(biosphere["distribution"], {"70": 1})
+        self.assertEqual(list(biosphere["distribution"]), ["70"])
+        self.assertAlmostEqual(
+            biosphere["distribution"]["70"], self.city.geometry.area, places=0
+        )
 
     def test_buildings_value(self):
         data = self.client.get(self.url).json()
         expected = _safe_round(self.city.geometry.area)
         self.assertEqual(data["buildings"]["averageBuildingFootprintM2"], expected)
+
+
+class DashboardAreaWeightingTest(TestCase):
+    """Rows are arbitrary pieces of larger polygons: aggregates must weigh by area."""
+
+    X0, Y0 = 800_000, 6_500_000
+
+    def _rect(self, x_offset, width, height=100):
+        x, y = self.X0 + x_offset, self.Y0
+        polygon = Polygon.from_bbox((x, y, x + width, y + height))
+        polygon.srid = SRID_DB
+        return polygon
+
+    @property
+    def _filter(self):
+        return {"geometry__intersects": self._rect(0, 1000, 1000)}
+
+    def test_lcz_averages_are_area_weighted(self):
+        LczFactory(geometry=self._rect(0, 100), details={"vhr": 0.0, "hre": 10.0})
+        LczFactory(geometry=self._rect(100, 300), details={"vhr": 100.0, "hre": 20.0})
+        lcz = DashboardView._aggregate_lcz(self._filter)
+        self.assertEqual(lcz["treeCoverRate"], 75.0)
+        self.assertEqual(lcz["averageBuildingHeight"], 17.5)
+
+    def test_lcz_built_only_ignores_non_built_rows(self):
+        LczFactory(geometry=self._rect(0, 100), lcz_index="2", details={"bur": 10.0})
+        LczFactory(geometry=self._rect(100, 300), lcz_index="2", details={"bur": 30.0})
+        LczFactory(geometry=self._rect(400, 500), lcz_index="A", details={"bur": 90.0})
+        lcz = DashboardView._aggregate_lcz(self._filter)
+        self.assertEqual(lcz["averageBuildingSurfaceRate"], 25.0)
+        self.assertAlmostEqual(lcz["buildingRate"], (1000 + 9000 + 45000) / 900, 1)
+
+    def test_lcz_rows_missing_a_key_do_not_weigh_that_key(self):
+        LczFactory(geometry=self._rect(0, 100), details={"vhr": 40.0})
+        LczFactory(geometry=self._rect(100, 300), details={"ror": 10.0})
+        lcz = DashboardView._aggregate_lcz(self._filter)
+        self.assertEqual(lcz["treeCoverRate"], 40.0)
+        self.assertEqual(lcz["impermeableSurfaceRate"], 10.0)
+
+    def test_biosphere_distribution_is_area_weighted(self):
+        BiosphereFunctionalIntegrityFactory(geometry=self._rect(0, 100), indice=20)
+        BiosphereFunctionalIntegrityFactory(geometry=self._rect(100, 300), indice=80)
+        biosphere = DashboardView._aggregate_biosphere(self._filter)
+        self.assertEqual(biosphere["averageIndice"], 65.0)
+        self.assertEqual(biosphere["distribution"], {"20": 10_000.0, "80": 30_000.0})
 
 
 @override_settings(CACHES=NO_CACHE)

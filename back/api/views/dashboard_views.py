@@ -1,9 +1,18 @@
 from dataclasses import dataclass
 
 from django.contrib.gis.db.models.functions import Area
-from django.db.models import Avg, Case, Count, FloatField, QuerySet, Sum, When
+from django.db.models import (
+    Avg,
+    ExpressionWrapper,
+    FloatField,
+    Q,
+    QuerySet,
+    Sum,
+    Value,
+)
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, NullIf
+from django.db.models.lookups import IsNull
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -40,23 +49,22 @@ def _safe_round(value: float | None) -> float:
     return round(value, INDICE_ROUNDING_DECIMALS) if value is not None else 0
 
 
-def _json_avg(key: str) -> Avg:
-    return Avg(Cast(KeyTextTransform(key, "details"), output_field=FloatField()))
-
-
-def _json_avg_built_only(key: str) -> Avg:
-    return Avg(
-        Case(
-            When(
-                lcz_index__in=BUILT_LCZ_INDICES,
-                then=Cast(KeyTextTransform(key, "details"), output_field=FloatField()),
-            ),
-            output_field=FloatField(),
-        )
+def _area_weighted_json_avg(key: str, built_only: bool = False) -> ExpressionWrapper:
+    """Area-weighted mean of a ``details`` key; rows without the key are ignored."""
+    value = Cast(KeyTextTransform(key, "details"), output_field=FloatField())
+    area = Cast(Area("geometry"), output_field=FloatField())
+    condition = Q(IsNull(value, False))
+    if built_only:
+        condition &= Q(lcz_index__in=BUILT_LCZ_INDICES)
+    return ExpressionWrapper(
+        Sum(value * area, filter=condition)
+        / NullIf(Sum(area, filter=condition), Value(0.0)),
+        output_field=FloatField(),
     )
 
 
 def _avg_from_counts(counts: dict) -> float:
+    """Weighted mean of integer keys; weights may be counts or areas."""
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -263,14 +271,14 @@ class DashboardView(APIView):
             qs = qs.filter(**geometry_filter)
 
         result = qs.aggregate(
-            avg_hre_built=_json_avg_built_only("hre"),
-            avg_bur_built=_json_avg_built_only("bur"),
-            avg_ror=_json_avg("ror"),
-            avg_bsr=_json_avg("bsr"),
-            avg_bur=_json_avg("bur"),
-            avg_war=_json_avg("war"),
-            avg_ver=_json_avg("ver"),
-            avg_vhr=_json_avg("vhr"),
+            avg_hre_built=_area_weighted_json_avg("hre", built_only=True),
+            avg_bur_built=_area_weighted_json_avg("bur", built_only=True),
+            avg_ror=_area_weighted_json_avg("ror"),
+            avg_bsr=_area_weighted_json_avg("bsr"),
+            avg_bur=_area_weighted_json_avg("bur"),
+            avg_war=_area_weighted_json_avg("war"),
+            avg_ver=_area_weighted_json_avg("ver"),
+            avg_vhr=_area_weighted_json_avg("vhr"),
         )
 
         return {
@@ -301,9 +309,9 @@ class DashboardView(APIView):
         if geometry_filter:
             qs = qs.filter(**geometry_filter)
         distribution = {
-            str(row["indice"]): row["count"]
+            str(row["indice"]): row["area"]
             for row in qs.values("indice")
-            .annotate(count=Count("id"))
+            .annotate(area=Sum(Cast(Area("geometry"), output_field=FloatField())))
             .order_by("indice")
         }
         return {
