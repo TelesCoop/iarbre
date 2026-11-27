@@ -7,8 +7,10 @@ from iarbre_data.utils.data_processing import (
     make_valid,
     geocode_address,
     split_geometry_with_grid,
+    subdivide,
 )
-from shapely.geometry import Polygon, Point
+import shapely
+from shapely.geometry import MultiPolygon, Polygon, Point
 
 
 class UtilsDataProcessingTestCase(TestCase):
@@ -86,3 +88,45 @@ class UtilsDataProcessingTestCase(TestCase):
         # All results should be valid geometries
         for geom in result:
             self.assertTrue(geom.is_valid)
+
+
+class SubdivideTestCase(TestCase):
+    def test_subdivide_bounds_vertices_and_keeps_area(self):
+        circle = Point(0, 0).buffer(100, quad_segs=256)
+        result = subdivide(gpd.GeoSeries([circle], crs=SRID_DB), max_vertices=32)
+        self.assertGreater(len(result), 1)
+        self.assertTrue(all(shapely.get_num_coordinates(g) <= 32 for g in result))
+        self.assertAlmostEqual(result.union_all().area, circle.area, places=3)
+
+    def test_subdivide_multipolygon_gives_polygons(self):
+        multi = MultiPolygon([Point(0, 0).buffer(10), Point(100, 0).buffer(10)])
+        result = subdivide(gpd.GeoSeries([multi], crs=SRID_DB))
+        self.assertEqual(set(result.geom_type), {"Polygon"})
+        self.assertAlmostEqual(result.area.sum(), multi.area, places=3)
+
+    def test_subdivide_repairs_invalid_geometry(self):
+        bowtie = Polygon([(0, 0), (10, 10), (10, 0), (0, 10)])
+        result = subdivide(gpd.GeoSeries([bowtie], crs=SRID_DB))
+        self.assertTrue(result.is_valid.all())
+        self.assertAlmostEqual(result.area.sum(), 50, places=3)
+
+    def test_subdivide_keeps_row_attributes(self):
+        gdf = gpd.GeoDataFrame(
+            {
+                "lcz": ["2", "6"],
+                "geometry": [
+                    Point(0, 0).buffer(100, quad_segs=256),
+                    Point(500, 0).buffer(1),
+                ],
+            },
+            crs=SRID_DB,
+        )
+        result = subdivide(gdf, max_vertices=32)
+        self.assertIsInstance(result, gpd.GeoDataFrame)
+        self.assertEqual(result.crs, gdf.crs)
+        self.assertGreater((result["lcz"] == "2").sum(), 1)
+        self.assertEqual(list(result["lcz"].unique()), ["2", "6"])
+
+    def test_subdivide_empty_input(self):
+        result = subdivide(gpd.GeoSeries([], crs=SRID_DB))
+        self.assertEqual(len(result), 0)

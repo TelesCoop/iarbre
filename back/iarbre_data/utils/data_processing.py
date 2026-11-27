@@ -7,6 +7,7 @@ from shapely.geometry import LineString
 from shapely.ops import split
 from functools import reduce
 from django.contrib.gis.geos import GEOSGeometry, Point
+from django.db import connection
 import shapely
 import geopandas as gpd
 from tqdm import tqdm
@@ -199,6 +200,53 @@ def split_geometry_with_grid(
 
     # Filter out empty geometries
     return [geom for geom in result if not geom.is_empty]
+
+
+SUBDIVIDE_BATCH_SIZE = 1000
+
+SUBDIVIDE_QUERY = """
+    SELECT g.i, ST_AsBinary(ST_Subdivide(
+        ST_CollectionExtract(ST_MakeValid(ST_GeomFromWKB(g.wkb, %s)), 3), %s))
+    FROM unnest(%s::bytea[]) WITH ORDINALITY AS g(wkb, i)
+    ORDER BY g.i
+"""
+
+
+def subdivide(
+    df: gpd.GeoDataFrame | gpd.GeoSeries, max_vertices: int = 256
+) -> gpd.GeoDataFrame | gpd.GeoSeries:
+    """
+    Repair geometries and split them into pieces of at most max_vertices vertices.
+
+    Args:
+        df (GeoDataFrame | GeoSeries): Polygonal geometries to subdivide.
+        max_vertices (int): Maximum number of vertices per piece.
+
+    Returns:
+        GeoDataFrame | GeoSeries: One row per piece, carrying the original row's
+        index label and attributes, in input order.
+    """
+    geoms = df if isinstance(df, gpd.GeoSeries) else df.geometry
+    srid = df.crs.to_epsg()
+    positions, pieces = [], []
+    with connection.cursor() as cursor:
+        for start in range(0, len(geoms), SUBDIVIDE_BATCH_SIZE):
+            wkbs = shapely.to_wkb(geoms.iloc[start : start + SUBDIVIDE_BATCH_SIZE])
+            cursor.execute(
+                SUBDIVIDE_QUERY,
+                [srid, max_vertices, [bytes(w) for w in wkbs]],
+            )
+            for i, wkb in cursor.fetchall():
+                positions.append(start + i - 1)
+                pieces.append(shapely.from_wkb(bytes(wkb)))
+    pieces = gpd.array.from_shapely(pieces, crs=df.crs)
+    if isinstance(df, gpd.GeoSeries):
+        return gpd.GeoSeries(
+            pieces, index=df.index[positions], crs=df.crs, name=df.name
+        )
+    result = df.iloc[positions].copy()
+    result[df.geometry.name] = pieces
+    return result
 
 
 def geocode_address(address: str) -> Point:
