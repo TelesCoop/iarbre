@@ -97,8 +97,7 @@ class Command(BaseCommand):
 
         log_progress("Split data")
         batch_folder = os.path.join(shp_folder, f"{shp_filename}_parts")
-        if not os.path.exists(batch_folder):
-            split_data(shp_folder, shp_filename, batch_folder)
+        split_data(shp_folder, shp_filename, batch_folder)
 
         shp_files = [
             x for x in os.listdir(os.path.join(batch_folder)) if x.endswith(".shp")
@@ -108,4 +107,4 @@ class Command(BaseCommand):
             landcover_data = load_data(os.path.join(batch_folder, shp_file))
 
             save_geometries(landcover_data)
-            os.remove(os.path.join(batch_folder, shp_file))
+        shutil.rmtree(batch_folder)
