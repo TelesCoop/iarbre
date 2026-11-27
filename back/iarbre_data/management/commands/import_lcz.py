@@ -104,7 +104,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     batch_size = 10000
     for start in tqdm(range(0, len(lcz_datas), batch_size)):
         end = start + batch_size
-        batch = lcz_datas.loc[start:end]
+        batch = lcz_datas.iloc[start:end]
         Lcz.objects.bulk_create(
             [
                 Lcz(

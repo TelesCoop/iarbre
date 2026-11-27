@@ -9,7 +9,7 @@ from iarbre_data.utils.data_processing import (
     subdivide,
 )
 import shapely
-from shapely.geometry import MultiPolygon, Polygon, Point, box
+from shapely.geometry import LineString, MultiPolygon, Polygon, Point, box
 
 
 class UtilsDataProcessingTestCase(TestCase):
@@ -44,6 +44,20 @@ class UtilsDataProcessingTestCase(TestCase):
         result = apply_actions(self.df, actions)
         self.assertEqual(len(result), 1)
         self.assertTrue(result.iloc[0].geometry.geom_type == "Polygon")
+
+    def test_apply_actions_subdivide_after_union(self):
+        df = gpd.GeoDataFrame(
+            geometry=[Point(0, 0).buffer(100, quad_segs=256)], crs=SRID_DB
+        )
+        result = apply_actions(df, {"union": True, "subdivide": 32})
+        self.assertGreater(len(result), 1)
+        self.assertEqual(set(result.geom_type), {"Polygon"})
+
+    def test_apply_actions_subdivide_after_buffer_only(self):
+        df = gpd.GeoDataFrame(geometry=[LineString([(0, 0), (1000, 0)])], crs=SRID_DB)
+        result = apply_actions(df, {"buffer_size": 2, "subdivide": 8})
+        self.assertGreater(len(result), 1)
+        self.assertAlmostEqual(result.area.sum(), df.buffer(2).area.sum(), places=3)
 
     def test_make_valid(self):
         # Create a valid polygon

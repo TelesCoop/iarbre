@@ -26,16 +26,16 @@ def batched(iterable, n) -> None:
         yield batch
 
 
-def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
+def _select_rows(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
     """
-    Apply a sequence of actions to a Geometry.
+    Apply the row selection actions (filter, filters, exclude) to a GeoDataFrame.
 
     Args:
-        df (GeoDataFrame): GeoDataFrame to apply actions to.
+        df (GeoDataFrame): GeoDataFrame to select rows from.
         actions (dict): Actions to apply to the GeoDataFrame.
 
     Returns:
-        df (GeoDataFrame): GeoDataFrame with actions applied.
+        df (GeoDataFrame): GeoDataFrame with selected rows.
     """
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
@@ -54,6 +54,21 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
             df = df[~df[actions["exclude"]["name"]].isin(actions["exclude"]["value"])]
         else:
             df = df[df[actions["exclude"]["name"]] != actions["exclude"]["value"]]
+    return df
+
+
+def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
+    """
+    Apply a sequence of actions to a Geometry.
+
+    Args:
+        df (GeoDataFrame): GeoDataFrame to apply actions to.
+        actions (dict): Actions to apply to the GeoDataFrame.
+
+    Returns:
+        df (GeoDataFrame): GeoDataFrame with actions applied.
+    """
+    df = _select_rows(df, actions)
     if actions.get("explode"):
         df = df.explode(index_parts=False)
     if actions.get("buffer_size"):
@@ -70,6 +85,8 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
             df = df["geometry"]
         geometry = unary_union(df)
         df = gpd.GeoDataFrame({"geometry": [geometry]}, crs=SRID_DB)
+    if actions.get("subdivide"):
+        df = subdivide(df, actions["subdivide"])
 
     # Transform in Polygon
     df = df.explode(index_parts=False)

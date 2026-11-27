@@ -153,7 +153,7 @@ class ImportLczCommandTest(TestCase):
         initial_count = Lcz.objects.count()
         save_geometries(gdf)
 
-        self.assertEqual(Lcz.objects.count(), initial_count + num_records + 1)
+        self.assertEqual(Lcz.objects.count(), initial_count + num_records)
 
     def test_make_valid_function(self):
         # Test with valid geometry
