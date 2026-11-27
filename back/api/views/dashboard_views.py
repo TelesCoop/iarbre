@@ -1,9 +1,18 @@
 from dataclasses import dataclass
 
-from django.contrib.gis.db.models.functions import Area
-from django.db.models import Avg, Case, Count, FloatField, QuerySet, Sum, When
+from django.contrib.gis.db.models.functions import Area, Intersection
+from django.db.models import (
+    Avg,
+    ExpressionWrapper,
+    FloatField,
+    Q,
+    QuerySet,
+    Sum,
+    Value,
+)
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, NullIf
+from django.db.models.lookups import IsNull
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -40,23 +49,35 @@ def _safe_round(value: float | None) -> float:
     return round(value, INDICE_ROUNDING_DECIMALS) if value is not None else 0
 
 
-def _json_avg(key: str) -> Avg:
-    return Avg(Cast(KeyTextTransform(key, "details"), output_field=FloatField()))
+def _scope_area(geometry_filter: dict) -> Cast:
+    """Area of each row's part inside the scope (whole row when unscoped)."""
+    scope_geometry = geometry_filter.get("geometry__intersects")
+    geometry = (
+        Intersection("geometry", Value(scope_geometry))
+        if scope_geometry
+        else "geometry"
+    )
+    return Cast(Area(geometry), output_field=FloatField())
 
 
-def _json_avg_built_only(key: str) -> Avg:
-    return Avg(
-        Case(
-            When(
-                lcz_index__in=BUILT_LCZ_INDICES,
-                then=Cast(KeyTextTransform(key, "details"), output_field=FloatField()),
-            ),
-            output_field=FloatField(),
-        )
+def _area_weighted_json_avg(
+    key: str, geometry_filter: dict, built_only: bool = False
+) -> ExpressionWrapper:
+    """Area-weighted mean of a ``details`` key; rows without the key are ignored."""
+    value = Cast(KeyTextTransform(key, "details"), output_field=FloatField())
+    area = _scope_area(geometry_filter)
+    condition = Q(IsNull(value, False))
+    if built_only:
+        condition &= Q(lcz_index__in=BUILT_LCZ_INDICES)
+    return ExpressionWrapper(
+        Sum(value * area, filter=condition)
+        / NullIf(Sum(area, filter=condition), Value(0.0)),
+        output_field=FloatField(),
     )
 
 
-def _avg_from_counts(counts: dict) -> float:
+def _weighted_avg(counts: dict) -> float:
+    """Weighted mean of integer keys; weights may be counts or areas."""
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -136,7 +157,7 @@ class DashboardView(APIView):
                 "code": d.code,
                 "name": d.name or d.code,
                 "averageNormalizedIndice": _safe_round(
-                    _avg_from_counts(d.plantability_counts)
+                    _weighted_avg(d.plantability_counts)
                 ),
                 "distribution": d.plantability_counts,
             }
@@ -147,7 +168,7 @@ class DashboardView(APIView):
         if scope.iris:
             return {
                 "averageNormalizedIndice": _safe_round(
-                    _avg_from_counts(scope.iris.plantability_counts)
+                    _weighted_avg(scope.iris.plantability_counts)
                 ),
                 "distribution": scope.iris.plantability_counts,
                 "distributionByDivision": [],
@@ -157,7 +178,7 @@ class DashboardView(APIView):
         if scope.city:
             return {
                 "averageNormalizedIndice": _safe_round(
-                    _avg_from_counts(scope.city.plantability_counts)
+                    _weighted_avg(scope.city.plantability_counts)
                 ),
                 "distribution": scope.city.plantability_counts,
                 "distributionByDivision": self._plantability_by_subdivision(
@@ -186,7 +207,7 @@ class DashboardView(APIView):
                     "code": city.code,
                     "name": city.name or city.code,
                     "averageNormalizedIndice": _safe_round(
-                        _avg_from_counts(city.plantability_counts)
+                        _weighted_avg(city.plantability_counts)
                     ),
                     "distribution": city.plantability_counts,
                 }
@@ -199,7 +220,7 @@ class DashboardView(APIView):
         )
 
         return {
-            "averageNormalizedIndice": _safe_round(_avg_from_counts(total_counts)),
+            "averageNormalizedIndice": _safe_round(_weighted_avg(total_counts)),
             "distribution": total_counts,
             "distributionByDivision": divisions,
             "metaFactors": meta_factors_avg,
@@ -263,14 +284,18 @@ class DashboardView(APIView):
             qs = qs.filter(**geometry_filter)
 
         result = qs.aggregate(
-            avg_hre_built=_json_avg_built_only("hre"),
-            avg_bur_built=_json_avg_built_only("bur"),
-            avg_ror=_json_avg("ror"),
-            avg_bsr=_json_avg("bsr"),
-            avg_bur=_json_avg("bur"),
-            avg_war=_json_avg("war"),
-            avg_ver=_json_avg("ver"),
-            avg_vhr=_json_avg("vhr"),
+            avg_hre_built=_area_weighted_json_avg(
+                "hre", geometry_filter, built_only=True
+            ),
+            avg_bur_built=_area_weighted_json_avg(
+                "bur", geometry_filter, built_only=True
+            ),
+            avg_ror=_area_weighted_json_avg("ror", geometry_filter),
+            avg_bsr=_area_weighted_json_avg("bsr", geometry_filter),
+            avg_bur=_area_weighted_json_avg("bur", geometry_filter),
+            avg_war=_area_weighted_json_avg("war", geometry_filter),
+            avg_ver=_area_weighted_json_avg("ver", geometry_filter),
+            avg_vhr=_area_weighted_json_avg("vhr", geometry_filter),
         )
 
         return {
@@ -301,13 +326,13 @@ class DashboardView(APIView):
         if geometry_filter:
             qs = qs.filter(**geometry_filter)
         distribution = {
-            str(row["indice"]): row["count"]
+            str(row["indice"]): row["area"]
             for row in qs.values("indice")
-            .annotate(count=Count("id"))
+            .annotate(area=Sum(_scope_area(geometry_filter)))
             .order_by("indice")
         }
         return {
-            "averageIndice": _safe_round(_avg_from_counts(distribution)),
+            "averageIndice": _safe_round(_weighted_avg(distribution)),
             "distribution": distribution,
         }
 
@@ -371,7 +396,7 @@ def _aggregate_plantability_from_polygon(polygon) -> dict:
             counts_by_iris[iris_id] = counts_by_iris.get(iris_id, 0) + 1
 
     return {
-        "averageNormalizedIndice": _safe_round(_avg_from_counts(distribution)),
+        "averageNormalizedIndice": _safe_round(_weighted_avg(distribution)),
         "distribution": distribution,
         "distributionByDivision": [],
         "metaFactors": _meta_factors_from_iris_counts(counts_by_iris),

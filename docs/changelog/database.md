@@ -6,6 +6,14 @@ Ce document suit toutes les sauvegardes de base de données et les changements i
 
 ## Sauvegardes
 
+## 2026-11-27T16:03_postgres_backup.dump
+
+**Changements :** :
+
+- Dans `Data` les geoms de réseaux sont explosées à l'aide de `ST_SUBDIVIDE` pour avoir un nombre max de vertices
+- Pareil pour les geoms des LCZ et de biodiversité (elles étaient avant explosées en suivant une grille de 100mx100m).
+- Les MVTs correspondants pour LCZ et biodiversité ont été regénérées pour que le click ne casse pas la liaison avec l'ID en base.
+
 ## 2026-11-18T12:22_postgres_backup.dump
 
 **Changements :** :

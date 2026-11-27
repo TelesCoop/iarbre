@@ -3,10 +3,9 @@
 from itertools import islice
 
 from shapely import unary_union
-from shapely.geometry import LineString
-from shapely.ops import split
 from functools import reduce
 from django.contrib.gis.geos import GEOSGeometry, Point
+from django.db import connection
 import shapely
 import geopandas as gpd
 from tqdm import tqdm
@@ -27,16 +26,16 @@ def batched(iterable, n) -> None:
         yield batch
 
 
-def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
+def _select_rows(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
     """
-    Apply a sequence of actions to a Geometry.
+    Apply the row selection actions (filter, filters, exclude) to a GeoDataFrame.
 
     Args:
-        df (GeoDataFrame): GeoDataFrame to apply actions to.
+        df (GeoDataFrame): GeoDataFrame to select rows from.
         actions (dict): Actions to apply to the GeoDataFrame.
 
     Returns:
-        df (GeoDataFrame): GeoDataFrame with actions applied.
+        df (GeoDataFrame): GeoDataFrame with selected rows.
     """
     if actions.get("filter"):
         df = df[df[actions["filter"]["name"]] == actions["filter"]["value"]]
@@ -55,6 +54,21 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
             df = df[~df[actions["exclude"]["name"]].isin(actions["exclude"]["value"])]
         else:
             df = df[df[actions["exclude"]["name"]] != actions["exclude"]["value"]]
+    return df
+
+
+def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
+    """
+    Apply a sequence of actions to a Geometry.
+
+    Args:
+        df (GeoDataFrame): GeoDataFrame to apply actions to.
+        actions (dict): Actions to apply to the GeoDataFrame.
+
+    Returns:
+        df (GeoDataFrame): GeoDataFrame with actions applied.
+    """
+    df = _select_rows(df, actions)
     if actions.get("explode"):
         df = df.explode(index_parts=False)
     if actions.get("buffer_size"):
@@ -71,6 +85,8 @@ def apply_actions(df: gpd.GeoDataFrame, actions: dict) -> gpd.GeoDataFrame:
             df = df["geometry"]
         geometry = unary_union(df)
         df = gpd.GeoDataFrame({"geometry": [geometry]}, crs=SRID_DB)
+    if actions.get("subdivide"):
+        df = subdivide(df, actions["subdivide"])
 
     # Transform in Polygon
     df = df.explode(index_parts=False)
@@ -146,59 +162,51 @@ def make_valid(
     return geometry
 
 
-def split_geometry_with_grid(
-    geometry: shapely.geometry.base.BaseGeometry, grid_size: float = 100.0
-) -> list:
+SUBDIVIDE_BATCH_SIZE = 1000
+
+SUBDIVIDE_QUERY = """
+    SELECT g.i, ST_AsBinary(ST_Subdivide(
+        ST_CollectionExtract(ST_MakeValid(ST_GeomFromWKB(g.wkb, %s)), 3), %s))
+    FROM unnest(%s::bytea[]) WITH ORDINALITY AS g(wkb, i)
+    ORDER BY g.i
+"""
+
+
+def subdivide(
+    df: gpd.GeoDataFrame | gpd.GeoSeries, max_vertices: int = 256
+) -> gpd.GeoDataFrame | gpd.GeoSeries:
     """
-    Split a geometry using a grid pattern.
+    Repair geometries and split them into pieces of at most max_vertices vertices.
 
     Args:
-        geometry: The geometry to split
-        grid_size: Size of grid cells in meters (default 100m)
+        df (GeoDataFrame | GeoSeries): Polygonal geometries to subdivide.
+        max_vertices (int): Maximum number of vertices per piece.
 
     Returns:
-        List of split geometries
+        GeoDataFrame | GeoSeries: One row per piece, carrying the original row's
+        index label and attributes, in input order.
     """
-    if geometry.is_empty or not geometry.is_valid:
-        return [geometry]
-
-    # Get geometry bounds
-    minx, miny, maxx, maxy = geometry.bounds
-
-    # Create grid lines
-    grid_lines = []
-
-    # Vertical lines
-    x = minx
-    while x <= maxx:
-        line = LineString([(x, miny - grid_size), (x, maxy + grid_size)])
-        grid_lines.append(line)
-        x += grid_size
-
-    # Horizontal lines
-    y = miny
-    while y <= maxy:
-        line = LineString([(minx - grid_size, y), (maxx + grid_size, y)])
-        grid_lines.append(line)
-        y += grid_size
-
-    # Split geometry with each grid line
-    result = [geometry]
-    for line in tqdm(grid_lines, desc="Splitting a large geom"):
-        new_result = []
-        for geom in result:
-            if geom.intersects(line):
-                split_geoms = split(geom, line)
-                if hasattr(split_geoms, "geoms"):
-                    new_result.extend(split_geoms.geoms)
-                else:
-                    new_result.append(split_geoms)
-            else:
-                new_result.append(geom)
-        result = new_result
-
-    # Filter out empty geometries
-    return [geom for geom in result if not geom.is_empty]
+    geoms = df if isinstance(df, gpd.GeoSeries) else df.geometry
+    srid = df.crs.to_epsg()
+    positions, pieces = [], []
+    with connection.cursor() as cursor:
+        for start in range(0, len(geoms), SUBDIVIDE_BATCH_SIZE):
+            wkbs = shapely.to_wkb(geoms.iloc[start : start + SUBDIVIDE_BATCH_SIZE])
+            cursor.execute(
+                SUBDIVIDE_QUERY,
+                [srid, max_vertices, [bytes(w) for w in wkbs]],
+            )
+            for i, wkb in cursor.fetchall():
+                positions.append(start + i - 1)
+                pieces.append(shapely.from_wkb(bytes(wkb)))
+    pieces = gpd.array.from_shapely(pieces, crs=df.crs)
+    if isinstance(df, gpd.GeoSeries):
+        return gpd.GeoSeries(
+            pieces, index=df.index[positions], crs=df.crs, name=df.name
+        )
+    result = df.iloc[positions].copy()
+    result[df.geometry.name] = pieces
+    return result
 
 
 def geocode_address(address: str) -> Point:

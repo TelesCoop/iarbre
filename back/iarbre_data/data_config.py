@@ -283,7 +283,7 @@ URL_FILES = [
     {
         "name": "Réseaux gaz",
         "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/infrastructures-reseau-gaz/lines",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": True, "subdivide": 256}],
         "scripts": ["gaz.py"],
         "factors": ["Rsx gaz"],
         "output_type": "LINESTRING",
@@ -291,7 +291,7 @@ URL_FILES = [
     {
         "name": "Réseaux souterrains Enedis",
         "url": "https://opendata.agenceore.fr/data-fair/api/v1/datasets/reseau-souterrain-basse-tension-bt/lines",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": True, "subdivide": 256}],
         "scripts": ["souterrain_enedis.py"],
         "factors": ["Rsx souterrains ERDF"],
         "output_type": "LINESTRING",
@@ -500,7 +500,7 @@ URL_FILES = [
         "typename=metropole-de-lyon:nrj_energie.rcu_canalisation&"
         "outputFormat=GML3&SRSNAME=EPSG:2154&startIndex=0&sortBy=gid",
         "layer_name": "nrj_energie.rcu_canalisation",
-        "actions": [{"buffer_size": 2, "union": True}],
+        "actions": [{"buffer_size": 2, "union": True, "subdivide": 256}],
         "scripts": ["rsx_chaleur.py"],
         "factors": ["Réseau de chaleur urbain"],
         "output_type": "LINESTRING",

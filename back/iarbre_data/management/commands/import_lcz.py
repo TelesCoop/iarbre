@@ -13,7 +13,7 @@ from iarbre_data.data_config import URL_FILES, LCZ
 from iarbre_data.utils.database import select_city, log_progress
 from iarbre_data.models import Lcz
 from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
-from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
+from iarbre_data.utils.data_processing import make_valid, subdivide
 
 
 def download_data() -> None:
@@ -78,15 +78,7 @@ def load_data() -> geopandas.GeoDataFrame:
     gdf_filtered = gdf[gdf.geometry.intersects(all_cities_boundary)]
     gdf_filtered["geometry"] = gdf_filtered.geometry.intersection(all_cities_boundary)
 
-    # Split large geometries using 100m x 100m grid
-    split_geometries = []
-    for idx, row in gdf_filtered.iterrows():
-        split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
-        for geom in split_geoms:
-            split_geometries.append({**row.to_dict(), "geometry": geom})
-    gdf_filtered = geopandas.GeoDataFrame(
-        split_geometries, geometry="geometry", crs=SRID_DB
-    )
+    gdf_filtered = subdivide(gdf_filtered)
 
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
@@ -112,7 +104,7 @@ def save_geometries(lcz_datas: geopandas.GeoDataFrame) -> None:
     batch_size = 10000
     for start in tqdm(range(0, len(lcz_datas), batch_size)):
         end = start + batch_size
-        batch = lcz_datas.loc[start:end]
+        batch = lcz_datas.iloc[start:end]
         Lcz.objects.bulk_create(
             [
                 Lcz(
