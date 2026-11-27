@@ -6,11 +6,10 @@ from iarbre_data.utils.data_processing import (
     apply_actions,
     make_valid,
     geocode_address,
-    split_geometry_with_grid,
     subdivide,
 )
 import shapely
-from shapely.geometry import MultiPolygon, Polygon, Point
+from shapely.geometry import MultiPolygon, Polygon, Point, box
 
 
 class UtilsDataProcessingTestCase(TestCase):
@@ -72,23 +71,6 @@ class UtilsDataProcessingTestCase(TestCase):
         self.assertTrue(830000 < x < 860000)
         self.assertTrue(6510000 < y < 6530000)
 
-    def test_split_geometry_with_grid(self):
-        # Create a simple square polygon
-        square = Polygon([(0, 0), (10, 0), (10, 10), (0, 10)])
-
-        # Split with a 5m grid
-        result = split_geometry_with_grid(square, grid_size=5.0)
-
-        # Should return a list
-        self.assertIsInstance(result, list)
-
-        # Should have more than one geometry (splitting occurred)
-        self.assertGreater(len(result), 1)
-
-        # All results should be valid geometries
-        for geom in result:
-            self.assertTrue(geom.is_valid)
-
 
 class SubdivideTestCase(TestCase):
     def test_subdivide_bounds_vertices_and_keeps_area(self):
@@ -130,3 +112,18 @@ class SubdivideTestCase(TestCase):
     def test_subdivide_empty_input(self):
         result = subdivide(gpd.GeoSeries([], crs=SRID_DB))
         self.assertEqual(len(result), 0)
+
+    def test_subdivide_maps_pieces_to_rows_across_batches(self):
+        n = 1500
+        gdf = gpd.GeoDataFrame(
+            {
+                "row_id": range(n),
+                "geometry": [box(i * 10, 0, i * 10 + 5, 5) for i in range(n)],
+            },
+            crs=SRID_DB,
+        )
+        result = subdivide(gdf)
+        self.assertEqual(len(result), n)
+        for label, row_id, geom in zip(result.index, result["row_id"], result.geometry):
+            self.assertEqual(int(geom.centroid.x // 10), row_id)
+            self.assertEqual(label, row_id)

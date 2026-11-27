@@ -3,8 +3,7 @@ from django.core.management import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from iarbre_data.models import BiosphereFunctionalIntegrityLandCover
 from iarbre_data.settings import SRID_MAPLIBRE, SRID_DB
-from iarbre_data.utils.data_processing import make_valid, split_geometry_with_grid
-from concurrent.futures import ThreadPoolExecutor
+from iarbre_data.utils.data_processing import make_valid, subdivide
 from iarbre_data.utils.biosphere_land_cover import CLASS_TO_LAND_COVER, CLASS_TO_BINARY
 
 import geopandas
@@ -44,20 +43,7 @@ def load_data(shp_path) -> geopandas.GeoDataFrame:
     gdf.to_crs(SRID_DB, inplace=True)
     gdf_filtered = gdf
 
-    # Split large geometries using 100m x 100m grid
-    def worker(row, progress):
-        print(f"splitting row : { round(progress, 2) }%")
-        split_geoms = split_geometry_with_grid(row.geometry, grid_size=100.0)
-        for geom in split_geoms:
-            split_geometries.append({**row.to_dict(), "geometry": geom})
-
-    split_geometries = []
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        for idx, row in gdf_filtered.iterrows():
-            executor.submit(worker, row, 100.0 * idx / gdf_filtered.shape[0])
-    gdf_filtered = geopandas.GeoDataFrame(
-        split_geometries, geometry="geometry", crs=SRID_DB
-    )
+    gdf_filtered = subdivide(gdf_filtered)
 
     # Simple correction for invalid geometry
     gdf_filtered["geometry"] = gdf_filtered["geometry"].apply(make_valid)
